@@ -24,7 +24,6 @@ jobs:
   mobile:
     name: App móvil (typecheck, test)
     runs-on: ubuntu-latest
-    if: hashFiles('apps/mobile/package.json') != ''
     defaults:
       run:
         working-directory: apps/mobile
@@ -44,7 +43,6 @@ jobs:
   ml:
     name: Contenedor ML (ruff, pytest)
     runs-on: ubuntu-latest
-    if: hashFiles('services/ml/pyproject.toml') != ''
     defaults:
       run:
         working-directory: services/ml
