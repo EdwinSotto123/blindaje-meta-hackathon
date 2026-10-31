@@ -29,7 +29,7 @@ export const NODE_TYPES: Record<GraphNodeType, NodeTypeMeta> = {
     shape: "round-rectangle",
     fill: "#2A1E17",
     border: "#2A1E17",
-    text: "#FFFCF6",
+    text: "#FFFFFF",
     description: "Rectángulo café oscuro",
   },
   voz: {
@@ -189,7 +189,7 @@ export function networkToElements(net: Pick<NetworkView, "nodes" | "edges"> & { 
 /** Colores del tema compartido que usa el lienzo (Cytoscape no lee variables CSS). */
 const INK = "#2A1E17";
 const INK_3 = "#76604F";
-const PAPER = "#FFFCF6";
+const PAPER = "#FFFFFF";
 const OCHRE_SOFT = "#F8E2B0";
 const TERRACOTTA = "#B4462A";
 const FONT = "Atkinson Hyperlegible, system-ui, sans-serif";

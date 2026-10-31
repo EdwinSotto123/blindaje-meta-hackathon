@@ -22,7 +22,7 @@
   gap: 5px;
   padding: 12px 16px;
   border-radius: var(--r-m);
-  background: var(--crema-2);
+  background: var(--fondo-2);
   font-size: 0.93rem;
 }
 .zone-note-tag {
@@ -251,7 +251,7 @@
   gap: 4px;
   padding: 12px 14px;
   border-radius: var(--r-m);
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 .zone-detail-note {
   padding-top: 10px;

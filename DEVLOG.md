@@ -494,3 +494,25 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
   "Recorrido sugerido" de cuatro paradas (cola de vínculos, alertas, motor vectorial, auditoría) con
   una línea en inglés para el jurado. Se puede ocultar y se recuerda en el navegador.
 - Tests: consola 137, portal 50. Desplegados consola, portal y landing; verificado en vivo.
+
+## 2026-10-31 12:50 – 13:15 · Fuera el crema: fondo blanco casi neutro
+
+- El detector de `impeccable` marcaba el fondo crema (#F7F1E6) como el fondo "de buen gusto" que se
+  usa por reflejo en lo generado con IA, y el equipo pidió quitarlo. El tema compartido
+  (`packages/shared/theme/calido.css`) ahora tiene página `#FAFAF9`, franjas alternas `#F2F1EF`,
+  tarjetas blancas y líneas neutras (saturación 9-10 % frente al 52 % del crema). Se quedan la
+  terracota del ladrillo, el ocre, el verde, la tinta café y la noche café de la franja de ayuda y
+  del pie: la calidez la ponen ellos y las fotos reales de Lima.
+- Las variables `--crema`, `--crema-2` y `--crema-tenue` pasaron a `--fondo`, `--fondo-2` y
+  `--claro-tenue` en las tres apps (el nombre ya no describía el color). También los colores crema
+  escritos a mano: glifos de las señales, el grafo de la consola, la imagen simulada y el
+  `theme-color`.
+- Contraste revisado con la paleta nueva: todo el texto queda en 4.83:1 o más (terracota sobre la
+  franja gris es el par más bajo).
+- Otras marcas genéricas: el "Y te lo decimos claro." recibía el punto desde el componente; los
+  nombres de "Por qué no alcanza hoy" ya no son "Título." en línea sino una línea propia; las cifras
+  de Resultados van en tinta, como las del problema (la terracota queda para la acción); los pies de
+  foto y la nota del diagrama tienen tope de ancho (el detector medía 87-104 caracteres por línea).
+- Capturas de `docs/screenshots` regeneradas con la paleta nueva.
+- Verificado: detector sin hallazgos en la landing (ES y EN), el mapa y la zona del portal y el login
+  de la consola, en vivo; axe 0 en las 8 vistas. Tests: consola 137, portal 50.

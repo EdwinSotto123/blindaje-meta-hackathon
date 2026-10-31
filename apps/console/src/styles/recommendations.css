@@ -54,7 +54,7 @@
   gap: 10px;
   padding: 20px 20px 22px;
   border-radius: var(--r-l);
-  background: var(--crema);
+  background: var(--fondo);
   font-size: 0.95rem;
   line-height: 1.5;
 }
@@ -142,7 +142,7 @@
 .biz-caveats {
   padding: 10px 12px;
   border-radius: var(--r-m);
-  background: var(--crema-2);
+  background: var(--fondo-2);
   color: var(--tinta-2);
   font-size: 0.87rem;
 }

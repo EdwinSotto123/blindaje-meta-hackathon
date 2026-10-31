@@ -9,7 +9,7 @@
   --flag-h: 0px;
 
   /* Derivadas del tema: superficies de paso y bordes de los avisos. */
-  --hover: color-mix(in oklab, var(--crema-2) 70%, var(--papel));
+  --hover: color-mix(in oklab, var(--fondo-2) 70%, var(--papel));
   --ocre-borde: color-mix(in oklab, var(--ocre) 55%, var(--ocre-suave));
 
   /* Señales del grafo: paleta categórica validada (todos los pares, con daltonismo) sobre --papel.
@@ -53,7 +53,7 @@ body {
   font-family: var(--sans);
   line-height: 1.5;
   color: var(--tinta);
-  background: var(--crema);
+  background: var(--fondo);
   min-height: 100vh;
   font-variant-numeric: tabular-nums;
 }
@@ -261,7 +261,7 @@ li {
   flex-direction: column;
   gap: 22px;
   padding: 22px 14px 16px;
-  background: var(--crema-2);
+  background: var(--fondo-2);
   border-right: 1px solid var(--linea);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -483,7 +483,7 @@ li {
 }
 /* Panel hundido: información de apoyo, sin borde. */
 .panel.flat {
-  background: var(--crema-2);
+  background: var(--fondo-2);
   border-color: transparent;
 }
 
@@ -549,7 +549,7 @@ li {
     color 150ms var(--ease);
 }
 .btn:hover {
-  background: var(--crema-2);
+  background: var(--fondo-2);
   color: var(--tinta);
 }
 .btn:active {
@@ -615,7 +615,7 @@ li {
 .btn[disabled]:hover,
 .btn:disabled,
 .btn[aria-disabled="true"] {
-  background: var(--crema-2);
+  background: var(--fondo-2);
   border-color: var(--linea-2);
   color: var(--tinta-3);
   cursor: not-allowed;
@@ -659,7 +659,7 @@ li {
   color: var(--tinta);
 }
 .chip-grid {
-  background: var(--crema-2);
+  background: var(--fondo-2);
   color: var(--tinta-2);
 }
 .chip-ink {
@@ -678,7 +678,7 @@ li {
 
 /* Autenticidad (¿hecho con IA?): indicios, nunca un sello de "real" */
 .chip-auth {
-  background: var(--crema-2);
+  background: var(--fondo-2);
   color: var(--tinta);
 }
 .chip-auth[data-tone="none"] {
@@ -711,7 +711,7 @@ li {
 .auth-panel {
   padding: 12px 14px;
   border-radius: var(--r-m);
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 .auth-panel[data-tone="debil"] {
   background: var(--ocre-suave);
@@ -793,7 +793,7 @@ li {
   padding: 0 6px;
   border: 1px solid var(--linea-2);
   border-radius: 7px;
-  background: var(--crema-2);
+  background: var(--fondo-2);
   color: var(--tinta);
   font: inherit;
   font-size: 0.86em;
@@ -854,7 +854,7 @@ li {
   font-weight: 700;
   padding: 1px 10px 1px 8px;
   border-radius: 999px;
-  background: var(--crema-2);
+  background: var(--fondo-2);
   color: var(--tinta);
   line-height: 1.55;
   white-space: nowrap;
@@ -885,7 +885,7 @@ li {
 .status-rechazada,
 .status-rechazado,
 .status-descartado_auto {
-  background: var(--crema-2);
+  background: var(--fondo-2);
   color: var(--tinta-2);
 }
 .status-invalido,
@@ -903,7 +903,7 @@ li {
   position: relative;
   height: 8px;
   border-radius: 999px;
-  background: var(--crema-2);
+  background: var(--fondo-2);
   overflow: hidden;
   min-width: 80px;
 }
@@ -931,7 +931,7 @@ li {
   align-items: flex-start;
   padding: 11px 14px;
   border-radius: var(--r-m);
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 .notice svg {
   color: var(--tinta-2);
@@ -967,7 +967,7 @@ li {
   text-align: center;
   color: var(--tinta-2);
   border-radius: var(--r-m);
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 .empty strong {
   display: block;
@@ -1030,14 +1030,14 @@ li {
 .table th {
   position: sticky;
   top: 0;
-  background: var(--crema-2);
+  background: var(--fondo-2);
   font-size: 0.87rem;
   color: var(--tinta-2);
   border-bottom: 1px solid var(--linea-2);
   white-space: nowrap;
 }
 .table tbody tr:hover td {
-  background: color-mix(in oklab, var(--crema) 60%, var(--papel));
+  background: color-mix(in oklab, var(--fondo) 60%, var(--papel));
 }
 .table tr:last-child td {
   border-bottom: 0;
@@ -1140,7 +1140,7 @@ textarea {
 }
 input[readonly],
 textarea[readonly] {
-  background: var(--crema);
+  background: var(--fondo);
   border-color: var(--linea);
 }
 input:focus-visible,
@@ -1203,7 +1203,7 @@ legend {
   transition: background-color 150ms var(--ease);
 }
 .segmented button:hover {
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 .segmented button[aria-pressed="true"],
 .segmented button[aria-selected="true"] {
@@ -1264,7 +1264,7 @@ dialog.modal {
   font-family: var(--mono);
   font-size: 0.85rem;
   overflow-wrap: anywhere;
-  background: var(--crema-2);
+  background: var(--fondo-2);
   padding: 6px 9px;
   border-radius: var(--r-s);
 }
@@ -1681,7 +1681,7 @@ summary::marker {
   padding: 4px 9px;
 }
 .graph-tools .btn:hover {
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 .legend {
   display: flex;
@@ -1802,7 +1802,7 @@ summary::marker {
 }
 .tabs a:hover,
 .tabs button:hover {
-  background: var(--crema-2);
+  background: var(--fondo-2);
   color: var(--tinta);
 }
 /* En el celular las pestañas no se parten en dos filas: se deslizan. */
@@ -1878,7 +1878,7 @@ summary::marker {
   border-radius: 20px;
   padding: 20px 16px 18px;
   min-height: 420px;
-  background: var(--crema);
+  background: var(--fondo);
   overflow: hidden;
   font-size: 1rem;
 }
@@ -1925,7 +1925,7 @@ summary::marker {
   position: relative;
   height: 20px;
   border-radius: var(--r-s);
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 .budget-bar .fill {
   position: absolute;
@@ -1966,7 +1966,7 @@ summary::marker {
 .bar-track {
   height: 12px;
   border-radius: 4px;
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 .bar-fill {
   height: 100%;
@@ -2019,7 +2019,7 @@ main.login-wrap {
   object-fit: cover;
   object-position: 58% 42%;
   border-radius: var(--r-foto);
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 .login-photo figcaption {
   padding: 0 6px;

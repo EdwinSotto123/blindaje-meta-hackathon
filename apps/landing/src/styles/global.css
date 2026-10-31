@@ -1,15 +1,15 @@
 /*
-  Landing de Blindaje · "Humano y cálido". La calle limeña da la paleta: crema de las paredes, terracota
-  del ladrillo para la acción, ocre de las fachadas para marcar un dato, verde de las puertas pintadas
-  para lo confirmado y una tinta café en lugar del negro. Titulares en Bricolage Grotesque, texto en
+  Landing de Blindaje, "Humano y cálido". Fondo blanco casi neutro; la calle limeña da los acentos:
+  terracota del ladrillo para la acción, ocre de las fachadas para marcar un dato, verde de las puertas
+  pintadas para lo confirmado y una tinta café en lugar del negro. Titulares en Bricolage Grotesque, texto en
   Atkinson Hyperlegible (la letra de la app, la consola y el portal). Las variables vienen del tema
   compartido; aquí solo se nombran sus usos. El rojo queda para la emergencia (105).
 */
 @import "../../../../packages/shared/theme/calido.css";
 
 :root {
-  --paper: var(--crema);
-  --paper-2: var(--crema-2);
+  --paper: var(--fondo);
+  --paper-2: var(--fondo-2);
   --card: var(--papel);
   --ink: var(--tinta);
   --ink-2: var(--tinta-2);
@@ -19,9 +19,9 @@
   --field: var(--noche);
   --field-2: var(--noche-2);
   --field-deep: #1f1610;
-  --on-field: var(--crema);
-  --on-field-2: var(--crema-tenue);
-  --field-rule: rgb(247 241 230 / 0.14);
+  --on-field: var(--fondo);
+  --on-field-2: var(--claro-tenue);
+  --field-rule: rgb(255 255 255 / 0.14);
 
   /* La acción es terracota; el ocre suave marca un dato dentro del texto. */
   --mark: var(--terracota);
@@ -29,7 +29,7 @@
   --hl: var(--ocre-suave);
 
   /* Señales: los mismos tonos que los glifos del grafo de la consola. La versión "-ink" va como
-     texto sobre crema (contraste 4.5:1 o más); la "-bg", como fondo de una etiqueta. */
+     texto sobre el fondo (contraste 4.5:1 o más); la "-bg", como fondo de una etiqueta. */
   --voz: #c59711;
   --voz-ink: #815d00;
   --voz-bg: #f8eed8;
@@ -337,7 +337,7 @@ code {
   border: 0;
   border-radius: var(--radius-sm);
   background: var(--tinta);
-  color: var(--crema);
+  color: var(--fondo);
   font-size: var(--step-body);
   font-weight: 700;
   line-height: 1.2;
@@ -472,7 +472,7 @@ code {
   gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--crema-2);
+  background: var(--fondo-2);
   color: var(--ink-2);
   font-size: var(--step-small);
   font-weight: 700;
@@ -480,7 +480,7 @@ code {
 }
 
 .on-field .tag {
-  background: rgb(247 241 230 / 0.1);
+  background: rgb(255 255 255 / 0.1);
   color: var(--on-field-2);
 }
 
@@ -497,7 +497,7 @@ code {
 .foto {
   overflow: hidden;
   border-radius: var(--r-foto);
-  background: var(--crema-2);
+  background: var(--fondo-2);
   box-shadow: var(--sombra-2);
 }
 
@@ -512,7 +512,7 @@ code {
 }
 
 .cap {
-  max-width: 72ch;
+  max-width: 52ch;
   margin-top: 10px;
   font-size: var(--step-small);
   line-height: 1.4;

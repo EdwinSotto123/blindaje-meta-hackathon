@@ -45,9 +45,8 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
         {
           p.gaps.map((g) => (
             <li>
-              <p>
-                <strong>{g.title}.</strong> <span class="soft">{g.text}</span>
-              </p>
+              <p class="gaps__name">{g.title}</p>
+              <p class="soft">{g.text}</p>
             </li>
           ))
         }
@@ -121,6 +120,16 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
 
   .gaps__title {
     font-size: var(--step-lead);
+  }
+
+  /* Cada falla: su nombre en una línea, sin punto, y la explicación debajo. */
+  .gaps__name {
+    margin: 0 0 4px;
+    font-weight: 700;
+  }
+
+  .gaps__list p:last-child {
+    margin: 0;
   }
 
   .gaps__list {

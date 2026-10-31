@@ -159,7 +159,7 @@
 }
 
 .vx-case:hover {
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 
 .vx-case[aria-pressed="true"] {
@@ -202,7 +202,7 @@
 }
 
 .vx-steps button:hover {
-  background: var(--crema-2);
+  background: var(--fondo-2);
 }
 
 .vx-step-n {
@@ -246,7 +246,7 @@
   min-height: 62px;
   padding: 12px 14px;
   border-radius: var(--r-m);
-  background: var(--crema-2);
+  background: var(--fondo-2);
   font-size: 1rem;
   line-height: 1.45;
 }
@@ -322,7 +322,7 @@
   display: inline-flex;
   padding: 1px 8px;
   border-radius: var(--r-s);
-  background: var(--crema-2);
+  background: var(--fondo-2);
   font-family: var(--mono);
   font-size: 0.8rem;
   font-weight: 700;
@@ -347,7 +347,7 @@
   gap: 1px;
   padding: 9px 12px;
   border-radius: var(--r-m);
-  background: var(--crema-2);
+  background: var(--fondo-2);
   overflow: hidden;
   isolation: isolate;
   transition: opacity 200ms var(--ease);
@@ -525,7 +525,7 @@
 }
 
 .vx-map-frame {
-  fill: var(--crema);
+  fill: var(--fondo);
   stroke: var(--linea);
 }
 
@@ -592,7 +592,7 @@
   font-size: 11px;
   font-weight: 700;
   paint-order: stroke;
-  stroke: var(--crema);
+  stroke: var(--fondo);
   stroke-width: 3px;
   stroke-linejoin: round;
 }
@@ -630,7 +630,7 @@
 }
 
 .vx-tip .muted {
-  color: var(--crema-tenue);
+  color: var(--claro-tenue);
 }
 
 .vx-map-empty {
@@ -715,7 +715,7 @@
 .vx-sig-track {
   height: 8px;
   border-radius: 999px;
-  background: var(--crema-2);
+  background: var(--fondo-2);
   overflow: hidden;
 }
 
