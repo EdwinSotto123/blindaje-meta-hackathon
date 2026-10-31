@@ -41,10 +41,6 @@ export function parseCitations(text: string): Segment[] {
   return out;
 }
 
-export function isKnownCitation(ref: string): boolean {
-  return parseCitations(ref).some((s) => s.type === "cite" && s.ref === ref);
-}
-
 // ---------------------------------------------------------------------------
 // Índice de lo que se puede abrir desde una cita
 // ---------------------------------------------------------------------------
@@ -230,12 +226,6 @@ export function indexFromNetwork(net: NetworkView): CitationIndex {
     }
   }
   return index;
-}
-
-export function mergeIndexes(...indexes: (CitationIndex | null | undefined)[]): CitationIndex {
-  const out: CitationIndex = new Map();
-  for (const idx of indexes) if (idx) for (const [k, v] of idx) if (!out.has(k)) out.set(k, v);
-  return out;
 }
 
 const ID_TYPE_SHORT: Record<string, string> = {

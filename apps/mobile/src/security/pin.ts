@@ -9,10 +9,10 @@ import { randomBytes } from "@/security/random";
  * seguro del sistema (nunca en claro). Un PIN de 4 a 8 dígitos tiene pocas combinaciones: la
  * protección real es que el hash vive en el Keystore, no el costo del PBKDF2.
  */
-export const PIN_MIN = 4;
-export const PIN_MAX = 8;
+const PIN_MIN = 4;
+const PIN_MAX = 8;
 const ITERATIONS = 12_000;
-const PIN_RE = /^\d{4,8}$/;
+const PIN_RE = new RegExp(`^\\d{${PIN_MIN},${PIN_MAX}}$`);
 
 export type PinRecord = {
   v: 1;

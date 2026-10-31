@@ -21,11 +21,6 @@ export async function savePins(real: string, decoy: string | null): Promise<void
   await setJson(KEYS.pin, await createPinRecord(real, decoy));
 }
 
-export async function hasDecoyPin(): Promise<boolean> {
-  const rec = await getJson<PinRecord>(KEYS.pin);
-  return !!rec?.decoy;
-}
-
 /** Cambia el PIN o el señuelo verificando primero el PIN actual. */
 export async function changePins(current: string, real: string, decoy: string | null): Promise<boolean> {
   const rec = await getJson<PinRecord>(KEYS.pin);

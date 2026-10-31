@@ -48,8 +48,6 @@ const FACTOR: Record<number, { casos: number; victimas: number }> = {
   90: { casos: 2.8, victimas: 2.4 },
 };
 
-export const ZONE_PERIODS = [14, 28, 90] as const;
-
 /**
  * Filas del periodo. `redesExistentes` son las redes que existen en el estado simulado: R-001 solo
  * aparece cuando se confirmaron sus vínculos.

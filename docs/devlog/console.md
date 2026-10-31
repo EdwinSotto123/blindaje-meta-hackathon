@@ -47,8 +47,8 @@ Horas en hora de Lima (UTC−5). Las entradas más nuevas van abajo.
 - Recorrido automático en Chrome headless (CDP) con 16 pasos: login, cola, audio, citas, confirmar
   VIN-1 y VIN-2, grafo, Cartógrafo, perfil inválido, expediente con SHA-256 verificado al descargar,
   Vigía, auditoría íntegra y rota, costos, admin y permisos de la revisora. Cero errores y cero avisos
-  en la consola del navegador, también contra la URL desplegada con su CSP real. Capturas en
-  `apps/console/screenshots/`.
+  en la consola del navegador, también contra la URL desplegada con su CSP real. (Esas capturas
+  eran del diseño anterior y se sacaron del repo el 31/10; las vigentes están en `docs/screenshots/`.)
 - Hallazgo corregido: tras "Cerrar sesión", la siguiente persona entraba a la página de la anterior.
 - Hallazgo del entorno: `vite preview` no ve los assets nuevos si se recompila con el servidor
   corriendo; hay que reiniciarlo.

@@ -7,10 +7,7 @@
  * búsqueda web; nunca nombres de personas; nada sale sin revisión humana (todo nace en borrador);
  * cada ejecución se audita con `audit(env, { action: "agent.<nombre>", ... })`.
  */
-export type { CitationCheck } from "@blindaje/shared";
-export { citationFeedback, metaClientFor, recordAgentRun, runCheckedAgent, validateCitations } from "./common";
-export type { AgentAttempt, AgentKind, CheckedAgentResult } from "./common";
 export { runVinculador } from "./vinculador";
-export { runCartografo, type CartografoOptions } from "./cartografo";
-export { runVigia, type VigiaRunOptions } from "./vigia";
-export { runRedactor, type RedactorOptions } from "./redactor";
+export { runCartografo } from "./cartografo";
+export { runVigia } from "./vigia";
+export { runRedactor } from "./redactor";

@@ -115,11 +115,6 @@ export function nivelFinal(t: SenalesTecnicas, forense: AnalisisForense | null):
   return maxNivel(modelo, pisoTecnico(t));
 }
 
-/** Indicios fuertes o marca de IA: baja el peso de la voz al vincular y avisa en la cola. */
-export function esIndicioFuerte(nivel: NivelAutenticidad | null | undefined): boolean {
-  return nivel === "indicios_fuertes" || nivel === "generado_ia_confirmado";
-}
-
 // ---------------------------------------------------------------------------
 // Privacidad de los metadatos
 // ---------------------------------------------------------------------------

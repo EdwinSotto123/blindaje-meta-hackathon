@@ -49,4 +49,3 @@ export const layout = {
 /** Límite de escalado de letra del sistema para que el layout no se rompa. */
 export const MAX_FONT_SCALE = 1.6;
 
-export type Resaltador = typeof colors.resaltador | typeof colors.resaltadorVerde | typeof colors.resaltadorRosa;

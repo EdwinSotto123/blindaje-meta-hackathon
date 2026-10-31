@@ -17,8 +17,5 @@ export const API_URL: string =
 
 export const MOCK: boolean = env.VITE_MOCK === "1" || env.MODE === "mock" || RAW_API_URL === "";
 
-/** Presupuesto por defecto si la API no lo informa (META_BUDGET_USD). */
-export const DEFAULT_BUDGET_USD = 150;
-
 /** Al 80% del presupuesto se bloquean las llamadas no esenciales (Muse Wonder, Muse Image). */
 export const NONESSENTIAL_BLOCK_PCT = 80;

@@ -100,7 +100,7 @@ quedaron fuera de la web.
 ## Fotos
 
 Tres fotos de Wikimedia Commons con licencia abierta y crédito visible (`docs/fotos.md`): mototaxis en el
-centro de Lima (portada), un cerro poblado (banda de "Dónde pasa", selector del portal y login de la
+centro de Lima (portada), un cerro poblado (selector del portal y login de la
 consola) y una bodega por dentro (fila de las víctimas). Radio de 20 px y `--sombra-2`. Nunca muestran
 víctimas ni negocios reconocibles, y ningún texto dice que ahí pasó un caso.
 

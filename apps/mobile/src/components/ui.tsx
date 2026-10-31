@@ -251,10 +251,6 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-export function Row({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <View style={[styles.row, style]}>{children}</View>;
-}
-
 export function Divider() {
   return <View style={{ height: 1, backgroundColor: colors.borde }} />;
 }
@@ -421,7 +417,6 @@ export const styles = StyleSheet.create({
     borderRadius: radius.boton,
     backgroundColor: colors.blanco,
   },
-  row: { flexDirection: "row", alignItems: "center", gap: 12 },
   segmented: { flexDirection: "row", gap: 8 },
   segment: {
     flex: 1,

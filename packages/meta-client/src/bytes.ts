@@ -8,14 +8,6 @@ export function toUint8Array(input: BinaryInput): Uint8Array {
   return input instanceof Uint8Array ? input : new Uint8Array(input);
 }
 
-/** Copia a un ArrayBuffer propio (cuerpo de fetch sin problemas de tipos ni de offsets). */
-export function toArrayBuffer(input: BinaryInput): ArrayBuffer {
-  if (input instanceof ArrayBuffer) return input;
-  const copy = new Uint8Array(input.byteLength);
-  copy.set(input);
-  return copy.buffer;
-}
-
 export function bytesToBase64(input: BinaryInput): string {
   const bytes = toUint8Array(input);
   let binary = "";

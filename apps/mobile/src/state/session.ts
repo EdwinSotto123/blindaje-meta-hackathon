@@ -34,10 +34,6 @@ export function unlock(mode: Exclude<SessionMode, "locked">): void {
   sessionStore.set({ mode });
 }
 
-export function isUnlocked(): boolean {
-  return sessionStore.get().mode !== "locked";
-}
-
 export function isDecoy(): boolean {
   return sessionStore.get().mode === "decoy";
 }
