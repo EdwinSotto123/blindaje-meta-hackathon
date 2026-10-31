@@ -446,3 +446,31 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
   crea la cuenta. En producción: hashes cambiados, sesiones cerradas y la cuenta de jurado creada.
   Verificado: las tres contraseñas viejas dan 401, el jurado lee todo y recibe 403 al aprobar un
   vínculo o correr al Vigía. Tests: API 178, consola 133.
+
+## 2026-10-31 10:40 – 12:00 · UX/UI: sin puntos finales, sin " · " y solo lectura visible
+
+- Pedido del equipo: quitar el " . " que se repetía en toda la interfaz y aplicar patrones de diseño.
+  Se instalaron localmente (fuera del repo) dos skills revisadas antes de usarlas, sin red ni
+  servicios de pago: `ui-ux-pro-max` (patrones de UX y de landing) y `ux-writing` (texto de
+  interfaz). Las dos coinciden en que un título es una frase nominal, sin punto final.
+- Landing: 16 títulos terminaban en punto ("Lo que medimos.") y algunos eran dos frases cortas
+  ("Miles de denuncias. Cada víctima, sola."). Ahora no llevan punto y se reescribieron los que
+  sonaban a eslogan ("Miles de denuncias que nadie conecta", "Del audio de WhatsApp al mapa del
+  distrito"). Los ejemplos y notas con " · " pasaron a frases ("2,000 soles por Yape en 48 horas");
+  a quién protege es una frase, no una fila de cuadraditos.
+- Landing más corta: 16,496 → 14,683 px en escritorio y 26,402 → 23,404 en el celular. Salió la
+  banda de foto del mapa (no informaba) y las tablas completas de resultados quedaron plegadas detrás
+  de "Ver cada métrica y el rastreo de filtraciones"; las cuatro cifras siguen a la vista.
+- En escritorio la cabecera queda fija bajo la franja de ayuda y marca la sección que se está leyendo.
+- El wordmark de las tres apps ya no termina en un punto de ladrillo: lleva un escudo. El favicon de
+  la landing seguía siendo el añil y amarillo del primer diseño; ahora las tres usan el mismo escudo.
+- Portal, consola y app: los metadatos unidos con " · " son frases ("Vínculo VIN-4, propuesto el
+  28 oct."; "9 confirmados, 11 por revisar y 10 descartados"); las etiquetas de vectores que arma la
+  API también ("V-1 (0:04–0:07)"). El titular del portal ya no termina en punto.
+- Consola con la cuenta de jurado: antes mostraba "Aprobar alerta", "Correr el Vigía" o "Crear
+  cuenta" activos y fallaban con 403 al tocarlos. Ahora cada grupo de acciones que cambia algo va en
+  un `fieldset` (`components/SoloLectura.tsx`) que, para esa cuenta, queda desactivado con el motivo
+  escrito debajo. La consulta del motor vectorial y "Verificar cadena" siguen activas (solo leen).
+- Capturas de `docs/screenshots` regeneradas con el logo y los textos nuevos.
+- Tests: API 178, consola 136 (3 nuevos de solo lectura), portal 50, app 164. Desplegados API,
+  consola, portal y landing; verificado en vivo con la cuenta de jurado.

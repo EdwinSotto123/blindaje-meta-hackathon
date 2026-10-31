@@ -184,7 +184,6 @@ export function Panorama({
             <mark className="level" data-nivel={risk.nivel_riesgo}>
               {NIVEL_LABEL[risk.nivel_riesgo]}
             </mark>
-            .
           </p>
           <div className="answer-detail">
             <ol className="scale" aria-label="Escala de riesgo">

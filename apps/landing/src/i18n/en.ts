@@ -634,7 +634,7 @@ export const en: Dict = {
     },
     how: {
       title: "From a WhatsApp voice note to the district map",
-      lead: "From a victim’s WhatsApp voice note to the district map and the network’s case file. Models propose; people decide.",
+      lead: "And from there, to the network’s case file for the authorities. At every step, models propose and people decide.",
       steps: [
         {
           title: "Collect",
