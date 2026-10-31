@@ -178,7 +178,7 @@ export function networkToElements(net: Pick<NetworkView, "nodes" | "edges"> & { 
       source: e.source,
       target: e.target,
       type: e.type,
-      label: e.type === "vinculo" ? [e.label, e.weight != null ? e.weight.toFixed(2) : null].filter(Boolean).join(" · ") : "",
+      label: e.type === "vinculo" ? [e.label, e.weight != null ? `(${e.weight.toFixed(2)})` : null].filter(Boolean).join(" ") : "",
       weight: e.weight ?? null,
     },
     classes: e.type,

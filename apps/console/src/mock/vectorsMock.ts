@@ -202,7 +202,7 @@ function buildData() {
     for (let i = 0; i < n; i++) {
       const s = from + i * 4;
       const fmt = (t: number) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
-      add("voz_segmento", code, `${v} · ${fmt(s)}–${fmt(s + 3)}`, ev, cl, 0.17);
+      add("voz_segmento", code, `${v} (${fmt(s)}–${fmt(s + 3)})`, ev, cl, 0.17);
     }
   };
   seg("A", "V-1", "EV-A1", "seg:ext1", 5, 4);
@@ -224,9 +224,9 @@ function buildData() {
   cluster("img:bala", { x: -0.6, y: 0.5, spread: 0.02 });
   cluster("img:nota", { x: 0.62, y: 0.22, spread: 0.02 });
   cluster("img:full", { x: 0.02, y: -0.62, spread: 0.02 });
-  add("imagen", "A", "IMG-1 · bala", "EV-A4", "img:bala");
-  add("imagen", "A", "IMG-2 · nota escrita a mano", "EV-A4", "img:nota");
-  add("imagen", "A", "IMG-3 · imagen completa", "EV-A4", "img:full");
+  add("imagen", "A", "IMG-1: bala", "EV-A4", "img:bala");
+  add("imagen", "A", "IMG-2: nota escrita a mano", "EV-A4", "img:nota");
+  add("imagen", "A", "IMG-3: imagen completa", "EV-A4", "img:full");
 
   return vecs;
 }

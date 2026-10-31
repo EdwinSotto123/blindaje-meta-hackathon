@@ -97,10 +97,10 @@ describe("elegir distrito y rubro", () => {
   });
 
   it("el título del documento dice el distrito y la sección", () => {
-    expect(documentTitle("/", "")).toBe("Elige tu distrito · Blindaje");
-    expect(documentTitle("/", "?distrito=ate")).toBe("Ate · Mi zona · Blindaje");
-    expect(documentTitle("/alertas", "?distrito=ate")).toBe("Ate · Alertas · Blindaje");
-    expect(documentTitle("/mapa", "?distrito=ate")).toBe("Mapa de Lima y el Callao · Blindaje");
+    expect(documentTitle("/", "")).toBe("Elige tu distrito | Blindaje");
+    expect(documentTitle("/", "?distrito=ate")).toBe("Ate, Mi zona | Blindaje");
+    expect(documentTitle("/alertas", "?distrito=ate")).toBe("Ate, Alertas | Blindaje");
+    expect(documentTitle("/mapa", "?distrito=ate")).toBe("Mapa de Lima y el Callao | Blindaje");
   });
 });
 

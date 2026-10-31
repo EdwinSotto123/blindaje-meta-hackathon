@@ -37,7 +37,7 @@ export function CuadernoHome() {
   const porCobrar = fiados.filter((f) => !f.pagado).reduce((n, f) => n + f.cents, 0);
 
   const borrarVenta = (v: Venta) =>
-    Alert.alert(c.cuaderno.borrarConfirm, `${v.descripcion} · ${soles(v.cents)}`, [
+    Alert.alert(c.cuaderno.borrarConfirm, `${v.descripcion} (${soles(v.cents)})`, [
       { text: c.cuaderno.cancelar, style: "cancel" },
       {
         text: c.cuaderno.borrar,

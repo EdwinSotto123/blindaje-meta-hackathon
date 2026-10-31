@@ -62,7 +62,7 @@ export const VectorPoint = z.object({
   case_id: z.string(),
   /** Código del caso ("A"). */
   caso: z.string(),
-  /** Qué representa: "V-1", "V-1 · 0:04–0:07", "Ficha", "IMG-2 · placa de vehículo". */
+  /** Qué representa: "V-1", "V-1 (0:04–0:07)", "Ficha", "IMG-2: placa de vehículo". */
   ref: z.string(),
   /** Etiqueta de la evidencia de origen ("EV-A1"); null para la ficha. */
   evidencia: z.string().nullable(),

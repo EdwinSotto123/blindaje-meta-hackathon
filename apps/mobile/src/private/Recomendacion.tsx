@@ -17,7 +17,7 @@ export function RecomendacionCard({ r }: { r: BusinessRecommendationView }) {
     <Card>
       <View style={{ gap: 2 }}>
         <T variant="h2" accessibilityRole="header">
-          {capitalizar(r.sector)} · {nombreDeZona(r)}
+          {capitalizar(r.sector)} en {nombreDeZona(r)}
         </T>
         {fecha ? <T variant="small">Revisada por nuestro equipo el {fecha}</T> : null}
         <T variant="small">{riesgoEnPalabras(r.nivel_riesgo)}</T>

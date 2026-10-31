@@ -5,6 +5,7 @@ import { MIN_PASSWORD, type OrgKind, type OrgView, type UserView } from "../api/
 import { useApi } from "../app/context";
 import { DistrictSelect } from "../components/DistrictSelect";
 import { Icon } from "../components/Icons";
+import { Acciones } from "../components/SoloLectura";
 import { CopyButton, ErrorBox, Loading, Notice, PageHead, useFlash } from "../components/ui";
 import { ROLE_LABEL, fmtDate, zoneName } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -178,9 +179,11 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
           </div>
         </div>
         <span>
-          <button type="submit" className="btn btn-primary" disabled={busy}>
-            {busy ? "Creando…" : "Crear canal"}
-          </button>
+          <Acciones compact>
+            <button type="submit" className="btn btn-primary" disabled={busy}>
+              {busy ? "Creando…" : "Crear canal"}
+            </button>
+          </Acciones>
         </span>
         {error ? <Notice kind="error-box">{error}</Notice> : null}
       </fieldset>
@@ -251,9 +254,11 @@ function NewUserForm({ onCreated }: { onCreated: (u: UserView) => void }) {
           </div>
         </div>
         <span>
-          <button type="submit" className="btn btn-primary" disabled={busy}>
-            {busy ? "Creando…" : "Crear cuenta"}
-          </button>
+          <Acciones compact>
+            <button type="submit" className="btn btn-primary" disabled={busy}>
+              {busy ? "Creando…" : "Crear cuenta"}
+            </button>
+          </Acciones>
         </span>
         {error ? <Notice kind="error-box">{error}</Notice> : null}
       </fieldset>
@@ -310,9 +315,11 @@ export function InvitesPanel({ channels }: { channels: OrgView[] }) {
           <label htmlFor="inv-count">Cantidad</label>
           <input id="inv-count" type="number" min={1} max={50} value={count} onChange={(e) => setCount(Number(e.target.value) || 1)} />
         </div>
-        <button type="submit" className="btn" disabled={busy || !org}>
-          {busy ? "Generando…" : "Generar códigos"}
-        </button>
+        <Acciones compact>
+          <button type="submit" className="btn" disabled={busy || !org}>
+            {busy ? "Generando…" : "Generar códigos"}
+          </button>
+        </Acciones>
       </div>
       {error ? <Notice kind="error-box">{error}</Notice> : null}
       {codes.length ? (

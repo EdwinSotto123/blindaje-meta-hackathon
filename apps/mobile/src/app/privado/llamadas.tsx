@@ -364,7 +364,7 @@ function LlamadaItem({
     <View style={{ borderWidth: 2, borderColor: colors.tinta, borderRadius: 12, padding: 12, gap: 8, backgroundColor: colors.blanco }} testID={`llamada-${llamada.id}`}>
       <View style={{ gap: 2 }}>
         <T variant="bodyBold">{numero}</T>
-        <T variant="small">{[shortDateTime(llamada.recibida), hecho].filter(Boolean).join(" · ")}</T>
+        <T variant="small">{[shortDateTime(llamada.recibida), hecho].filter(Boolean).join(". ")}</T>
       </View>
       {llamada.marcado ? <Chip label="Ya lo habías marcado" icon="alert" color={colors.resaltadorRosa} /> : null}
       {llamada.durante ? <Chip label="La anotaste durante la llamada" icon="clock" testID="anotada-durante" /> : null}

@@ -23,7 +23,7 @@ export function PromptGuardBadge({ result, compact = false }: { result: PromptGu
       title="Llama Prompt Guard 2: texto que parece dar órdenes a un modelo de IA"
     >
       <Icon name="alert" size={compact ? 12 : 13} />
-      Posible inyección de instrucciones · {score(result)}
+      Posible inyección de instrucciones ({score(result)})
     </span>
   );
 }

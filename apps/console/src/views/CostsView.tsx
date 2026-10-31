@@ -15,11 +15,14 @@ const UNIT_LABEL: Record<string, string> = {
   frames: "frames de video",
 };
 
+const LISTA = new Intl.ListFormat("es", { type: "conjunction" });
+
 export function fmtUnits(units: Record<string, number>): string {
-  return Object.entries(units)
-    .filter(([, v]) => v > 0)
-    .map(([k, v]) => (k === "audio_seconds" ? `${fmtInt(v / 60)} ${UNIT_LABEL[k]}` : `${fmtInt(v)} ${UNIT_LABEL[k] ?? k}`))
-    .join(" · ");
+  return LISTA.format(
+    Object.entries(units)
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => (k === "audio_seconds" ? `${fmtInt(v / 60)} ${UNIT_LABEL[k]}` : `${fmtInt(v)} ${UNIT_LABEL[k] ?? k}`)),
+  );
 }
 
 const STATUS_CHIP: Record<string, { label: string; cls: string }> = {
@@ -66,7 +69,7 @@ function CostsBody({ c }: { c: CostsResponse }) {
         <div className="budget-figure">
           <span className="v">{fmtUsd(c.total_usd)}</span>
           <span className="muted">
-            de {fmtUsd(c.budget_usd, 0)} · {fmtPct(c.pct, 1)} usado
+            de {fmtUsd(c.budget_usd, 0)} ({fmtPct(c.pct, 1)} usado)
           </span>
           {c.nonessential_blocked ? (
             <span className="chip chip-danger">

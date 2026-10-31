@@ -138,7 +138,7 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
           {shown && shownCell ? (
             <>
               <p>
-                <strong>{shown.name}</strong> <span className="muted">· {shown.area}</span>
+                <strong>{shown.name}</strong> <span className="muted">({shown.area})</span>
               </p>
               <p>
                 {shownCell.casos ? (
@@ -154,7 +154,7 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
                   "Sin datos: no tiene casos o no llega a 5 casos de 3 personas. No se distingue cuál de las dos."
                 )}
               </p>
-              {shownCell.modalidades.length ? <p className="muted small">{shownCell.modalidades.join(" · ")}</p> : null}
+              {shownCell.modalidades.length ? <p className="muted small">{shownCell.modalidades.join("; ")}</p> : null}
             </>
           ) : (
             <p className="muted">Pasa el puntero por un distrito para ver su detalle, o tócalo para abrirlo.</p>
@@ -177,8 +177,8 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
                     <span className="zdot" data-nivel={c.nivel} aria-hidden="true" />
                     <span className="zrank-name">{d.name}</span>
                     <span className="zrank-val">
-                      {NIVEL_MAPA[c.nivel]} · {c.casos}
-                      {c.tendencia === "sube" ? <span className="zrank-trend"> · sube</span> : null}
+                      {NIVEL_MAPA[c.nivel]}, {c.casos}
+                      {c.tendencia === "sube" ? <span className="zrank-trend">, sube</span> : null}
                     </span>
                   </Link>
                 </li>
@@ -227,7 +227,7 @@ export function ZoneTable({ map, selected, rubro }: { map: PublicZoneMap; select
                       {d.name}
                     </Link>
                     {mine ? <span className="ztable-mine"> (tu distrito)</span> : null}
-                    {c.modalidades.length ? <span className="ztable-mods">{c.modalidades.join(" · ")}</span> : null}
+                    {c.modalidades.length ? <span className="ztable-mods">{c.modalidades.join("; ")}</span> : null}
                   </th>
                   {c.casos ? (
                     <>

@@ -75,8 +75,8 @@ describe("panel de monitoreo", () => {
       ),
     );
     expect(t).toContain("GET /console/links/:id");
-    expect(t).toContain("3 · 21 ms");
-    expect(t).toContain("corre en gcp:us-east1, junto a la base");
+    expect(t).toContain("3 en 21 ms");
+    expect(t).toContain("Corre en gcp:us-east1, junto a la base");
   });
 
   it("lee Server-Timing, quita ids de las rutas y resume con la mediana", () => {

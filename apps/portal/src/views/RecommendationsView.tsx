@@ -84,7 +84,7 @@ export function RecommendationSheet({ rec, compact = false }: { rec: BusinessRec
         </h2>
         <p className="muted">
           Aprobado por el equipo de Blindaje el {fmtDate(rec.approved_at)}
-          {rec.nivel_riesgo !== "sin_datos" ? ` · Riesgo ${NIVEL_LABEL[rec.nivel_riesgo]}` : ""}
+          {rec.nivel_riesgo !== "sin_datos" ? `. Riesgo ${NIVEL_LABEL[rec.nivel_riesgo]}` : ""}
         </p>
       </header>
       <p className="body-l measure">{rec.resumen}</p>

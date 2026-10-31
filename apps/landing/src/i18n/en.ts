@@ -51,7 +51,7 @@ export const en: Dict = {
     ctaHow: "See how it works",
   },
   problem: {
-    title: "Thousands of reports. Each victim alone against a network.",
+    title: "Thousands of reports no one connects",
     lead:
       "Gangs work in series: the same voice calls several victims, they send the same photos, repeat the same script and the same account collects from different vendors. That information exists, but it is scattered across the phones of people who never meet.",
     sourcePrefix: "Source:",
@@ -155,7 +155,7 @@ export const en: Dict = {
     },
     community: {
       name: "Community and businesses",
-      title: "See where it happens and know what to do.",
+      title: "See where it happens and know what to do",
       lead:
         "With consent, each case is compared with the others. The team approves anonymous alerts by district and every business sees prevention advice for its area and trade.",
       points: [
@@ -217,7 +217,7 @@ export const en: Dict = {
       title: "Maps the network behind the cases",
       text: "Confirmed links form networks. The Cartographer analyzes each one: period, modus operandi, escalation and the evidence still missing.",
       shot: {
-        alt: "Graph of network R-001: three cases joined by voiceprint V-3 and Yape account ···488, with their numbers, signature phrases and image.",
+        alt: "Graph of network R-001: three cases joined by voiceprint V-3 and Yape account …488, with their numbers, signature phrases and image.",
         caption: "Network R-001: three cases, one voice, one account.",
         mobileCaption: "Detail of network R-001: voiceprint V-3 joins cases A and B even though their numbers differ.",
       },
@@ -237,7 +237,7 @@ export const en: Dict = {
         caption: "The validator catches an uncited claim before it reaches the portal.",
       },
     },
-    agentsTitle: "Six agents, and always a person who approves.",
+    agentsTitle: "Six agents, and always a person who approves",
     agentsLead:
       "They run on Muse Spark through the Responses API, with strict JSON schema output. The investigative ones use tool calling. Besides the four above:",
     approvesLabel: "Approved by",
@@ -276,7 +276,7 @@ export const en: Dict = {
     rules: "Every claim cites evidence: without a citation, the output is invalid. Never names of people. Web search is off.",
   },
   tech: {
-    title: "Built with Meta AI. Every model has a specific job.",
+    title: "Built with Meta AI, piece by piece",
     lead:
       "Evidence flows through a pipeline on Cloudflare and an ML container. Every piece is transcribed, segmented, summarized into a case record and turned into signals that can be compared.",
     pipelineLabel: "From file to decision",
@@ -356,7 +356,7 @@ export const en: Dict = {
     ],
   },
   commitments: {
-    title: "What Blindaje does not do.",
+    title: "What Blindaje does not do",
     lead: "These limits are part of the design, not a footnote. They protect victims and prevent serious mistakes.",
     items: [
       {
@@ -387,7 +387,7 @@ export const en: Dict = {
     legalLink: src.ley29733,
   },
   results: {
-    title: "What we measure, with fictitious data.",
+    title: "What we measure, with fictitious data",
     lead:
       "The evaluation uses threat scripts written for the project and voices from an open corpus of Peruvian Spanish (OpenSLR SLR73), compressed the way WhatsApp does. We publish the real results, whatever they are.",
     placeholder: "The evaluation report is not available yet.",
@@ -433,7 +433,7 @@ export const en: Dict = {
     },
   },
   pilot: {
-    title: "Request access for your institution.",
+    title: "Request access for your institution",
     lead:
       "Blindaje works with institutions that can act: police stations, prosecutors, municipalities and NGOs. Guilds, churches and neighborhood councils can help spread the app.",
     who: "Police and prosecutors receive each network’s file through a formal channel. Municipalities and NGOs use the map and alerts for their districts, which are already public.",
@@ -476,7 +476,7 @@ export const en: Dict = {
     noscript: "To send this form, turn on JavaScript in your browser.",
     submit: "Send request",
     sending: "Sending…",
-    successTitle: "We received your request.",
+    successTitle: "We received your request",
     success:
       "We will write to the contact you left to talk about your institution and the next steps, starting with the legal review. Thank you for joining.",
     fail: "We could not send your request. Check your connection and try again.",
@@ -487,7 +487,7 @@ export const en: Dict = {
       "We use this data only to answer your request. This form is not for reporting a crime: if you are in danger, call 105.",
   },
   helpSection: {
-    title: "If you are in danger right now, call 105.",
+    title: "If you are in danger right now, call 105",
     lines: [
       { number: "105", name: "Peruvian National Police, emergencies", cta: "Call 105" },
       { number: "1818", name: "Línea 1818, the Interior Ministry’s single reporting line", cta: "Call Línea 1818" },
@@ -503,13 +503,13 @@ export const en: Dict = {
     shots: "Screenshots show Blindaje’s console and public portal in simulated mode.",
   },
   notFound: {
-    title: "This page does not exist.",
+    title: "This page does not exist",
     text: "The link may be mistyped.",
     home: "Back to the home page",
   },
   lp: {
     hero: {
-      title: "No one should face extortion alone.",
+      title: "No one should face extortion alone",
       lead:
         "Blindaje brings together what victims keep (audio, photos, messages, numbers and accounts) to uncover the same gang behind different cases and show which districts it hits. A person reviews every link.",
       ctaMap: "See the district map",
@@ -526,42 +526,42 @@ export const en: Dict = {
       items: ["Muse Spark", "Muse Voice Transcribe", "SAM 3.1", "AudioSeal", "Video Seal", "DINOv2", "FAISS", "PyTorch", "React Native"],
     },
     signals: {
-      title: "The traces a gang leaves behind.",
+      title: "The traces a gang leaves behind",
       lead: "Swapping a SIM card is easy. Changing your voice, your photos, your script and your collection account is not. Blindaje compares every trace across all cases.",
       items: [
         {
           kind: "voz",
           name: "Voice",
           text: "The voiceprint of every voice note, segment by segment, even when they call from another number.",
-          example: "V-3 in cases A and B · 4 of 5 segments",
-          how: "Muse Voice Transcribe · ECAPA voiceprint · Muse Spark 1.2 checks for synthetic voice",
+          example: "V-3 in cases A and B, 4 of 5 segments",
+          how: "Muse Voice Transcribe, ECAPA voiceprint and Muse Spark 1.2, which checks for synthetic voice",
         },
         {
           kind: "imagen",
           name: "Photos and video",
           text: "Bullets, handwritten notes and license plates cropped from every photo or video. It finds the same image even after a forward or a crop.",
-          example: "IMG-1 · photo of the shop with a bullet",
-          how: "SAM 3.1 · DINOv2 · perceptual hash",
+          example: "IMG-1: photo of the shop with a bullet",
+          how: "SAM 3.1, DINOv2 and perceptual hash",
         },
         {
           kind: "frase",
           name: "Speech patterns",
           text: "The script, the phrases they repeat and who they claim to represent.",
-          example: "“talk to the boss” · “don’t call the police” · “Los X”",
-          how: "Muse Spark 1.3 builds the case sheet · text vectors",
+          example: "“talk to the boss”, “don’t call the police”, “Los X”",
+          how: "Muse Spark 1.3 builds the case sheet and text vectors",
         },
         {
           kind: "id",
           name: "Numbers, accounts and plates",
           text: "Phones, Yape or Plin accounts and plates, encrypted with HMAC: compared without exposing the data and with no search box.",
-          example: "Yape ···488 in cases B and C",
-          how: "Muse Spark 1.3 extracts them · HMAC",
+          example: "Yape …488 in cases B and C",
+          how: "Muse Spark 1.3 extracts them and HMAC encrypts them",
         },
         {
           kind: "cobro",
           name: "How they collect",
           text: "How much they ask for, the deadline and the payment channel. On its own it never links: it adds to the other signals.",
-          example: "2,000 soles · Yape · 48 hours",
+          example: "2,000 soles by Yape within 48 hours",
           how: "Case sheet by Muse Spark 1.3",
         },
         {
@@ -569,14 +569,14 @@ export const en: Dict = {
           name: "Area and dates",
           text: "Which district and when, never an address. The Lookout spots the same pattern in the same area and the Cartographer orders the network in time.",
           example: "5 cases from 3 victims in 14 days",
-          how: "Lookout and Cartographer · Muse Spark 1.3",
+          how: "Lookout and Cartographer, with Muse Spark 1.3",
         },
       ],
       note: "No signal decides alone: the engine combines them into a calibrated score and a person confirms every link.",
     },
     problem: { gapsTitle: "Why today is not enough" },
     benefits: {
-      title: "A concrete benefit for everyone.",
+      title: "What each one gets",
       lead:
         "Victims document without exposing themselves, the community knows where it happens and what to do, and the authorities get cases already linked.",
       illustration: "Illustration of the app. Outside, a working sales notebook; inside, the private notes. You choose the disguise.",
@@ -586,7 +586,7 @@ export const en: Dict = {
         {
           id: "victim",
           name: "Victims",
-          title: "Report directly, without anyone noticing.",
+          title: "Report directly, without anyone noticing",
           points: [
             "They install the app with no code and no guild. They choose the disguise.",
             "Secret entrance, decoy PIN, quick exit and zero notifications.",
@@ -597,7 +597,7 @@ export const en: Dict = {
         {
           id: "community",
           name: "Community and businesses",
-          title: "See where it happens and know what to do.",
+          title: "See where it happens and know what to do",
           points: [
             "A district map, public and with no account.",
             "Alerts and prevention advice for their area and trade, approved by a person.",
@@ -608,7 +608,7 @@ export const en: Dict = {
         {
           id: "authority",
           name: "Police and prosecutors",
-          title: "Get cases already linked, with the evidence cited.",
+          title: "Get cases already linked, with the evidence cited",
           points: [
             "A PDF case file with the timeline of the whole network.",
             "Every link explained, with its score and its signals.",
@@ -619,7 +619,7 @@ export const en: Dict = {
       ],
     },
     where: {
-      title: "Where it happens, by district.",
+      title: "Where it happens, district by district",
       lead: "Cases are grouped by district, never by street or home. The map is public and needs no account.",
       rules: [
         "Ranges, not exact counts: 5-9, 10-19, 20-49 or 50+.",
@@ -631,11 +631,9 @@ export const en: Dict = {
       label: "Schematic map of the 50 districts of Lima and Callao with fictitious data",
       legend: { sin_datos: "No data or few cases", bajo: "Low", medio: "Medium", alto: "High" },
       note: "Fictitious data. Each square is a district in its approximate position.",
-      photoAlt: "An avenue in Lima with mototaxis and cars; behind it, a hill covered with houses.",
-      photoCredit: "Illustrative photo: moctezuma nacario, CC BY 3.0. It does not mark a place where cases happened.",
     },
     how: {
-      title: "Collect, analyze, locate.",
+      title: "From a WhatsApp voice note to the district map",
       lead: "From a victim’s WhatsApp voice note to the district map and the network’s case file. Models propose; people decide.",
       steps: [
         {
@@ -659,18 +657,18 @@ export const en: Dict = {
           tag: "District map",
         },
       ],
-      demoTitle: "Try it: you review.",
+      demoTitle: "Try it: you decide if it is the same gang",
       demoLead: "This link just reached the team’s console. Confirm it or dismiss it.",
     },
     tour: {
-      title: "Everything Blindaje does.",
+      title: "Everything Blindaje does",
       lead: "Real screenshots of the console and the portal in simulated mode, with fictitious data.",
       tabsLabel: "Blindaje features",
       items: [
         {
           tab: "Link cases",
           title: "Links cases even when the number changes",
-          note: "Linker · Muse Spark 1.3",
+          note: "Linker, with Muse Spark 1.3",
           text: "It compares voiceprints, collection accounts, reused photos and scripts. The Linker explains each possible link citing the evidence: what supports it and what contradicts it. A team reviewer confirms or dismisses it.",
           shot: "consola-vinculo-misma-voz",
           alt: "Console screenshot: the Linker explains the link between Case A and Case B. The voice matches in 4 of 5 segments, even though the contact numbers and accounts differ.",
@@ -680,17 +678,17 @@ export const en: Dict = {
         {
           tab: "Map the network",
           title: "Maps the network behind the cases",
-          note: "Cartographer · Muse Spark 1.3 with tool calling",
+          note: "Cartographer, with Muse Spark 1.3 and tool calling",
           text: "Confirmed links form networks. The Cartographer analyzes each one: time span, modus operandi, escalation and the evidence still missing. It keeps facts apart from hypotheses.",
           shot: "consola-red-grafo",
-          alt: "Console screenshot: graph of network R-001, with three cases tied by voiceprint V-3 and Yape account ···488.",
+          alt: "Console screenshot: graph of network R-001, with three cases tied by voiceprint V-3 and Yape account …488.",
           caption: "Network R-001: three cases, one voice, one account. Fictitious data.",
           pen: "same account, another case",
         },
         {
           tab: "Areas",
           title: "Sees which districts it happens in",
-          note: "Area view · threshold of 5 cases from 3 victims",
+          note: "Area view, with a threshold of 5 cases from 3 victims",
           text: "The console groups cases by district, compares them with the previous period and shows which networks and patterns repeat in each one. A district with few cases shows no figures.",
           shot: "consola-zonas",
           alt: "Console screenshot: grid of the districts of Lima and Callao with cases per district. San Juan de Lurigancho is selected: 14 cases from 11 victims in 28 days, rising.",
@@ -699,7 +697,7 @@ export const en: Dict = {
         {
           tab: "Advise",
           title: "Advises businesses on prevention",
-          note: "Advisor · Muse Spark 1.3, strict JSON schema",
+          note: "Advisor, with Muse Spark 1.3 and a strict JSON schema",
           text: "The Advisor drafts advice by area and trade from aggregate data. A validator checks that every claim cites evidence, that no numbers or accounts appear and that it never advises paying or negotiating. A person on the team approves it before any business sees it.",
           shot: "consola-recomendaciones-asesor",
           alt: "Console screenshot: the Advisor’s draft for mototaxis in Ate. The validator found a claim without a citation and a citation that does not exist.",
@@ -708,7 +706,7 @@ export const en: Dict = {
         {
           tab: "Case file",
           title: "Builds the case file for prosecutors",
-          note: "Writer · PDF with SHA-256 fingerprints and chain of custody",
+          note: "Writer: PDF with SHA-256 fingerprints and chain of custody",
           text: "When an analyst approves a network, the Writer builds the PDF case file: a unified timeline, links explained with their evidence, a SHA-256 fingerprint for every file and the chain of custody. It is sent only through a formal channel.",
           shot: "consola-perfil-cartografo",
           alt: "Console screenshot: profile of network R-001, with cited facts on the left and hypotheses awaiting approval on the right.",
@@ -717,7 +715,7 @@ export const en: Dict = {
         {
           tab: "Authenticity",
           title: "Checks whether the evidence is real",
-          note: "AudioSeal · Video Seal · C2PA · Muse Spark 1.2 listens to the audio",
+          note: "AudioSeal, Video Seal, C2PA and Muse Spark 1.2, which listens to the audio",
           text: "A voice can be faked with AI. Blindaje looks for watermarks with AudioSeal and Video Seal, reads C2PA credentials and metadata, and Muse Spark listens and looks for tells. Evidence is marked as AI-made only with technical proof.",
           shot: "consola-autenticidad-evidencia",
           alt: "Console screenshot: audio EV-C2 shows strong signs of AI; no AudioSeal watermark, no C2PA, and a flat intonation without breathing.",
@@ -727,7 +725,7 @@ export const en: Dict = {
         {
           tab: "Leaks",
           title: "Traces who leaked a copy",
-          note: "AudioSeal: 16 bits per account · Video Seal: 256 bits per delivery",
+          note: "AudioSeal: 16 bits per account. Video Seal: 256 bits per delivery",
           text: "Meta’s watermarks, turned around: every audio and image that leaves the console carries the account that requested it, hidden inside. If a copy shows up outside, admins see which account it came from, even after a WhatsApp forward.",
           shot: "consola-rastreo-filtracion",
           alt: "Console screenshot: the Video Seal watermark of a photo forwarded on WhatsApp matches the copy received by the Demo Reviewer, with 98% of the bits.",
@@ -737,7 +735,7 @@ export const en: Dict = {
         {
           tab: "Public map",
           title: "Shows the map to the community",
-          note: "Public portal · no account",
+          note: "Public portal, no account",
           text: "Anyone picks their district and trade and sees the risk level, the alerts and the advice approved by the team. Ranges only, never exact counts or addresses.",
           shot: "portal-mapa",
           alt: "Public portal screenshot: map of the 50 districts of Lima and Callao with low, medium and high levels, and beside it the list of districts with data, from San Juan de Lurigancho (high, 20-49) to Villa El Salvador (low, 5-9). Ate is marked as your district.",
@@ -748,12 +746,12 @@ export const en: Dict = {
     tech: {
       apiLabel: "Meta Model API",
       openLabel: "Meta’s open models and libraries",
-      agentsTitle: "Six agents, and always a person who approves.",
+      agentsTitle: "Six agents, and always a person who approves",
       agentsLead:
         "They run on Muse Spark 1.3 through the Responses API, with strict JSON schema output. Every claim cites evidence: without a citation, the output is rejected.",
     },
     trust: {
-      title: "What Blindaje does not do.",
+      title: "What Blindaje does not do",
       lead: "These limits are part of the design, not a footnote. They protect victims and prevent serious mistakes.",
     },
     menu: { label: "Menu", faq: "FAQ" },
@@ -767,9 +765,10 @@ export const en: Dict = {
       leakId: "audio.whatsapp_opus_16k",
       leakLabel: "of voice notes forwarded on WhatsApp, traced to their account",
       target: "Target",
+      more: "See every metric and the leak tracing",
     },
     faq: {
-      title: "Frequently asked questions.",
+      title: "Frequently asked questions",
       lead: "What institutions and the people who spread the app usually ask.",
       items: [
         {
@@ -804,24 +803,24 @@ export const en: Dict = {
     },
   },
   page: {
-    problemTitle: ["Thousands of reports.", "Each victim, alone."],
+    problemTitle: ["Thousands of reports", "no one connects"],
     review: {
-      title: "A person confirms every link.",
+      title: "A person confirms every link",
       states: ["Proposed", "In review", "Confirmed"],
-      caseA: "Case A · shopkeeper",
-      caseB: "Case B · mototaxi driver",
+      caseA: "Case A, shopkeeper",
+      caseB: "Case B, mototaxi driver",
       tie: "Same voice",
       score: "0.91",
       detail: "The voice matches in 4 of 5 segments, even though the numbers and accounts differ.",
       proposedBy: "Proposed by the Linker, with verified citations",
       confirm: "Confirm link",
       discard: "Dismiss",
-      confirmed: "Confirmed by the team reviewer · Oct 28, 10:42",
+      confirmed: "Confirmed by the team reviewer on Oct 28, 10:42",
       undo: "Undo",
       discarded: "Dismissed by the reviewer. Not used for linking.",
     },
     tech: {
-      title: ["Built with Meta AI,", "piece by piece."],
+      title: ["Built with Meta AI,", "piece by piece"],
       lead: "Every voice note, message, photo or video goes through Meta models, becomes signals that can be compared and reaches agents that propose. A person approves.",
       modelsLabel: "Models",
       groups: [
@@ -862,9 +861,9 @@ export const en: Dict = {
         { name: "Authenticity", what: "Looks for signs of AI", approves: "The reviewer" },
       ],
     },
-    results: { title: "What we measured." },
+    results: { title: "What we measured" },
     pilot: {
-      title: "Request access for your institution.",
+      title: "Request access for your institution",
       steps: [
         { lead: "First,", text: "we talk with your institution." },
         { lead: "Then,", text: "we do the legal review before handling real data." },
@@ -880,7 +879,6 @@ export const en: Dict = {
       photosLabel: "Photos from Wikimedia Commons",
       photos: [
         { what: "mototaxis in central Lima", author: "Paulo Guereta", license: "CC BY 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima_-_Per%C3%BA_(20529612568).jpg" },
-        { what: "a hillside neighborhood in Lima", author: "moctezuma nacario", license: "CC BY 3.0", href: "https://commons.wikimedia.org/wiki/File:26_De_Mayo,_Distrito_de_Lima,_Peru_-_panoramio.jpg" },
         { what: "a corner shop in Lima", author: "cemeiakano", license: "CC BY-SA 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima2011_-_bodega.jpg" },
       ],
       photosNote: "Cropped and resized for the web. They are illustrative: they show no victims and no places where cases happened",

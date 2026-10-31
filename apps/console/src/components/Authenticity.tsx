@@ -68,7 +68,7 @@ export function AuthenticityPanel({ result, tipo }: { result: ResultadoAutentici
                 {result.forense.senales.map((s, i) => (
                   <li key={i}>
                     <span className="chip chip-grid chip-auth-sm">
-                      {FUENTE_LABEL[s.fuente] ?? s.fuente} · {s.peso === "fuerte" ? "fuerte" : "débil"}
+                      {FUENTE_LABEL[s.fuente] ?? s.fuente}, {s.peso === "fuerte" ? "fuerte" : "débil"}
                     </span>{" "}
                     {s.descripcion}
                   </li>
@@ -126,7 +126,7 @@ function TechDetail({ result }: { result: ResultadoAutenticidad }) {
       {fields.length ? (
         <>
           <dt>Metadatos</dt>
-          <dd>{fields.map(([k, v]) => `${k}: ${v}`).join(" · ")}</dd>
+          <dd>{fields.map(([k, v]) => `${k}: ${v}`).join("; ")}</dd>
         </>
       ) : null}
       <dt>Modelo</dt>

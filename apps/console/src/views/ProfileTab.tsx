@@ -5,6 +5,7 @@ import type { CartografoModel, HypothesisView, NetworkView, ProfileView } from "
 import { useApi, useUser } from "../app/context";
 import { CiteList, CitedText } from "../components/Citations";
 import { Icon } from "../components/Icons";
+import { Acciones } from "../components/SoloLectura";
 import { Confidence, Empty, ErrorBox, InlineConfirm, Loading, Modal, Notice, StatusBadge, statusLabel, useFlash } from "../components/ui";
 import { NONESSENTIAL_BLOCK_PCT } from "../config";
 import { SECTOR_LABEL, fmtDateTime, fmtPct, fmtPeriod, fmtUsd } from "../lib/format";
@@ -79,7 +80,7 @@ export function ProfileTab({ net, onChanged }: { net: NetworkView; onChanged: ()
           <select id="perfil-version" value={current?.id ?? ""} onChange={(e) => setPickedId(e.target.value)}>
             {list.map((p) => (
               <option key={p.id} value={p.id}>
-                {fmtDateTime(p.created_at)} · {p.model} · {statusLabel(p.status)}
+                {p.model} del {fmtDateTime(p.created_at)} ({statusLabel(p.status)})
               </option>
             ))}
           </select>
@@ -131,10 +132,12 @@ function CartografoRunner({ net, onDone, collapsed }: { net: NetworkView; onDone
           <Icon name="map" /> Cartógrafo
         </h2>
         <span className="small muted">Ya hay un perfil de esta red. Puedes pedir uno nuevo si cambió la red.</span>
-        <button type="button" className="btn btn-sm" onClick={() => setExpanded(true)}>
-          <Icon name="play" size={14} />
-          Ejecutar de nuevo
-        </button>
+        <Acciones compact>
+          <button type="button" className="btn btn-sm" onClick={() => setExpanded(true)}>
+            <Icon name="play" size={14} />
+            Ejecutar de nuevo
+          </button>
+        </Acciones>
         {error ? <Notice kind="error-box">{error}</Notice> : null}
       </section>
     );
@@ -173,7 +176,7 @@ function CartografoRunner({ net, onDone, collapsed }: { net: NetworkView; onDone
                 />
                 <span className="stack-sm" style={{ gap: 0 }}>
                   <span>
-                    <span className="strong">{m.name}</span> <code>{m.id}</code> · costo estimado <strong>{fmtUsd(m.estimate)}</strong>
+                    <span className="strong">{m.name}</span> <code>{m.id}</code>, costo estimado <strong>{fmtUsd(m.estimate)}</strong>
                     {!m.essential ? <span className="chip chip-outline" style={{ marginLeft: 6 }}>No esencial</span> : null}
                   </span>
                   <span className="small muted">{disabled ? `Bloqueado: el gasto superó el ${NONESSENTIAL_BLOCK_PCT}% del presupuesto.` : m.note}</span>
@@ -183,13 +186,15 @@ function CartografoRunner({ net, onDone, collapsed }: { net: NetworkView; onDone
           })}
         </div>
       </fieldset>
-      <div className="row" style={{ marginTop: 12 }}>
-        <button type="button" className="btn btn-primary" disabled={running} onClick={() => setConfirming(true)}>
-          <Icon name="play" size={15} />
-          Ejecutar Cartógrafo
-        </button>
-        {running ? <Loading label={`El Cartógrafo está analizando ${net.label} con ${chosen.name}…`} /> : null}
-      </div>
+      <Acciones>
+        <div className="row" style={{ marginTop: 12 }}>
+          <button type="button" className="btn btn-primary" disabled={running} onClick={() => setConfirming(true)}>
+            <Icon name="play" size={15} />
+            Ejecutar Cartógrafo
+          </button>
+          {running ? <Loading label={`El Cartógrafo está analizando ${net.label} con ${chosen.name}…`} /> : null}
+        </div>
+      </Acciones>
       {error ? (
         <div style={{ marginTop: 10 }}>
           <Notice kind="error-box">{error}</Notice>
@@ -246,7 +251,7 @@ function ProfileBody({
             Perfil de {p.red} <StatusBadge status={profile.status} />
           </h2>
           <span className="small muted">
-            {profile.model} · {fmtDateTime(profile.created_at)}
+            Generado con {profile.model} el {fmtDateTime(profile.created_at)}
           </span>
         </div>
         {check.ok ? (
@@ -423,9 +428,8 @@ function HypothesisCard({
   return (
     <div className={`hypo ${h.status}`}>
       <div className="row" style={{ justifyContent: "space-between" }}>
-        <span className="row" style={{ gap: 6 }}>
+        <span className="row" style={{ gap: 10 }}>
           <span className="strong">Hipótesis</span>
-          <span aria-hidden="true">·</span>
           <Confidence value={h.confianza} />
         </span>
         <StatusBadge status={h.status} />
@@ -459,14 +463,14 @@ function HypothesisCard({
           onCancel={() => setAsk(null)}
         />
       ) : h.status === "borrador" && decidable ? (
-        <div className="row">
+        <Acciones className="row" compact>
           <button type="button" className="btn btn-sm btn-primary" onClick={() => setAsk("aprobar")}>
             <Icon name="check" size={14} /> Aprobar
           </button>
           <button type="button" className="btn btn-sm btn-danger" onClick={() => setAsk("descartar")}>
             <Icon name="x" size={14} /> Descartar
           </button>
-        </div>
+        </Acciones>
       ) : h.reviewed_by ? (
         <span className="small muted">Revisada por {h.reviewed_by}</span>
       ) : null}

@@ -217,9 +217,9 @@ function Services({ m }: { m: ConsoleMonitor }) {
         </table>
       </div>
       <p className="small muted mon-foot">
-        API {m.api.version} · {m.api.entorno}
-        {m.api.colo ? ` · entró por ${m.api.colo}` : ""}
-        {m.api.ubicacion ? ` · corre en ${m.api.ubicacion}, junto a la base` : ""} · esta lectura tardó {fmtMs(m.api.ms)} en el servidor.
+        API {m.api.version} ({m.api.entorno}).
+        {m.api.colo ? ` Entró por ${m.api.colo}.` : ""}
+        {m.api.ubicacion ? ` Corre en ${m.api.ubicacion}, junto a la base.` : ""} Esta lectura tardó {fmtMs(m.api.ms)} en el servidor.
       </p>
     </section>
   );
@@ -293,7 +293,7 @@ function SpeedRow({ e }: { e: RequestRecord }) {
       </th>
       <td className="num">{fmtMs(e.ms)}</td>
       <td className="num">{fmtMs(e.servidor_ms)}</td>
-      <td className="num">{e.db_n == null ? "—" : `${fmtInt(e.db_n)} · ${fmtMs(e.db_ms)}`}</td>
+      <td className="num">{e.db_n == null ? "—" : `${fmtInt(e.db_n)} en ${fmtMs(e.db_ms)}`}</td>
     </tr>
   );
 }
@@ -313,7 +313,7 @@ function Cases({ m }: { m: ConsoleMonitor }) {
         <dd>{fmtInt(c.total)}</dd>
         <dt>Nuevos</dt>
         <dd>
-          {fmtInt(c.nuevos_24h)} en 24 h · {fmtInt(c.nuevos_7d)} en 7 días
+          {fmtInt(c.nuevos_24h)} en 24 h y {fmtInt(c.nuevos_7d)} en 7 días
         </dd>
         <dt>En los índices</dt>
         <dd>{fmtInt(c.indexados)} con consentimiento comunitario</dd>
@@ -323,7 +323,7 @@ function Cases({ m }: { m: ConsoleMonitor }) {
         <dd className={c.con_error ? "mon-bad" : ""}>{fmtInt(c.con_error)}</dd>
         <dt>Vínculos</dt>
         <dd>
-          {fmtInt(v.confirmado)} confirmados · {fmtInt(v.probable + v.por_revisar)} por revisar · {fmtInt(v.descartado)} descartados
+          {fmtInt(v.confirmado)} confirmados, {fmtInt(v.probable + v.por_revisar)} por revisar y {fmtInt(v.descartado)} descartados
         </dd>
         <dt>Redes</dt>
         <dd>{fmtInt(m.redes)}</dd>
@@ -346,7 +346,7 @@ function Budget({ m }: { m: ConsoleMonitor }) {
       </div>
       <Meter value={p.pct} label={`Presupuesto usado: ${fmtPct(p.pct * 100, 1)}`} ticks={[0.8]} />
       <p className="small mon-budget">
-        <span className="strong">{fmtUsd(p.gastado_usd)}</span> de {fmtUsd(p.presupuesto_usd, 0)} ({fmtPct(p.pct * 100, 1)}) · hoy {fmtUsd(p.hoy_usd)}
+        <span className="strong">{fmtUsd(p.gastado_usd)}</span> de {fmtUsd(p.presupuesto_usd, 0)} ({fmtPct(p.pct * 100, 1)}), hoy {fmtUsd(p.hoy_usd)}
       </p>
     </section>
   );
@@ -371,7 +371,7 @@ function Agents({ m }: { m: ConsoleMonitor }) {
               <span className="small muted">{a.ultima ? `última ${fmtStamp(a.ultima)}` : "sin ejecuciones"}</span>
               <span className="small">
                 {fmtInt(a.ok_7d)} bien
-                {a.error_7d ? <span className="mon-bad"> · {fmtInt(a.error_7d)} con error</span> : null}
+                {a.error_7d ? <span className="mon-bad">, {fmtInt(a.error_7d)} con error</span> : null}
               </span>
             </li>
           ))}

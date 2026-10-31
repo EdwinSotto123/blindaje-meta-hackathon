@@ -160,7 +160,7 @@ export function ZonesView() {
         </div>
         {zones.data ? (
           <span className="small muted">
-            Últimos {zones.data.periodo_dias} días frente a los {zones.data.periodo_dias} anteriores · actualizado {fmtDateTime(zones.data.actualizado)}
+            Últimos {zones.data.periodo_dias} días frente a los {zones.data.periodo_dias} anteriores. Actualizado el {fmtDateTime(zones.data.actualizado)}
           </span>
         ) : null}
         {api.mode === "mock" ? <span className="chip chip-pink">Cifras ficticias</span> : null}

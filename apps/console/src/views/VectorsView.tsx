@@ -17,6 +17,7 @@ import { errorMessage } from "../api/client";
 import { vectorsFor, type VectorsApi } from "../api/vectors";
 import { useApi, useUser } from "../app/context";
 import { Icon } from "../components/Icons";
+import { Acciones } from "../components/SoloLectura";
 import { Empty, ErrorBox, Loading, Notice, PageHead, StatusBadge } from "../components/ui";
 import { fmtDateTime, fmtScore } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -139,15 +140,15 @@ export function StoreStrip({ store, vectors, onSynced }: { store: VectorStoreSta
             {store.base ? (
               <span className="vx-store-base">
                 {" "}
-                · base <code>{store.base}</code>
+                (base <code>{store.base}</code>)
               </span>
             ) : null}
           </h2>
           <span className="vx-conn-state" data-ok={store.conectado}>
             <i aria-hidden="true" />
             {none ? "Sin búsqueda por vectores: solo identificadores y hash de imagen" : store.conectado ? "Conectada" : "No responde"}
-            {store.conectado && store.latencia_ms !== null ? ` · respondió en ${fmtMs(store.latencia_ms)}` : ""}
-            {!none ? ` · ${indexKind(store.proveedor)}` : ""}
+            {store.conectado && store.latencia_ms !== null ? `, respondió en ${fmtMs(store.latencia_ms)}` : ""}
+            {!none ? `. ${indexKind(store.proveedor)}` : ""}
           </span>
         </div>
       </div>
@@ -164,10 +165,12 @@ export function StoreStrip({ store, vectors, onSynced }: { store: VectorStoreSta
           Última sincronización: {store.sincronizado_en ? `${fmtDateTime(store.sincronizado_en)} (hora de Lima)` : "nunca"}
         </span>
         {vectors && !none ? (
-          <button type="button" className="btn btn-sm" disabled={busy} onClick={() => void sync()}>
-            <Icon name="refresh" size={15} />
-            {busy ? "Sincronizando…" : "Sincronizar desde D1"}
-          </button>
+          <Acciones compact>
+            <button type="button" className="btn btn-sm" disabled={busy} onClick={() => void sync()}>
+              <Icon name="refresh" size={15} />
+              {busy ? "Sincronizando…" : "Sincronizar desde D1"}
+            </button>
+          </Acciones>
         ) : null}
       </div>
       <div aria-live="polite" className="vx-store-result">
@@ -601,14 +604,14 @@ function LaneVectors({ overview, c, indices }: { overview: VectorOverview; c: Ve
           <VectorStrip point={p} delay={i} />
           <span className="vx-strip-label small">
             <strong>{p.ref}</strong>
-            {p.evidencia ? <span className="muted"> · {p.evidencia}</span> : null}
+            {p.evidencia ? <span className="muted"> ({p.evidencia})</span> : null}
           </span>
         </div>
       ))}
       <span className="small muted">
         {dim ? `32 de los ${dim} números de cada vector` : null}
-        {pts.length > shown.length ? ` · y ${pts.length - shown.length} más` : ""}
-        {segs.length ? ` · más ${segs.length} ${segs.length === 1 ? "segmento" : "segmentos"} de 3 s, uno por vector` : ""}
+        {pts.length > shown.length ? `, y ${pts.length - shown.length} más` : ""}
+        {segs.length ? `. Además, ${segs.length} ${segs.length === 1 ? "segmento" : "segmentos"} de 3 s, uno por vector` : ""}
       </span>
     </div>
   );
@@ -708,7 +711,7 @@ function MapCard({
     bestPerCase(neighbors.filter((n) => n.pasa))
       .map((n) => {
         const p = byId.get(n.id);
-        return p ? { id: n.id, text: `${n.caso} · ${fmtScore(n.score)}`, ...toSvg(p) } : null;
+        return p ? { id: n.id, text: `${n.caso} (${fmtScore(n.score)})`, ...toSvg(p) } : null;
       })
       .filter((x): x is { id: number; text: string; cx: number; cy: number } => Boolean(x)),
     3,
@@ -721,7 +724,7 @@ function MapCard({
       ? `Consultando ${PROVIDER_LABEL[overview.almacen.proveedor]}…`
       : showSearch
         ? qs.length
-          ? `${qs.length} ${qs.length === 1 ? "consulta" : "consultas"} · ${latencyText(qs)} · ${neighbors.filter((n) => n.pasa).length} ${neighbors.filter((n) => n.pasa).length === 1 ? "vecino cuenta" : "vecinos cuentan"}`
+          ? `${qs.length} ${qs.length === 1 ? "consulta" : "consultas"}, ${latencyText(qs)}. ${neighbors.filter((n) => n.pasa).length} ${neighbors.filter((n) => n.pasa).length === 1 ? "vecino cuenta" : "vecinos cuentan"}`
           : "Sin consultas"
         : land !== "later"
           ? `${mine.length} ${mine.length === 1 ? "vector guardado" : "vectores guardados"}`
@@ -733,7 +736,7 @@ function MapCard({
       <figcaption id={`vx-map-${indice}`} className="vx-map-head">
         <code>{title}</code>
         <span className="small muted">
-          {INDEX_META[indice].label} · {col?.dim ?? "?"} números
+          {INDEX_META[indice].label}, {col?.dim ?? "?"} números
         </span>
       </figcaption>
       <div className="vx-map-box" onMouseLeave={() => setHover(null)}>
@@ -855,7 +858,7 @@ function MapTooltip({ hover, c }: { hover: Hover; c: VectorCaseSummary }) {
       </strong>
       <span>
         {hover.point.ref}
-        {hover.point.evidencia ? ` · ${hover.point.evidencia}` : ""}
+        {hover.point.evidencia ? ` (${hover.point.evidencia})` : ""}
       </span>
       {hover.score !== null ? <span>Coseno con el caso {c.caso}: {fmtScore(hover.score)}</span> : null}
       <span className="muted">Vector #{hover.point.id}</span>
@@ -908,7 +911,7 @@ function Candidates({
       <h3>Señales y puntaje</h3>
       {trace ? (
         <span className="small muted">
-          Revisión desde {fmtScore(trace.umbrales.revisar)} · probable desde {fmtScore(trace.umbrales.probable)}
+          Revisión desde {fmtScore(trace.umbrales.revisar)}, probable desde {fmtScore(trace.umbrales.probable)}
         </span>
       ) : null}
     </div>
@@ -1022,7 +1025,7 @@ function TraceTable({ trace }: { trace: VectorTrace }) {
     <details className="vx-table">
       <summary>Ver las {trace.consultas.length} consultas como tabla</summary>
       <p className="small muted">
-        {PROVIDER_LABEL[trace.proveedor]} · {fmtMs(trace.total_ms)} en total, contando el cálculo de las señales.
+        {PROVIDER_LABEL[trace.proveedor]}: {fmtMs(trace.total_ms)} en total, contando el cálculo de las señales.
       </p>
       <div className="table-wrap">
         <table className="table">
@@ -1041,7 +1044,7 @@ function TraceTable({ trace }: { trace: VectorTrace }) {
               <tr key={`${q.consulta}-${n?.id ?? "none"}-${i}`}>
                 <td>{first ? <code>{INDEX_META[q.indice].coleccion}</code> : null}</td>
                 <td>{first ? q.ref : null}</td>
-                <td>{n ? `Caso ${n.caso} · ${n.ref}` : <span className="muted">Sin vecinos de otros casos</span>}</td>
+                <td>{n ? `Caso ${n.caso}, ${n.ref}` : <span className="muted">Sin vecinos de otros casos</span>}</td>
                 <td className="num">{n ? fmtScore(n.score) : "—"}</td>
                 <td>{n ? (n.pasa ? "Sí" : `No (umbral ${fmtScore(q.umbral ?? 0)})`) : "—"}</td>
                 <td className="num">{first ? fmtMs(q.latencia_ms) : null}</td>
@@ -1093,7 +1096,7 @@ export function CollectionsTable({ overview }: { overview: VectorOverview }) {
                   <td>{INDEX_META[i].label}</td>
                   <td>
                     <span className="strong">{m.nombre}</span>
-                    {m.previo ? <span className="small muted"> · {m.previo}</span> : null}
+                    {m.previo ? <span className="small muted"> ({m.previo})</span> : null}
                   </td>
                   <td className="num">{k.dim}</td>
                   <td className="num">{k.en_d1}</td>
@@ -1110,7 +1113,7 @@ export function CollectionsTable({ overview }: { overview: VectorOverview }) {
               <td>Identificadores (números y cuentas)</td>
               <td>
                 <span className="strong">HMAC-SHA256</span>
-                <span className="small muted"> · comparación exacta en D1</span>
+                <span className="small muted"> (comparación exacta en D1)</span>
               </td>
               <td className="num">sin vector</td>
               <td className="num">{ids}</td>
@@ -1137,7 +1140,7 @@ function BaseCount({ k }: { k: VectorCollection }): ReactNode {
   const diff = k.en_d1 - k.en_base;
   return (
     <span className="vx-mismatch">
-      {k.en_base} · {diff > 0 ? `faltan ${diff}` : `sobran ${-diff}`}, sincroniza
+      {k.en_base}: {diff > 0 ? `faltan ${diff}` : `sobran ${-diff}`}, sincroniza
     </span>
   );
 }

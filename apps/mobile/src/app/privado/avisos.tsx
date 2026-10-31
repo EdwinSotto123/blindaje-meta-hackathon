@@ -63,7 +63,7 @@ export default function Avisos() {
         alerts.map((a) => (
           <Card key={a.id}>
             <T variant="small">
-              {nombreDeZona(a)} · {shortDate(a.approved_at)}
+              {nombreDeZona(a)}, {shortDate(a.approved_at)}
             </T>
             <T variant="h2" style={{ fontSize: 18, lineHeight: 24 }}>
               {a.titulo}

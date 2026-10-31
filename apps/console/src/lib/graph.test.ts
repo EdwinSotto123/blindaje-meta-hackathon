@@ -35,7 +35,7 @@ describe("networkToElements", () => {
 
   it("las aristas de vínculo llevan etiqueta y puntaje; las de señal no", () => {
     const vinc = edgesOf(els).filter((e) => e.data.type === "vinculo");
-    expect(vinc.map((e) => e.data.label)).toEqual(["VIN-1 · 0.91", "VIN-2 · 0.95"]);
+    expect(vinc.map((e) => e.data.label)).toEqual(["VIN-1 (0.91)", "VIN-2 (0.95)"]);
     for (const e of edgesOf(els).filter((x) => x.data.type === "senal")) expect(e.data.label).toBe("");
   });
 

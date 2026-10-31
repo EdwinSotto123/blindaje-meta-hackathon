@@ -46,7 +46,7 @@ export function ListaHome() {
       <Pressable onPressIn={hold.onPressIn} onPressOut={hold.onPressOut} accessibilityRole="header" accessibilityLabel={c.lista.titleHint} testID="titulo">
         <T variant="title">{c.lista.title}</T>
         <T variant="small">
-          {c.lista.subtitulo} · {longDate()}
+          {c.lista.subtitulo}, {longDate()}
         </T>
       </Pressable>
 

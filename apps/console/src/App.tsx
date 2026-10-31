@@ -46,7 +46,7 @@ function useRouteAnnouncements() {
   const { pathname } = useLocation();
   useEffect(() => {
     const t = TITLES.find(([re]) => re.test(pathname))?.[1];
-    document.title = t ? `${t} · Blindaje` : "Blindaje · Consola";
+    document.title = t ? `${t} | Blindaje` : "Consola | Blindaje";
     document.getElementById("contenido")?.focus({ preventScroll: true });
   }, [pathname]);
 }

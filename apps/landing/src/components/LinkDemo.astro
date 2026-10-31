@@ -14,7 +14,7 @@ const { dict: d } = Astro.props;
 const r = d.page.review;
 ---
 
-<article class="link" data-ui data-link="live" data-state="review" aria-label={`${r.caseA} · ${r.caseB}`}>
+<article class="link" data-ui data-link="live" data-state="review" aria-label={`${r.caseA}; ${r.caseB}`}>
   <header class="link__head">
     <span class="link__case">{r.caseA}</span>
     <svg class="link__tie" viewBox="0 0 48 18" aria-hidden="true" focusable="false">

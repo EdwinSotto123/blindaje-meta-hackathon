@@ -110,7 +110,7 @@ function ZoneChip() {
     <p className="zone-chip">
       <span className="zone-chip-text">
         <span className="strong">{distrito.name}</span>
-        <span className="muted"> · {rubro ? RUBRO_LABEL[rubro] : "Todos los rubros"}</span>
+        <span className="muted">, {(rubro ? RUBRO_LABEL[rubro] : "Todos los rubros").toLowerCase()}</span>
       </span>
       <Link className="zone-chip-change" to={{ pathname: "/elegir", search }}>
         Cambiar<span className="sr-only"> de distrito o de rubro</span>

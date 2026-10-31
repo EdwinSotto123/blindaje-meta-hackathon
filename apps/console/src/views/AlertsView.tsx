@@ -6,6 +6,7 @@ import type { AlertStatus, AlertView } from "../api/types";
 import { useApi, useUser } from "../app/context";
 import { CiteList, CitationProvider } from "../components/Citations";
 import { Icon } from "../components/Icons";
+import { Acciones } from "../components/SoloLectura";
 import { Empty, ErrorBox, InlineConfirm, Loading, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
 import type { CitationIndex } from "../lib/citations";
 import { fmtDateTime, zoneName } from "../lib/format";
@@ -86,10 +87,12 @@ export function AlertsView() {
         title="Alertas comunitarias"
         actions={
           can(user.role, "vigia.run") ? (
-            <button type="button" className="btn btn-primary" disabled={running} onClick={() => void runVigia()}>
-              <Icon name="eye" size={16} />
-              {running ? "El Vigía está revisando…" : "Correr el Vigía ahora"}
-            </button>
+            <Acciones compact>
+              <button type="button" className="btn btn-primary" disabled={running} onClick={() => void runVigia()}>
+                <Icon name="eye" size={16} />
+                {running ? "El Vigía está revisando…" : "Correr el Vigía ahora"}
+              </button>
+            </Acciones>
           ) : null
         }
       >
@@ -176,8 +179,8 @@ function AlertCard({
             {zoneName(zona)} <StatusBadge status={alert.status} />
           </h2>
           <span className="small muted">
-            {district ? `${district.area} · ` : ""}creada {fmtDateTime(alert.created_at)}
-            {alert.approved_at ? ` · ${alert.status === "aprobada" ? "aprobada" : "revisada"} por ${alert.approved_by ?? "—"} el ${fmtDateTime(alert.approved_at)}` : ""}
+            {district ? `${district.area}. ` : ""}Creada el {fmtDateTime(alert.created_at)}
+            {alert.approved_at ? `. ${alert.status === "aprobada" ? "Aprobada" : "Revisada"} por ${alert.approved_by ?? "—"} el ${fmtDateTime(alert.approved_at)}` : ""}
           </span>
         </div>
         <div className="grid-2">
@@ -230,7 +233,7 @@ function AlertCard({
                 onCancel={() => setAsk(null)}
               />
             ) : editable ? (
-              <div className="row">
+              <Acciones className="row">
                 <button type="button" className="btn btn-primary" disabled={!titulo.trim() || !cuerpo.trim()} onClick={() => setAsk("aprobar")}>
                   <Icon name="check" size={16} />
                   {edited ? "Aprobar con cambios" : "Aprobar alerta"}
@@ -239,7 +242,7 @@ function AlertCard({
                   <Icon name="x" size={16} />
                   Rechazar
                 </button>
-              </div>
+              </Acciones>
             ) : null}
             {error ? <Notice kind="error-box">{error}</Notice> : null}
           </div>

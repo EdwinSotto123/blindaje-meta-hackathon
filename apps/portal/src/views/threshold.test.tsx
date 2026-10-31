@@ -190,7 +190,7 @@ describe("alertas", () => {
   it("muestran solo las del distrito, aprobadas por el equipo de Blindaje", () => {
     const t = text(render(<AlertList alerts={publicAlerts("ate")} district={ate} now={now} />));
     expect(t).toContain("Ate: audios de “Los X” que piden pagos por Yape");
-    expect(t).toContain("Aprobado por el equipo de Blindaje el 27 de octubre de 2026 · Ate");
+    expect(t).toMatch(/Aprobado por el equipo de Blindaje el 27 de octubre de 2026\s*, para Ate/);
     expect(t).toContain("Nuevo");
     expect(t).not.toMatch(/gremio|asociad/i);
     const vacio = text(render(<AlertList alerts={publicAlerts("miraflores")} district={districtById("miraflores")!} now={now} />));

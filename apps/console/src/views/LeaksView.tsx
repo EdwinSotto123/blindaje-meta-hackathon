@@ -5,6 +5,7 @@ import { errorMessage } from "../api/client";
 import { leaksFor, MAX_LEAK_BYTES } from "../api/leaks";
 import { useApi, useUser } from "../app/context";
 import { Icon } from "../components/Icons";
+import { Acciones } from "../components/SoloLectura";
 import { Notice, PageHead } from "../components/ui";
 import { fmtDateTime } from "../lib/format";
 import { pctBits, ROL_CUENTA } from "../lib/leaks";
@@ -83,12 +84,12 @@ export function LeaksView() {
               <option value="imagen">Imagen</option>
             </select>
           </div>
-          <span>
+          <Acciones compact>
             <button type="submit" className="btn btn-primary" disabled={!file || tooBig || busy}>
               <Icon name="search" size={16} />
               {busy ? "Buscando la marca…" : "Rastrear"}
             </button>
-          </span>
+          </Acciones>
           <p className="small muted">
             <Icon name="lock" size={13} /> El archivo no se guarda: solo su huella SHA-256 y el resultado quedan en la auditoría, con tu cuenta.
           </p>
@@ -112,7 +113,7 @@ export function LeakResult({ name, result }: { name: string; result: LeakTraceRe
       <div className="panel-head">
         <h2 id="rastreo-resultado">{found ? (result.ambiguo ? "Indicios de origen (ambiguos)" : "Indicios de origen") : "Sin coincidencias"}</h2>
         <span className="small muted">
-          {name} · {what} · marca {result.detected ? "detectada" : "no detectada"} (puntaje {result.score.toFixed(2)}
+          {name}, {what}. Marca {result.detected ? "detectada" : "no detectada"} (puntaje {result.score.toFixed(2)}
           {result.model ? `, ${result.model}` : ""})
         </span>
       </div>
@@ -125,7 +126,7 @@ export function LeakResult({ name, result }: { name: string; result: LeakTraceRe
                 <span className="strong">{c.display_name ?? c.email_or_name}</span>
                 <span className="small muted">
                   {c.email_or_name}
-                  {c.role ? ` · ${ROL_CUENTA[c.role] ?? c.role}` : ""}
+                  {c.role ? ` (${ROL_CUENTA[c.role] ?? c.role})` : ""}
                 </span>
               </span>
               <span className="leak-accuracy" aria-label={`${pctBits(c.bit_accuracy)} de los bits coinciden`}>

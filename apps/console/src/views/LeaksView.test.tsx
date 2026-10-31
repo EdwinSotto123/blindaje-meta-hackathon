@@ -148,7 +148,7 @@ describe("posible inyección de instrucciones (Prompt Guard)", () => {
   });
 
   it("el indicador sale solo si está marcada, con su puntaje; el panel explica que sigue siendo evidencia", () => {
-    expect(text(renderToStaticMarkup(<PromptGuardBadge result={PROMPT_GUARD["EV-C1"]} />))).toBe("Posible inyección de instrucciones · 0.98");
+    expect(text(renderToStaticMarkup(<PromptGuardBadge result={PROMPT_GUARD["EV-C1"]} />))).toBe("Posible inyección de instrucciones (0.98)");
     expect(renderToStaticMarkup(<PromptGuardBadge result={PROMPT_GUARD["EV-A3"]} />)).toBe("");
     expect(renderToStaticMarkup(<PromptGuardBadge result={PROMPT_GUARD["EV-D1"]} />)).toBe("");
     const panel = text(renderToStaticMarkup(<PromptGuardPanel result={PROMPT_GUARD["EV-C1"]} />));

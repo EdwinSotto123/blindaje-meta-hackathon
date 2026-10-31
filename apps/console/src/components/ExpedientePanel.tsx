@@ -4,6 +4,7 @@ import type { ExpedienteView, ReviewStatus } from "../api/types";
 import { useApi } from "../app/context";
 import { fmtDateTime } from "../lib/format";
 import { Icon } from "./Icons";
+import { Acciones } from "./SoloLectura";
 import { CopyButton, Notice, StatusBadge } from "./ui";
 
 /**
@@ -70,10 +71,12 @@ export function ExpedientePanel({
         <h2 id={`exp-${networkId}`}>
           <Icon name="file" /> Expediente de {networkLabel}
         </h2>
-        <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void generate()}>
-          <Icon name="file" size={15} />
-          {busy ? "Solicitando…" : "Generar expediente PDF"}
-        </button>
+        <Acciones compact>
+          <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void generate()}>
+            <Icon name="file" size={15} />
+            {busy ? "Solicitando…" : "Generar expediente PDF"}
+          </button>
+        </Acciones>
       </div>
       <p className="small muted">
         El Redactor arma el resumen de la red, la cronología unificada, la tabla de vínculos, las huellas SHA-256 de la evidencia y la cadena de custodia. Solo se

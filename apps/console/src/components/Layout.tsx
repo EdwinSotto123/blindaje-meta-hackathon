@@ -125,7 +125,7 @@ export function Layout() {
         <div className="whoami">
           <span className="strong">{user.display_name}</span>
           {/* Todo el equipo es de Blindaje: no se muestra la organización de la cuenta. */}
-          <span className="muted">Equipo de Blindaje · {user.solo_lectura ? "Solo lectura" : (ROLE_LABEL[user.role] ?? user.role)}</span>
+          <span className="muted">Equipo de Blindaje, {user.solo_lectura ? "Solo lectura" : (ROLE_LABEL[user.role] ?? user.role)}</span>
           <span>
             <button
               type="button"

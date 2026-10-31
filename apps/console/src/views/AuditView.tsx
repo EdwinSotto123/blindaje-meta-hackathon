@@ -226,7 +226,7 @@ export function AuditView() {
                         {shortHash(e.hash)}
                       </code>
                       {broken ? <span className="sr-only"> (cadena rota aquí)</span> : null}
-                      {unverified ? <span className="small"> · sin verificar</span> : null}
+                      {unverified ? <span className="small"> (sin verificar)</span> : null}
                     </td>
                   </tr>
                 );

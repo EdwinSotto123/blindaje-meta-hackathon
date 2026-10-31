@@ -76,7 +76,7 @@ export function NetworkDetailView() {
           </Link>
         }
       >
-        {n.n_cases} casos · {n.sectores.map((s) => SECTOR_LABEL[s] ?? s).join(", ")} · {n.periodo ? fmtPeriod(n.periodo) : "periodo sin dato"} · actualizada{" "}
+        {n.n_cases} casos ({n.sectores.map((s) => SECTOR_LABEL[s] ?? s).join(", ")}), {n.periodo ? fmtPeriod(n.periodo) : "periodo sin dato"}. Actualizada el{" "}
         {fmtDateTime(n.updated_at)}
       </PageHead>
       <nav className="tabs" aria-label="Secciones de la red">

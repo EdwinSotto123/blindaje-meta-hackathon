@@ -9,6 +9,7 @@ import { useApi, useUser } from "../app/context";
 import { CiteList, CitationProvider } from "../components/Citations";
 import { DistrictSelect } from "../components/DistrictSelect";
 import { Icon } from "../components/Icons";
+import { Acciones } from "../components/SoloLectura";
 import { Empty, ErrorBox, InlineConfirm, Loading, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
 import { fmtDateTime, SECTOR_LABEL, zoneName } from "../lib/format";
 import { can } from "../lib/permissions";
@@ -198,10 +199,12 @@ function RunPanel({ advisor, onCreated }: { advisor: AdvisorApi; onCreated: (r: 
             ))}
           </select>
         </div>
-        <button type="submit" className="btn btn-primary" disabled={busy}>
-          <Icon name="refresh" size={16} />
-          {busy ? "El Asesor está redactando…" : "Correr el Asesor"}
-        </button>
+        <Acciones compact>
+          <button type="submit" className="btn btn-primary" disabled={busy}>
+            <Icon name="refresh" size={16} />
+            {busy ? "El Asesor está redactando…" : "Correr el Asesor"}
+          </button>
+        </Acciones>
       </form>
       <p id="asesor-nota" className="small muted">
         Un borrador por distrito y rubro. Al aprobarlo, lo ve cualquiera que elija ese distrito y ese rubro en el portal público y, en la app, quien eligió
@@ -268,12 +271,12 @@ function RecommendationCard({
       <article className="panel" aria-labelledby={tid}>
         <div className="panel-head">
           <h2 id={tid}>
-            {zona} · {sectorPhrase(c.sector)} <StatusBadge status={rec.status} />
+            {zona}: {sectorPhrase(c.sector)} <StatusBadge status={rec.status} />
           </h2>
           <span className="small muted">
-            {district ? `${district.area} · ` : ""}
-            {rec.model} · creada {fmtDateTime(rec.created_at)}
-            {rec.approved_at ? ` · aprobada por ${rec.approved_by ?? "—"} el ${fmtDateTime(rec.approved_at)}` : ""}
+            {district ? `${district.area}. ` : ""}
+            Creada con {rec.model} el {fmtDateTime(rec.created_at)}
+            {rec.approved_at ? `. Aprobada por ${rec.approved_by ?? "—"} el ${fmtDateTime(rec.approved_at)}` : ""}
           </span>
         </div>
         <div className="grid-2">
@@ -350,7 +353,7 @@ function RecommendationCard({
                 onCancel={() => setAsk(null)}
               />
             ) : editable ? (
-              <div className="stack-sm">
+              <Acciones className="stack-sm">
                 <div className="row">
                   <button type="button" className="btn btn-primary" disabled={blocked || busy} aria-describedby={blocked ? `${tid}-bloq` : undefined} onClick={() => setAsk("aprobar")}>
                     <Icon name="check" size={16} />
@@ -377,7 +380,7 @@ function RecommendationCard({
                     </button>
                   </span>
                 ) : null}
-              </div>
+              </Acciones>
             ) : null}
             {error ? <Notice kind="error-box">{error}</Notice> : null}
           </div>
@@ -443,8 +446,8 @@ export function BusinessPreview({ content: c, labelledBy }: { content: AsesorOut
             ))}
           </ol>
           <p className="biz-calls">
-            <span>105 · peligro ahora</span>
-            <span>1818 · denunciar</span>
+            <span>105: peligro ahora</span>
+            <span>1818: denunciar</span>
           </p>
         </div>
       ) : null}

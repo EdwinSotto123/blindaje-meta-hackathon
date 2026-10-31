@@ -48,7 +48,7 @@ function mmss(ms: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-/** Etiquetas legibles de vectores ("V-1 · 0:04–0:07", "IMG-2 · bala", "Ficha") a partir de D1. */
+/** Etiquetas legibles de vectores ("V-1 (0:04–0:07)", "IMG-2: bala", "Ficha") a partir de D1. */
 interface RefInfo {
   case_id: string;
   caso: string;
@@ -100,11 +100,11 @@ async function resolveRefs(env: Env, faissIds: number[]): Promise<Map<number, Re
     } else if (r.ref_type === "voice_segment") {
       const p = prints.get(r.ref_id.split(":")[0]!);
       const seg = p?.segments.find((s) => s.faiss_id === r.faiss_id);
-      ref = p ? `${voiceLabel(p.num)}${seg ? ` · ${mmss(seg.start_ms)}–${mmss(seg.end_ms)}` : ""}` : "Segmento de voz";
+      ref = p ? `${voiceLabel(p.num)}${seg ? ` (${mmss(seg.start_ms)}–${mmss(seg.end_ms)})` : ""}` : "Segmento de voz";
       ev = p?.evidence_id ? (evidence.get(p.evidence_id) ?? null) : null;
     } else if (r.ref_type === "image_crop") {
       const c = crops.get(r.ref_id);
-      ref = c ? `${imageLabel(c.num)} · ${c.concept}` : "Recorte";
+      ref = c ? `${imageLabel(c.num)}: ${c.concept}` : "Recorte";
       ev = c ? (evidence.get(c.evidence_id) ?? null) : null;
     }
     out.set(r.faiss_id, { case_id: r.case_id, caso: r.code, index: r.index_name, ref, evidencia: ev });

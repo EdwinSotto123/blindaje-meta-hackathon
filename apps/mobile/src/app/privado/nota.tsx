@@ -23,7 +23,7 @@ export default function Nota() {
         <>
           <Chip label="Guardado cifrado, fuera de este celular" icon="lock" color={colors.resaltadorVerde} />
           <T variant="secondary">
-            {ev.label} · {shortDateTime(ev.captured_at ?? ev.received_utc)}
+            {ev.label}: {shortDateTime(ev.captured_at ?? ev.received_utc)}
           </T>
           {ev.transcripcion?.length ? (
             <Card>

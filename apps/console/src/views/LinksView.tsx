@@ -9,6 +9,7 @@ import { CiteChip, CiteList, CitationProvider, CitedText } from "../components/C
 import { Icon, type IconName } from "../components/Icons";
 import { AudioClip } from "../components/Media";
 import { isFlagged, PromptGuardBadge } from "../components/PromptGuard";
+import { Acciones } from "../components/SoloLectura";
 import { Empty, ErrorBox, InlineConfirm, Loading, Meter, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
 import { flaggedInLink, isStrong, NOTA_AUSENCIA, type FlaggedEvidence } from "../lib/authenticity";
 import { indexFromLink } from "../lib/citations";
@@ -190,7 +191,7 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
               <StatusBadge status={l.status} />
             </h2>
             <span className="small muted">
-              Vínculo {l.label} · propuesto {fmtDateTime(l.created_at)}
+              Vínculo {l.label}, propuesto el {fmtDateTime(l.created_at)}
             </span>
           </div>
           {pending ? (
@@ -331,7 +332,7 @@ function CaseCard({ side, shared }: { side: CaseSide; shared: Set<string> }) {
         </span>
         Caso {side.code}
         <span className="muted small" style={{ fontWeight: 400 }}>
-          {side.sector ? (SECTOR_LABEL[side.sector] ?? side.sector) : "Sector sin dato"} · {side.zona ?? "zona sin dato"}
+          {side.sector ? (SECTOR_LABEL[side.sector] ?? side.sector) : "Sector sin dato"}, {side.zona ?? "zona sin dato"}
         </span>
       </h3>
       <dl className="dl">
@@ -500,7 +501,7 @@ function AuthenticitySection({ link }: { link: LinkView }) {
           <Icon name="shield" /> Autenticidad de la evidencia
         </h3>
         <span className="small muted">
-          {analyzed.length} de {items.length} analizadas · {withSignals ? `${withSignals} con indicios` : "ninguna con indicios"}
+          {analyzed.length} de {items.length} analizadas, {withSignals ? `${withSignals} con indicios` : "ninguna con indicios"}
         </span>
       </div>
       <div className="auth-list">
@@ -585,7 +586,7 @@ function SignalsPanel({ link }: { link: LinkView }) {
               </div>
               <span className={`verdict verdict-${verdict.tone}`}>
                 {verdict.text}
-                {k === "voz" && s.voz ? ` · ${s.voz.segmentos} de ${s.voz.segmentos_total} segmentos` : ""}
+                {k === "voz" && s.voz ? ` (${s.voz.segmentos} de ${s.voz.segmentos_total} segmentos)` : ""}
               </span>
               {k === "voz" && s.voz?.voz_sintetica ? (
                 <span className="small">
@@ -722,7 +723,7 @@ function DecisionBar({
   };
 
   return (
-    <div className="decision-bar" role="group" aria-label={`Decisión sobre el vínculo entre ${pair}`}>
+    <Acciones className="decision-bar" label={`Decisión sobre el vínculo entre ${pair}`}>
       <div className="field">
         <label htmlFor="nota">
           Nota para el registro <span className="muted" style={{ fontWeight: 400 }}>(opcional; decides como {user.display_name})</span>
@@ -792,6 +793,6 @@ function DecisionBar({
           {error}
         </div>
       ) : null}
-    </div>
+    </Acciones>
   );
 }

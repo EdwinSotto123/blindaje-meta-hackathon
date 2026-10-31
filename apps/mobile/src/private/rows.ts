@@ -82,7 +82,7 @@ export function buildRows(report: VictimReport | null, queue: QueueItem[], now =
       key: `q:${q.id}`,
       tipo: q.tipo,
       title: titleFor(q.tipo, q.duration_ms, q.source),
-      subtitle: q.tipo === "texto" && q.preview && state === "pendiente" ? `${quote(q.preview, 30)} · ${STATE_LABEL.pendiente}` : STATE_LABEL[state],
+      subtitle: q.tipo === "texto" && q.preview && state === "pendiente" ? `${quote(q.preview, 30)}, ${STATE_LABEL.pendiente.toLowerCase()}` : STATE_LABEL[state],
       when: shortDateTime(at, now),
       state,
       evidenceId: q.evidence_id,

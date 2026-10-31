@@ -39,12 +39,12 @@ export interface ModelInfo {
 }
 
 const KNOWN_MODELS: Array<{ test: RegExp; info: ModelInfo }> = [
-  { test: /ecapa|speechbrain/i, info: { nombre: "ECAPA-TDNN", detalle: "SpeechBrain · huella de voz", previo: null } },
+  { test: /ecapa|speechbrain/i, info: { nombre: "ECAPA-TDNN", detalle: "huella de voz de SpeechBrain", previo: null } },
   { test: /e5/i, info: { nombre: "multilingual-e5-small", detalle: "vuelve la ficha números", previo: "Muse Spark 1.3 escribe la ficha" } },
-  { test: /dinov2/i, info: { nombre: "DINOv2 · Meta", detalle: "describe cada recorte", previo: "SAM 3.1 · Meta recorta la imagen" } },
+  { test: /dinov2/i, info: { nombre: "DINOv2 de Meta", detalle: "describe cada recorte", previo: "SAM 3.1 de Meta recorta la imagen" } },
 ];
 
-/** Nombre para mostrar del modelo que está en D1 ("facebook/dinov2-small" → "DINOv2 · Meta"). */
+/** Nombre para mostrar del modelo que está en D1 ("facebook/dinov2-small" → "DINOv2 de Meta"). */
 export function modelInfo(modelo: string | null | undefined, lane: Lane): ModelInfo {
   if (lane === "identificadores") return { nombre: "HMAC-SHA256", detalle: "cifra cada número o cuenta", previo: null };
   const hit = modelo ? KNOWN_MODELS.find((m) => m.test.test(modelo)) : undefined;
@@ -55,14 +55,14 @@ export function modelInfo(modelo: string | null | undefined, lane: Lane): ModelI
 
 export const PROVIDER_LABEL: Record<VectorProvider, string> = {
   "chroma-cloud": "Chroma Cloud",
-  faiss: "FAISS · Meta",
+  faiss: "FAISS de Meta",
   ninguno: "Sin base vectorial",
 };
 
 /** Tipo de índice de la base, en palabras. */
 export function indexKind(p: VectorProvider): string {
-  if (p === "chroma-cloud") return "índice SPANN · coseno";
-  if (p === "faiss") return "IndexFlatIP · coseno";
+  if (p === "chroma-cloud") return "Índice SPANN con coseno";
+  if (p === "faiss") return "IndexFlatIP con coseno";
   return "sin índice";
 }
 

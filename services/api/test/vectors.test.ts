@@ -195,7 +195,7 @@ describe("consola: motor vectorial", () => {
     expect(o.casos.find((c) => c.caso === cases.A!.code)).toMatchObject({ distrito: "San Juan de Lurigancho", vectores: { voz: 1, voz_segmento: 2, texto: 1 } });
     const mapa = o.mapas.find((m) => m.indice === "voz_segmento")!;
     const p = mapa.puntos.find((x) => x.case_id === cases.A!.id)!;
-    expect(p.ref).toMatch(/^V-\d+ · 0:00–0:04$/);
+    expect(p.ref).toMatch(/^V-\d+ \(0:00–0:04\)$/);
     expect(p.evidencia).toBe(evidenceLabel(cases.A!.code, 1));
     expect(p.muestra).toHaveLength(VECTOR_SAMPLE_BINS);
     // El mapa de la consola es del equipo central: también muestra el caso real, nunca el no indexado.

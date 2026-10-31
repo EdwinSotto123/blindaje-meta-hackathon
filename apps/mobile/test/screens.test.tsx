@@ -238,7 +238,7 @@ describe("Pantallas privadas (modo real)", () => {
     await new Promise((r) => setTimeout(r, 1600));
     await refreshReport();
     await render(<DenunciaLista />);
-    await waitFor(() => expect(screen.getByText(/Lista · caso/)).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(/Lista: caso/)).toBeTruthy());
     expect(screen.getByText("Si estás en peligro ahora, llama al 105")).toBeTruthy();
     expect(screen.getByText("Llamar a la Línea 1818")).toBeTruthy();
     expect(screen.getByText("Descargar para la comisaría")).toBeTruthy();
@@ -266,7 +266,7 @@ describe("Pantallas privadas (modo real)", () => {
     try {
       await render(<DenunciaLista />);
       await waitFor(() => expect(screen.queryByText("Consejos para ti")).toBeNull());
-      expect(screen.getByText(/Lista · caso/)).toBeTruthy();
+      expect(screen.getByText(/Lista: caso/)).toBeTruthy();
       expect(screen.getByText("Resumen")).toBeTruthy();
     } finally {
       spy.mockRestore();
@@ -283,13 +283,13 @@ describe("Pantallas privadas (modo real)", () => {
     expect(screen.getByText(/Nunca te llegará nada como notificación/)).toBeTruthy();
     // Sin distrito elegido, invita a elegirlo. La zona del aviso va con su nombre, no con el id.
     expect(screen.getByText(/Elige tu distrito en Ajustes para ver los avisos de tu zona/)).toBeTruthy();
-    expect(screen.getAllByText(/^San Juan de Lurigancho · /).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/^San Juan de Lurigancho, /).length).toBeGreaterThan(0);
     expect(screen.queryByText(/gremio|asociación/i)).toBeNull();
 
     // Recomendaciones de la zona, en su propia sección.
     await waitFor(() => expect(screen.getByText("Guarda todo sin responder")).toBeTruthy());
     expect(screen.getByText("Recomendaciones para tu zona")).toBeTruthy();
-    expect(screen.getByText("Bodegas · San Juan de Lurigancho")).toBeTruthy();
+    expect(screen.getByText("Bodegas en San Juan de Lurigancho")).toBeTruthy();
     expect(screen.getByText(/varias bodegas de San Juan de Lurigancho/)).toBeTruthy();
     expect(screen.getByText(/^Revisada por nuestro equipo el /)).toBeTruthy();
     // Ordenadas por prioridad: alta, media, baja.

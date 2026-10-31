@@ -266,9 +266,6 @@ export interface Dict {
       label: string;
       legend: { sin_datos: string; bajo: string; medio: string; alto: string };
       note: string;
-      /** La foto de la banda (un cerro poblado de Lima): texto alternativo y crédito. */
-      photoAlt: string;
-      photoCredit: string;
     };
     /** Las señales que compara Blindaje, con los glifos del grafo de la consola. */
     signals: {
@@ -325,7 +322,7 @@ export interface Dict {
     /** Menú de secciones en celular y tableta. */
     menu: { label: string; faq: string };
     /** Cuatro resultados medidos, arriba de las tablas. */
-    results: { label: string; highlights: { id: string; label: string }[]; leakId: string; leakLabel: string; target: string };
+    results: { label: string; highlights: { id: string; label: string }[]; leakId: string; leakLabel: string; target: string; more: string };
     faq: { title: string; lead: string; items: { q: string; a: string }[] };
   };
   /** Texto propio del diseño "informe impreso": titulares cortos, entradas, filas y pies de foto. */

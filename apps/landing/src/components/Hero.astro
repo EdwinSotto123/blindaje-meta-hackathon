@@ -18,6 +18,7 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const h = d.lp.hero;
+const audience = new Intl.ListFormat(d.htmlLang, { type: "conjunction" }).formatToParts(h.audience);
 
 const photo = await getImage({ src: calle, widths: [480, 720, 960, 1200], format: "webp", quality: 78 });
 const portal = productShot("portal-zona-movil");
@@ -39,11 +40,9 @@ const portalImg = portal
         <a class="btn btn--ghost" href="#como-funciona">{d.hero.ctaHow}</a>
       </div>
       <p class="hero__for">
-        <span class="hero__for-label">{h.audienceLabel}</span>
+        {h.audienceLabel}{" "}
         {
-          h.audience.map((a) => (
-            <span class="hero__who">{a}</span>
-          ))
+          audience.map((p) => (p.type === "element" ? <strong>{p.value}</strong> : p.value))
         }
       </p>
     </div>
@@ -128,37 +127,17 @@ const portalImg = portal
     margin-top: 4px;
   }
 
-  /* A quién protege: una línea de palabras con un punto de ladrillo, no una lista con vistos. */
+  /* A quién protege: una frase, no una lista con viñetas. */
   .hero__for {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 18px;
     margin-top: 6px;
     padding-top: 18px;
     border-top: 1px solid var(--linea);
-    color: var(--tinta-2);
-    font-weight: 700;
-  }
-
-  .hero__for-label {
     color: var(--tinta-3);
-    font-weight: 400;
+    text-wrap: pretty;
   }
 
-  .hero__who {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+  .hero__for strong {
     color: var(--tinta);
-  }
-
-  .hero__who::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-    background: var(--terracota);
   }
 
   /* La foto y el celular. El celular cuelga del borde de la foto, abajo a la derecha. */

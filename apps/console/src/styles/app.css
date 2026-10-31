@@ -286,15 +286,17 @@ li {
   letter-spacing: -0.02em;
   line-height: 1;
 }
-/* El punto de ladrillo de la marca, igual que en la landing y el portal. */
-.brand-name::after {
+/* El escudo de ladrillo de la marca, igual que en la landing y el portal. */
+.brand-name::before {
   content: "";
   display: inline-block;
-  width: 0.2em;
-  height: 0.2em;
-  margin-left: 0.06em;
-  border-radius: 2px;
+  width: 0.62em;
+  height: 0.76em;
+  margin-right: 0.14em;
+  vertical-align: -0.04em;
   background: var(--terracota);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 .brand-sub {
   font-size: 0.87rem;
@@ -611,6 +613,7 @@ li {
 /* Deshabilitado: neutro y legible (no una terracota desteñida). */
 .btn[disabled],
 .btn[disabled]:hover,
+.btn:disabled,
 .btn[aria-disabled="true"] {
   background: var(--crema-2);
   border-color: var(--linea-2);
@@ -1538,6 +1541,28 @@ summary::marker {
 }
 
 /* Barra de decisión: elevada sobre el contenido mientras se lee el vínculo. */
+/* Grupo de acciones (components/SoloLectura.tsx): un fieldset sin marco propio; cada uso trae su
+   clase de diseño. Para la cuenta de jurado, el motivo va debajo de los controles desactivados. */
+:where(fieldset.acciones) {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.solo-lectura-nota {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--tinta-2);
+  font-size: 0.87rem;
+  font-weight: 700;
+}
+.solo-lectura-nota svg {
+  flex: none;
+}
+
 .decision-bar {
   position: sticky;
   bottom: 12px;

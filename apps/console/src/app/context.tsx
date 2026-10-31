@@ -14,7 +14,7 @@ export function useApi(): BlindajeApi {
 
 type AuthStatus = "loading" | "anon" | "authed";
 
-interface AuthValue {
+export interface AuthValue {
   status: AuthStatus;
   user: ConsoleUser | null;
   /** true si la sesión se cerró porque el refresh falló. */
@@ -27,7 +27,8 @@ interface AuthValue {
   logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthValue | null>(null);
+/** Exportado para las pruebas, que montan una sesión sin pasar por el login. */
+export const AuthContext = createContext<AuthValue | null>(null);
 
 export function useAuth(): AuthValue {
   const v = useContext(AuthContext);

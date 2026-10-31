@@ -84,7 +84,7 @@ export function AudioClip({ fragment, onListened }: { fragment: AudioFragment; o
       <div className="row" style={{ justifyContent: "space-between" }}>
         <span className="row" style={{ gap: 6 }}>
           <Icon name="mic" size={16} />
-          <CitedText text={`${fragment.evidence_label} · ${fragment.voice_label}`} />
+          <CitedText text={`${fragment.evidence_label}, ${fragment.voice_label}`} />
         </span>
         <span className="small muted">
           {fmtDuration(fragment.start_ms)} a {fmtDuration(fragment.end_ms)} ({Math.round(span / 100) / 10} s)

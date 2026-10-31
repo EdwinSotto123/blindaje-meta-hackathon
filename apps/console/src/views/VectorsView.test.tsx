@@ -46,7 +46,7 @@ describe("datos simulados del motor vectorial", () => {
     // Los mismos conteos que los datos en vivo: 4 huellas, 13 segmentos, 7 fichas y 3 recortes.
     expect(Object.fromEntries(ov.colecciones.map((k) => [k.indice, k.en_d1]))).toEqual({ voz: 4, voz_segmento: 13, texto: 7, imagen: 3 });
     expect(A.vectores).toEqual({ voz: 2, voz_segmento: 7, texto: 1, imagen: 3 });
-    expect(ov.mapas.flatMap((m) => m.puntos).filter((p) => p.caso === "A").map((p) => p.ref)).toContain("V-1 · 0:04–0:07");
+    expect(ov.mapas.flatMap((m) => m.puntos).filter((p) => p.caso === "A").map((p) => p.ref)).toContain("V-1 (0:04–0:07)");
   });
 
   it("cada recorrido es coherente: puntaje combinado, estado por umbral y sin vecinos del mismo caso", () => {
@@ -148,9 +148,9 @@ describe("piezas del recorrido", () => {
 
   it("las etiquetas de los vecinos no se pisan", () => {
     const placed = placeLabels([
-      { id: 1, text: "B · 0.93", cx: 150, cy: 80 },
-      { id: 2, text: "C · 0.91", cx: 152, cy: 82 },
-      { id: 3, text: "D · 0.40", cx: 296, cy: 100 },
+      { id: 1, text: "B (0.93)", cx: 150, cy: 80 },
+      { id: 2, text: "C (0.91)", cx: 152, cy: 82 },
+      { id: 3, text: "D (0.40)", cx: 296, cy: 100 },
     ]);
     const box = (l: (typeof placed)[number]) => {
       const w = l.text.length * 6.2;
@@ -160,7 +160,7 @@ describe("piezas del recorrido", () => {
     expect(a[0]! < b[2]! && b[0]! < a[2]! && a[1]! < b[3]! && b[1]! < a[3]!).toBe(false);
     expect(placed[2]!.anchor).toBe("end");
     // Nunca encima del punto del caso que consulta.
-    const q = placeLabels([{ id: 9, text: "C · 0.97", cx: 100, cy: 100 }], 3, [{ cx: 120, cy: 104 }])[0]!;
+    const q = placeLabels([{ id: 9, text: "C (0.97)", cx: 100, cy: 100 }], 3, [{ cx: 120, cy: 104 }])[0]!;
     expect(q.anchor === "start" && q.y > 92 && q.y < 112 && q.x < 126).toBe(false);
   });
 
@@ -182,7 +182,7 @@ describe("escenario del recorrido", () => {
     expect(html.match(/class="vx-pt-other"/g)).toHaveLength(14);
     expect(text(html)).toContain("ECAPA-TDNN");
     expect(text(html)).toContain("Muse Spark 1.3 escribe la ficha");
-    expect(text(html)).toContain("SAM 3.1 · Meta recorta la imagen");
+    expect(text(html)).toContain("SAM 3.1 de Meta recorta la imagen");
   });
 
   it("en el paso de la base, los vectores del caso caen en sus colecciones", () => {
@@ -202,8 +202,8 @@ describe("escenario del recorrido", () => {
     const html = stage(at("busqueda", "voz_segmento"), traceA);
     const segs = aggregateNeighbors(queriesOf(traceA, "voz_segmento"));
     expect(html.match(/class="vx-line[^"]*"/g)!.length).toBeGreaterThanOrEqual(segs.length);
-    expect(text(html)).toMatch(/7 consultas · entre \d+ y \d+ ms/);
-    expect(text(html)).toMatch(/B · 0\.\d\d/);
+    expect(text(html)).toMatch(/7 consultas, entre \d+ y \d+ ms/);
+    expect(text(html)).toMatch(/B \(0\.\d\d\)/);
     // Las colecciones de pasos posteriores todavía no muestran líneas.
     const img = stage(at("busqueda", "voz"), traceA);
     expect(img).not.toContain("vx-nb-no vx-in");
@@ -226,8 +226,8 @@ describe("escenario del recorrido", () => {
 describe("estado y colecciones", () => {
   it("dice qué base es, si responde y qué datos guarda", () => {
     const html = text(renderToStaticMarkup(<StoreStrip store={ov.almacen} />));
-    expect(html).toContain("Chroma Cloud · base blindaje");
-    expect(html).toContain("Conectada · respondió en 132 ms · índice SPANN · coseno");
+    expect(html).toMatch(/Chroma Cloud \(base blindaje\s*\)/);
+    expect(html).toContain("Conectada, respondió en 132 ms. Índice SPANN con coseno");
     expect(html).toContain("Solo casos ficticios del demo");
     const off = text(renderToStaticMarkup(<StoreStrip store={{ ...ov.almacen, conectado: false, latencia_ms: null }} />));
     expect(off).toContain("No responde");
@@ -236,8 +236,8 @@ describe("estado y colecciones", () => {
   it("marca las colecciones que no están al día con D1", () => {
     const stale: S.VectorOverview = { ...ov, colecciones: ov.colecciones.map((k) => (k.indice === "texto" ? { ...k, en_base: 6 } : k)) };
     const html = text(renderToStaticMarkup(<CollectionsTable overview={stale} />));
-    expect(html).toContain("6 · faltan 1, sincroniza");
-    expect(html).toContain("DINOv2 · Meta");
+    expect(html).toContain("6: faltan 1, sincroniza");
+    expect(html).toContain("DINOv2 de Meta");
     expect(html).toContain("HMAC-SHA256");
   });
 });

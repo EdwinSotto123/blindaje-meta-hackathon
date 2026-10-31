@@ -1,7 +1,8 @@
 ---
 /**
- * Resultados de la evaluación, leídos de eval/report.json en build. Cada métrica muestra su meta junto
- * al valor. Lo pendiente se ve como pendiente, con su motivo. Sin reporte, un aviso: nunca números de
+ * Resultados de la evaluación, leídos de eval/report.json en build. Arriba, cuatro cifras; las tablas
+ * completas (cada métrica con su meta y el rastreo de filtraciones) quedan plegadas para no alargar la
+ * página. Lo pendiente se ve como pendiente, con su motivo. Sin reporte, un aviso: nunca números de
  * ejemplo.
  */
 import type { Dict } from "../i18n";
@@ -99,123 +100,129 @@ const wmFalse =
       )
     }
 
-    <div class="res__tables">
-      {
-        !report && (
-          <div class="res__none">
-            <p class="lead">{r.placeholder}</p>
-            <p class="soft">{r.pendingNote}</p>
-          </div>
-        )
-      }
+    <details class="res__more">
+      <summary class="res__more-btn">
+        {hl.more}
+        <Icon name="chevronDown" />
+      </summary>
+      <div class="res__tables">
+        {
+          !report && (
+            <div class="res__none">
+              <p class="lead">{r.placeholder}</p>
+              <p class="soft">{r.pendingNote}</p>
+            </div>
+          )
+        }
 
-      <div class="res__main res__card">
-      <table class="rt" data-reveal>
-        <thead>
-          <tr>
-            <th scope="col">{r.cols.what}</th>
-            <th scope="col" class="rt__n">{r.cols.target}</th>
-            <th scope="col" class="rt__n">{r.cols.result}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            rows.map(({ copy, got }) => {
-              const value = got && !got.pending ? formatValue(got, d.lang, words) : "";
-              return (
-                <tr>
-                  <th scope="row">
-                    {copy.label}
-                    {got?.note && (
-                      <span class="rt__note small soft" lang={noteLang}>
-                        {got.note}
-                      </span>
-                    )}
-                  </th>
-                  <td class="rt__n rt__target num soft"><span class="rt__k">{r.cols.target}: </span>{copy.target}</td>
-                  <td class="rt__n num">
-                    {value ? <span class="rt__value">{value}</span> : <span class="soft">{r.pending}</span>}
-                    {value && got?.meets === true && (
-                      <span class="rt__status">
-                        <Icon name="check" />
-                        {r.meets}
-                      </span>
-                    )}
-                    {value && got?.meets === false && <span class="rt__status rt__status--miss">{r.misses}</span>}
-                  </td>
-                </tr>
-              );
-            })
-          }
-        </tbody>
-      </table>
-
-      {
-        extra.length > 0 && (
-          <table class="rt" data-reveal>
-            <caption><span class="rt__cap-title">{r.extraTitle}</span></caption>
-            <tbody>
-              {extra.map((m) => (
-                <tr>
-                  <th scope="row">
-                    {m.label[d.lang] ?? m.label.es ?? m.id}
-                    {m.note && (
-                      <span class="rt__note small soft" lang={noteLang}>
-                        {m.note}
-                      </span>
-                    )}
-                  </th>
-                  <td class="rt__n num">
-                    <span class="rt__value">{m.pending ? r.pending : formatValue(m, d.lang, words)}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )
-      }
-
-      </div>
-
-      {
-        wm && (
-          <div class="res__wm res__card" id="resultados-filtracion" data-reveal>
-            <table class="rt">
-              <caption>
-                <span class="rt__cap-title">{r.leak.title}</span>
-                <span class="rt__cap-lead soft">{r.leak.lead}</span>
-              </caption>
-              <tbody>
-                {wm.rows.map((row) => (
-                  <tr class:list={[LIMITS.has(row.id) && "rt__limit"]}>
+        <div class="res__main res__card">
+        <table class="rt">
+          <thead>
+            <tr>
+              <th scope="col">{r.cols.what}</th>
+              <th scope="col" class="rt__n">{r.cols.target}</th>
+              <th scope="col" class="rt__n">{r.cols.result}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rows.map(({ copy, got }) => {
+                const value = got && !got.pending ? formatValue(got, d.lang, words) : "";
+                return (
+                  <tr>
                     <th scope="row">
-                      {r.leak.rows[row.id] ?? row.id}
-                      {LIMITS.has(row.id) && <span class="rt__note small soft">{r.leak.limitTag}</span>}
+                      {copy.label}
+                      {got?.note && (
+                        <span class="rt__note small soft" lang={noteLang}>
+                          {got.note}
+                        </span>
+                      )}
+                    </th>
+                    <td class="rt__n rt__target num soft"><span class="rt__k">{r.cols.target}: </span>{copy.target}</td>
+                    <td class="rt__n num">
+                      {value ? <span class="rt__value">{value}</span> : <span class="soft">{r.pending}</span>}
+                      {value && got?.meets === true && (
+                        <span class="rt__status">
+                          <Icon name="check" />
+                          {r.meets}
+                        </span>
+                      )}
+                      {value && got?.meets === false && <span class="rt__status rt__status--miss">{r.misses}</span>}
+                    </td>
+                  </tr>
+                );
+              })
+            }
+          </tbody>
+        </table>
+
+        {
+          extra.length > 0 && (
+            <table class="rt">
+              <caption><span class="rt__cap-title">{r.extraTitle}</span></caption>
+              <tbody>
+                {extra.map((m) => (
+                  <tr>
+                    <th scope="row">
+                      {m.label[d.lang] ?? m.label.es ?? m.id}
+                      {m.note && (
+                        <span class="rt__note small soft" lang={noteLang}>
+                          {m.note}
+                        </span>
+                      )}
                     </th>
                     <td class="rt__n num">
-                      <span class="rt__value">{pct(row.ratio)}</span> <span class="small soft">({row.ok}/{row.n})</span>
+                      <span class="rt__value">{m.pending ? r.pending : formatValue(m, d.lang, words)}</span>
                     </td>
                   </tr>
                 ))}
-                {wmFalse && (
-                  <tr>
-                    <th scope="row">{r.leak.falseLabel}</th>
-                    <td class="rt__n rt__n--wrap num">{wmFalse}</td>
-                  </tr>
-                )}
               </tbody>
             </table>
-            <p class="small soft">
-              {wmGenerated && `${r.generatedAt} ${wmGenerated}.`}{" "}
-              <a href={`${REPO_URL}/blob/main/eval/results/watermark.json`} rel="noopener noreferrer" target="_blank">
-                {r.leak.source}
-                <span class="sr-only">{newTab}</span>
-              </a>
-            </p>
-          </div>
-        )
-      }
-    </div>
+          )
+        }
+
+        </div>
+
+        {
+          wm && (
+            <div class="res__wm res__card" id="resultados-filtracion">
+              <table class="rt">
+                <caption>
+                  <span class="rt__cap-title">{r.leak.title}</span>
+                  <span class="rt__cap-lead soft">{r.leak.lead}</span>
+                </caption>
+                <tbody>
+                  {wm.rows.map((row) => (
+                    <tr class:list={[LIMITS.has(row.id) && "rt__limit"]}>
+                      <th scope="row">
+                        {r.leak.rows[row.id] ?? row.id}
+                        {LIMITS.has(row.id) && <span class="rt__note small soft">{r.leak.limitTag}</span>}
+                      </th>
+                      <td class="rt__n num">
+                        <span class="rt__value">{pct(row.ratio)}</span> <span class="small soft">({row.ok}/{row.n})</span>
+                      </td>
+                    </tr>
+                  ))}
+                  {wmFalse && (
+                    <tr>
+                      <th scope="row">{r.leak.falseLabel}</th>
+                      <td class="rt__n rt__n--wrap num">{wmFalse}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+              <p class="small soft">
+                {wmGenerated && `${r.generatedAt} ${wmGenerated}.`}{" "}
+                <a href={`${REPO_URL}/blob/main/eval/results/watermark.json`} rel="noopener noreferrer" target="_blank">
+                  {r.leak.source}
+                  <span class="sr-only">{newTab}</span>
+                </a>
+              </p>
+            </div>
+          )
+        }
+      </div>
+    </details>
   </div>
 </section>
 
@@ -290,6 +297,47 @@ const wmFalse =
 
   .res__intro p {
     max-width: 40em;
+  }
+
+  /* Las tablas completas, plegadas: un botón que abre hacia abajo, con su flecha que gira. */
+  .res__more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 10px 20px;
+    border: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
+    border-radius: 999px;
+    font-weight: 700;
+    list-style: none;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+  }
+
+  .res__more-btn::-webkit-details-marker {
+    display: none;
+  }
+
+  .res__more-btn:hover {
+    border-color: currentColor;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  .res__more-btn :global(.icon) {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    transition: transform 0.25s var(--ease);
+  }
+
+  .res__more[open] .res__more-btn :global(.icon) {
+    transform: rotate(180deg);
+  }
+
+  .res__more[open] .res__tables {
+    margin-top: 24px;
   }
 
   .res__tables {

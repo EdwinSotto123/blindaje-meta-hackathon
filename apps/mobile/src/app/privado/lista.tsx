@@ -113,7 +113,7 @@ export default function DenunciaLista() {
       ) : (
         <>
           <Chip
-            label={listo ? `Lista · caso ${report.code}` : "Preparando tu denuncia…"}
+            label={listo ? `Lista: caso ${report.code}` : "Preparando tu denuncia…"}
             icon={listo ? "check" : "clock"}
             color={listo ? colors.resaltadorVerde : colors.resaltador}
             testID="estado-denuncia"
@@ -182,7 +182,7 @@ export default function DenunciaLista() {
             {report.evidencia.map((e) => (
               <View key={e.id} style={{ gap: 2, borderBottomWidth: 1, borderBottomColor: colors.borde, paddingVertical: 6 }}>
                 <T variant="bodyBold">
-                  {e.label} · {titleFor(e.tipo, e.duration_ms)}
+                  {e.label}: {titleFor(e.tipo, e.duration_ms)}
                 </T>
                 <T variant="small">Recibido: {shortDateTime(e.received_utc)}</T>
                 <T variant="small" selectable style={{ fontFamily: "monospace", fontSize: 12 }} accessibilityLabel={`Huella SHA-256 que empieza con ${e.sha256.slice(0, 8)}`}>

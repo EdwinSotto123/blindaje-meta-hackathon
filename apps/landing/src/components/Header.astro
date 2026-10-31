@@ -54,7 +54,7 @@ const exitUrl = "https://www.google.com/";
         {
           links.map((l) => (
             <li>
-              <a href={l.href}>{l.label}</a>
+              <a href={l.href} data-spy>{l.label}</a>
             </li>
           ))
         }
@@ -201,7 +201,7 @@ const exitUrl = "https://www.google.com/";
     min-height: 72px;
   }
 
-  /* El wordmark, el mismo del portal y la consola: "blindaje" en minúsculas, con un punto de ladrillo. */
+  /* El wordmark, el mismo del portal y la consola: un escudo de ladrillo y "blindaje" en minúsculas. */
   .brand {
     margin-right: auto;
     font-family: var(--display);
@@ -214,14 +214,16 @@ const exitUrl = "https://www.google.com/";
     padding-bottom: 3px;
   }
 
-  .brand::after {
+  .brand::before {
     content: "";
     display: inline-block;
-    width: 0.2em;
-    height: 0.2em;
-    margin-left: 0.06em;
-    border-radius: 2px;
+    width: 0.62em;
+    height: 0.76em;
+    margin-right: 0.14em;
+    vertical-align: -0.04em;
     background: var(--terracota);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
   }
 
   .nav {
@@ -253,6 +255,26 @@ const exitUrl = "https://www.google.com/";
 
   .nav a:hover,
   .lang:hover {
+    color: var(--tinta);
+  }
+
+  /* La sección que se está leyendo: tinta plena y una raya de ladrillo debajo. */
+  .nav a {
+    position: relative;
+  }
+
+  .nav a[aria-current]::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 6px;
+    left: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--terracota);
+  }
+
+  .nav a[aria-current] {
     color: var(--tinta);
   }
 
@@ -373,7 +395,14 @@ const exitUrl = "https://www.google.com/";
     }
   }
 
+  /* En escritorio la cabecera queda fija debajo de la franja de ayuda: el menú siempre a mano. */
   @media (min-width: 1100px) {
+    .top {
+      position: sticky;
+      top: 44px;
+      z-index: 20;
+    }
+
     .nav {
       display: block;
     }
@@ -383,7 +412,7 @@ const exitUrl = "https://www.google.com/";
     }
 
     .top__in {
-      min-height: 80px;
+      min-height: 64px;
     }
   }
 </style>
@@ -420,6 +449,37 @@ const exitUrl = "https://www.google.com/";
       menu.querySelector("summary")?.focus();
     }
   });
+
+  // El menú marca la sección que se está leyendo: la última cuyo inicio ya pasó bajo la cabecera.
+  const spy = [...document.querySelectorAll<HTMLAnchorElement>("a[data-spy]")]
+    .map((a) => ({ a, el: document.getElementById(decodeURIComponent(a.hash.slice(1))) }))
+    .filter((x): x is { a: HTMLAnchorElement; el: HTMLElement } => x.el !== null);
+  let spyQueued = false;
+  function markSection() {
+    spyQueued = false;
+    const line = 160;
+    let current: HTMLAnchorElement | null = null;
+    for (const { a, el } of spy) {
+      const r = el.getBoundingClientRect();
+      if (r.top <= line && r.bottom > line) current = a;
+    }
+    for (const { a } of spy) {
+      if (a === current) a.setAttribute("aria-current", "location");
+      else a.removeAttribute("aria-current");
+    }
+  }
+  if (spy.length) {
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (spyQueued) return;
+        spyQueued = true;
+        requestAnimationFrame(markSection);
+      },
+      { passive: true },
+    );
+    markSection();
+  }
 
   document.addEventListener("click", (e) => {
     const link = (e.target as Element | null)?.closest?.<HTMLAnchorElement>('a[href^="#"]');

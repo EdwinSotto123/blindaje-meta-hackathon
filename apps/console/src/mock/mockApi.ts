@@ -462,7 +462,7 @@ export class MockApi implements BlindajeApi {
     const blob =
       ev.tipo === "audio"
         ? synthVoiceWav(Object.values(FRAGMENTS).find((f) => f.evidence_id === ev.id)?.voice_label ?? "V-0", Math.max(1000, end - start), ev.label.length + start)
-        : synthImageSvg(`${ev.label} · imagen redactada`, "Ilustración ficticia: rostros y datos tapados");
+        : synthImageSvg(`${ev.label}: imagen redactada`, "Ilustración ficticia: rostros y datos tapados");
     if (!kind) return { blob, marca: "no_aplicada", motivo: "tipo_no_soportado" };
     const marked = await withMockMark(blob, { u: u.id, k: kind, e: ev.label, c: owner.id, t: this.nowIso() });
     return { blob: marked, marca: "aplicada", motivo: null };

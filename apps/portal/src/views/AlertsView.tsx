@@ -54,7 +54,7 @@ export function AlertList({ alerts, district, now }: { alerts: VictimAlert[]; di
                 {a.titulo} {isRecent(a, now) ? <span className="tag">Nuevo</span> : null}
               </h2>
               <p className="muted small">
-                Aprobado por el equipo de Blindaje el <time dateTime={a.approved_at}>{fmtDate(a.approved_at)}</time> · {districtOfZone(a.zona)?.name ?? a.zona}
+                Aprobado por el equipo de Blindaje el <time dateTime={a.approved_at}>{fmtDate(a.approved_at)}</time>, para {districtOfZone(a.zona)?.name ?? a.zona}
               </p>
               <p className="measure">{a.cuerpo}</p>
               {a.que_hacer.length ? (
