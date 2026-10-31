@@ -1563,6 +1563,51 @@ summary::marker {
   flex: none;
 }
 
+/* Recorrido sugerido de la cuenta de jurado (components/Recorrido.tsx): cuatro paradas en fila. */
+.recorrido {
+  margin-bottom: 16px;
+  border-color: var(--linea-2);
+}
+.recorrido h2 {
+  margin: 0 0 2px;
+}
+.recorrido-pasos {
+  display: grid;
+  gap: 14px 20px;
+}
+@media (min-width: 900px) {
+  .recorrido-pasos {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.recorrido-pasos > li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.recorrido-n {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--terracota);
+  color: var(--papel);
+  font-weight: 700;
+  font-size: 0.87rem;
+}
+.recorrido-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  font-weight: 700;
+}
+.recorrido-pasos p {
+  margin: 2px 0 0;
+}
+
 .decision-bar {
   position: sticky;
   bottom: 12px;

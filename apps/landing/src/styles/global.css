@@ -512,6 +512,7 @@ code {
 }
 
 .cap {
+  max-width: 72ch;
   margin-top: 10px;
   font-size: var(--step-small);
   line-height: 1.4;

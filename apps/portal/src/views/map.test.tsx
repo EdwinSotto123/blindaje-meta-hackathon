@@ -119,9 +119,14 @@ describe("mapa público", () => {
     expect(t).toContain(map.nota_sesgo);
     expect(t).toContain(THRESHOLD_RULE);
     expect(t).toContain("nunca en cifras exactas");
-    // La tabla accesible trae los 50 distritos, con su enlace.
+    // La tabla accesible trae los 50 distritos, con su enlace: una fila por distrito con datos y, por
+    // área, una fila con los que no llegan al umbral.
     const table = html.slice(html.indexOf('class="ztable"'));
-    expect(table.match(/<th scope="row">/g)).toHaveLength(50);
+    expect(table.match(/<a [^>]*href="\/\?distrito=/g)).toHaveLength(50);
+    const withData = map.celdas.filter((c) => c.nivel !== "sin_datos" && c.casos).length;
+    expect(table.match(/<th scope="row">/g)).toHaveLength(withData);
+    expect(table.match(/class="ztable-none"/g)).toHaveLength(5);
+    expect(text(table)).toContain("Sin datos en");
   });
 
   it("un distrito bajo el umbral se ve igual que uno sin casos: sin rango ni modalidades", () => {

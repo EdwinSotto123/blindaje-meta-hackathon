@@ -474,3 +474,23 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
 - Capturas de `docs/screenshots` regeneradas con el logo y los textos nuevos.
 - Tests: API 178, consola 136 (3 nuevos de solo lectura), portal 50, app 164. Desplegados API,
   consola, portal y landing; verificado en vivo con la cuenta de jurado.
+
+## 2026-10-31 12:05 – 12:45 · Segunda ronda de UX: detectores, mapa del portal y recorrido del jurado
+
+- Con datos, no a ojo: el detector de `impeccable` sobre el código y sobre las páginas en vivo, y
+  axe-core (WCAG 2.2 AA y buenas prácticas) sobre la landing, el portal y el login de la consola, en
+  escritorio y en celular. axe: 0 fallas en las 8 vistas. El detector marcó tres cosas:
+  - Un borde de color grueso a un lado de las fichas de colecciones del motor vectorial (la marca más
+    reconocible de una interfaz generada). Ahora es un marco fino completo.
+  - Un pie de foto de 96 caracteres por línea en la landing. Los pies tienen tope de 72.
+  - El fondo crema. Es la paleta que eligió el equipo el 29/10; queda así.
+- Portal, mapa: la tabla de los 50 distritos tenía una fila por distrito y casi todas decían "Sin
+  datos". Ahora, por área, los distritos con datos van en su fila y los demás juntos en una fila de
+  enlaces ("Sin datos en 6 distritos"). Siguen los 50 para elegir, con blancos de 44 px en el celular.
+  La página bajó de 5,502 a 3,822 px en escritorio y de 5,944 a 4,944 en el celular.
+- Landing: sin flechas pegadas al texto de los botones; en el celular, la foto de la bodega es una
+  franja baja y los dos teléfonos (la app por fuera y por dentro) llegan antes.
+- Consola: la cuenta de jurado entra a Monitoreo, que muestra servicios y colas. Arriba aparece un
+  "Recorrido sugerido" de cuatro paradas (cola de vínculos, alertas, motor vectorial, auditoría) con
+  una línea en inglés para el jurado. Se puede ocultar y se recuerda en el navegador.
+- Tests: consola 137, portal 50. Desplegados consola, portal y landing; verificado en vivo.

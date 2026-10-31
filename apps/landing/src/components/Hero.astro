@@ -9,7 +9,6 @@ import { getImage } from "astro:assets";
 import type { Dict } from "../i18n";
 import { productShot } from "../lib/screenshots";
 import { PORTAL_URL } from "../i18n/sources";
-import Icon from "./Icon.astro";
 import calle from "../assets/fotos/mototaxis-calle.jpg";
 
 interface Props {
@@ -35,7 +34,6 @@ const portalImg = portal
       <div class="hero__cta">
         <a class="btn btn--mark" href={`${PORTAL_URL}/mapa`}>
           {h.ctaMap}
-          <Icon name="arrowRight" />
         </a>
         <a class="btn btn--ghost" href="#como-funciona">{d.hero.ctaHow}</a>
       </div>

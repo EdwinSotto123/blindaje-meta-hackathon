@@ -2548,6 +2548,37 @@ thead th {
   line-height: 1.35;
 }
 
+/* Los distritos sin datos de un área: una fila de nombres tocables, sin columnas vacías. */
+.ztable-none td {
+  padding-block: 10px 12px;
+}
+
+.ztable-none-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+  color: var(--tinta-2);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+}
+
+.ztable-none-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ztable-none-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-weight: 700;
+}
+
 .ztable-area th {
   padding-top: 12px;
   padding-bottom: 8px;
@@ -2575,12 +2606,17 @@ thead th {
   .ztable th[scope="row"] {
     padding-block: 0;
   }
-  .ztable th[scope="row"] a {
+  .ztable th[scope="row"] a,
+  .ztable-none-list a {
     min-height: 44px;
   }
-  .ztable .zdot,
+  .ztable td .zdot,
+  .ztable th .zdot,
   .ztable-mods {
     display: none;
+  }
+  .ztable-none-label .zdot {
+    display: inline-block;
   }
 }
 

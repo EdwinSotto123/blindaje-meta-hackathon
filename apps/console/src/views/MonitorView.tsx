@@ -5,6 +5,8 @@ import { monitorFor } from "../api/monitor";
 import { requestLog, type RequestRecord } from "../api/requestLog";
 import { useApi } from "../app/context";
 import { Icon, type IconName } from "../components/Icons";
+import { Recorrido } from "../components/Recorrido";
+import { useSoloLectura } from "../components/SoloLectura";
 import { ErrorBox, Loading, Meter, PageHead } from "../components/ui";
 import { fmtInt, fmtPct, fmtStamp, fmtUsd, ROLE_LABEL } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -82,6 +84,7 @@ export function MonitorView() {
   const monitorApi = useMemo(() => monitorFor(api), [api]);
   const mon = useAsync(() => monitorApi.monitor(), "monitoreo");
   const { reload } = mon;
+  const soloLectura = useSoloLectura();
 
   // Se actualiza solo mientras la pestaña está a la vista; al volver, lee de inmediato.
   useEffect(() => {
@@ -111,6 +114,7 @@ export function MonitorView() {
       >
         Blindaje en vivo: lo que espera al equipo, cada servicio medido ahora y la velocidad de esta consola. Se actualiza cada 30 segundos.
       </PageHead>
+      {soloLectura ? <Recorrido /> : null}
       {mon.error ? <ErrorBox error={mon.error} onRetry={reload} /> : null}
       {!mon.data && mon.loading ? <Loading label="Midiendo los servicios…" /> : null}
       {mon.data ? <MonitorBody m={mon.data} /> : null}

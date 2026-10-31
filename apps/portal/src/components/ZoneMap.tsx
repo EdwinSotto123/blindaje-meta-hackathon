@@ -195,9 +195,17 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
   );
 }
 
-/** La tabla de los 50 distritos: la versión accesible del mapa y, en el celular, la forma principal de elegir. */
+/**
+ * La tabla de los 50 distritos: la versión accesible del mapa y, en el celular, la forma principal de
+ * elegir. Por área, cada distrito con datos en su fila; los que no llegan al umbral, juntos en una
+ * fila de enlaces (la mayoría de los 50: una fila por cada uno alargaba la página sin decir nada).
+ */
 export function ZoneTable({ map, selected, rubro }: { map: PublicZoneMap; selected: District | null; rubro: Rubro | null }) {
-  const groups = filterDistricts("");
+  const groups = filterDistricts("").map((g) => ({
+    ...g,
+    withData: g.districts.filter((d) => cellOf(map, d.id).casos),
+    noData: g.districts.filter((d) => !cellOf(map, d.id).casos),
+  }));
   return (
     <div className="table-scroll ztable-wrap" role="region" aria-labelledby="ztable-caption" tabIndex={0}>
       <table className="ztable">
@@ -217,7 +225,7 @@ export function ZoneTable({ map, selected, rubro }: { map: PublicZoneMap; select
                 {g.area}
               </th>
             </tr>
-            {g.districts.map((d) => {
+            {g.withData.map((d) => {
               const c = cellOf(map, d.id);
               const mine = d.id === selected?.id;
               return (
@@ -229,24 +237,38 @@ export function ZoneTable({ map, selected, rubro }: { map: PublicZoneMap; select
                     {mine ? <span className="ztable-mine"> (tu distrito)</span> : null}
                     {c.modalidades.length ? <span className="ztable-mods">{c.modalidades.join("; ")}</span> : null}
                   </th>
-                  {c.casos ? (
-                    <>
-                      <td className="nowrap">
-                        <span className="zdot" data-nivel={c.nivel} aria-hidden="true" />
-                        {NIVEL_MAPA[c.nivel]}
-                      </td>
-                      <td className="num nowrap">{bandLabel(c.casos)}</td>
-                      <td>{c.tendencia ? TENDENCIA[c.tendencia].short : "Sin dato"}</td>
-                    </>
-                  ) : (
-                    <td colSpan={3} className="muted">
-                      <span className="zdot" data-nivel="sin_datos" aria-hidden="true" />
-                      Sin datos
-                    </td>
-                  )}
+                  <td className="nowrap">
+                    <span className="zdot" data-nivel={c.nivel} aria-hidden="true" />
+                    {NIVEL_MAPA[c.nivel]}
+                  </td>
+                  <td className="num nowrap">{c.casos ? bandLabel(c.casos) : null}</td>
+                  <td>{c.tendencia ? TENDENCIA[c.tendencia].short : "Sin dato"}</td>
                 </tr>
               );
             })}
+            {g.noData.length ? (
+              <tr className="ztable-none" data-mine={g.noData.some((d) => d.id === selected?.id) ? "" : undefined}>
+                <td colSpan={4}>
+                  <span className="ztable-none-label">
+                    <span className="zdot" data-nivel="sin_datos" aria-hidden="true" />
+                    Sin datos en {g.noData.length === 1 ? "1 distrito" : `${g.noData.length} distritos`}
+                  </span>
+                  <ul className="ztable-none-list">
+                    {g.noData.map((d) => {
+                      const mine = d.id === selected?.id;
+                      return (
+                        <li key={d.id}>
+                          <Link to={{ pathname: "/", search: choiceSearch({ distrito: d.id, rubro }) }} aria-current={mine ? "true" : undefined}>
+                            {d.name}
+                          </Link>
+                          {mine ? <span className="ztable-mine"> (tu distrito)</span> : null}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </td>
+              </tr>
+            ) : null}
           </tbody>
         ))}
       </table>

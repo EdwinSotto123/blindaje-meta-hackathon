@@ -407,13 +407,14 @@
   gap: 6px;
 }
 
+/* Cada colección de destino: una ficha con marco fino, no una raya de color a un lado. */
 .vx-col {
   display: flex;
   flex-direction: column;
   padding: 6px 10px;
-  border-left: 3px solid var(--terracota);
-  background: var(--crema);
-  border-radius: 0 var(--r-s) var(--r-s) 0;
+  border: 1px solid var(--linea-2);
+  border-radius: var(--r-s);
+  background: var(--papel);
 }
 
 .vx-col code {
