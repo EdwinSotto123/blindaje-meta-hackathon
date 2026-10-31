@@ -516,3 +516,26 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
 - Capturas de `docs/screenshots` regeneradas con la paleta nueva.
 - Verificado: detector sin hallazgos en la landing (ES y EN), el mapa y la zona del portal y el login
   de la consola, en vivo; axe 0 en las 8 vistas. Tests: consola 137, portal 50.
+
+## 2026-10-31 13:50 – 14:20 · Contenedor ML encendido en Cloudflare
+
+- Decisión del equipo: el contenedor de ML va en Cloudflare. Estado real antes de tocar nada
+  (`wrangler containers list/info`): la aplicación `blindaje-api-mlcontainer` existía desde el 28/10,
+  sana (sin errores de salud), con la imagen del 28/10 16:05 UTC fijada; el último cambio de
+  `services/ml` es de las 15:54 UTC de ese día, así que la imagen estaba al día. Lo único apagado era
+  `ML_CONTAINER: "off"` en el Worker (del 29/10, cuando se creyó que la imagen no estaba desplegada).
+- `ML_CONTAINER: "on"` y despliegue con `--containers-rollout=none`: sin Docker y sin reconstruir ni
+  reemplazar la imagen.
+- Monitoreo: la sonda del contenedor ahora usa la misma caché que Chroma y Meta. Antes consultaba en
+  cada carga, y con el contenedor dormido la primera pantalla del jurado esperaba el tope de 3 s.
+- Medido en producción:
+  - Despertar: de 40 a 60 s; después, `/health` en ~215 ms.
+  - Una copia de audio con la marca de AudioSeal de la cuenta que la abre: 3.8 s la primera, 0.9 s
+    con caché (`marca: aplicada`).
+  - Un caso nuevo de punta a punta (prueba del infiltrado: dispositivo nuevo, audio con la voz de A
+    y B, mensaje): `workflow.complete` con ficha e indexado en 43 s, 8 de 8 chequeos de aislamiento,
+    y el caso se borra solo (en la auditoría quedan `case.delete` y 0 vínculos sueltos).
+  - El motor vectorial de la consola no depende del contenedor (usa Chroma): 1.4 a 3.3 s, como antes.
+- `pnpm eval:infiltrado` corre solo esa prueba; sirve para calentar el contenedor y comprobar el
+  pipeline antes de grabar. README, PLAN, `services/api/README.md` y `docs/VIDEO.md` al día.
+- Tests: API 178.

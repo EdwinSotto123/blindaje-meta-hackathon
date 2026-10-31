@@ -79,12 +79,18 @@ function chromaService(env: Env, waitUntil: WaitUntil): Promise<MonitorService> 
   );
 }
 
-function mlService(env: Env): Promise<MonitorService> {
+/**
+ * Con caché como Chroma y Meta: el contenedor duerme tras 30 min sin uso y su arranque en frío tarda
+ * más que el tope de la sonda. Así el panel nunca espera al contenedor; la sonda de fondo lo despierta.
+ */
+function mlService(env: Env, waitUntil: WaitUntil): Promise<MonitorService> {
   const ml = tryGetMlClient(env);
   if (!ml) return Promise.resolve(off("ml", "Contenedor no desplegado: los casos nuevos no generan voz, imagen ni marcas"));
-  return probe("ml", "Contenedor ML (voz, imagen, marcas de agua)", async () => {
-    await ml.health();
-  });
+  return cachedProbe(env, "ml", waitUntil, () =>
+    probe("ml", "Contenedor ML en Cloudflare (voz, imagen, marcas de agua)", async () => {
+      await ml.health();
+    }),
+  );
 }
 
 async function metaService(env: Env, waitUntil: WaitUntil): Promise<MonitorService> {
@@ -165,7 +171,7 @@ export async function consoleMonitor(
   const [{ res, ms: dbMs }, ...services] = await Promise.all([
     db(),
     chromaService(env, opts.waitUntil),
-    mlService(env),
+    mlService(env, opts.waitUntil),
     metaService(env, opts.waitUntil),
     auditService(env),
   ]);

@@ -82,6 +82,7 @@ sembrar dos veces seguidas desde la misma red.
 2. App: build de Android con `EXPO_PUBLIC_ALLOW_SCREENSHOTS=1` **solo para grabar** (desactiva la
    prevención de capturas). Nunca para uso real.
 3. Consola: entrar con el usuario analista de demo; verificar la marca "Datos ficticios".
-4. Calentar el contenedor ML (una petición a `/v1/health` del API con `?ml=1`) para evitar el
-   arranque en frío durante la toma.
+4. Calentar el contenedor ML para evitar el arranque en frío (40 a 60 s) durante la toma: abrir
+   Monitoreo en la consola hasta que "Contenedor ML" responda, o correr `pnpm eval:infiltrado`
+   (prueba un caso nuevo de punta a punta y lo borra).
 5. Revisar que el gasto acumulado en la consola de costos esté lejos del 80% del presupuesto.

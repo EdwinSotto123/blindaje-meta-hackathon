@@ -69,9 +69,10 @@ de la consola, en Motor vectorial): `POST /v1/console/vectores/sincronizar` como
   está en Miami y, sin esto, el Worker corría en Buenos Aires (donde entra la petición desde Lima):
   cada consulta cruzaba el continente. Una consulta a D1 bajó de ~130 ms a ~22 ms (desde
   `aws:us-east-1` eran ~45 ms). `WORKER_REGION` repite la región para el panel de Monitoreo.
-- **`ML_CONTAINER: "off"`** mientras la imagen de `services/ml` no esté desplegada: el Worker ignora
-  el binding `ML`. Sin esto cada búsqueda esperaba a que el contenedor inexistente fallara (de 5 a
-  25 s en la consulta del motor vectorial). Al activar el contenedor, cambiarlo a `"on"`.
+- **`ML_CONTAINER: "on"`** desde el 31/10 (estuvo en `"off"` del 29 al 31: con `"off"` el Worker
+  ignora el binding `ML` y los casos nuevos no generan voz, imagen ni marcas). Con Chroma
+  configurado, el motor vectorial de la consola no llama al contenedor; la sonda de Monitoreo usa
+  caché, así ninguna pantalla espera un arranque en frío.
 - **Consola en el mismo origen**: `blindaje-console` pasa `/v1/*` a esta API por un service binding
   (`apps/console/worker/index.ts`), así el navegador no hace un preflight CORS por cada ruta nueva
   ni abre una segunda conexión. Se despliega con `VITE_API_URL=self` (no `/`: Git Bash lo convierte
@@ -86,34 +87,24 @@ de la consola, en Motor vectorial): `POST /v1/console/vectores/sincronizar` como
 | Mediana de la consola en el navegador | 1,0 s | 0,4 s |
 | Entrar y ver la primera pantalla | 6,7 s | 1,4 s |
 
-## Activar el contenedor ML
+## Contenedor ML
 
-Cuando `services/ml/Dockerfile` esté listo, agregar en `wrangler.jsonc` (con Docker corriendo para
-el `wrangler deploy`):
+Encendido en producción: la imagen de `services/ml/Dockerfile` corre en Cloudflare Containers
+(`blindaje-api-mlcontainer`, `standard-2`: 1 vCPU, 6 GiB; hasta 3 instancias) detrás del binding `ML`
+(`MlContainer`, `src/ml/container.ts`).
 
-```jsonc
-"durable_objects": {
-  "bindings": [
-    { "name": "RATE_LIMITER", "class_name": "RateLimiter" },
-    { "name": "AUDIT_CHAIN", "class_name": "AuditChain" },
-    { "name": "ML", "class_name": "MlContainer" }
-  ]
-},
-"migrations": [
-  { "tag": "v1", "new_sqlite_classes": ["RateLimiter", "AuditChain"] },
-  { "tag": "v2", "new_sqlite_classes": ["MlContainer"] }
-],
-"containers": [
-  { "class_name": "MlContainer", "image": "../ml/Dockerfile", "max_instances": 2, "instance_type": "standard-2" }
-]
-```
-
+- `MlContainer`: puerto 8080, `sleepAfter: "30m"`, ping a `/health`, **sin salida a internet**
+  (`enableInternet = false`: los modelos van horneados en la imagen).
+- Arranque en frío: de 40 a 60 s después de dormir. Para calentarlo antes de una demo, abrir
+  Monitoreo en la consola hasta que "Contenedor ML" responda, o correr `pnpm eval:infiltrado`, que
+  además prueba un caso nuevo de punta a punta (~45 s con el contenedor despierto) y lo borra.
+- Desplegar el Worker sin tocar la imagen: `npx wrangler deploy --containers-rollout=none` (no
+  necesita Docker). Cambiar la imagen: `npx wrangler deploy` con Docker corriendo (construye y sube
+  una versión nueva; la imagen pesa ~4 GB, así que conviene hacerlo con RAM libre).
 - `ML_URL` debe quedar vacío en producción: si tiene valor, el Worker usa HTTP en vez del binding.
-- `MlContainer` (`src/ml/container.ts`): puerto 8080, `sleepAfter: "30m"`, ping a `/health`,
-  **sin salida a internet** (`enableInternet = false`: los modelos van horneados en la imagen). Si la
-  imagen descarga algo al arrancar, cambiarlo a `true`.
-- Con esta sección activada los tests siguen pasando (verificado: el pool no construye la imagen).
-- Si `standard-2` (1 vCPU, 6 GiB) se queda corto para ECAPA + DINOv2 + e5 + FAISS, subir a `standard-3`.
+- Los tests no construyen la imagen; corren igual con `ML_CONTAINER: "on"`.
+- Si `standard-2` se queda corto para ECAPA + DINOv2 + e5 + FAISS, subir a `standard-3` (pico medido
+  el 28/10: 2 GiB).
 
 ## Demo
 

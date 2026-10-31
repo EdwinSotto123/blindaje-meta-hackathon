@@ -21,8 +21,9 @@
     "DEMO_MODE": "true",
     "META_BUDGET_USD": "150",
     "ML_URL": "",
-    // "on" cuando la imagen de services/ml esté desplegada (README, "Activar el contenedor ML").
-    "ML_CONTAINER": "off",
+    // Encendido el 31/10: la imagen de services/ml corre en Cloudflare Containers (MlContainer). Con
+    // "off" el Worker ignora el binding y los casos nuevos no generan voz, imagen ni marcas.
+    "ML_CONTAINER": "on",
     // Chroma Cloud (base vectorial de los casos ficticios del demo). CHROMA_API_KEY y CHROMA_TENANT
     // van con `wrangler secret put`; sin ellos el motor usa FAISS en el contenedor ML.
     "CHROMA_DATABASE": "blindaje",

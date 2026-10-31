@@ -235,7 +235,7 @@ export async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; es
 
 // ---------------------------------------------------------------------------------------------
 
-async function runInfiltrado(api: Api, waitSeconds: number): Promise<InfiltradoReport> {
+export async function runInfiltrado(api: Api, waitSeconds: number): Promise<InfiltradoReport> {
   const seed = demoSeedResult();
   if (!seed) return { ...pend("Falta correr pnpm demo:seed (los casos A, B y C son el blanco de la prueba)."), pasa: null, chequeos: [] };
   const demo = loadDemo();

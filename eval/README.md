@@ -15,6 +15,7 @@ pnpm eval -- --voz-backend ml      # exige el contenedor ML (ML_URL, por defecto
 pnpm eval -- --todos               # ficha sobre los 32 guiones en vez de 20
 pnpm eval -- --sin-mo              # sin calibrar el modus operandi (necesita /text/embed del contenedor)
 pnpm eval:agentes                  # solo citas de los agentes y estadísticas contra la API desplegada; lo demás queda igual
+pnpm eval:infiltrado               # un caso nuevo de punta a punta en la API (contenedor ML incluido), aislamiento y borrado
 pnpm demo:reset && pnpm demo:seed  # historia A, B y C en la API (API_URL, DEMO_SECRET)
 ```
 

@@ -6,6 +6,7 @@
   "scripts": {
     "eval": "tsx src/run.ts",
     "eval:agentes": "tsx src/agentes-run.ts",
+    "eval:infiltrado": "tsx src/infiltrado-run.ts",
     "demo:seed": "tsx src/demo-seed.ts",
     "demo:reset": "tsx src/demo-reset.ts",
     "typecheck": "tsc --noEmit",

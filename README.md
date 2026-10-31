@@ -290,9 +290,10 @@ The repository starts on October 28, 2026; every commit is from the event. Day b
 
 ## Limitations
 
-- **The ML container is switched off in the deployed API** (`ML_CONTAINER=off`). The seeded demo
-  cases were processed with it and keep their voiceprints, vectors and links; a new upload today is
-  stored, transcribed and summarized, but gets no voice or image vectors until the container is back.
+- **The ML container sleeps when idle.** It runs on Cloudflare Containers (`standard-2`: 1 vCPU,
+  6 GiB) and sleeps after 30 minutes without requests. The first request after that waits about
+  40 to 60 seconds while it wakes; the console's Monitor shows it as down until it answers. A new
+  case takes about 45 seconds end to end once it is awake (`pnpm eval:infiltrado` checks it).
 - Voice calibration comes from read speech with simulated WhatsApp compression; it must be recalibrated
   with real voice notes. The statistics metric waits until reviewers approve links and networks form.
 - Android does not let any third-party app record call audio. The app logs calls from unknown numbers

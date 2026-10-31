@@ -38,7 +38,7 @@ Estado al 30/10. El detalle de cada día está en `DEVLOG.md`.
 |---|---|---|
 | M0 | Docs leídos, herramientas verificadas, contratos compartidos, migración D1, PLAN, DEVLOG, CI | hecho (28/10). CI de GitHub Actions bloqueado por facturación de la cuenta |
 | M1 | Worker: auth, casos, evidencia cifrada en R2, auditoría encadenada, costos, rate limiting | hecho (28/10) |
-| M2 | Ingesta y Workflow: Voice Transcribe, ficha con Muse Spark, SAM 3.1, contenedor ML, FAISS | hecho (28/10). En producción el contenedor ML está apagado (`ML_CONTAINER=off`): los casos del demo conservan sus vectores, pero lo nuevo no se vectoriza |
+| M2 | Ingesta y Workflow: Voice Transcribe, ficha con Muse Spark, SAM 3.1, contenedor ML, FAISS | hecho (28/10). Contenedor ML encendido en producción desde el 31/10 (Cloudflare Containers, `standard-2`): un caso nuevo se procesa de punta a punta en ~45 s |
 | M3 | Motor de vinculación, Vinculador, cola de revisión en la consola | hecho (28/10) |
 | M4 | Grafo, Cartógrafo, Vigía (cron), Redactor y PDF | hecho (28/10) |
 | M5 | App Expo: disfraces, entrada secreta, PIN y PIN señuelo, notas privadas, captura, compartir desde WhatsApp, denuncia, sincronización | hecho (28/10), más llamadas y widget (29/10) y burbuja (30/10). Pendiente: APK nuevo y prueba en un celular real |
@@ -68,4 +68,4 @@ Cada frente trabaja solo en su carpeta y hace commits acotados a ella.
 | Presupuesto de 150 USD | Registro de costos, bloqueo de no esenciales al 80 %, caché por hash, muestreo de video |
 | Audios del demo | Pedir al equipo 4 grabaciones ficticias (guiones en `docs/VIDEO.md`); respaldo con voces SLR73 |
 | RAM de la máquina para compilar el APK (30/10: Gradle se cortó tres veces) | Gradle con límites y vigilante; compilar con la máquina libre; el build retoma lo ya compilado |
-| Contenedor ML apagado en producción | Grabar el video con los casos sembrados, o encender el contenedor antes del demo en vivo |
+| Arranque en frío del contenedor ML (duerme tras 30 min sin uso; despierta en 40 a 60 s) | Antes de grabar o de una demo en vivo, abrir Monitoreo hasta que "Contenedor ML" responda, o correr `pnpm eval:infiltrado` |
