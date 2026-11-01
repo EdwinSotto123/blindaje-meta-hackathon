@@ -81,4 +81,4 @@ ml:
     - uv run ruff format --check .
     - uv run pytest -m "not heavy" -q
     # Scripts de evaluación en Python: solo estilo (sus dependencias incluyen torch).
-    - cd ../../eval/py && uvx ruff check . && uvx ruff format --check .
+    - cd ../../eval/py && uvx ruff@0.17.3 check . && uvx ruff@0.17.3 format --check .

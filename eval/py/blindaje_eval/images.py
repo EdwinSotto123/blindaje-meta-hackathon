@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import contextlib
 import io
 import json
 import random
@@ -130,12 +131,11 @@ class Dino:
             c = httpx.Client(
                 base_url=ML_URL, headers={"x-ml-token": ML_TOKEN} if ML_TOKEN else {}, timeout=120
             )
-            try:
+            # Si el contenedor no responde se usa el backend local (salvo que se pida "ml").
+            with contextlib.suppress(Exception):
                 if c.get("/health", timeout=5).status_code == 200:
                     self.client = c
                     self.backend = "ml"
-            except Exception:  # noqa: BLE001
-                pass
             if self.client is None and backend == "ml":
                 raise RuntimeError(f"El contenedor ML no responde en {ML_URL}")
         if self.client is None:

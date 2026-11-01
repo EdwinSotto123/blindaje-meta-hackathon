@@ -324,7 +324,7 @@ def proponer(tar: np.ndarray, non: np.ndarray) -> dict:
 
 def _dist(x: np.ndarray) -> dict:
     return {
-        "n": int(len(x)),
+        "n": len(x),
         "media": float(x.mean()),
         "std": float(x.std(ddof=1)),
         "min": float(x.min()),
@@ -367,7 +367,7 @@ def escenarios_voz(
         a.nombre: {
             "hablante": a.hablante,
             "canal": a.canal,
-            "segmentos": int(len(a.huella.segmentos)),  # type: ignore[union-attr]
+            "segmentos": len(a.huella.segmentos),  # type: ignore[union-attr]
             "duracion_s": a.huella.duracion_s,  # type: ignore[union-attr]
             "centroid": a.huella.centroid.tolist(),  # type: ignore[union-attr]
         }

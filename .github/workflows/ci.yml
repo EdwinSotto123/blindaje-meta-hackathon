@@ -87,5 +87,5 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run pytest -m "not heavy" -q
       # Scripts de evaluación en Python: solo estilo (sus dependencias incluyen torch).
-      - run: uvx ruff check . && uvx ruff format --check .
+      - run: uvx ruff@0.17.3 check . && uvx ruff@0.17.3 format --check .
         working-directory: eval/py

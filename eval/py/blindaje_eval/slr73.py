@@ -84,7 +84,7 @@ def descargar() -> None:
             for m in z.infolist():
                 # Datos descargados: solo extraemos .wav/.tsv y sin rutas raras
                 base = Path(m.filename).name
-                if not base or not (base.endswith(".wav") or base.endswith(".tsv") or base == "LICENSE"):
+                if not base or not (base.endswith((".wav", ".tsv")) or base == "LICENSE"):
                     continue
                 target = out / base
                 target.parent.mkdir(parents=True, exist_ok=True)

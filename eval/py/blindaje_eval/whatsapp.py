@@ -47,7 +47,7 @@ CANALES: dict[int, Canal] = {
 
 
 def _run(cmd: list[str]) -> None:
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, check=False, capture_output=True, text=True)
     if proc.returncode != 0:
         raise RuntimeError(f"ffmpeg falló ({proc.returncode}): {proc.stderr[-800:]}")
 

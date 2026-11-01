@@ -1,5 +1,8 @@
 # Dependencias y builds
 node_modules/
+# Cachés del CI de GitLab dentro del proyecto (pnpm y uv)
+.pnpm-store/
+.uv-cache/
 dist/
 build/
 .turbo/

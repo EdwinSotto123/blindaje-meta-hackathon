@@ -13,6 +13,7 @@ Los resultados se cachean por SHA-256 del WAV y backend en eval/data/cache/voice
 from __future__ import annotations
 
 import base64
+import contextlib
 import hashlib
 import json
 from dataclasses import dataclass
@@ -93,12 +94,10 @@ class MlBackend(Backend):
 
         # El contenedor a veces tarda en responder mientras carga modelos: 3 intentos de 10 s.
         for intento in range(3):
-            try:
+            with contextlib.suppress(Exception):
                 r = self.client.get("/health", timeout=10)
                 if r.status_code == 200 and bool(r.json().get("ok")):
                     return True
-            except Exception:  # noqa: BLE001
-                pass
             time.sleep(3 * (intento + 1))
         return False
 
