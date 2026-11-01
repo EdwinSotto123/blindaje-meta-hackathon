@@ -17,7 +17,9 @@ import {
   stepDescription,
 } from "../lib/vectors";
 import { mockVectorOverview, mockVectorTrace, MockVectorsApi } from "../mock/vectorsMock";
-import { CollectionsTable, StoreStrip, syncText, WalkStage } from "./VectorsView";
+import { CollectionsTable } from "./vectores/Inventario";
+import { WalkStage } from "./vectores/Recorrido";
+import { StoreStrip, syncText } from "./vectores/StoreStrip";
 
 const BASE = "https://api.blindaje.test";
 const text = (h: string) =>
