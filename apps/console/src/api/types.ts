@@ -44,8 +44,6 @@ export type AuditVerifyResponse = Out<typeof S.AuditVerifyResponse>;
 export type LinkDecisionRequest = Out<typeof S.LinkDecisionRequest>;
 export type AlertDecisionRequest = Out<typeof S.AlertDecisionRequest>;
 export type HypothesisDecision = Out<typeof S.HypothesisDecisionRequest>["decision"];
-export type Afirmacion = Out<typeof S.Afirmacion>;
-export type Hipotesis = Out<typeof S.Hipotesis>;
 
 /** Modelos que puede usar el Cartógrafo. */
 export type CartografoModel = "muse-spark-1.3" | "muse-wonder-1.0";

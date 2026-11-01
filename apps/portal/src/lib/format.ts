@@ -41,11 +41,6 @@ export function fmtUpdated(iso: string): string {
   return `${dayMonthFmt.format(d)}, ${time}`;
 }
 
-/** "1 caso", "14 casos". */
-export function casos(n: number): string {
-  return `${n.toLocaleString("es-PE")} ${n === 1 ? "caso" : "casos"}`;
-}
-
 /**
  * Rubros como los guarda la API (enum Sector de shared, en singular) y como se leen en una frase.
  * También acepta el plural y cualquier otro texto (las cuentas de negocio tienen rubro libre).

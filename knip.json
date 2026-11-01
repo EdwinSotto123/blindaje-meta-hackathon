@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreExportsUsedInFile": true,
+  "ignore": ["apps/mobile/**"],
+  "ignoreBinaries": ["uv", "expo"],
+  "workspaces": {
+    "services/api": {
+      "ignoreDependencies": ["cloudflare"]
+    },
+    "apps/landing": {
+      "ignoreDependencies": ["@fontsource-variable/bricolage-grotesque", "@fontsource/atkinson-hyperlegible"]
+    }
+  }
+}

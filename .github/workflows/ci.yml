@@ -24,6 +24,8 @@ jobs:
           restore-keys: turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
+      # Archivos, exports y dependencias sin uso (knip.json lista las excepciones conocidas).
+      - run: pnpm knip
       - run: pnpm check
 
   mobile:

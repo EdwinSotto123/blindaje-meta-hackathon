@@ -2,13 +2,13 @@ import { MetaApiError, MetaGuardError } from "@blindaje/meta-client";
 import { ApiError } from "../lib/errors";
 
 /**
- * Errores que no vale la pena reintentar: stubs, presupuesto agotado, datos inválidos, el
+ * Errores que no vale la pena reintentar: presupuesto agotado, datos inválidos, el
  * contenedor ML rechazó el archivo (502: por ejemplo un audio que ffmpeg no puede leer) o la Meta
  * API respondió con un error no transitorio (4xx salvo 429, salvaguardas locales).
  */
 export function isPermanentPipelineError(err: unknown): boolean {
   if (err instanceof ApiError) {
-    if (["not_implemented", "budget_exceeded", "bad_request", "not_found", "forbidden"].includes(err.code)) return true;
+    if (["budget_exceeded", "bad_request", "not_found", "forbidden"].includes(err.code)) return true;
     return err.code === "upstream_error" && err.status === 502;
   }
   if (err instanceof MetaApiError) return !err.retryable;

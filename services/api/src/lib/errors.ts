@@ -1,10 +1,7 @@
 import type { ErrorCode } from "@blindaje/shared";
 
-/**
- * Códigos de error de la API. `not_implemented` es local de services/api (stubs del pipeline);
- * se propone agregarlo a ErrorCode en packages/shared.
- */
-export type ApiErrorCode = ErrorCode | "not_implemented";
+/** Códigos de error de la API (los del contrato de packages/shared). */
+export type ApiErrorCode = ErrorCode;
 
 const STATUS: Record<ApiErrorCode, number> = {
   bad_request: 400,
@@ -19,7 +16,6 @@ const STATUS: Record<ApiErrorCode, number> = {
   upstream_error: 503,
   internal: 500,
   demo_disabled: 404,
-  not_implemented: 501,
 };
 
 export class ApiError extends Error {
@@ -39,14 +35,6 @@ export class ApiError extends Error {
     this.status = opts.status ?? STATUS[code];
     this.details = opts.details;
     this.headers = opts.headers;
-  }
-}
-
-/** Lo lanzan los stubs del pipeline, linking y agentes mientras otro frente los completa. */
-export class NotImplementedError extends ApiError {
-  constructor(what: string) {
-    super("not_implemented", `Todavía no implementado: ${what}`);
-    this.name = "NotImplementedError";
   }
 }
 

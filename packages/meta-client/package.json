@@ -13,7 +13,8 @@
     "lint": "eslint src test scripts",
     "test": "vitest run",
     "test:live": "vitest run --config vitest.live.config.ts",
-    "smoke": "tsx scripts/smoke.ts"
+    "smoke": "tsx scripts/smoke.ts",
+    "capture-fixtures": "tsx scripts/capture-fixtures.ts"
   },
   "dependencies": {
     "@meta-sam/parser": "^0.1.0",

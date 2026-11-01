@@ -3,7 +3,7 @@
  * sin pasar por el cliente, y lo guarda en test/fixtures para los tests unitarios.
  * Costo aproximado: 2 imágenes SAM (0.005 USD) + 14 s de audio (0.0007 USD) + un video (0.01 USD).
  *
- * Uso: pnpm --filter @blindaje/meta-client exec tsx scripts/capture-fixtures.ts [all|image|transcribe|video-still|video-moving]
+ * Uso: pnpm --filter @blindaje/meta-client capture-fixtures [all|image|transcribe|video-still|video-moving]
  */
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";

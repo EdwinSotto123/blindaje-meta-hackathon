@@ -155,7 +155,7 @@ dispositivo de una organización demo; si el código ya existe responde `409 con
 - Errores: `{ "error": { "code", "message", "details"? } }`. Estados: `bad_request` 400,
   `unauthorized` 401, `budget_exceeded` 402, `forbidden` 403, `not_found` 404, `demo_disabled` 404,
   `conflict` 409, `payload_too_large` 413, `integrity_mismatch` 422, `rate_limited` 429 (con
-  `retry-after`), `internal` 500, `not_implemented` 501 (stubs del pipeline), `upstream_error` 503
+  `retry-after`), `internal` 500, `upstream_error` 503
   (ML o Turnstile no disponibles; 502 si el ML rechaza la petición).
 - Subida de evidencia idempotente por (caso, SHA-256): reintentar la misma subida devuelve `200` con
   la evidencia existente en vez de `201`. Útil para la cola sin conexión del celular.
