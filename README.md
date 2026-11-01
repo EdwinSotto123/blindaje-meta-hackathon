@@ -232,6 +232,8 @@ pnpm check          # typecheck, lint and tests
 pnpm format         # Prettier (pnpm format:check in CI)
 ```
 
+Deployment: GitHub Actions deploys the four Workers when CI passes on `main` (D1 migrations first, smoke test last). Setup, manual commands and rollback: [`docs/DEPLOY.md`](docs/DEPLOY.md).
+
 ML container (see [`services/ml/README.md`](services/ml/README.md)):
 
 ```bash

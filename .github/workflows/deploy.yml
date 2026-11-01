@@ -1,0 +1,66 @@
+name: Despliegue
+
+# Despliega en Cloudflare cuando el CI pasa en main (o a mano desde la pestaña Actions).
+# Requiere en el entorno "production" de GitHub los secretos CLOUDFLARE_API_TOKEN y
+# CLOUDFLARE_ACCOUNT_ID; ver docs/DEPLOY.md. Ahí mismo se puede exigir una aprobación manual.
+#
+# La imagen del contenedor ML no se reconstruye aquí: necesita los pesos de Llama Prompt Guard 2,
+# que tienen acceso restringido y no están en el repo. La API se despliega con
+# --containers-rollout=none y el contenedor sigue con su imagen actual.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Cloudflare (producción)
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Migraciones de D1
+        run: pnpm --filter @blindaje/api exec wrangler d1 migrations apply blindaje --remote
+      - name: API
+        run: pnpm --filter @blindaje/api exec wrangler deploy --containers-rollout=none
+      - name: Consola (contra la API en vivo)
+        run: pnpm --filter @blindaje/console run deploy
+        env:
+          VITE_API_URL: self
+      - name: Portal (datos simulados)
+        run: pnpm --filter @blindaje/portal run deploy:mock
+      - name: Landing
+        run: pnpm --filter @blindaje/landing run deploy
+
+      - name: Prueba de humo
+        run: |
+          set -e
+          curl -fsS https://blindaje-api.vigiaperu.workers.dev/v1/health
+          for url in \
+            https://blindaje-console.vigiaperu.workers.dev/ \
+            https://blindaje-negocios.vigiaperu.workers.dev/ \
+            https://blindaje-landing.vigiaperu.workers.dev/ \
+            https://blindaje-landing.vigiaperu.workers.dev/en/; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$url")
+            echo "$code $url"
+            [ "$code" = "200" ]
+          done
