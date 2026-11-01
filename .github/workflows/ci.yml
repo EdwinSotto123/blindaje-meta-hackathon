@@ -45,6 +45,7 @@ jobs:
       # La copia de packages/shared en src/shared debe estar al día con el original.
       - run: npm run sync-shared -- --check
       - run: npm run lint
+      - run: npm run knip
       - run: npm run typecheck
       - run: npm test -- --ci
 

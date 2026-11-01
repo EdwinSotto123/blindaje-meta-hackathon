@@ -45,7 +45,7 @@ const secureAuthStore: AuthStore = {
 
 const mock = MOCK_API ? createMockServer({ isOnline, latencyMs: 350 }) : null;
 
-export const platform: DevicePlatform = Platform.OS === "ios" ? "ios" : Platform.OS === "web" ? "web" : "android";
+const platform: DevicePlatform = Platform.OS === "ios" ? "ios" : Platform.OS === "web" ? "web" : "android";
 
 /**
  * Cliente de la API. Sin código de invitación: si este celular todavía no tiene sesión (por ejemplo,

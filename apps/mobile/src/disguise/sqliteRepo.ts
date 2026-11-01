@@ -12,6 +12,7 @@ import {
 import { dayKey } from "@/lib/format";
 import { disguiseDb } from "@/storage/db";
 
+/** @public Se carga con require() desde provider.ts para no abrir SQLite en los tests. */
 export class SqliteDisguiseRepo implements DisguiseRepo {
   private seeded: Promise<void> | null = null;
 

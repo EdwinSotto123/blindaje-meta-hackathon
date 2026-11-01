@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react-native";
-import type { ReactTestInstance } from "react-test-renderer";
+import type { TestInstance } from "test-renderer";
 
 const mockRouter = {
   push: jest.fn(),
@@ -126,7 +126,7 @@ describe("El disfraz no delata nada", () => {
       await render(el());
       // Espera a que cargue la lista
       await screen.findAllByText(/S\/|Vuelto|Total|Anotar/);
-      const texts = visibleText(screen.toJSON() as unknown as ReactTestInstance);
+      const texts = visibleText(screen.toJSON() as unknown as TestInstance);
       expect(texts.length).toBeGreaterThan(3);
       expectSafe(texts);
     },

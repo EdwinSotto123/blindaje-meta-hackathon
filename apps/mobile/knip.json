@@ -1,0 +1,8 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreExportsUsedInFile": true,
+  "ignore": ["src/shared/**"],
+  "ignoreDependencies": ["expo-updates"],
+  "ignoreBinaries": ["expo-doctor"],
+  "entry": ["metro.config.js"]
+}
