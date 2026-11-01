@@ -1,0 +1,123 @@
+/* --------------------------------------------------------------------------
+   Consejos
+   -------------------------------------------------------------------------- */
+
+.rec {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rec-head {
+  display: grid;
+  gap: 6px;
+}
+
+.rec-head h2 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: var(--fs-h2);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.rec-group {
+  margin-top: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--linea);
+}
+
+.rec-group h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-bottom: 14px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--fs-title);
+  letter-spacing: -0.02em;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--arcilla);
+  color: var(--terracota-2);
+  font-family: var(--sans);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.todo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 40em;
+  padding-left: 1.9em;
+}
+
+.todo li {
+  padding-left: 4px;
+}
+
+.todo li::marker,
+.steps-plain li::marker {
+  color: var(--terracota);
+  font-family: var(--display);
+  font-weight: 800;
+}
+
+.todo li > p:first-child {
+  font-size: var(--fs-body-l);
+}
+
+.todo li > p + p {
+  color: var(--tinta-2);
+}
+
+.steps-plain {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 40em;
+  padding-left: 1.75em;
+  margin-bottom: 20px;
+}
+
+.caveats {
+  margin-top: 20px;
+  padding: 18px 22px;
+  border-radius: var(--r-m);
+  background: var(--fondo-2);
+  color: var(--tinta-2);
+  font-size: var(--fs-small);
+}
+
+.caveats h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--tinta);
+  font-size: var(--fs-body);
+}
+
+.caveats ul {
+  padding-left: 1.25em;
+}
+
+.older {
+  margin-top: var(--section-y);
+  padding-top: 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.older > .stack {
+  margin-top: 16px;
+  gap: 48px;
+}

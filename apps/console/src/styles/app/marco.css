@@ -1,0 +1,252 @@
+/* --------------------------------------------------------------------------
+   Marco: bandera de datos ficticios, barra lateral y contenido
+   -------------------------------------------------------------------------- */
+
+.demo-flag {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 4px 12px;
+  flex-wrap: wrap;
+  min-height: var(--flag-h);
+  padding: 5px 16px 5px 20px;
+  background: var(--ocre-suave);
+  color: var(--tinta);
+  border-bottom: 1px solid var(--ocre-borde);
+  font-size: 0.93rem;
+}
+@media (max-width: 600px) {
+  .demo-flag {
+    position: static;
+  }
+}
+.demo-flag strong {
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.demo-flag .demo-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.demo-flag select {
+  width: auto;
+  min-height: 32px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  font-size: 0.87rem;
+  border-color: var(--ocre-borde);
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar) minmax(0, 1fr);
+  min-height: calc(100vh - var(--flag-h));
+}
+
+.sidebar {
+  position: sticky;
+  top: var(--flag-h);
+  align-self: start;
+  height: calc(100vh - var(--flag-h));
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 22px 14px 16px;
+  background: var(--fondo-2);
+  border-right: 1px solid var(--linea);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Marca: la palabra "blindaje" en minúsculas, la misma de la landing y el portal. */
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 10px;
+  color: var(--tinta);
+  text-decoration: none;
+}
+.brand:hover {
+  color: var(--tinta);
+}
+.brand-name {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.85rem;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+/* El escudo de ladrillo de la marca, igual que en la landing y el portal. */
+.brand-name::before {
+  content: "";
+  display: inline-block;
+  width: 0.62em;
+  height: 0.76em;
+  margin-right: 0.14em;
+  vertical-align: -0.04em;
+  background: var(--terracota);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+.brand-sub {
+  font-size: 0.87rem;
+  font-weight: 700;
+  color: var(--tinta-3);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 40px;
+  padding: 7px 10px;
+  border-radius: var(--r-s);
+  text-decoration: none;
+  font-weight: 700;
+  color: var(--tinta);
+  transition: background-color 150ms var(--ease);
+}
+.nav a svg {
+  color: var(--tinta-3);
+}
+.nav a:hover {
+  background: var(--hover);
+  color: var(--tinta);
+}
+.nav a[aria-current="page"] {
+  background: var(--tinta);
+  color: var(--papel);
+}
+.nav a[aria-current="page"] svg {
+  color: var(--ocre);
+}
+.nav a .count {
+  margin-left: auto;
+  min-width: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--terracota);
+  color: #fff;
+  font-size: 0.87rem;
+  text-align: center;
+}
+
+.whoami {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 10px 0;
+  border-top: 1px solid var(--linea-2);
+  font-size: 0.87rem;
+}
+.whoami .btn {
+  margin-top: 6px;
+}
+
+.main {
+  min-width: 0;
+  padding: 26px 32px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 2px;
+}
+/* Medida de lectura: unos 75 caracteres por línea con Atkinson (su "0" es ancho). */
+.page-head p {
+  color: var(--tinta-2);
+  margin-top: 6px;
+  max-width: 52ch;
+}
+.page-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sidebar {
+    position: static;
+    height: auto;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px 10px;
+    padding: 14px 14px 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--linea);
+  }
+  .brand {
+    padding: 0 4px;
+  }
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .nav a {
+    min-height: 36px;
+    padding: 5px 10px;
+    gap: 7px;
+    background: var(--papel);
+    border: 1px solid var(--linea);
+  }
+  .nav a[aria-current="page"] {
+    border-color: var(--tinta);
+  }
+  .whoami {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px 10px;
+    text-align: right;
+  }
+  .whoami .btn {
+    margin: 0;
+  }
+  .main {
+    padding: 20px 16px 40px;
+  }
+}
+@media (max-width: 600px) {
+  .whoami .muted {
+    display: none;
+  }
+  h1 {
+    font-size: 1.6rem;
+  }
+}

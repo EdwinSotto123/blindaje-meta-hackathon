@@ -1,0 +1,59 @@
+/* --------------------------------------------------------------------------
+   Encabezado de página y secciones
+   -------------------------------------------------------------------------- */
+
+.page-head {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+.page-head h1 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: var(--fs-h1);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+/* En Mi zona el título es el lugar; la protagonista es la respuesta de abajo. */
+.page-head-compact {
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.page-head-compact h1 {
+  font-size: clamp(1.875rem, 1.5rem + 1.3vw, 2.5rem);
+}
+
+.lead {
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+  color: var(--tinta-2);
+  max-width: 36em;
+}
+
+.page-head-compact .lead {
+  font-size: var(--fs-body);
+}
+
+.section {
+  margin-top: var(--section-y);
+  padding-top: 32px;
+  border-top: 1px solid var(--linea);
+}
+
+.section > h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--fs-h2);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+.section-intro {
+  max-width: 38em;
+  margin: -6px 0 20px;
+  color: var(--tinta-2);
+}

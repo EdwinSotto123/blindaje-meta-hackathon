@@ -1,0 +1,347 @@
+/* --------------------------------------------------------------------------
+   Redes
+   -------------------------------------------------------------------------- */
+
+.graph-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--gap);
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .graph-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.graph-box {
+  position: relative;
+  height: 520px;
+  border: 1px solid var(--linea);
+  border-radius: var(--r-m);
+  background: var(--papel);
+  overflow: hidden;
+}
+@media (max-width: 600px) {
+  .graph-box {
+    height: 420px;
+  }
+}
+.graph-tools {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--r-m);
+  background: var(--papel);
+  box-shadow: var(--sombra-1);
+}
+.graph-tools .btn {
+  border-color: transparent;
+  padding: 4px 9px;
+}
+.graph-tools .btn:hover {
+  background: var(--fondo-2);
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  list-style: none;
+  padding: 2px 4px 0;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.legend svg {
+  flex-shrink: 0;
+}
+
+/* Línea de tiempo: carriles por caso (decorativo; la lista de abajo es la versión accesible). */
+.timeline-axis {
+  position: relative;
+  margin: 6px 0 4px;
+}
+.timeline-axis svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.tl-lane {
+  stroke: var(--linea-2);
+  stroke-width: 1;
+}
+.tl-lane.active {
+  stroke: var(--tinta);
+  stroke-width: 2;
+}
+.tl-case {
+  fill: var(--tinta);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+}
+.tl-dot {
+  fill: var(--tinta-2);
+  stroke: var(--papel);
+  stroke-width: 2;
+}
+.tl-dot.active {
+  fill: var(--ocre);
+  stroke: var(--tinta);
+}
+.tl-tick {
+  stroke: var(--linea);
+}
+.tl-tick-label {
+  fill: var(--tinta-3);
+  font-family: var(--sans);
+  font-size: 12px;
+}
+.timeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.timeline-list li {
+  display: grid;
+  grid-template-columns: 136px 74px minmax(0, 1fr);
+  gap: 10px;
+  padding: 7px 6px;
+  border-bottom: 1px solid var(--linea);
+  align-items: baseline;
+  border-radius: var(--r-s);
+}
+.timeline-list li:last-child {
+  border-bottom: 0;
+}
+.timeline-list li.active {
+  background: var(--ocre-suave);
+}
+@media (max-width: 700px) {
+  .timeline-list li {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+/* Pestañas: la elegida, subrayada en terracota. */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--linea-2);
+  flex-wrap: wrap;
+}
+.tabs a,
+.tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--tinta-2);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-s) var(--r-s) 0 0;
+  padding: 9px 14px 11px;
+  margin-bottom: -1px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tabs a[aria-current="page"],
+.tabs button[aria-selected="true"] {
+  color: var(--tinta);
+  box-shadow: inset 0 -3px 0 var(--terracota);
+}
+.tabs a:hover,
+.tabs button:hover {
+  background: var(--fondo-2);
+  color: var(--tinta);
+}
+/* En el celular las pestañas no se parten en dos filas: se deslizan. */
+@media (max-width: 600px) {
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .tabs a,
+  .tabs button {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+  /* El contenedor recorta lo que sale: el anillo de foco va por dentro. */
+  .tabs a:focus-visible,
+  .tabs button:focus-visible {
+    outline-offset: -3px;
+  }
+}
+
+/* Perfil de red */
+.fact,
+.hypo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--linea);
+}
+.fact:last-child,
+.hypo:last-child {
+  border-bottom: 0;
+}
+.hypo.descartada > span:first-of-type,
+.hypo.descartada .conf {
+  color: var(--tinta-2);
+}
+.conf {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.conf-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.conf-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: 1.5px solid var(--tinta-2);
+}
+.conf-dots i.on {
+  background: var(--tinta);
+  border-color: var(--tinta);
+}
+
+/* Vista previa de la alerta como la ve la persona en su app. */
+.phone {
+  width: 100%;
+  max-width: 340px;
+  border-radius: 28px;
+  padding: 10px;
+  background: var(--noche);
+  box-shadow: var(--sombra-2);
+}
+.phone-screen {
+  position: relative;
+  border-radius: 20px;
+  padding: 20px 16px 18px;
+  min-height: 420px;
+  background: var(--fondo);
+  overflow: hidden;
+  font-size: 1rem;
+}
+.phone-title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.55rem;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.phone-card {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: var(--r-m);
+  background: var(--papel);
+  box-shadow: var(--sombra-1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.phone-lead {
+  margin-top: 8px;
+  color: var(--tinta-2);
+  font-size: 0.93rem;
+  line-height: 1.45;
+}
+
+/* Costos */
+.budget-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 6px 12px;
+  flex-wrap: wrap;
+}
+.budget-figure .v {
+  font-family: var(--display);
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.budget-bar {
+  position: relative;
+  height: 20px;
+  border-radius: var(--r-s);
+  background: var(--fondo-2);
+}
+.budget-bar .fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--r-s) 0 0 var(--r-s);
+  background: var(--tinta-2);
+}
+.budget-bar .limit {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 0;
+  border-left: 2px dashed var(--alerta);
+}
+.budget-scale {
+  position: relative;
+  height: 18px;
+  font-size: 0.9rem;
+  color: var(--tinta-2);
+}
+.budget-scale span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 90px;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.92rem;
+}
+.bar-track {
+  height: 12px;
+  border-radius: 4px;
+  background: var(--fondo-2);
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--tinta-2);
+  min-width: 2px;
+}
+@media (max-width: 640px) {
+  .bar-row {
+    grid-template-columns: 1fr 70px;
+  }
+  .bar-row .bar-track {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}

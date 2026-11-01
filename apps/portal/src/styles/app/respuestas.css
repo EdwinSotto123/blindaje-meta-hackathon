@@ -1,0 +1,66 @@
+/* --------------------------------------------------------------------------
+   Respuestas en una frase y alertas
+   -------------------------------------------------------------------------- */
+
+.answer-line {
+  max-width: 30em;
+  margin-bottom: 24px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.answer-line a {
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px 24px;
+}
+
+.alert h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--fs-title);
+  letter-spacing: -0.02em;
+}
+
+.alert h2 .tag {
+  margin-left: 6px;
+  vertical-align: 0.15em;
+}
+
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checks li {
+  position: relative;
+  padding-left: 30px;
+}
+
+/* Marca de visto en dos trazos de terracota. */
+.checks li::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 0.3em;
+  width: 7px;
+  height: 13px;
+  border-right: 2.5px solid var(--terracota);
+  border-bottom: 2.5px solid var(--terracota);
+  transform: rotate(40deg);
+}

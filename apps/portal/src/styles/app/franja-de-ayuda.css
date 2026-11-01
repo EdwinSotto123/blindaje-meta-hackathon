@@ -1,0 +1,172 @@
+/* --------------------------------------------------------------------------
+   Franja de ayuda y banda de datos ficticios
+   -------------------------------------------------------------------------- */
+
+.help-in,
+.top-in,
+.tabs,
+.main,
+.foot-in {
+  width: min(100% - 2 * var(--gutter), var(--wide));
+  margin-inline: auto;
+}
+
+.help {
+  position: relative;
+  z-index: 1;
+  background: var(--noche);
+  color: var(--fondo);
+  font-size: var(--fs-small);
+  line-height: 1.3;
+}
+
+.help-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding-block: 8px;
+}
+
+.help-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.help-lead {
+  display: none;
+  color: var(--claro-tenue);
+}
+
+.help-never {
+  order: 4;
+  flex-basis: 100%;
+  font-weight: 700;
+}
+
+.help :focus-visible {
+  outline-color: var(--fondo);
+}
+
+.pill,
+.help-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--r-m);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.18s var(--ease);
+}
+
+.pill-105 {
+  background: var(--alerta);
+  color: var(--blanco);
+}
+
+.pill-105:hover {
+  background: var(--alerta-2);
+  color: var(--blanco);
+}
+
+.pill-1818 {
+  background: var(--fondo);
+  color: var(--tinta);
+}
+
+.pill-1818:hover {
+  background: var(--papel);
+  color: var(--tinta);
+}
+
+/* Primera en el orden de foco, a la derecha en pantalla. */
+.help-exit {
+  order: 3;
+  margin-left: auto;
+  border: 1.5px solid var(--claro-tenue);
+  color: var(--fondo);
+}
+
+.help-exit:hover {
+  background: var(--noche-2);
+  color: var(--fondo);
+}
+
+/* En pantallas angostas se ve "Salir"; el nombre accesible sigue siendo "Salir rápido". */
+.help-exit .wide {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 719px) {
+  .help-in {
+    gap: 6px 8px;
+  }
+  .help-item {
+    gap: 8px;
+  }
+  .pill,
+  .help-exit {
+    padding: 0 11px;
+  }
+}
+
+@media (min-width: 720px) {
+  .help-exit .wide {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+  }
+  .help-exit .narrow {
+    display: none;
+  }
+  .help-never {
+    order: 0;
+    flex-basis: auto;
+    margin-right: 6px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .help-lead {
+    display: inline;
+  }
+}
+
+.demo-flag {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+  padding-block: 8px;
+  padding-inline: max(var(--gutter), (100% - var(--wide)) / 2);
+  background: var(--ocre-suave);
+  color: var(--tinta);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+}
+
+.demo-short {
+  display: none;
+}
+
+@media (max-width: 719px) {
+  .demo-long {
+    display: none;
+  }
+  .demo-short {
+    display: inline;
+  }
+}

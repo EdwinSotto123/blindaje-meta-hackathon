@@ -1,0 +1,207 @@
+/* --------------------------------------------------------------------------
+   Elegir distrito y rubro (inicio sin distrito)
+   -------------------------------------------------------------------------- */
+
+.main > .picker-page {
+  max-width: none;
+}
+
+.picker-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+}
+
+.picker-controls {
+  display: grid;
+  gap: 18px;
+  max-width: 34rem;
+}
+
+.picker-note {
+  margin-bottom: 24px;
+}
+
+/* La foto: una calle cualquiera de Lima, con su crédito encima, abajo a la izquierda. */
+.picker-photo {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin: 0 0 28px;
+  overflow: hidden;
+  border-radius: var(--r-l);
+  background: var(--fondo-2);
+}
+
+.picker-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 55% 48%;
+}
+
+.picker-photo figcaption {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--noche);
+  color: var(--fondo);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 960px) {
+  .picker-page {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+    grid-template-areas:
+      "head photo"
+      "note photo"
+      "controls photo"
+      "groups groups"
+      "map map";
+    grid-template-rows: auto auto 1fr auto auto;
+    column-gap: 56px;
+  }
+  .picker-page > .page-head {
+    grid-area: head;
+  }
+  .picker-photo {
+    grid-area: photo;
+    aspect-ratio: auto;
+    min-height: 420px;
+    margin: 0;
+    border-radius: var(--r-foto);
+  }
+  .picker-note {
+    grid-area: note;
+  }
+  /* Los controles y la lista se ubican en la grilla de la página. */
+  .picker {
+    display: contents;
+  }
+  .picker-controls {
+    grid-area: controls;
+    align-self: end;
+  }
+  .picker-groups {
+    grid-area: groups;
+  }
+  .picker-map {
+    grid-area: map;
+  }
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-box .icon {
+  position: absolute;
+  left: 16px;
+  color: var(--tinta-2);
+  pointer-events: none;
+}
+
+.field .search-box input {
+  padding-left: 48px;
+}
+
+.picker-search p {
+  margin-top: 2px;
+}
+
+/* Los distritos por área: el área a la izquierda y sus distritos al lado, como un índice. */
+.picker-groups {
+  display: flex;
+  flex-direction: column;
+  margin-top: 44px;
+  border-top: 1px solid var(--linea);
+}
+
+.picker-group {
+  display: grid;
+  gap: 12px;
+  padding-block: 22px;
+  border-bottom: 1px solid var(--linea);
+}
+
+@media (min-width: 760px) {
+  .picker-group {
+    grid-template-columns: 10.5rem minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+.picker-group h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--fs-title);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 760px) {
+  .picker-group h2 {
+    padding-top: 10px;
+  }
+}
+
+.district-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.25rem), 1fr));
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.district-list a {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  min-height: 48px;
+  padding: 8px 14px;
+  border: 1px solid var(--linea);
+  border-radius: var(--r-m);
+  background: var(--papel);
+  color: var(--tinta);
+  font-weight: 700;
+  line-height: 1.25;
+  text-decoration: none;
+  transition:
+    border-color 0.18s var(--ease),
+    background-color 0.18s var(--ease);
+}
+
+.district-list a:hover {
+  border-color: var(--terracota);
+  background: var(--fondo);
+  color: var(--tinta);
+}
+
+.district-list a[aria-current="true"] {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--papel);
+}
+
+.picker-map {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: var(--read);
+  margin-top: 28px;
+  padding: 16px 20px;
+  border-radius: var(--r-m);
+  background: var(--fondo-2);
+}

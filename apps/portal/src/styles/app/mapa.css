@@ -1,0 +1,508 @@
+/* --------------------------------------------------------------------------
+   Mapa esquemático de distritos
+   -------------------------------------------------------------------------- */
+
+.map-mine {
+  margin-bottom: 20px;
+}
+
+.main > .zmap,
+.main > .map-rules {
+  max-width: none;
+}
+
+.map-rules {
+  display: grid;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+@media (min-width: 1000px) {
+  .map-rules {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.zlegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--fs-small);
+}
+
+.zlegend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zswatch,
+.zdot {
+  display: inline-block;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+
+.zdot {
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  border-radius: 4px;
+  vertical-align: -1px;
+}
+
+.zswatch[data-nivel="sin_datos"],
+.zdot[data-nivel="sin_datos"] {
+  background: var(--lvl-none);
+}
+
+.zswatch[data-nivel="bajo"],
+.zdot[data-nivel="bajo"] {
+  background: var(--lvl-bajo);
+  box-shadow: inset 0 0 0 1px var(--lvl-bajo-borde);
+}
+
+.zswatch[data-nivel="medio"],
+.zdot[data-nivel="medio"] {
+  background: var(--lvl-medio);
+}
+
+.zswatch[data-nivel="alto"],
+.zdot[data-nivel="alto"] {
+  background: var(--lvl-alto);
+}
+
+.zswatch-mine {
+  background: var(--papel);
+  box-shadow: inset 0 0 0 3px var(--tinta);
+}
+
+/* El mapa y, al lado, el detalle y la lista. Debajo de 1360 px el costado le quitaría al mapa el
+   ancho que necesitan los nombres: va abajo. */
+.zmap {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 1360px) {
+  .zmap {
+    grid-template-columns: minmax(0, 1fr) 272px;
+    grid-template-areas:
+      "legend side"
+      "frame side"
+      "cap side";
+    grid-template-rows: auto auto 1fr;
+    gap: 14px 28px;
+  }
+  .zmap > .zlegend {
+    grid-area: legend;
+  }
+  .zmap-frame {
+    grid-area: frame;
+  }
+  .zmap-side {
+    grid-area: side;
+    position: sticky;
+    top: 24px;
+    align-self: start;
+  }
+  .zmap > figcaption {
+    grid-area: cap;
+  }
+}
+
+.zmap-side {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+
+@media (min-width: 720px) and (max-width: 1359px) {
+  .zmap-side {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.skip-inline {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip-inline:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  align-self: flex-start;
+  font-weight: 700;
+}
+
+.zmap-frame {
+  position: relative;
+  container-type: inline-size;
+  padding: 16px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
+}
+
+.zmap-north {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tinta-2);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.zmap-north::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-left: 2px solid currentColor;
+  border-top: 2px solid currentColor;
+  transform: rotate(45deg) translate(2px, 2px);
+}
+
+.zmap-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.zmap-grid li {
+  display: flex;
+  min-width: 0;
+}
+
+/* El tamaño del nombre sigue al ancho del mapa, para que la palabra más larga ("Cieneguilla") quepa
+   entera en su cuadro: los nombres nunca se parten a mitad de palabra. */
+.zcell {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  min-height: 54px;
+  padding: 5px 5px 6px;
+  border: 1.5px solid transparent;
+  border-radius: 7px;
+  color: var(--tinta);
+  font-size: clamp(0.625rem, 1.9cqi - 3.4px, 0.875rem);
+  line-height: 1.15;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+.zcell-name {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+
+.zcell-band {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+}
+
+.zcell[data-nivel="sin_datos"] {
+  background: var(--lvl-none);
+  color: var(--tinta-2);
+}
+
+.zcell[data-nivel="bajo"] {
+  background: var(--lvl-bajo);
+  border-color: var(--lvl-bajo-borde);
+}
+
+.zcell[data-nivel="medio"] {
+  background: var(--lvl-medio);
+}
+
+.zcell[data-nivel="alto"] {
+  background: var(--lvl-alto);
+  color: var(--blanco);
+}
+
+.zcell:hover,
+.zcell[data-focus] {
+  border: 2px solid var(--tinta);
+  color: var(--tinta);
+}
+
+.zcell[data-nivel="alto"]:hover,
+.zcell[data-nivel="alto"][data-focus] {
+  color: var(--blanco);
+}
+
+/* Tu distrito: marco de tinta. */
+.zcell[aria-current="true"] {
+  border: 3px solid var(--tinta);
+}
+
+.zcell:focus-visible {
+  outline: 3px solid var(--terracota);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+/* Con poco ancho la grilla es una vista de conjunto: cuadros sin nombre a la vista (los nombres
+   siguen para los lectores de pantalla). Los nombres están en la lista de abajo, que es la forma
+   principal de elegir; cada cuadro igual se puede tocar. */
+@container (max-width: 699px) {
+  .zmap-grid {
+    gap: 3px;
+  }
+  .zcell {
+    min-height: 0;
+    aspect-ratio: 1;
+    padding: 0;
+    align-items: center;
+    border-radius: 5px;
+  }
+  .zcell-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .zcell-band {
+    font-size: min(0.75rem, 3.1cqi);
+    letter-spacing: -0.02em;
+  }
+  /* El marco va por fuera para no quitarle espacio al rango. */
+  .zcell[aria-current="true"] {
+    border: 1.5px solid transparent;
+    outline: 2.5px solid var(--tinta);
+    outline-offset: 1px;
+  }
+}
+
+@media (max-width: 719px) {
+  .zmap-frame {
+    padding: 10px;
+  }
+  .zmap-north {
+    top: 10px;
+    right: 10px;
+  }
+}
+
+.zreadout {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 6.4em;
+  padding: 14px 18px;
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
+  background: var(--papel);
+}
+
+/* Dónde hay datos: la respuesta al "¿dónde pasa?" en una mirada, en el mismo orden que la escala. */
+.zrank {
+  display: grid;
+  gap: 4px;
+}
+
+.zrank-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.zrank-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--linea);
+}
+
+.zrank-list li {
+  border-bottom: 1px solid var(--linea);
+}
+
+/* Dos renglones: el nombre y, debajo, nivel y rango. Así cabe en el costado sin partir nombres. */
+.zrank-list a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-height: 44px;
+  padding: 7px 4px;
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.zrank-list .zdot {
+  margin-right: 10px;
+}
+
+.zrank-name {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.zrank-val {
+  grid-column: 2;
+  font-size: var(--fs-caption);
+  line-height: 1.3;
+  color: var(--tinta-2);
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+}
+
+.zrank-trend {
+  color: var(--tinta);
+  font-weight: 700;
+}
+
+.zrank-list a:hover .zrank-name,
+.zrank-list a:focus-visible .zrank-name {
+  text-decoration: underline;
+  text-decoration-color: var(--terracota);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.zrank-list a[aria-current="true"] .zrank-name {
+  justify-self: start;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--ocre-suave);
+}
+
+.zmap figcaption {
+  max-width: 44em;
+}
+
+.ztable-wrap {
+}
+
+.ztable th[scope="row"] {
+  font-weight: 400;
+}
+
+.ztable .nowrap {
+  white-space: nowrap;
+}
+
+.ztable th[scope="row"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-weight: 700;
+}
+
+/* Tu distrito: el renglón entero resaltado en ocre. */
+.ztable tr[data-mine] {
+  background: color-mix(in srgb, var(--ocre-suave) 60%, var(--papel));
+}
+
+.ztable-mine {
+  font-size: var(--fs-caption);
+  color: var(--tinta-2);
+}
+
+.ztable-mods {
+  display: block;
+  font-size: var(--fs-caption);
+  color: var(--tinta-2);
+  line-height: 1.35;
+}
+
+/* Los distritos sin datos de un área: una fila de nombres tocables, sin columnas vacías. */
+.ztable-none td {
+  padding-block: 10px 12px;
+}
+
+.ztable-none-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+  color: var(--tinta-2);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+}
+
+.ztable-none-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ztable-none-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-weight: 700;
+}
+
+.ztable-area th {
+  padding-top: 12px;
+  padding-bottom: 8px;
+  background: var(--fondo-2);
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* En el celular la lista es la forma principal de elegir: cabe sin desplazarse de lado, con nombres
+   tocables de 44 px. Las modalidades quedan en la página de cada distrito. */
+@media (max-width: 560px) {
+  .ztable {
+    font-size: var(--fs-caption);
+  }
+  .ztable th,
+  .ztable td {
+    padding: 6px 6px;
+  }
+  .ztable th:first-child,
+  .ztable td:first-child {
+    padding-left: 12px;
+  }
+  .ztable th[scope="row"] {
+    padding-block: 0;
+  }
+  .ztable th[scope="row"] a,
+  .ztable-none-list a {
+    min-height: 44px;
+  }
+  .ztable td .zdot,
+  .ztable th .zdot,
+  .ztable-mods {
+    display: none;
+  }
+  .ztable-none-label .zdot {
+    display: inline-block;
+  }
+}

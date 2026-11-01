@@ -1,0 +1,190 @@
+/* --------------------------------------------------------------------------
+   Cabecera: la marca, la zona elegida y las pestañas
+   -------------------------------------------------------------------------- */
+
+.top {
+  border-bottom: 1px solid var(--linea);
+}
+
+.top-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 24px;
+  padding-top: 14px;
+}
+
+/* La marca: "blindaje" en minúsculas, en Bricolage, y "tu zona" al lado en Atkinson. */
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  padding-block: 10px;
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.brand:hover {
+  color: var(--tinta);
+}
+
+.brand-name {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.875rem;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+/* El escudo de ladrillo del wordmark, el mismo de la landing y la consola. */
+.brand-name::before,
+.foot-brand::before {
+  content: "";
+  display: inline-block;
+  width: 0.62em;
+  height: 0.76em;
+  margin-right: 0.14em;
+  vertical-align: -0.04em;
+  background: var(--terracota);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.brand-sub {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--tinta-2);
+  white-space: nowrap;
+}
+
+/* La zona elegida: el distrito en tinta, el rubro más suave y el enlace para cambiarla. */
+.zone-chip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 2px 2px 2px 16px;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  background: var(--papel);
+  font-size: var(--fs-small);
+  line-height: 1.35;
+}
+
+.zone-chip-text .muted {
+  color: var(--tinta-2);
+}
+
+.zone-chip-change {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.zone-chip-change:hover {
+  background: var(--fondo-2);
+}
+
+.tabs {
+  margin-top: 6px;
+}
+
+.tabs ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 28px;
+  list-style: none;
+  margin: 0 0 -1px;
+  padding: 0;
+}
+
+.tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  border-bottom: 3px solid transparent;
+  color: var(--tinta-2);
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tabs a:hover {
+  color: var(--tinta);
+  border-bottom-color: var(--linea-2);
+}
+
+.tabs a[aria-current="page"] {
+  color: var(--tinta);
+  border-bottom-color: var(--terracota);
+}
+
+.tabs a:focus-visible {
+  outline-offset: -1px;
+}
+
+.nav-short {
+  display: none;
+}
+
+/* En el celular: una sola fila que se desliza (la pestaña siguiente asoma), con etiquetas cortas,
+   para que la respuesta quede en la primera pantalla. */
+@media (max-width: 719px) {
+  .top-in {
+    padding-top: 8px;
+    gap: 0 12px;
+  }
+  .brand {
+    padding-block: 8px;
+  }
+  .brand-name {
+    font-size: 1.625rem;
+  }
+  .brand-sub {
+    font-size: var(--fs-caption);
+  }
+  .zone-chip {
+    padding-left: 12px;
+    font-size: var(--fs-caption);
+  }
+  .zone-chip-change {
+    padding: 0 10px;
+  }
+  .tabs {
+    width: 100%;
+    margin-top: 0;
+  }
+  .tabs ul {
+    flex-wrap: nowrap;
+    gap: 22px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding-inline: var(--gutter);
+  }
+  .tabs ul::-webkit-scrollbar {
+    display: none;
+  }
+  .tabs li {
+    flex: none;
+  }
+  .tabs a {
+    min-height: 48px;
+  }
+  .nav-long {
+    display: none;
+  }
+  .nav-short {
+    display: inline;
+  }
+}

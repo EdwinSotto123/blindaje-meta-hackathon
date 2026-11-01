@@ -1,0 +1,40 @@
+/* --------------------------------------------------------------------------
+   Modalidades y señales
+   -------------------------------------------------------------------------- */
+
+.modalidad {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px;
+}
+
+.modalidad-desc {
+  font-size: var(--fs-body-l);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.modalidad .label {
+  margin-top: 6px;
+}
+
+/* Frases y patrones detectados: son datos, van resaltados en ocre. */
+.signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.signals li {
+  padding: 6px 12px;
+  border-radius: var(--r-s);
+  background: var(--ocre-suave);
+  color: var(--tinta);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  line-height: 1.3;
+}

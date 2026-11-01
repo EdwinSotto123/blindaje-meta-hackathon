@@ -1,0 +1,199 @@
+:root {
+  --mono: ui-monospace, "Cascadia Mono", "Consolas", "SFMono-Regular", monospace;
+  --gap: 16px;
+  --sidebar: 236px;
+  /* Alto de la bandera de datos ficticios: 0 cuando no está (ver :has más abajo). */
+  --flag-h: 0px;
+
+  /* Derivadas del tema: superficies de paso y bordes de los avisos. */
+  --hover: color-mix(in oklab, var(--fondo-2) 70%, var(--papel));
+  --ocre-borde: color-mix(in oklab, var(--ocre) 55%, var(--ocre-suave));
+
+  /* Señales del grafo: paleta categórica validada (todos los pares, con daltonismo) sobre --papel.
+     La forma de cada nodo es la segunda señal. Mismos valores que NODE_TYPES en lib/graph.ts. */
+  --senal-voz: #c59711;
+  --senal-voz-tinte: #f8eed8;
+  --senal-identificador: #21763c;
+  --senal-identificador-tinte: #e3f4e5;
+  --senal-frase: #bf71a6;
+  --senal-frase-tinte: #fbe8f4;
+  --senal-imagen: #105483;
+  --senal-imagen-tinte: #e3f0fd;
+}
+:root:has(.demo-flag) {
+  --flag-h: 44px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 93.75%;
+  -webkit-text-size-adjust: 100%;
+  /* La bandera de datos ficticios y la barra de decisión son fijas: que no tapen el foco. */
+  scroll-padding-top: 60px;
+  scroll-padding-bottom: 120px;
+}
+
+button,
+a,
+select,
+input[type="radio"] {
+  touch-action: manipulation;
+}
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  line-height: 1.5;
+  color: var(--tinta);
+  background: var(--fondo);
+  min-height: 100vh;
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.12;
+}
+h2 {
+  font-size: 1.15rem;
+}
+h3 {
+  font-size: 1.02rem;
+}
+p {
+  margin: 0;
+}
+ul,
+ol {
+  margin: 0;
+  padding-left: 1.2em;
+}
+a {
+  color: var(--tinta);
+  text-decoration-color: var(--terracota);
+  text-underline-offset: 3px;
+}
+a:hover {
+  color: var(--terracota-2);
+}
+code,
+.mono {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+small,
+.small {
+  font-size: 0.87rem;
+}
+.muted {
+  color: var(--tinta-2);
+}
+.strong {
+  font-weight: 700;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.break {
+  overflow-wrap: anywhere;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.divider {
+  width: 100%;
+  margin: 2px 0;
+  border: 0;
+  border-top: 1px solid var(--linea);
+}
+
+/* Foco: el mismo anillo terracota en todas las superficies. */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 3px solid var(--terracota);
+  outline-offset: 2px;
+}
+
+main[tabindex="-1"]:focus,
+main[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+.table tr[tabindex="-1"]:focus {
+  outline: 3px solid var(--terracota);
+  outline-offset: -3px;
+}
+
+p,
+dd,
+li {
+  text-wrap: pretty;
+}
+
+/* "Ir a la decisión": invisible hasta recibir el foco del teclado. */
+.skip-inline {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+}
+.skip-inline:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  clip: auto;
+  margin: 0 0 8px;
+  padding: 6px 12px;
+  border: 1.5px solid var(--tinta);
+  border-radius: var(--r-m);
+  background: var(--papel);
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 700;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  background: var(--tinta);
+  color: var(--papel);
+  padding: 10px 14px;
+  border-radius: var(--r-m);
+  font-weight: 700;
+}
+.skip-link:focus-visible {
+  top: 12px;
+  color: var(--papel);
+}

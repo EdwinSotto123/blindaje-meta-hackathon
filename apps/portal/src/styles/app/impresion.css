@@ -1,0 +1,34 @@
+/* --------------------------------------------------------------------------
+   Impresión: los consejos se imprimen para pegarlos en el local o llevarlos a una reunión
+   -------------------------------------------------------------------------- */
+
+@media print {
+  html,
+  body {
+    background: var(--blanco);
+  }
+  .help,
+  .tabs,
+  .zone-chip-change,
+  .zone-chip-pick,
+  .zone-controls,
+  .skip,
+  .skip-inline,
+  .table-alt,
+  .next-actions,
+  .picker-photo {
+    display: none !important;
+  }
+  .answer-card,
+  .next {
+    box-shadow: none;
+    border: 1px solid var(--linea-2);
+  }
+  .foot {
+    background: none;
+    color: var(--tinta);
+  }
+  a {
+    text-decoration: none;
+  }
+}

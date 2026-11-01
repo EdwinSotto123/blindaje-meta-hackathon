@@ -1,0 +1,88 @@
+/* --------------------------------------------------------------------------
+   Tablas y listas densas
+   -------------------------------------------------------------------------- */
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--linea);
+  border-radius: var(--r-m);
+  background: var(--papel);
+}
+/* Dentro de un panel la tabla no es otra tarjeta: solo su encabezado hundido. */
+.panel .table-wrap {
+  border: 0;
+  border-radius: var(--r-s);
+  background: transparent;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+.table th,
+.table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--linea);
+  vertical-align: top;
+}
+.table th {
+  position: sticky;
+  top: 0;
+  background: var(--fondo-2);
+  font-size: 0.87rem;
+  color: var(--tinta-2);
+  border-bottom: 1px solid var(--linea-2);
+  white-space: nowrap;
+}
+.table tbody tr:hover td {
+  background: color-mix(in oklab, var(--fondo) 60%, var(--papel));
+}
+.table tr:last-child td {
+  border-bottom: 0;
+}
+.table td.num,
+.table th.num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.table tr.row-unverified td {
+  color: var(--tinta-2);
+}
+.table tr.row-broken td {
+  background: var(--alerta-suave);
+  color: var(--alerta);
+  font-weight: 700;
+}
+.table tr.row-new td {
+  background: var(--ocre-suave);
+}
+
+.dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 5px 16px;
+  margin: 0;
+  font-size: 0.93rem;
+}
+.dl dt {
+  color: var(--tinta-2);
+}
+.dl dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.list-plain {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.list-lines > li {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--linea);
+}
+.list-lines > li:last-child {
+  border-bottom: 0;
+}

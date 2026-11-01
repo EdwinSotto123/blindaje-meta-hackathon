@@ -1,0 +1,122 @@
+/* --------------------------------------------------------------------------
+   Formularios
+   -------------------------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.field > label,
+.field > .label {
+  font-weight: 700;
+  font-size: 0.93rem;
+}
+.field .hint {
+  font-size: 0.85rem;
+  color: var(--tinta-2);
+}
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+select,
+textarea {
+  font: inherit;
+  color: var(--tinta);
+  background: var(--papel);
+  border: 1.5px solid var(--linea-2);
+  border-radius: var(--r-s);
+  padding: 8px 11px;
+  min-height: 42px;
+  width: 100%;
+  transition: border-color 150ms var(--ease);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--tinta-3);
+}
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--tinta-3);
+}
+textarea {
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.5;
+}
+input[readonly],
+textarea[readonly] {
+  background: var(--fondo);
+  border-color: var(--linea);
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  border-color: var(--tinta);
+  outline-offset: 1px;
+}
+input[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: var(--alerta);
+  background: var(--alerta-suave);
+}
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--terracota);
+}
+fieldset {
+  border: 1px solid var(--linea);
+  border-radius: var(--r-m);
+  padding: 10px 14px;
+  margin: 0;
+}
+legend {
+  font-weight: 700;
+  padding: 0 6px;
+}
+.panel fieldset {
+  border: 0;
+  padding: 0;
+}
+.panel legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+/* Control segmentado: la opción elegida, llena de tinta. */
+.segmented {
+  align-self: flex-start;
+  max-width: 100%;
+  flex-wrap: wrap;
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--linea-2);
+  border-radius: var(--r-m);
+  background: var(--papel);
+}
+.segmented button {
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--tinta);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-s);
+  padding: 6px 13px;
+  min-height: 34px;
+  cursor: pointer;
+  transition: background-color 150ms var(--ease);
+}
+.segmented button:hover {
+  background: var(--fondo-2);
+}
+.segmented button[aria-pressed="true"],
+.segmented button[aria-selected="true"] {
+  background: var(--tinta);
+  color: var(--papel);
+}

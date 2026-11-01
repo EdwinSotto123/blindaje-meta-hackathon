@@ -1,0 +1,87 @@
+/* --------------------------------------------------------------------------
+   Superficies: hojas, notas, umbral, vacíos, errores
+   -------------------------------------------------------------------------- */
+
+.sheet {
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--fondo-2);
+  border-radius: var(--r-m);
+}
+
+.note .icon {
+  margin-top: 3px;
+  color: var(--tinta-2);
+}
+
+.note-error {
+  background: var(--alerta-suave);
+  font-weight: 700;
+}
+
+.note-error .icon {
+  color: var(--alerta);
+}
+
+/* La ausencia se dibuja: borde punteado, nunca un hueco. */
+.threshold,
+.empty,
+.pending {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 22px;
+  border: 2px dashed var(--linea-2);
+  border-radius: var(--r-l);
+}
+
+.threshold .strong,
+.empty .strong {
+  font-size: var(--fs-body-l);
+  color: var(--tinta);
+}
+
+.empty,
+.pending {
+  color: var(--tinta-2);
+}
+
+.pending {
+  margin-top: 28px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--tinta-2);
+  padding-block: 12px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid var(--linea);
+  border-top-color: var(--terracota);
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    animation: spin 0.9s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,212 @@
+/* --------------------------------------------------------------------------
+   Renglones con rangos: cuatro peldaños que se pintan hasta el rango
+   -------------------------------------------------------------------------- */
+
+.ledger-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ledger-figure {
+  padding: 20px 22px 18px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
+}
+
+.ledger {
+  --cell: 20px;
+  --gap: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr) 5rem;
+  align-items: center;
+  gap: 14px;
+  min-height: calc(var(--cell) + 18px);
+  padding-block: 7px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.ledger-row:last-child {
+  border-bottom: 0;
+}
+
+.ledger-head {
+  min-height: 0;
+  padding-block: 0 8px;
+  border-bottom-color: var(--linea-2);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  color: var(--tinta-3);
+}
+
+.ledger-label {
+  font-size: var(--fs-small);
+  line-height: 1.25;
+}
+
+/* "tu rubro", "hasta hoy": el dato resaltado en ocre. */
+.ledger-label em {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 7px;
+  border-radius: 6px;
+  background: var(--ocre-suave);
+  color: var(--tinta);
+  font-style: normal;
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ledger-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+.ledger-steps i {
+  height: var(--cell);
+  border-radius: 5px;
+  background: var(--fondo-2);
+}
+
+.ledger-steps i[data-on] {
+  background: var(--terracota);
+}
+
+/* No llega al mínimo: el renglón se dibuja punteado (no es cero, es "sin datos"). */
+.ledger-steps .ledger-absent {
+  grid-column: 1 / -1;
+  border: 1.5px dashed var(--tinta-3);
+  background: transparent;
+}
+
+.ledger-scale span {
+  text-align: center;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.ledger-value {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.ledger-row[data-empty] .ledger-value {
+  font-weight: 400;
+  font-size: var(--fs-caption);
+  color: var(--tinta-2);
+}
+
+.ledger-figure figcaption {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--linea);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .ledger {
+    --cell: 16px;
+    --gap: 3px;
+  }
+  .ledger-scale span {
+    font-size: 0.75rem;
+  }
+  .ledger-row {
+    grid-template-columns: 5.5rem minmax(0, 1fr) 4.25rem;
+    gap: 8px;
+    padding-block: 5px;
+  }
+  .ledger-label em {
+    display: table;
+    margin: 2px 0 0;
+  }
+  .ledger-figure {
+    padding: 14px 14px 12px;
+  }
+}
+
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.table-alt summary,
+.older summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 4px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--terracota);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.table-alt summary:hover,
+.older summary:hover {
+  text-decoration-thickness: 2.5px;
+}
+
+.table-alt summary::after,
+.older summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+
+.table-alt[open] summary::after,
+.older[open] summary::after {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin-top: 8px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-l);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+}
+
+caption {
+  padding: 14px 16px 6px;
+  text-align: left;
+  font-weight: 700;
+}
+
+th,
+td {
+  padding: 10px 16px;
+  text-align: left;
+  border-top: 1px solid var(--linea);
+}
+
+thead th {
+  color: var(--tinta-3);
+  font-size: var(--fs-caption);
+  border-top: 0;
+}

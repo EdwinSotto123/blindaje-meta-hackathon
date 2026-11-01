@@ -1,0 +1,546 @@
+/* --------------------------------------------------------------------------
+   Paneles, botones, insignias
+   -------------------------------------------------------------------------- */
+
+.panel {
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-m);
+  padding: 16px 18px;
+  min-width: 0;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.panel-head h2,
+.panel-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-head h2 svg,
+.panel-head h3 svg {
+  color: var(--tinta-2);
+}
+/* Panel hundido: información de apoyo, sin borde. */
+.panel.flat {
+  background: var(--fondo-2);
+  border-color: transparent;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.stack-sm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap);
+}
+@media (max-width: 1100px) {
+  .grid-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Botones: primario terracota, secundario con trazo de tinta, silencioso subrayado. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 16px;
+  border: 1.5px solid var(--tinta);
+  border-radius: var(--r-m);
+  background: transparent;
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.15;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 150ms var(--ease),
+    border-color 150ms var(--ease),
+    color 150ms var(--ease);
+}
+.btn:hover {
+  background: var(--fondo-2);
+  color: var(--tinta);
+}
+.btn:active {
+  background: var(--linea);
+}
+.btn-primary {
+  background: var(--terracota);
+  border-color: var(--terracota);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--terracota-2);
+  border-color: var(--terracota-2);
+  color: #fff;
+}
+.btn-primary:active {
+  background: var(--terracota-2);
+}
+/* Acciones que descartan o rechazan: el mismo peso que el "sí", con el tono de alerta al pasar. */
+.btn-danger:hover {
+  background: var(--alerta-suave);
+  border-color: var(--alerta);
+  color: var(--alerta);
+}
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  padding-left: 6px;
+  padding-right: 6px;
+  text-decoration: underline;
+  text-decoration-color: var(--terracota);
+  text-underline-offset: 3px;
+}
+.btn-quiet:hover {
+  background: transparent;
+  text-decoration-thickness: 2px;
+  color: var(--terracota-2);
+}
+.btn-sm {
+  min-height: 32px;
+  padding: 4px 11px;
+  font-size: 0.87rem;
+  border-radius: var(--r-s);
+}
+.btn-sm.btn-quiet {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+@media (pointer: coarse) {
+  .btn,
+  .btn-sm,
+  .segmented button {
+    min-height: 44px;
+  }
+}
+.btn-lg {
+  min-height: 46px;
+  padding: 10px 20px;
+  font-size: 1.0333rem;
+}
+/* Deshabilitado: neutro y legible (no una terracota desteñida). */
+.btn[disabled],
+.btn[disabled]:hover,
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  background: var(--fondo-2);
+  border-color: var(--linea-2);
+  color: var(--tinta-3);
+  cursor: not-allowed;
+}
+.btn-quiet[disabled],
+.btn-quiet[disabled]:hover {
+  background: transparent;
+  border-color: transparent;
+}
+/* Botón de selección (lista de elementos del grafo): elegido = tinta llena. */
+.btn[aria-pressed="true"] {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--papel);
+}
+.btn svg {
+  flex-shrink: 0;
+}
+
+/* Insignias: fondo suave y texto oscuro del mismo tono. Nunca solo color: siempre con texto. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--ocre-suave);
+  color: var(--tinta);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.55;
+  white-space: nowrap;
+}
+.chip-mint {
+  background: var(--verde-suave);
+  color: var(--verde);
+}
+/* Cifras ficticias: el mismo tono que la bandera de datos ficticios. */
+.chip-pink {
+  background: var(--ocre-suave);
+  color: var(--tinta);
+}
+.chip-grid {
+  background: var(--fondo-2);
+  color: var(--tinta-2);
+}
+.chip-ink {
+  background: var(--tinta);
+  color: var(--papel);
+}
+.chip-outline {
+  background: transparent;
+  border: 1px solid var(--linea-2);
+  line-height: 1.45;
+}
+.chip-danger {
+  background: var(--alerta-suave);
+  color: var(--alerta);
+}
+
+/* Autenticidad (¿hecho con IA?): indicios, nunca un sello de "real" */
+.chip-auth {
+  background: var(--fondo-2);
+  color: var(--tinta);
+}
+.chip-auth[data-tone="none"] {
+  background: transparent;
+  border: 1px solid var(--linea-2);
+  color: var(--tinta-2);
+  font-weight: 400;
+  line-height: 1.45;
+}
+.chip-auth[data-tone="sin"] {
+  font-weight: 400;
+}
+.chip-auth[data-tone="debil"] {
+  background: var(--ocre-suave);
+  border: 1px solid var(--ocre-borde);
+  line-height: 1.45;
+}
+.chip-auth[data-tone="fuerte"] {
+  background: var(--alerta-suave);
+  color: var(--alerta);
+}
+.chip-auth[data-tone="confirmado"] {
+  background: var(--alerta);
+  color: #fff;
+}
+.chip-auth-sm {
+  padding: 0 7px;
+  font-size: 0.8rem;
+}
+.auth-panel {
+  padding: 12px 14px;
+  border-radius: var(--r-m);
+  background: var(--fondo-2);
+}
+.auth-panel[data-tone="debil"] {
+  background: var(--ocre-suave);
+}
+.auth-panel[data-tone="fuerte"],
+.auth-panel[data-tone="confirmado"] {
+  background: var(--alerta-suave);
+}
+/* Dentro del panel teñido, la insignia vuelve al papel para seguir viéndose como insignia. */
+.auth-panel .chip-auth {
+  background: var(--papel);
+}
+.auth-panel p {
+  margin: 0;
+  max-width: 72ch;
+}
+.auth-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 1rem;
+}
+.auth-panel[data-tone="fuerte"] .auth-title svg,
+.auth-panel[data-tone="confirmado"] .auth-title svg {
+  color: var(--alerta);
+}
+.auth-sources li {
+  display: grid;
+  grid-template-columns: minmax(140px, 38%) 1fr;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 0.93rem;
+}
+.auth-sources li[data-alerta="si"] {
+  font-weight: 700;
+}
+.auth-source {
+  color: var(--tinta-2);
+}
+.auth-panel .auth-note {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 0.87rem;
+}
+.auth-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.auth-list > details {
+  border-top: 1px solid var(--linea);
+  padding: 8px 0;
+}
+.auth-list > details > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  cursor: pointer;
+}
+.auth-list > details[open] > summary {
+  margin-bottom: 8px;
+}
+.ev-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Cita clicable dentro de un texto del agente. El tinte sigue el color de la señal del grafo. */
+.cite {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0 1px;
+  padding: 0 6px;
+  border: 1px solid var(--linea-2);
+  border-radius: 7px;
+  background: var(--fondo-2);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 0.86em;
+  font-weight: 700;
+  line-height: 1.55;
+  cursor: pointer;
+  vertical-align: baseline;
+  white-space: nowrap;
+  /* WCAG 2.5.8: 24 px de alto también cuando la cita va sola en una fila (no dentro de un texto). */
+  min-height: 24px;
+  transition:
+    background-color 150ms var(--ease),
+    border-color 150ms var(--ease);
+}
+.cite:hover {
+  border-color: var(--tinta);
+  background: var(--papel);
+}
+.cite[data-kind="identificador"] {
+  background: var(--senal-identificador-tinte);
+  border-color: color-mix(in oklab, var(--senal-identificador) 35%, var(--senal-identificador-tinte));
+}
+.cite[data-kind="voz"] {
+  background: var(--senal-voz-tinte);
+  border-color: color-mix(in oklab, var(--senal-voz) 45%, var(--senal-voz-tinte));
+}
+.cite[data-kind="imagen"] {
+  background: var(--senal-imagen-tinte);
+  border-color: color-mix(in oklab, var(--senal-imagen) 30%, var(--senal-imagen-tinte));
+}
+.cite[data-kind="vinculo"],
+.cite[data-kind="red"] {
+  background: var(--papel);
+  border-color: var(--tinta-3);
+}
+.cite[data-kind]:hover {
+  border-color: var(--tinta);
+}
+.cite.cite-missing {
+  border: 1px dashed var(--alerta);
+  background: var(--alerta-suave);
+  color: var(--alerta);
+  text-decoration: line-through;
+}
+.cite-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Estados */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 1px 10px 1px 8px;
+  border-radius: 999px;
+  background: var(--fondo-2);
+  color: var(--tinta);
+  line-height: 1.55;
+  white-space: nowrap;
+}
+.status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.status-probable {
+  background: var(--arcilla);
+  color: var(--terracota-2);
+}
+.status-por_revisar {
+  background: var(--ocre-suave);
+}
+.status-confirmado,
+.status-aprobada,
+.status-aprobado,
+.status-listo {
+  background: var(--verde-suave);
+  color: var(--verde);
+}
+.status-descartado,
+.status-descartada,
+.status-rechazada,
+.status-rechazado,
+.status-descartado_auto {
+  background: var(--fondo-2);
+  color: var(--tinta-2);
+}
+.status-invalido,
+.status-error {
+  background: var(--alerta-suave);
+  color: var(--alerta);
+}
+.status-borrador,
+.status-generando {
+  background: var(--ocre-suave);
+}
+
+/* Barra de probabilidad */
+.meter {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--fondo-2);
+  overflow: hidden;
+  min-width: 80px;
+}
+.meter > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--tinta);
+  border-radius: 999px;
+}
+.meter .tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--papel);
+}
+
+/* Avisos: una banda de fondo suave (sin borde: no son tarjetas) y el ícono en el tono fuerte. */
+.notice,
+.warn,
+.error-box,
+.success-box {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 11px 14px;
+  border-radius: var(--r-m);
+  background: var(--fondo-2);
+}
+.notice svg {
+  color: var(--tinta-2);
+}
+.warn {
+  background: var(--ocre-suave);
+}
+.warn + .warn {
+  margin-top: 8px;
+}
+.error-box {
+  background: var(--alerta-suave);
+}
+.error-box > svg {
+  color: var(--alerta);
+}
+.success-box {
+  background: var(--verde-suave);
+}
+.success-box > svg {
+  color: var(--verde);
+}
+.notice svg,
+.warn svg,
+.error-box svg,
+.success-box svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.empty {
+  padding: 28px 18px;
+  text-align: center;
+  color: var(--tinta-2);
+  border-radius: var(--r-m);
+  background: var(--fondo-2);
+}
+.empty strong {
+  display: block;
+  color: var(--tinta);
+  font-family: var(--display);
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--tinta-2);
+  padding: 8px 0;
+}
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2.5px solid var(--linea-2);
+  border-top-color: var(--terracota);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

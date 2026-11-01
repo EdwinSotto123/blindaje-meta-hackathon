@@ -1,0 +1,296 @@
+/* --------------------------------------------------------------------------
+   Mi zona: la respuesta (la frase, el nivel en el color del mapa y la escala)
+   -------------------------------------------------------------------------- */
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.answer-card {
+  display: grid;
+  gap: 28px;
+  padding: clamp(24px, 1rem + 2.4vw, 48px);
+  background: var(--papel);
+  border-radius: var(--r-foto);
+  box-shadow: var(--sombra-2);
+}
+
+.answer-text {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: var(--fs-answer);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  max-width: 13em;
+  text-wrap: balance;
+}
+
+.answer-detail {
+  display: grid;
+  gap: 20px;
+}
+
+@media (min-width: 760px) {
+  .answer-detail {
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+    align-items: start;
+    gap: 40px;
+  }
+}
+
+/* En pantallas anchas la respuesta ocupa todo el ancho: la frase a la izquierda y, a su lado, la
+   escala y los datos. El resto de la página sigue en la columna de lectura. */
+@media (min-width: 1000px) {
+  .main > .answer {
+    max-width: none;
+  }
+  .answer > :not(.answer-card) {
+    max-width: var(--read);
+  }
+  .answer-card:not([data-nivel="sin_datos"]) {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    align-items: center;
+    column-gap: 56px;
+  }
+  .answer-card:not([data-nivel="sin_datos"]) .answer-detail {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding-bottom: 6px;
+  }
+  .answer-card[data-nivel="sin_datos"] {
+    max-width: var(--read);
+  }
+}
+
+.answer-facts {
+  font-size: var(--fs-body-l);
+  line-height: 1.5;
+  color: var(--tinta-2);
+  max-width: 34em;
+}
+
+.answer-facts strong {
+  color: var(--tinta);
+}
+
+/* Sin nivel, la tarjeta no se eleva: se dibuja la ausencia con un borde punteado. */
+.answer-card[data-nivel="sin_datos"] {
+  gap: 16px;
+  background: transparent;
+  box-shadow: none;
+  border: 2px dashed var(--linea-2);
+}
+
+.answer-card[data-nivel="sin_datos"] .answer-text {
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.625rem);
+  max-width: 17em;
+}
+
+.answer-card .threshold {
+  padding: 0;
+  border: 0;
+}
+
+/* El nivel en palabras, sobre el mismo color de su cuadro en el mapa. */
+.level {
+  padding: 0 0.18em;
+  border-radius: 0.18em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.level[data-nivel="bajo"] {
+  background: var(--lvl-bajo);
+  box-shadow: inset 0 0 0 1px var(--lvl-bajo-borde);
+  color: var(--tinta);
+}
+
+.level[data-nivel="medio"] {
+  background: var(--lvl-medio);
+  color: var(--tinta);
+}
+
+.level[data-nivel="alto"] {
+  background: var(--lvl-alto);
+  color: var(--blanco);
+}
+
+/* Escala de tres tramos: se llenan, en los colores del mapa, hasta el nivel de la zona. */
+.scale {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  max-width: 22rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.scale li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--tinta-3);
+  font-size: var(--fs-small);
+  line-height: 1.2;
+}
+
+.scale li::before {
+  content: "";
+  height: 14px;
+  box-shadow: inset 0 0 0 1.5px var(--linea-2);
+  transform-origin: left center;
+}
+
+.scale li:first-child::before {
+  border-radius: 999px 3px 3px 999px;
+}
+
+.scale li:last-child::before {
+  border-radius: 3px 999px 999px 3px;
+}
+
+.scale li:nth-child(2)::before {
+  border-radius: 3px;
+}
+
+.scale li:nth-child(1):is([aria-current], :has(~ [aria-current]))::before {
+  background: var(--lvl-bajo);
+  box-shadow: inset 0 0 0 1px var(--lvl-bajo-borde);
+}
+
+.scale li:nth-child(2):is([aria-current], :has(~ [aria-current]))::before {
+  background: var(--lvl-medio);
+  box-shadow: none;
+}
+
+.scale li:nth-child(3)[aria-current]::before {
+  background: var(--lvl-alto);
+  box-shadow: none;
+}
+
+.scale li[aria-current] {
+  color: var(--tinta);
+  font-weight: 700;
+}
+
+/* El único momento animado: la escala se llena de izquierda a derecha. */
+@media (prefers-reduced-motion: no-preference) {
+  .scale li:is([aria-current], :has(~ [aria-current]))::before {
+    animation: fill 0.5s var(--ease) both;
+  }
+  .scale li:nth-child(2)::before {
+    animation-delay: 0.12s;
+  }
+  .scale li:nth-child(3)::before {
+    animation-delay: 0.24s;
+  }
+}
+
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Último aviso: un renglón con su ícono, fuera de la tarjeta. */
+.latest-alert {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.latest-alert-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--arcilla);
+  color: var(--terracota-2);
+}
+
+/* Mi zona: el lugar a la izquierda y, al lado, el rubro y "otro distrito", antes de la respuesta. */
+.main > .zone-top {
+  max-width: none;
+}
+
+.zone-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px 48px;
+  margin-bottom: 28px;
+}
+
+.zone-top .page-head {
+  flex: 1 1 26rem;
+  margin: 0;
+}
+
+.zone-top .zone-controls {
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+}
+
+.zone-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+}
+
+.zone-controls .field {
+  flex: 0 1 16rem;
+  width: 16rem;
+  min-width: 0;
+}
+
+.zone-controls .btn {
+  min-height: 52px;
+}
+
+@media (max-width: 719px) {
+  .zone-controls {
+    flex-wrap: nowrap;
+  }
+  .zone-controls .field {
+    flex: 1 1 auto;
+    width: auto;
+  }
+  .zone-controls .btn {
+    flex: none;
+  }
+}
+
+/* "¿Y ahora qué hago?": una banda hundida al final, con la acción principal primero. */
+.next {
+  display: grid;
+  gap: 18px;
+  margin-top: var(--section-y);
+  padding: clamp(24px, 1rem + 2vw, 40px);
+  background: var(--fondo-2);
+  border-radius: var(--r-foto);
+}
+
+.next-title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 1.25rem + 0.9vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.next-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}

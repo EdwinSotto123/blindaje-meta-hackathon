@@ -1,0 +1,359 @@
+/* --------------------------------------------------------------------------
+   Cola de vínculos
+   -------------------------------------------------------------------------- */
+
+.queue-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--gap);
+  align-items: start;
+}
+@media (min-width: 1101px) {
+  .queue-layout > section:first-child {
+    position: sticky;
+    top: calc(var(--flag-h) + 16px);
+    max-height: calc(100vh - var(--flag-h) - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Aire para que el anillo de foco (3 px + 2 px) no se corte en el borde del scroll. */
+    padding: 6px;
+    margin: -6px;
+  }
+}
+@media (max-width: 1100px) {
+  .queue-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.queue-item {
+  display: block;
+  padding: 12px 14px;
+  border: 1px solid var(--linea);
+  border-radius: var(--r-m);
+  background: var(--papel);
+  text-decoration: none;
+  color: var(--tinta);
+  transition:
+    border-color 150ms var(--ease),
+    box-shadow 150ms var(--ease);
+}
+.queue-item:hover {
+  border-color: var(--linea-2);
+  box-shadow: var(--sombra-1);
+  color: var(--tinta);
+}
+/* El vínculo abierto: trazo terracota de 2 px (sin mover el contenido). */
+.queue-item[aria-current="page"] {
+  border-color: var(--terracota);
+  box-shadow: inset 0 0 0 1px var(--terracota);
+}
+.queue-item .top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.queue-item .score {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.queue-item .kinds {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.versus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.versus-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 124px;
+  text-align: center;
+}
+.versus-mid .big {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+@media (max-width: 900px) {
+  .versus {
+    grid-template-columns: 1fr;
+  }
+  .versus-mid {
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+.case-card h3 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 1.1rem;
+}
+.case-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-s);
+  background: var(--tinta);
+  color: var(--papel);
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.phrase {
+  font-family: var(--sans);
+  font-weight: 700;
+}
+/* Frase que se repite entre los dos casos: marcada con el ocre de "resaltar un dato". */
+.phrase.shared {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: var(--ocre-suave);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.signals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0;
+}
+.signal {
+  padding: 4px 18px 6px;
+  border-left: 1px solid var(--linea);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.signal:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+@media (max-width: 760px) {
+  .signal {
+    border-left: 0;
+    padding: 12px 0;
+    border-top: 1px solid var(--linea);
+  }
+  .signal:first-child {
+    border-top: 0;
+  }
+}
+.signal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.signal-p {
+  white-space: nowrap;
+  font-size: 1.0667rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.verdicts {
+  margin: 2px 0 12px;
+  font-size: 1.03rem;
+  line-height: 1.5;
+}
+.verdict {
+  font-weight: 700;
+}
+.verdict-no {
+  color: var(--tinta-2);
+}
+.voice-verdict {
+  margin: 0 0 8px;
+}
+details.tech > summary {
+  cursor: pointer;
+  font-size: 0.87rem;
+  font-weight: 700;
+  min-height: 24px;
+  padding: 2px 0;
+  text-decoration-color: var(--terracota);
+  text-underline-offset: 3px;
+}
+details.tech > summary::marker {
+  color: var(--terracota);
+}
+details.tech > summary:hover {
+  text-decoration: underline;
+}
+details.tech[open] > summary {
+  margin-bottom: 4px;
+}
+summary::marker {
+  color: var(--tinta-3);
+}
+
+.confirm-inline {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--linea);
+}
+.confirm-inline p {
+  margin: 0;
+  max-width: 72ch;
+}
+.decision-note {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.decision-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 320px;
+}
+
+.compact-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px 14px;
+  flex-wrap: wrap;
+}
+.pending-line {
+  margin-top: 12px;
+}
+
+.audio-clip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 0 11px;
+  border-bottom: 1px solid var(--linea);
+}
+.audio-clip:last-child {
+  border-bottom: 0;
+}
+.audio-clip audio {
+  width: 100%;
+  height: 36px;
+}
+.transcript {
+  font-size: 0.97rem;
+  line-height: 1.5;
+}
+
+/* Barra de decisión: elevada sobre el contenido mientras se lee el vínculo. */
+/* Grupo de acciones (components/SoloLectura.tsx): un fieldset sin marco propio; cada uso trae su
+   clase de diseño. Para la cuenta de jurado, el motivo va debajo de los controles desactivados. */
+:where(fieldset.acciones) {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.solo-lectura-nota {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--tinta-2);
+  font-size: 0.87rem;
+  font-weight: 700;
+}
+.solo-lectura-nota svg {
+  flex: none;
+}
+
+/* Recorrido sugerido de la cuenta de jurado (components/Recorrido.tsx): cuatro paradas en fila. */
+.recorrido {
+  margin-bottom: 16px;
+  border-color: var(--linea-2);
+}
+.recorrido h2 {
+  margin: 0 0 2px;
+}
+.recorrido-pasos {
+  display: grid;
+  gap: 14px 20px;
+}
+@media (min-width: 900px) {
+  .recorrido-pasos {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.recorrido-pasos > li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.recorrido-n {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--terracota);
+  color: var(--papel);
+  font-weight: 700;
+  font-size: 0.87rem;
+}
+.recorrido-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  font-weight: 700;
+}
+.recorrido-pasos p {
+  margin: 2px 0 0;
+}
+
+.decision-bar {
+  position: sticky;
+  bottom: 12px;
+  z-index: 5;
+  display: flex;
+  gap: 6px 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-radius: var(--r-l);
+  background: var(--papel);
+  box-shadow: var(--sombra-2);
+}
+.decision-bar .field {
+  flex: 1 1 280px;
+}
+@media (max-width: 900px), (max-height: 640px) {
+  .decision-bar {
+    position: static;
+    box-shadow: none;
+    border: 1px solid var(--linea);
+  }
+}
+.decision-bar textarea {
+  min-height: 42px;
+  height: 42px;
+}

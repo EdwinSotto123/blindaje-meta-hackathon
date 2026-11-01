@@ -1,0 +1,130 @@
+/* --------------------------------------------------------------------------
+   Botones y formularios
+   -------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-m);
+  background: transparent;
+  color: var(--tinta);
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.18s var(--ease),
+    border-color 0.18s var(--ease);
+}
+
+.btn:hover {
+  color: var(--tinta);
+}
+
+.btn-primary {
+  min-height: 52px;
+  padding: 0 24px;
+  background: var(--terracota);
+  border-color: var(--terracota);
+  color: var(--blanco);
+}
+
+.btn-primary:hover {
+  background: var(--terracota-2);
+  border-color: var(--terracota-2);
+  color: var(--blanco);
+}
+
+.btn-outline {
+  border-color: var(--tinta);
+}
+
+.btn-outline:hover {
+  background: var(--hover-tinta);
+}
+
+.btn-quiet {
+  padding-inline: 6px;
+  text-decoration: underline;
+  text-decoration-color: var(--terracota);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.btn-quiet:hover {
+  text-decoration-thickness: 2.5px;
+}
+
+.btn-sm {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: var(--fs-small);
+}
+
+.btn[disabled] {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .call,
+  .pill,
+  .help-exit {
+    transition: none;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1.5px solid var(--tinta-3);
+  border-radius: var(--r-m);
+  background-color: var(--papel);
+  color: var(--tinta);
+}
+
+/* Flecha propia, en tinta café (la del sistema sale gris frío). */
+.field select {
+  appearance: none;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 6l4.5 4.5L12.5 6' fill='none' stroke='%232a1e17' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+.field input::placeholder {
+  color: var(--tinta-3);
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: var(--tinta);
+}
+
+.field input:focus-visible,
+.field select:focus-visible {
+  border-color: var(--tinta);
+  outline: 3px solid var(--terracota);
+  outline-offset: 2px;
+}

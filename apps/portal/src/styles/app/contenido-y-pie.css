@@ -1,0 +1,74 @@
+/* --------------------------------------------------------------------------
+   Contenido y pie
+   -------------------------------------------------------------------------- */
+
+/* El pie siempre llega abajo, también en las páginas cortas. */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1 0 auto;
+  padding-block: 44px 96px;
+}
+
+/* Todo lo que se lee va en una columna; el mapa y el selector usan el ancho completo. */
+.main > :where(*) {
+  max-width: var(--read);
+}
+
+@media (min-width: 720px) {
+  .main {
+    padding-top: 56px;
+  }
+}
+
+.foot {
+  background: var(--noche);
+  color: var(--fondo);
+}
+
+.foot-in {
+  display: grid;
+  gap: 18px;
+  padding-block: 40px 52px;
+}
+
+@media (min-width: 900px) {
+  .foot-in {
+    grid-template-columns: 13rem minmax(0, 46rem);
+    gap: 48px;
+  }
+}
+
+.foot-brand {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.75rem;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.foot-text {
+  display: grid;
+  gap: 10px;
+}
+
+.foot .small {
+  color: var(--claro-tenue);
+}
+
+.foot a {
+  color: var(--fondo);
+  text-decoration-color: var(--claro-tenue);
+}
+
+.foot a:hover {
+  color: var(--blanco);
+}
+
+.foot :focus-visible {
+  outline-color: var(--fondo);
+}

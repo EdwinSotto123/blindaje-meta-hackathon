@@ -1,0 +1,64 @@
+/* --------------------------------------------------------------------------
+   Panel lateral de citas (dialog)
+   -------------------------------------------------------------------------- */
+
+dialog.drawer {
+  margin: 0 0 0 auto;
+  height: 100vh;
+  max-height: 100vh;
+  width: min(480px, 100vw);
+  max-width: 100vw;
+  border: 0;
+  padding: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  box-shadow: var(--sombra-2);
+  overscroll-behavior: contain;
+}
+dialog.drawer::backdrop,
+dialog.modal::backdrop {
+  background: rgb(42 30 23 / 0.4);
+}
+.drawer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px 28px;
+}
+.drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+dialog.modal {
+  border: 0;
+  border-radius: var(--r-l);
+  padding: 0;
+  width: min(520px, calc(100vw - 32px));
+  background: var(--papel);
+  color: var(--tinta);
+  box-shadow: var(--sombra-2);
+}
+.modal-inner {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hash {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+  background: var(--fondo-2);
+  padding: 6px 9px;
+  border-radius: var(--r-s);
+}
+
+.media-img {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--r-m);
+  border: 1px solid var(--linea);
+}
