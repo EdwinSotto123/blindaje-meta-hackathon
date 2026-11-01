@@ -1,16 +1,18 @@
 import { defineConfig } from "vitest/config";
-import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-pool-workers";
+import { fileURLToPath } from "node:url";
+import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
 
 // Claves de prueba (no son secretos reales): 32 bytes en base64url.
 const TEST_AES_KEY = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8";
 const TEST_HMAC_KEY = "HyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4";
 
 export default defineConfig(async () => {
-  const migrations = await readD1Migrations("../../infra/migrations");
+  // Ruta relativa a este archivo (no al directorio de trabajo): así funciona desde la raíz, turbo o knip.
+  const migrations = await readD1Migrations(fileURLToPath(new URL("../../infra/migrations", import.meta.url)));
   return {
     plugins: [
       cloudflareTest({
-        wrangler: { configPath: "./wrangler.jsonc" },
+        wrangler: { configPath: fileURLToPath(new URL("./wrangler.jsonc", import.meta.url)) },
         miniflare: {
           bindings: {
             TEST_MIGRATIONS: migrations,
