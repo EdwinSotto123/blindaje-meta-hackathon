@@ -1,0 +1,84 @@
+# CI en GitLab: los mismos controles que .github/workflows/ci.yml (formato, knip, typecheck, lint,
+# tests, e2e con Playwright y axe, la app móvil y el contenedor ML). El despliegue sigue en GitHub
+# Actions o a mano (docs/DEPLOY.md).
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+stages: [check]
+
+default:
+  interruptible: true
+
+.pnpm:
+  image: node:22-bookworm
+  before_script:
+    - corepack enable
+    - pnpm config set store-dir .pnpm-store
+    - pnpm install --frozen-lockfile
+  cache:
+    - key:
+        files: [pnpm-lock.yaml]
+      paths: [.pnpm-store]
+    # Caché de Turborepo: solo se repiten las tareas de los paquetes que cambiaron.
+    - key: turbo-$CI_COMMIT_REF_SLUG
+      paths: [.turbo]
+
+typescript:
+  extends: .pnpm
+  stage: check
+  script:
+    - pnpm format:check
+    - pnpm knip
+    - pnpm check
+
+e2e:
+  extends: .pnpm
+  stage: check
+  script:
+    - pnpm --filter @blindaje/landing build
+    - pnpm --filter @blindaje/portal run build:mock
+    - pnpm --filter @blindaje/console run build:mock
+    - pnpm --filter @blindaje/e2e exec playwright install --with-deps chromium
+    - pnpm --filter @blindaje/e2e e2e
+  artifacts:
+    when: on_failure
+    paths: [e2e/test-results]
+    expire_in: 7 days
+
+mobile:
+  image: node:22-bookworm
+  stage: check
+  cache:
+    key:
+      files: [apps/mobile/package-lock.json]
+    paths: [apps/mobile/.npm]
+  script:
+    - cd apps/mobile
+    - npm ci --cache .npm --prefer-offline
+    # La copia de packages/shared en src/shared debe estar al día con el original.
+    - npm run sync-shared -- --check
+    - npm run lint
+    - npm run knip
+    - npm run typecheck
+    - npm test -- --ci
+
+ml:
+  image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+  stage: check
+  variables:
+    UV_CACHE_DIR: $CI_PROJECT_DIR/.uv-cache
+  cache:
+    key:
+      files: [services/ml/uv.lock]
+    paths: [.uv-cache]
+  script:
+    - apt-get update && apt-get install -y --no-install-recommends ffmpeg libpango-1.0-0 libpangoft2-1.0-0
+    - cd services/ml
+    - uv sync --extra dev
+    - uv run ruff check .
+    - uv run ruff format --check .
+    - uv run pytest -m "not heavy" -q
+    # Scripts de evaluación en Python: solo estilo (sus dependencias incluyen torch).
+    - cd ../../eval/py && uvx ruff check . && uvx ruff format --check .
