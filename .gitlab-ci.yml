@@ -87,7 +87,8 @@ ml:
 # depuración de la plantilla de Expo, compilado aquí y no en la máquina del equipo.
 #   cuaderno.apk       prevención de capturas activa: así se usaría de verdad.
 #   cuaderno-demo.apk  permite capturas y grabar pantalla (solo para el video y la landing) y llena
-#                      el cuaderno con ventas ficticias. Nunca para personas reales.
+#                      el cuaderno con ventas ficticias. Nunca para personas reales. Trae también x86_64
+#                      para abrir en un emulador: con solo ARM, SoLoader busca lib/x86_64 y la app se cierra.
 apk:
   stage: apk
   image: eclipse-temurin:21-jdk-noble
@@ -101,9 +102,11 @@ apk:
   parallel:
     matrix:
       - NOMBRE: cuaderno
+        ABIS: arm64-v8a,armeabi-v7a
         EXPO_PUBLIC_ALLOW_SCREENSHOTS: "0"
         EXPO_PUBLIC_DEMO_SEED: "0"
       - NOMBRE: cuaderno-demo
+        ABIS: arm64-v8a,armeabi-v7a,x86_64
         EXPO_PUBLIC_ALLOW_SCREENSHOTS: "1"
         EXPO_PUBLIC_DEMO_SEED: "1"
   variables:
@@ -129,7 +132,7 @@ apk:
     - cd apps/mobile
     - npm ci --cache .npm --prefer-offline
     - npx expo prebuild --platform android --no-install --clean
-    - cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a --no-daemon
+    - cd android && ./gradlew assembleRelease -PreactNativeArchitectures=$ABIS --no-daemon
     - cp app/build/outputs/apk/release/app-release.apk ../$NOMBRE.apk
   artifacts:
     name: $NOMBRE

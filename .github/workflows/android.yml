@@ -30,9 +30,12 @@ jobs:
       matrix:
         include:
           - nombre: cuaderno
+            abis: arm64-v8a,armeabi-v7a
             capturas: "0"
             semilla: "0"
+          # También x86_64 para abrir en un emulador (con solo ARM, SoLoader no encuentra sus librerías).
           - nombre: cuaderno-demo
+            abis: arm64-v8a,armeabi-v7a,x86_64
             capturas: "1"
             semilla: "1"
     defaults:
@@ -59,7 +62,7 @@ jobs:
       - run: npx expo prebuild --platform android --no-install --clean
       - name: assembleRelease
         working-directory: apps/mobile/android
-        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a --no-daemon
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=${{ matrix.abis }} --no-daemon
       - run: cp android/app/build/outputs/apk/release/app-release.apk ${{ matrix.nombre }}.apk
       - uses: actions/upload-artifact@v4
         with:
