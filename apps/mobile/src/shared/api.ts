@@ -465,7 +465,7 @@ export const ExpedienteView = z.object({
 export const AuditEntry = z.object({
   seq: z.number(),
   ts: z.string(),
-  actor_type: z.enum(["victim", "reviewer", "analyst", "admin", "system"]),
+  actor_type: z.enum(["victim", "reviewer", "analyst", "admin", "business", "system"]),
   actor_id: z.string(),
   action: z.string(),
   target_type: z.string().nullable(),

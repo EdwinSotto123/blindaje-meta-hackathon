@@ -1,7 +1,5 @@
 import { Hono } from "hono";
-import { z } from "zod";
 import {
-  BusinessRecommendationView,
   CaseSummary,
   districtOfZone,
   ConsentRequest,
@@ -10,10 +8,8 @@ import {
   EvidenceUploadHeaders,
   LINEA_DENUNCIAS,
   LINEA_EMERGENCIAS,
-  Sector,
   SubmitCaseRequest,
   SubmitCaseResponse,
-  VictimAlert,
   VictimReport,
   type FichaStored,
 } from "@blindaje/shared";
@@ -43,6 +39,14 @@ import { denunciaPdfData, enrichVictimReport } from "../pipeline/report";
 import { getAuth, requireAuth, requireRole } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
 import { actorOf, type AppEnv } from "../types";
+import {
+  AlertListResponse,
+  CaseListResponse,
+  RecommendationListResponse,
+  VictimAlertsQuery,
+  VictimRecommendationsQuery,
+  VoiceSampleResponse,
+} from "./schemas";
 
 /**
  * Rutas de la víctima. Todas las respuestas JSON pasan por `victimJson` (esquema del contrato +
@@ -81,7 +85,7 @@ victimRoutes.post("/me/voice-sample", rateLimit("upload"), async (c) => {
     target_id: auth.sub,
     details: { model: enrolled.model },
   });
-  return victimJson(c, z.object({ ok: z.literal(true) }), { ok: true });
+  return victimJson(c, VoiceSampleResponse, { ok: true });
 });
 
 victimRoutes.post("/cases", async (c) => {
@@ -154,7 +158,7 @@ victimRoutes.get("/cases", async (c) => {
   )
     .bind(auth.sub)
     .all<CaseRow & { evidence_count: number }>();
-  return victimJson(c, z.object({ cases: z.array(CaseSummary) }), {
+  return victimJson(c, CaseListResponse, {
     cases: results.map((r) => toCaseSummary(r, r.evidence_count)),
   });
 });
@@ -315,20 +319,6 @@ victimRoutes.delete("/cases/:id", async (c) => {
   return c.body(null, 204);
 });
 
-const ZonaQuery = z
-  .string()
-  .trim()
-  .min(2)
-  .max(80)
-  .transform((v, ctx) => {
-    const d = districtOfZone(v);
-    if (!d) {
-      ctx.addIssue({ code: "custom", message: "No es un distrito de Lima Metropolitana o del Callao" });
-      return z.NEVER;
-    }
-    return d.id;
-  });
-
 /**
  * Zona de los avisos de la víctima: el distrito que manda la app (`?zona=`, el que eligió en el
  * celular) o, si no lo manda, el de SU caso más reciente con distrito (o la zona tal cual de un caso
@@ -360,7 +350,7 @@ async function victimZone(
  */
 victimRoutes.get("/alerts", async (c) => {
   const auth = getAuth(c);
-  const q = parseQuery(c, z.object({ zona: ZonaQuery.optional() }));
+  const q = parseQuery(c, VictimAlertsQuery);
   const { zona, isDemo } = await victimZone(c.env, auth.sub, q.zona);
   const alerts = zona
     ? (await approvedAlerts(c.env, { isDemo }))
@@ -376,7 +366,7 @@ victimRoutes.get("/alerts", async (c) => {
           approved_at: a.approved_at,
         }))
     : [];
-  return victimJson(c, z.object({ alerts: z.array(VictimAlert) }), { alerts });
+  return victimJson(c, AlertListResponse, { alerts });
 });
 
 /**
@@ -386,10 +376,10 @@ victimRoutes.get("/alerts", async (c) => {
  */
 victimRoutes.get("/recommendations", async (c) => {
   const auth = getAuth(c);
-  const q = parseQuery(c, z.object({ zona: ZonaQuery.optional(), sector: Sector.optional() }));
+  const q = parseQuery(c, VictimRecommendationsQuery);
   const { zona, isDemo } = await victimZone(c.env, auth.sub, q.zona);
   const recommendations = zona
     ? await approvedRecommendations(c.env, { isDemo, zonas: [zona], sector: q.sector ?? null })
     : [];
-  return victimJson(c, z.object({ recommendations: z.array(BusinessRecommendationView) }), { recommendations });
+  return victimJson(c, RecommendationListResponse, { recommendations });
 });

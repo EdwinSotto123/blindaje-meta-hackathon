@@ -4,6 +4,8 @@ Worker `blindaje-api` (Hono). Base `/v1`. JSON salvo donde se indica. Los esquem
 `packages/shared/src/api.ts`; este documento es el índice. Errores siempre como
 `{ "error": { "code": ErrorCode, "message": string, "details"?: unknown } }`.
 
+Especificación OpenAPI 3.1 generada desde esos esquemas: `docs/openapi.json` (se regenera con `pnpm --filter @blindaje/api openapi`; el lint de la API falla si quedó desactualizada).
+
 Autenticación: `Authorization: Bearer <access_token>` (JWT HS256 firmado con `JWT_SECRET`,
 15 minutos). Refresh tokens rotativos de 30 días. Rate limiting por dispositivo/usuario y por IP con un
 Durable Object (`RateLimiter`).

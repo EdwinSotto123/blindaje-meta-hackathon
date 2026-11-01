@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
 import {
+  AuditEntry,
   CENTRAL_ORG_ID,
   type AsesorOutput,
   type BusinessRecommendationView,
@@ -183,6 +184,19 @@ describe("detector de consejos inseguros", () => {
 });
 
 describe("autenticación del rol business", () => {
+  it("el login de un negocio queda en la auditoría con un actor que la consola sabe leer", async () => {
+    const { orgId } = await seedOrg();
+    const b = await createBusiness(orgId);
+    expect((await apiJson("/v1/auth/business/login", { json: { email: b.email, password: b.password } })).status).toBe(
+      200,
+    );
+    const admin = await loginAs("admin", orgId);
+    const res = await apiJson<{ entries: unknown[] }>("/v1/console/audit", { token: admin.token });
+    expect(res.status).toBe(200);
+    const entries = res.body.entries.map((e) => AuditEntry.parse(e));
+    expect(entries.some((e) => e.actor_type === "business")).toBe(true);
+  });
+
   it("login, refresh rotativo, /me y logout; sesiones separadas de la consola", async () => {
     const { orgId } = await seedOrg();
     const b = await createBusiness(orgId);

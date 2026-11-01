@@ -8,7 +8,8 @@ import { authRoutes } from "./routes/auth";
 import { businessRoutes } from "./routes/business";
 import { consoleRoutes } from "./routes/console";
 import { demoRoutes } from "./routes/demo";
-import { API_VERSION, publicRoutes } from "./routes/public";
+import { publicRoutes } from "./routes/public";
+import { API_VERSION } from "./routes/schemas";
 import { victimRoutes } from "./routes/victim";
 import type { AppEnv } from "./types";
 

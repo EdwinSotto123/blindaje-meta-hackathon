@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { z } from "zod";
 import {
   BusinessLoginRequest,
   CENTRAL_ORG_ID,
@@ -38,6 +37,7 @@ import { getAuth, requireAuth } from "../middleware/auth";
 import { rateLimit, rateLimitUnlessDemo } from "../middleware/rate-limit";
 import type { AppEnv } from "../types";
 import { actorOf } from "../types";
+import { LogoutRequest } from "./schemas";
 
 export const authRoutes = new Hono<AppEnv>();
 
@@ -221,7 +221,7 @@ authRoutes.post("/business/refresh", rateLimit("auth"), async (c) => {
 });
 
 authRoutes.post("/logout", requireAuth, async (c) => {
-  const body = await readJson(c, z.object({ refresh_token: z.string().min(1).max(200) }));
+  const body = await readJson(c, LogoutRequest);
   const auth = getAuth(c);
   const subjectType = auth.role === "victim" ? "device" : auth.role === "business" ? "business" : "user";
   const revoked = await revokeRefreshToken(c.env, body.refresh_token, auth.sub, subjectType);

@@ -7,8 +7,9 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src test",
+    "lint": "eslint src test scripts && tsx scripts/openapi.ts --check",
     "test": "vitest run",
+    "openapi": "tsx scripts/openapi.ts",
     "cf-typegen": "wrangler types --no-include-runtime",
     "db:migrate:local": "wrangler d1 migrations apply blindaje --local",
     "db:migrate:remote": "wrangler d1 migrations apply blindaje --remote"

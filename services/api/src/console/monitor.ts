@@ -6,7 +6,7 @@ import { budgetUsd } from "../costs";
 import type { Env } from "../env";
 import { errorFields, log } from "../lib/log";
 import { tryGetMlClient } from "../ml/client";
-import { API_VERSION } from "../routes/public";
+import { API_VERSION } from "../routes/schemas";
 import { getChromaClient } from "../vectors/chroma";
 
 /**

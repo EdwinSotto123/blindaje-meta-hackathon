@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { z } from "zod";
-import { BusinessMe, BusinessRecommendationView, RiskOverview, VictimAlert } from "@blindaje/shared";
+import type { z } from "zod";
+import { BusinessMe, RiskOverview } from "@blindaje/shared";
 import { businessMeView, getBusinessById, type BusinessAccountRow } from "../business/accounts";
 import { approvedRecommendations } from "../business/recommendations";
 import { analyzeRisk, approvedAlerts, toRiskOverview, zoneKey } from "../business/risk";
@@ -11,6 +11,7 @@ import { log } from "../lib/log";
 import { getAuth, requireAuth, requireRole } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
 import type { AppContext, AppEnv } from "../types";
+import { AlertListResponse, RecommendationListResponse, RiskQuery } from "./schemas";
 
 /**
  * Portal de negocios anterior (rol `business`), que se mantiene para las cuentas existentes; el
@@ -45,11 +46,6 @@ businessRoutes.get("/me", async (c) => {
   return businessJson(c, BusinessMe, businessMeView(await currentAccount(c)));
 });
 
-const RiskQuery = z.object({
-  zona: z.string().trim().min(2).max(80).optional(),
-  sector: z.string().trim().min(2).max(80).optional(),
-});
-
 businessRoutes.get("/risk", async (c) => {
   const b = await currentAccount(c);
   const q = parseQuery(c, RiskQuery);
@@ -70,7 +66,7 @@ businessRoutes.get("/recommendations", async (c) => {
     zonas: [zoneKey(b.zona)],
     sector: b.sector,
   });
-  return businessJson(c, z.object({ recommendations: z.array(BusinessRecommendationView) }), { recommendations });
+  return businessJson(c, RecommendationListResponse, { recommendations });
 });
 
 /** Alertas aprobadas por el equipo central para la zona de la cuenta. */
@@ -89,5 +85,5 @@ businessRoutes.get("/alerts", async (c) => {
       que_hacer: a.que_hacer,
       approved_at: a.approved_at,
     }));
-  return businessJson(c, z.object({ alerts: z.array(VictimAlert) }), { alerts });
+  return businessJson(c, AlertListResponse, { alerts });
 });

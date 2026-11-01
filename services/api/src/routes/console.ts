@@ -1,19 +1,15 @@
 import { Hono } from "hono";
-import { z } from "zod";
 import {
   AlertDecisionRequest,
   AsesorRunRequest,
   CENTRAL_ORG_ID,
   ConsoleMonitor,
-  ConsoleRole,
   ConsoleZones,
   CreateBusinessAccountRequest,
   RecommendationDecisionRequest,
-  RecommendationStatus,
   HypothesisDecisionRequest,
   LinkDecisionRequest,
   LeakTraceResult,
-  LinkStatus,
   VectorOverview,
   VectorSyncResult,
   VectorTrace,
@@ -61,6 +57,21 @@ import { vectorOverview, vectorSync, vectorTrace } from "../vectors/console";
 import { consoleMonitor } from "../console/monitor";
 import { consoleZones } from "../zones";
 import { actorOf, type AppContext, type AppEnv } from "../types";
+import {
+  AlertsQuery,
+  AuditQuery,
+  CartografoRunRequest,
+  CreateInvitesRequest,
+  CreateOrgRequest,
+  CreateUserRequest,
+  LinksQuery,
+  MediaQuery,
+  ProfileDecisionRequest,
+  RecommendationsQuery,
+  VectorTraceRequest,
+  VigiaRunRequest,
+  ZonesQuery,
+} from "./schemas";
 
 export const consoleRoutes = new Hono<AppEnv>();
 
@@ -113,11 +124,6 @@ consoleRoutes.get("/me", async (c) => {
 // ---------------------------------------------------------------------------
 // Vínculos
 // ---------------------------------------------------------------------------
-
-const LinksQuery = z.object({
-  status: z.union([LinkStatus, z.literal("todos")]).optional(),
-  limit: z.coerce.number().int().min(1).max(200).default(50),
-});
 
 consoleRoutes.get("/links", centralTeam, async (c) => {
   const q = parseQuery(c, LinksQuery);
@@ -184,14 +190,6 @@ consoleRoutes.post("/links/:id/decision", centralTeam, async (c) => {
 // ---------------------------------------------------------------------------
 // Evidencia y casos
 // ---------------------------------------------------------------------------
-
-const MediaQuery = z
-  .object({
-    start_ms: z.coerce.number().int().min(0).optional(),
-    end_ms: z.coerce.number().int().min(0).optional(),
-  })
-  .refine((q) => (q.start_ms === undefined) === (q.end_ms === undefined), { message: "start_ms y end_ms van juntos" })
-  .refine((q) => q.start_ms === undefined || q.end_ms! > q.start_ms, { message: "end_ms debe ser mayor que start_ms" });
 
 consoleRoutes.get("/evidence/:id/media", centralTeam, async (c) => {
   const auth = getAuth(c);
@@ -339,10 +337,7 @@ consoleRoutes.get("/networks/:id", analystOrAdmin, async (c) => {
 
 consoleRoutes.post("/networks/:id/cartografo", analystOrAdmin, rateLimit("agents"), async (c) => {
   const auth = getAuth(c);
-  const body = await readJson(
-    c,
-    z.object({ model: z.enum(["muse-spark-1.3", "muse-wonder-1.0"]).default("muse-spark-1.3") }),
-  );
+  const body = await readJson(c, CartografoRunRequest);
   const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?")
     .bind(c.req.param("id"))
     .first<{ id: string }>();
@@ -400,8 +395,6 @@ consoleRoutes.post("/hypotheses/:id/decision", analystOrAdmin, async (c) => {
   return c.json(hypothesisView(updated!));
 });
 
-const ProfileDecisionRequest = z.object({ decision: z.enum(["aprobar", "rechazar"]) });
-
 /** Aprobación del perfil de red por la persona analista (las hipótesis se deciden una por una). */
 consoleRoutes.post("/profiles/:id/decision", analystOrAdmin, async (c) => {
   const auth = getAuth(c);
@@ -432,11 +425,6 @@ consoleRoutes.post("/profiles/:id/decision", analystOrAdmin, async (c) => {
 // Alertas (Vigía)
 // ---------------------------------------------------------------------------
 
-const VigiaRunBody = z.object({
-  lookback_days: z.coerce.number().int().min(1).max(365).optional(),
-  image: z.boolean().optional(),
-});
-
 consoleRoutes.post("/vigia/run", analystOrAdmin, rateLimit("agents"), async (c) => {
   const auth = getAuth(c);
   // Cuerpo opcional: la consola llama sin cuerpo.
@@ -449,7 +437,7 @@ consoleRoutes.post("/vigia/run", analystOrAdmin, rateLimit("agents"), async (c) 
       throw new ApiError("bad_request", "El cuerpo debe ser JSON");
     }
   }
-  const body = VigiaRunBody.parse(raw);
+  const body = VigiaRunRequest.parse(raw);
   await audit(c.env, {
     ...actorOf(auth),
     action: "agent.vigia.run",
@@ -465,8 +453,6 @@ consoleRoutes.post("/vigia/run", analystOrAdmin, rateLimit("agents"), async (c) 
   });
   return c.json({ alerts });
 });
-
-const AlertsQuery = z.object({ status: z.enum(["borrador", "aprobada", "rechazada"]).optional() });
 
 /** Alertas de todas las zonas: el equipo central las revisa sin filtro por organización. */
 consoleRoutes.get("/alerts", async (c) => {
@@ -567,8 +553,6 @@ consoleRoutes.post("/asesor/run", analystOrAdmin, rateLimit("agents"), async (c)
   }
   return c.json({ recommendations });
 });
-
-const RecommendationsQuery = z.object({ status: RecommendationStatus.optional() });
 
 consoleRoutes.get("/recommendations", async (c) => {
   const q = parseQuery(c, RecommendationsQuery);
@@ -690,11 +674,6 @@ consoleRoutes.post("/business-accounts", requireRole("admin", "reviewer"), async
 // Zonas (rediseño del 28/10)
 // ---------------------------------------------------------------------------
 
-const ZonesQuery = z.object({
-  dias: z.coerce.number().int().min(7).max(365).default(28),
-  demo: z.enum(["0", "1", "true", "false"]).optional(),
-});
-
 /**
  * Vista de zonas: cifras exactas por distrito para el equipo, con el periodo anterior, víctimas
  * distintas, redes y modalidades. Bajo el umbral, solo las cifras (sin redes ni modalidades).
@@ -768,11 +747,6 @@ consoleRoutes.get("/expedientes/:id/pdf", analystOrAdmin, async (c) => {
 });
 
 // ---------------------------------------------------------------------------
-// Motor vectorial (solo administración)
-// ---------------------------------------------------------------------------
-
-/** Estado de la base vectorial, colecciones, casos indexados y el mapa de cada índice. */
-// ---------------------------------------------------------------------------
 // Monitoreo (solo administración): servicios medidos en vivo, colas del equipo y presupuesto
 // ---------------------------------------------------------------------------
 
@@ -796,11 +770,14 @@ consoleRoutes.get("/monitoreo", adminOnly, async (c) => {
   return c.json(ConsoleMonitor.parse(data));
 });
 
+// ---------------------------------------------------------------------------
+// Motor vectorial (solo administración)
+// ---------------------------------------------------------------------------
+
+/** Estado de la base vectorial, colecciones, casos indexados y el mapa de cada índice. */
 consoleRoutes.get("/vectores", adminOnly, async (c) => {
   return c.json(VectorOverview.parse(await vectorOverview(c.env)));
 });
-
-const VectorTraceRequest = z.object({ case_id: z.string().min(1).max(64) });
 
 /** Corre en vivo la búsqueda de candidatos de un caso (sin crear vínculos) y la devuelve paso a paso. */
 consoleRoutes.post("/vectores/consulta", adminOnly, rateLimit("vectores"), async (c) => {
@@ -840,11 +817,6 @@ consoleRoutes.post("/vectores/sincronizar", adminOnly, rateLimit("vectores"), as
 // Auditoría y costos
 // ---------------------------------------------------------------------------
 
-const AuditQuery = z.object({
-  before_seq: z.coerce.number().int().min(1).optional(),
-  limit: z.coerce.number().int().min(1).max(500).default(100),
-});
-
 consoleRoutes.get("/audit", analystOrAdmin, async (c) => {
   const q = parseQuery(c, AuditQuery);
   return c.json({ entries: await listAudit(c.env, q) });
@@ -881,15 +853,9 @@ consoleRoutes.get("/orgs", adminOnly, async (c) => {
   return c.json({ orgs: results.map((o) => ({ ...o, is_demo: o.is_demo === 1 })) });
 });
 
-const CreateOrg = z.object({
-  name: z.string().min(2).max(160),
-  kind: z.enum(["gremio", "asociacion_mercado", "junta_vecinal", "alianza"]).default("gremio"),
-  district: z.string().max(80).optional(),
-});
-
 consoleRoutes.post("/orgs", adminOnly, async (c) => {
   const auth = getAuth(c);
-  const body = await readJson(c, CreateOrg);
+  const body = await readJson(c, CreateOrgRequest);
   const id = newId();
   const now = nowIso();
   await c.env.DB.prepare(
@@ -910,16 +876,9 @@ consoleRoutes.post("/orgs", adminOnly, async (c) => {
   );
 });
 
-const CreateInvites = z.object({
-  org_id: z.string().optional(),
-  count: z.coerce.number().int().min(1).max(50),
-  max_uses: z.coerce.number().int().min(1).max(100).default(1),
-  expires_days: z.coerce.number().int().min(1).max(365).default(30),
-});
-
 consoleRoutes.post("/invites", requireRole("admin", "reviewer"), async (c) => {
   const auth = getAuth(c);
-  const body = await readJson(c, CreateInvites);
+  const body = await readJson(c, CreateInvitesRequest);
   // Las invitaciones son de un canal de difusión (cualquier organización); por defecto, la de quien las pide.
   const orgId = body.org_id ?? auth.org;
   const org = await c.env.DB.prepare("SELECT id FROM organizations WHERE id = ?").bind(orgId).first();
@@ -953,18 +912,9 @@ consoleRoutes.get("/users", adminOnly, async (c) => {
   return c.json({ users: results.map((u) => ({ ...consoleUserView(u), disabled: u.disabled === 1 })) });
 });
 
-const CreateUser = z.object({
-  email: z.string().email().max(160),
-  display_name: z.string().min(2).max(120),
-  role: ConsoleRole,
-  /** Por defecto, la organización central: el equipo de Blindaje. */
-  org_id: z.string().default(CENTRAL_ORG_ID),
-  password: z.string().min(12).max(200),
-});
-
 consoleRoutes.post("/users", adminOnly, async (c) => {
   const auth = getAuth(c);
-  const body = await readJson(c, CreateUser);
+  const body = await readJson(c, CreateUserRequest);
   const org = await c.env.DB.prepare("SELECT id FROM organizations WHERE id = ?").bind(body.org_id).first();
   if (!org) throw notFound("Organización");
   const id = newId();

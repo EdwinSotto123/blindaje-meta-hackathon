@@ -1,14 +1,12 @@
 import { Hono } from "hono";
-import { z } from "zod";
+import type { z } from "zod";
 import {
   PilotRequest,
   PublicAlerts,
   PublicRecommendations,
   PublicRiskOverview,
   PublicZoneMap,
-  Sector,
   districtById,
-  districtOfZone,
   type VictimAlert,
 } from "@blindaje/shared";
 import { approvedRecommendations } from "../business/recommendations";
@@ -22,8 +20,7 @@ import { errorFields, log } from "../lib/log";
 import { rateLimit } from "../middleware/rate-limit";
 import { publicZoneMap } from "../zones";
 import type { AppContext, AppEnv } from "../types";
-
-export const API_VERSION = "0.1.0";
+import { PublicAlertsQuery, PublicRecommendationsQuery, PublicRiskQuery, PublicZonesQuery } from "./schemas";
 
 export const publicRoutes = new Hono<AppEnv>();
 
@@ -102,26 +99,9 @@ function publicJson<S extends z.ZodType>(c: AppContext, schema: S, data: unknown
  * del demo, y solo se respeta donde DEMO_MODE=true (en producción se ignora). La respuesta dice
  * cuál sirvió en `demo`.
  */
-const DemoFlag = z.enum(["0", "1", "true", "false"]).optional();
-
 function publicIsDemo(c: AppContext, flag: string | undefined): boolean {
   return c.env.DEMO_MODE === "true" && (flag === "1" || flag === "true");
 }
-
-/** Distrito de Lima Metropolitana o del Callao (id o nombre); devuelve el id. */
-const DistrictParam = z
-  .string()
-  .trim()
-  .min(2)
-  .max(80)
-  .transform((v, ctx) => {
-    const d = districtOfZone(v);
-    if (!d) {
-      ctx.addIssue({ code: "custom", message: "No es un distrito de Lima Metropolitana o del Callao" });
-      return z.NEVER;
-    }
-    return d.id;
-  });
 
 function alertForPublic(a: ZoneAlert): VictimAlert {
   return {
@@ -136,13 +116,13 @@ function alertForPublic(a: ZoneAlert): VictimAlert {
 }
 
 publicRoutes.get("/zones", rateLimit("public"), async (c) => {
-  const q = parseQuery(c, z.object({ demo: DemoFlag }));
+  const q = parseQuery(c, PublicZonesQuery);
   const isDemo = publicIsDemo(c, q.demo);
   return publicJson(c, PublicZoneMap, await publicZoneMap(c.env, { isDemo }));
 });
 
 publicRoutes.get("/risk", rateLimit("public"), async (c) => {
-  const q = parseQuery(c, z.object({ zona: DistrictParam, sector: Sector.optional(), demo: DemoFlag }));
+  const q = parseQuery(c, PublicRiskQuery);
   const isDemo = publicIsDemo(c, q.demo);
   const district = districtById(q.zona)!;
   const analysis = await analyzeRisk(c.env, { zona: district.id, sector: q.sector ?? null, isDemo });
@@ -151,7 +131,7 @@ publicRoutes.get("/risk", rateLimit("public"), async (c) => {
 
 /** Alertas aprobadas por el equipo central; con `zona`, solo las de ese distrito. */
 publicRoutes.get("/alerts", rateLimit("public"), async (c) => {
-  const q = parseQuery(c, z.object({ zona: DistrictParam.optional(), demo: DemoFlag }));
+  const q = parseQuery(c, PublicAlertsQuery);
   const isDemo = publicIsDemo(c, q.demo);
   const alerts = (await approvedAlerts(c.env, { isDemo }))
     .filter((a) => (q.zona ? a.distrito === q.zona : a.distrito !== null))
@@ -162,7 +142,7 @@ publicRoutes.get("/alerts", rateLimit("public"), async (c) => {
 
 /** Consejos del Asesor aprobados por el equipo central; con `zona` y `sector`, los de ese distrito y rubro. */
 publicRoutes.get("/recommendations", rateLimit("public"), async (c) => {
-  const q = parseQuery(c, z.object({ zona: DistrictParam.optional(), sector: Sector.optional(), demo: DemoFlag }));
+  const q = parseQuery(c, PublicRecommendationsQuery);
   const isDemo = publicIsDemo(c, q.demo);
   const recommendations = (
     await approvedRecommendations(c.env, { isDemo, zonas: q.zona ? [q.zona] : null, sector: q.sector ?? null })
