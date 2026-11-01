@@ -3,7 +3,7 @@ import { errorMessage } from "../api/client";
 import type { ExpedienteView, ReviewStatus } from "../api/types";
 import { useApi } from "../app/context";
 import { fmtDateTime } from "../lib/format";
-import { Icon } from "./Icons";
+import { Icon } from "@blindaje/ui";
 import { Acciones } from "./SoloLectura";
 import { CopyButton, Notice, StatusBadge } from "./ui";
 

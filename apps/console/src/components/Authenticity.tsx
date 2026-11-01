@@ -2,7 +2,7 @@ import { useId } from "react";
 import type { NivelAutenticidad, ResultadoAutenticidad } from "../api/types";
 import { FUENTE_LABEL, NIVEL_META, NOTA_AUSENCIA, sourceLines } from "../lib/authenticity";
 import { fmtDateTime } from "../lib/format";
-import { Icon } from "./Icons";
+import { Icon } from "@blindaje/ui";
 
 /** Indicador corto del nivel (en la tarjeta del caso y en las listas). */
 export function AuthenticityBadge({

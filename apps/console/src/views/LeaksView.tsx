@@ -4,7 +4,7 @@ import type { LeakTraceKind, LeakTraceResult } from "@blindaje/shared";
 import { errorMessage } from "../api/client";
 import { leaksFor, MAX_LEAK_BYTES } from "../api/leaks";
 import { useApi, useUser } from "../app/context";
-import { Icon } from "../components/Icons";
+import { Icon } from "@blindaje/ui";
 import { Acciones } from "../components/SoloLectura";
 import { Notice, PageHead } from "../components/ui";
 import { fmtDateTime } from "../lib/format";

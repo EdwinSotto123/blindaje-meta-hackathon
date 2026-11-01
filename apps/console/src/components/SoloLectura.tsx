@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from "react";
 import { useAuth } from "../app/context";
-import { Icon } from "./Icons";
+import { Icon } from "@blindaje/ui";
 
 /** La cuenta de jurado del demo: ve todo como la administración, pero no cambia nada. */
 export function useSoloLectura(): boolean {

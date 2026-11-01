@@ -8,7 +8,11 @@
       "ignoreDependencies": ["cloudflare"]
     },
     "apps/landing": {
-      "ignoreDependencies": ["@fontsource-variable/bricolage-grotesque", "@fontsource/atkinson-hyperlegible"]
+      "ignoreDependencies": [
+        "@fontsource-variable/bricolage-grotesque",
+        "@fontsource/atkinson-hyperlegible",
+        "@blindaje/ui"
+      ]
     }
   }
 }

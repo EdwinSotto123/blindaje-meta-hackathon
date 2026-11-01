@@ -1,5 +1,5 @@
 // Tema compartido "Humano y cálido" (landing, portal y consola) antes del CSS propio.
-import "@blindaje/shared/theme.css";
+import "@blindaje/ui/theme.css";
 import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource/atkinson-hyperlegible/latin-400.css";
 import "@fontsource/atkinson-hyperlegible/latin-700.css";

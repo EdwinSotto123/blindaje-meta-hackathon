@@ -19,7 +19,7 @@ import { useApi, useUser } from "../app/context";
 import { Empty, ErrorBox, Loading, PageHead } from "../components/ui";
 import { fmtDateTime, fmtInt } from "../lib/format";
 import { can } from "../lib/permissions";
-import { useAsync } from "../lib/useAsync";
+import { useAsync } from "@blindaje/ui";
 
 /**
  * Zonas (docs/rediseno.md): dónde pasan los casos, por distrito, nunca por dirección ni vivienda.

@@ -2,7 +2,7 @@ import "@fontsource/atkinson-hyperlegible/latin-400.css";
 import "@fontsource/atkinson-hyperlegible/latin-700.css";
 // Títulos: Bricolage con su eje de tamaño óptico (el mismo archivo que usa la landing).
 import "@fontsource-variable/bricolage-grotesque/opsz.css";
-import "@blindaje/shared/theme.css";
+import "@blindaje/ui/theme.css";
 import "./styles/app.css";
 
 import { StrictMode } from "react";

@@ -8,12 +8,11 @@ import { errorMessage } from "../api/client";
 import { useApi, useUser } from "../app/context";
 import { CiteList, CitationProvider } from "../components/Citations";
 import { DistrictSelect } from "../components/DistrictSelect";
-import { Icon } from "../components/Icons";
+import { Icon, useAsync } from "@blindaje/ui";
 import { Acciones } from "../components/SoloLectura";
 import { Empty, ErrorBox, InlineConfirm, Loading, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
 import { fmtDateTime, SECTOR_LABEL, zoneName } from "../lib/format";
 import { can } from "../lib/permissions";
-import { useAsync } from "../lib/useAsync";
 import { looksLikeFullNumber } from "./AlertsView";
 
 type Filter = RecommendationStatus | "todas";

@@ -2,7 +2,7 @@ import cytoscape from "cytoscape";
 import { useEffect, useMemo, useRef } from "react";
 import type { GraphNodeType, NetworkView } from "../api/types";
 import { NODE_TYPES, NODE_TYPE_ORDER, graphStyle, networkToElements } from "../lib/graph";
-import { Icon } from "./Icons";
+import { Icon } from "@blindaje/ui";
 
 function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;

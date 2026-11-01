@@ -8,7 +8,7 @@ import { THRESHOLD_RULE } from "../config";
 import { bandPhrase } from "../lib/bands";
 import { choiceSearch, useChoice, type Rubro } from "../lib/choice";
 import { fmtUpdated } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
+import { useAsync } from "@blindaje/ui";
 
 export function MapView() {
   const api = useApi();

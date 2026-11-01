@@ -5,14 +5,13 @@ import { useApi, useUser } from "../app/context";
 import { CiteChip, CiteList, CitationProvider, type CitationResolver } from "../components/Citations";
 import { ExpedientePanel } from "../components/ExpedientePanel";
 import { GraphCanvas, GraphLegend, NodeShape } from "../components/Graph";
-import { Icon } from "../components/Icons";
+import { Icon, useAsync } from "@blindaje/ui";
 import { Timeline } from "../components/Timeline";
 import { Empty, ErrorBox, Loading, PageHead, StatusBadge } from "../components/ui";
 import { indexFromCases, indexFromNetwork } from "../lib/citations";
 import { SECTOR_LABEL, fmtDateTime, fmtPeriod, fmtScore } from "../lib/format";
 import { NODE_TYPES, NODE_TYPE_ORDER, caseCodeOf, nodeDisplayLabel } from "../lib/graph";
 import { can } from "../lib/permissions";
-import { useAsync } from "../lib/useAsync";
 import { ProfileTab } from "./ProfileTab";
 
 /** Id del caso detrás de un nodo `caso` (data.case_id si la API lo manda; si no, el id del nodo). */

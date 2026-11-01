@@ -10,7 +10,7 @@ import { bandLabel, bandPhrase } from "../lib/bands";
 import { choiceSearch, RUBRO_LABEL, RUBROS, useChoice, type Rubro } from "../lib/choice";
 import { capitalize, fmtDayMonth, fmtShort, fmtUpdated, sectorKey, sectorLabel } from "../lib/format";
 import { ESCALA, NIVEL_HINT, NIVEL_LABEL } from "../lib/risk";
-import { useAsync } from "../lib/useAsync";
+import { useAsync } from "@blindaje/ui";
 import { PickerView } from "./PickerView";
 
 /** "/": Mi zona si la URL trae un distrito; si no, el selector (primera visita). */

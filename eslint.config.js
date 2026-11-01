@@ -26,7 +26,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["apps/console/**/*.{ts,tsx}", "apps/portal/**/*.{ts,tsx}"],
+    files: ["apps/console/**/*.{ts,tsx}", "apps/portal/**/*.{ts,tsx}", "packages/ui/**/*.{ts,tsx}"],
     plugins: { "react-hooks": reactHooks },
     rules: { ...reactHooks.configs.recommended.rules },
   },

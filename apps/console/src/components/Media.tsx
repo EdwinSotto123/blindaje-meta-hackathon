@@ -6,7 +6,7 @@ import { useApi } from "../app/context";
 import { fmtDuration } from "../lib/format";
 import { AVISO_ANTES_DE_ABRIR, copyMarkText } from "../lib/leaks";
 import { CitedText } from "./Citations";
-import { Icon } from "./Icons";
+import { Icon } from "@blindaje/ui";
 import { ErrorBox } from "./ui";
 
 type MediaState =

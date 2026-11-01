@@ -5,7 +5,7 @@ import { ChooseZone } from "../components/ChooseZone";
 import { Empty, ErrorBox, Loading, PageHead } from "../components/ui";
 import { useChoice } from "../lib/choice";
 import { fmtDate } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
+import { useAsync } from "@blindaje/ui";
 
 export function AlertsView() {
   const { distrito, rubro } = useChoice();

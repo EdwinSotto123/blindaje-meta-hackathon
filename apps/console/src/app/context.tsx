@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { BlindajeApi } from "../api/api";
 import type { ConsoleUser, HealthResponse } from "../api/types";
 import { requestLog } from "../api/requestLog";
-import { clearAsyncCache } from "../lib/useAsync";
+import { clearAsyncCache } from "@blindaje/ui";
 
 const ApiContext = createContext<BlindajeApi | null>(null);
 

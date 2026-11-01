@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@blindaje/shared": "workspace:*",
+    "@blindaje/ui": "workspace:*",
     "@fontsource-variable/bricolage-grotesque": "5",
     "@fontsource/atkinson-hyperlegible": "^5.3.0",
     "react": "^19.3.1",

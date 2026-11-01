@@ -16,11 +16,10 @@ import type {
 import { errorMessage } from "../api/client";
 import { vectorsFor, type VectorsApi } from "../api/vectors";
 import { useApi, useUser } from "../app/context";
-import { Icon } from "../components/Icons";
+import { Icon, useAsync } from "@blindaje/ui";
 import { Acciones } from "../components/SoloLectura";
 import { Empty, ErrorBox, Loading, Notice, PageHead, StatusBadge } from "../components/ui";
 import { fmtDateTime, fmtScore } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
 import {
   aggregateNeighbors,
   bestPerCase,

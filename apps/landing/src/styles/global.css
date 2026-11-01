@@ -5,7 +5,7 @@
   Atkinson Hyperlegible (la letra de la app, la consola y el portal). Las variables vienen del tema
   compartido; aquí solo se nombran sus usos. El rojo queda para la emergencia (105).
 */
-@import "../../../../packages/shared/theme/calido.css";
+@import "@blindaje/ui/theme.css";
 
 :root {
   --paper: var(--fondo);

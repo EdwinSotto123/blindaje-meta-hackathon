@@ -4,7 +4,7 @@ import { errorMessage } from "../api/client";
 import type { CartografoModel, HypothesisView, NetworkView, ProfileView } from "../api/types";
 import { useApi, useUser } from "../app/context";
 import { CiteList, CitedText } from "../components/Citations";
-import { Icon } from "../components/Icons";
+import { Icon, useAsync } from "@blindaje/ui";
 import { Acciones } from "../components/SoloLectura";
 import {
   Confidence,
@@ -21,7 +21,6 @@ import {
 import { NONESSENTIAL_BLOCK_PCT } from "../config";
 import { SECTOR_LABEL, fmtDateTime, fmtPct, fmtPeriod, fmtUsd } from "../lib/format";
 import { can } from "../lib/permissions";
-import { useAsync } from "../lib/useAsync";
 
 const MODELS: { id: CartografoModel; name: string; estimate: number; note: string; essential: boolean }[] = [
   {

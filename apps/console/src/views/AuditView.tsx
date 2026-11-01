@@ -2,10 +2,9 @@ import { useState } from "react";
 import { errorMessage } from "../api/client";
 import type { AuditEntry, AuditVerifyResponse } from "../api/types";
 import { useApi } from "../app/context";
-import { Icon } from "../components/Icons";
+import { Icon, useAsync } from "@blindaje/ui";
 import { Empty, ErrorBox, Loading, Notice, PageHead } from "../components/ui";
 import { ROLE_LABEL, fmtInt, fmtStamp, shortHash } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
 import { brokenLinks } from "../mock/audit";
 import { MockApi } from "../mock/mockApi";
 

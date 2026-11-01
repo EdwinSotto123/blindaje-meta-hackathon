@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { errorMessage } from "../api/client";
 import { useApi, useAuth } from "../app/context";
-import { Icon } from "../components/Icons";
+import { Icon } from "@blindaje/ui";
 import { Loading, Notice } from "../components/ui";
 import { homeFor } from "../lib/permissions";
 import { DEMO_PASSWORD, demoUser } from "../mock/fixtures";

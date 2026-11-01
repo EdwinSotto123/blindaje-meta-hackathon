@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { useApi } from "../app/context";
 import { ExpedientePanel } from "../components/ExpedientePanel";
 import { Empty, ErrorBox, Loading, PageHead } from "../components/ui";
-import { useAsync } from "../lib/useAsync";
+import { useAsync } from "@blindaje/ui";
 
 export function ExpedientesView() {
   const api = useApi();

@@ -1,6 +1,6 @@
 /* Portal público de Blindaje (comunidad y negocios), en el mundo "Humano y cálido": fondo blanco
    casi neutro, tinta café, terracota para la acción y titulares en Bricolage. Las variables de color, tipos, radios
-   y sombras vienen de @blindaje/shared/theme.css; aquí solo se derivan las que faltan. */
+   y sombras vienen de @blindaje/ui/theme.css; aquí solo se derivan las que faltan. */
 
 :root {
   /* Derivadas del tema (no están en calido.css). */

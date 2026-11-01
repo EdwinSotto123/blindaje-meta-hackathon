@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { errorMessage } from "../api/client";
-import { Icon } from "./Icons";
+import { Icon } from "@blindaje/ui";
 
 export function Loading({ label = "Cargando…" }: { label?: string }) {
   return (

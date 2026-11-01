@@ -4,11 +4,10 @@ import { errorMessage } from "../api/client";
 import { MIN_PASSWORD, type OrgKind, type OrgView, type UserView } from "../api/types";
 import { useApi } from "../app/context";
 import { DistrictSelect } from "../components/DistrictSelect";
-import { Icon } from "../components/Icons";
+import { Icon, useAsync } from "@blindaje/ui";
 import { Acciones } from "../components/SoloLectura";
 import { CopyButton, ErrorBox, Loading, Notice, PageHead, useFlash } from "../components/ui";
 import { ROLE_LABEL, fmtDate, zoneName } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
 
 /** Tipos de canal de difusión. "alianza" queda para la organización central del equipo. */
 const KIND_LABEL: Record<OrgKind, string> = {

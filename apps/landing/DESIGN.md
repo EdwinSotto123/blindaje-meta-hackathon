@@ -2,7 +2,7 @@
 name: Blindaje web · Humano y cálido
 description: La landing, el portal público y la consola de Blindaje. La calle limeña da la paleta (crema de pared, terracota de ladrillo, ocre de fachada, verde de puerta pintada, tinta café), Bricolage Grotesque en los titulares y Atkinson Hyperlegible en el texto, fotos reales de Lima con crédito.
 scope: apps/landing, apps/portal, apps/console (la app móvil conserva su camuflaje de cuaderno, ver DESIGN.md en la raíz)
-source: packages/shared/theme/calido.css
+source: packages/ui/theme/calido.css
 colors:
   crema: "#f7f1e6"
   crema-2: "#efe5d3"
@@ -63,8 +63,8 @@ diseño" y eligió, en una pregunta estructurada, rehacer la landing, el portal 
 
 Detrás de cada caso hay una persona de barrio. La paleta sale de su calle: el crema de las paredes, la
 terracota del ladrillo, el ocre de las fachadas, el verde de las puertas pintadas y una tinta café en vez
-del negro. Las tres superficies comparten las variables de `packages/shared/theme/calido.css`
-(`@blindaje/shared/theme.css`); cada app solo nombra sus usos.
+del negro. Las tres superficies comparten las variables de `packages/ui/theme/calido.css`
+(`@blindaje/ui/theme.css`); cada app solo nombra sus usos.
 
 ## Color
 

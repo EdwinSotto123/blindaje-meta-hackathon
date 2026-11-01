@@ -1,5 +1,5 @@
 import type { PromptGuardResult } from "@blindaje/shared";
-import { Icon } from "./Icons";
+import { Icon } from "@blindaje/ui";
 
 /**
  * Llama Prompt Guard 2 en la consola (PLAN D15). Una evidencia marcada sigue siendo evidencia: el

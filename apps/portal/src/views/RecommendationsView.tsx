@@ -8,7 +8,7 @@ import { Empty, ErrorBox, Loading, PageHead } from "../components/ui";
 import { choiceSearch, useChoice, type Rubro } from "../lib/choice";
 import { fmtDate, sectorLabel } from "../lib/format";
 import { byPriority, NIVEL_LABEL, PRIORIDAD_LABEL, PRIORIDAD_TITULO } from "../lib/risk";
-import { useAsync } from "../lib/useAsync";
+import { useAsync } from "@blindaje/ui";
 
 export function RecommendationsView() {
   const { distrito, rubro } = useChoice();

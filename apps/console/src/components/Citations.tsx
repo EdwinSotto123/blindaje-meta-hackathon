@@ -12,11 +12,10 @@ import {
 } from "../lib/citations";
 import { CANAL_LABEL, SECTOR_LABEL, fmtDateTime, fmtDuration, fmtScore } from "../lib/format";
 import { AuthenticityPanel } from "./Authenticity";
-import { Icon } from "./Icons";
+import { Icon, useAsync } from "@blindaje/ui";
 import { AudioClip, EvidenceImage } from "./Media";
 import { PromptGuardPanel } from "./PromptGuard";
 import { CopyButton, ErrorBox, Loading } from "./ui";
-import { useAsync } from "../lib/useAsync";
 
 interface CitationCtx {
   index: CitationIndex;

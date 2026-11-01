@@ -4,12 +4,11 @@ import type { ConsoleMonitor, MonitorService } from "@blindaje/shared";
 import { monitorFor } from "../api/monitor";
 import { requestLog, type RequestRecord } from "../api/requestLog";
 import { useApi } from "../app/context";
-import { Icon, type IconName } from "../components/Icons";
+import { Icon, type IconName, useAsync } from "@blindaje/ui";
 import { Recorrido } from "../components/Recorrido";
 import { useSoloLectura } from "../components/SoloLectura";
 import { ErrorBox, Loading, Meter, PageHead } from "../components/ui";
 import { fmtInt, fmtPct, fmtStamp, fmtUsd, ROLE_LABEL } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
 import "../styles/monitor.css";
 
 /** Cada cuánto se vuelve a leer el panel mientras la pestaña está a la vista. */

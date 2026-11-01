@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { useApi } from "../app/context";
 import { Empty, ErrorBox, Loading, PageHead, StatusBadge } from "../components/ui";
 import { SECTOR_LABEL, fmtDateTime, fmtPeriod } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
+import { useAsync } from "@blindaje/ui";
 
 export function NetworksView() {
   const api = useApi();

@@ -6,7 +6,7 @@ import type { AudioFragment, CaseSide, LinkStatus, LinkView, Signals } from "../
 import { useApi, useUser } from "../app/context";
 import { AuthenticityBadge, AuthenticityPanel } from "../components/Authenticity";
 import { CiteChip, CiteList, CitationProvider, CitedText } from "../components/Citations";
-import { Icon, type IconName } from "../components/Icons";
+import { Icon, type IconName, useAsync } from "@blindaje/ui";
 import { AudioClip } from "../components/Media";
 import { isFlagged, PromptGuardBadge } from "../components/PromptGuard";
 import { Acciones } from "../components/SoloLectura";
@@ -24,7 +24,6 @@ import {
 import { flaggedInLink, isStrong, NOTA_AUSENCIA, type FlaggedEvidence } from "../lib/authenticity";
 import { indexFromLink } from "../lib/citations";
 import { CANAL_LABEL, SECTOR_LABEL, fmtDateTime, fmtScore } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
 
 const PENDING: LinkStatus[] = ["probable", "por_revisar"];
 const REVIEWED: LinkStatus[] = ["confirmado", "descartado"];

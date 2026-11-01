@@ -5,13 +5,12 @@ import { errorMessage } from "../api/client";
 import type { AlertStatus, AlertView } from "../api/types";
 import { useApi, useUser } from "../app/context";
 import { CiteList, CitationProvider } from "../components/Citations";
-import { Icon } from "../components/Icons";
+import { Icon, useAsync } from "@blindaje/ui";
 import { Acciones } from "../components/SoloLectura";
 import { Empty, ErrorBox, InlineConfirm, Loading, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
 import type { CitationIndex } from "../lib/citations";
 import { fmtDateTime, zoneName } from "../lib/format";
 import { can } from "../lib/permissions";
-import { useAsync } from "../lib/useAsync";
 
 type Filter = AlertStatus | "todas";
 const FILTERS: { id: Filter; label: string }[] = [

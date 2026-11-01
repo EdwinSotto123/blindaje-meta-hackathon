@@ -1,5 +1,5 @@
 /* Consola de Blindaje: mundo "Humano y cálido" en versión de trabajo (densa, sobria y legible por horas).
-   Los colores salen del tema compartido (@blindaje/shared/theme.css); aquí solo se derivan los que faltan. */
+   Los colores salen del tema compartido (@blindaje/ui/theme.css); aquí solo se derivan los que faltan. */
 
 :root {
   --mono: ui-monospace, "Cascadia Mono", "Consolas", "SFMono-Regular", monospace;

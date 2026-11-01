@@ -5,7 +5,7 @@ import { can, type Capability } from "../lib/permissions";
 import { ROLE_LABEL } from "../lib/format";
 import { MockApi, type MockScenario } from "../mock/mockApi";
 import { preloadViews, type ViewName } from "../views/loaders";
-import { Icon, type IconName } from "./Icons";
+import { Icon, type IconName } from "@blindaje/ui";
 import { Loading } from "./ui";
 
 interface NavItem {

@@ -1,10 +1,9 @@
 import type { CostsResponse } from "../api/types";
 import { useApi } from "../app/context";
-import { Icon } from "../components/Icons";
+import { Icon, useAsync } from "@blindaje/ui";
 import { ErrorBox, Loading, Notice, PageHead } from "../components/ui";
 import { NONESSENTIAL_BLOCK_PCT } from "../config";
 import { fmtDate, fmtInt, fmtPct, fmtStamp, fmtUsd } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
 
 const UNIT_LABEL: Record<string, string> = {
   input_tokens: "tokens de entrada",

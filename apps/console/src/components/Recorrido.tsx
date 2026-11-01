@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Icon, type IconName } from "./Icons";
+import { Icon, type IconName } from "@blindaje/ui";
 
 const KEY = "blindaje.recorrido.oculto";
 
