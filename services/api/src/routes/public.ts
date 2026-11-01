@@ -13,11 +13,10 @@ import { approvedRecommendations } from "../business/recommendations";
 import { SESGO_TEXTO, analyzeRisk, approvedAlerts, toPublicRiskOverview, type ZoneAlert } from "../business/risk";
 import { sanitizeDeep } from "../business/safety";
 import { ApiError } from "../lib/errors";
-import { hmacHex } from "../lib/crypto";
 import { clientIp, findForbiddenKeys, parseQuery, readJson } from "../lib/http";
-import { newId, nowIso } from "../lib/ids";
 import { errorFields, log } from "../lib/log";
 import { rateLimit } from "../middleware/rate-limit";
+import { insertPilotRequest } from "../pilot";
 import { publicZoneMap } from "../zones";
 import type { AppContext, AppEnv } from "../types";
 import { PublicAlertsQuery, PublicRecommendationsQuery, PublicRiskQuery, PublicZonesQuery } from "./schemas";
@@ -51,25 +50,7 @@ publicRoutes.post("/pilot-requests", rateLimit("pilot"), async (c) => {
   const ok = await verifyTurnstile(c.env.TURNSTILE_SECRET, body.turnstile_token, ip);
   if (!ok)
     throw new ApiError("forbidden", "No pudimos verificar que seas una persona. Recarga la página e intenta de nuevo.");
-  const id = newId();
-  await c.env.DB.prepare(
-    `INSERT INTO pilot_requests (id, org_name, contact_name, contact, sector, district, members, message, lang, ip_hash, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
-    .bind(
-      id,
-      body.org_name,
-      body.contact_name,
-      body.contact,
-      body.sector ?? null,
-      body.district ?? null,
-      body.members ?? null,
-      body.message ?? null,
-      body.lang,
-      (await hmacHex(c.env.JWT_SECRET, `pilot-ip:${ip}`)).slice(0, 32),
-      nowIso(),
-    )
-    .run();
+  const id = await insertPilotRequest(c.env, body, ip);
   log("info", "pilot_request_created", { lang: body.lang });
   return c.json({ id }, 201);
 });

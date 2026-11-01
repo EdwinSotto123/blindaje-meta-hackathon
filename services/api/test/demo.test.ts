@@ -4,14 +4,7 @@ import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test"
 import { app } from "../src/app";
 import { CENTRAL_ORG_ID, type PublicZoneMap } from "@blindaje/shared";
 import { newId, nowIso } from "../src/lib/ids";
-import {
-  DEMO_INVITES,
-  DEMO_ORG,
-  DEMO_USERS,
-  DEMO_ZONES,
-  demoAggregateCount,
-  demoUserPassword,
-} from "../src/routes/demo";
+import { DEMO_INVITES, DEMO_ORG, DEMO_USERS, DEMO_ZONES, demoAggregateCount, demoUserPassword } from "../src/demo/data";
 import type { Env } from "../src/env";
 import { api, apiJson, registerDevice, upload } from "./helpers";
 

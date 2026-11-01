@@ -11,30 +11,34 @@ import {
   SubmitCaseRequest,
   SubmitCaseResponse,
   VictimReport,
-  type FichaStored,
 } from "@blindaje/shared";
 import { audit } from "../audit";
+import { getDeviceDemo } from "../auth/devices";
 import { approvedRecommendations } from "../business/recommendations";
-import { approvedAlerts, zoneKey } from "../business/risk";
+import { approvedAlerts } from "../business/risk";
 import {
   buildVictimReport,
   caseSummary,
-  CONSENT_TEXT_VERSION,
   deleteCaseFully,
   getOwnedCase,
+  insertCase,
+  listDeviceCases,
+  markCaseProcessing,
   setConsent,
   toCaseSummary,
+  victimZone,
   type CaseRow,
 } from "../cases";
-import { MAX_EVIDENCE_BYTES, storeEvidence, toEvidenceItem, type EvidenceRow } from "../evidence";
+import { countEvidence, findEvidenceBySha, MAX_EVIDENCE_BYTES, storeEvidence, toEvidenceItem } from "../evidence";
 import { readBodyLimited } from "../lib/body";
-import { sealString, sha256Hex } from "../lib/crypto";
-import { isUniqueViolation, parseJsonColumn } from "../lib/db";
+import { sha256Hex } from "../lib/crypto";
+import { isUniqueViolation } from "../lib/db";
 import { utf8 } from "../lib/encoding";
 import { ApiError } from "../lib/errors";
 import { parseQuery, readJson, victimJson, zodDetails } from "../lib/http";
 import { caseCode, newId, nowIso } from "../lib/ids";
 import { getMlClient } from "../ml/client";
+import { saveVictimVoiceVector } from "../pipeline/audio";
 import { denunciaPdfData, enrichVictimReport } from "../pipeline/report";
 import { getAuth, requireAuth, requireRole } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
@@ -67,17 +71,7 @@ victimRoutes.post("/me/voice-sample", rateLimit("upload"), async (c) => {
   if (!bytes.byteLength) throw new ApiError("bad_request", "Falta el audio");
   const ml = getMlClient(c.env);
   const enrolled = await ml.voiceEnroll(bytes);
-  const vectorEnc = await sealString(
-    c.env.EVIDENCE_ENCRYPTION_KEY,
-    JSON.stringify(enrolled.vector),
-    `voice:${auth.sub}`,
-  );
-  await c.env.DB.prepare(
-    `INSERT INTO victim_voice_samples (device_id, vector_enc, model, created_at) VALUES (?, ?, ?, ?)
-     ON CONFLICT(device_id) DO UPDATE SET vector_enc = excluded.vector_enc, model = excluded.model, created_at = excluded.created_at`,
-  )
-    .bind(auth.sub, vectorEnc, enrolled.model, nowIso())
-    .run();
+  await saveVictimVoiceVector(c.env, auth.sub, enrolled.vector, enrolled.model);
   await audit(c.env, {
     ...actorOf(auth),
     action: "voice_sample.enroll",
@@ -91,9 +85,7 @@ victimRoutes.post("/me/voice-sample", rateLimit("upload"), async (c) => {
 victimRoutes.post("/cases", async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, CreateCaseRequest);
-  const device = await c.env.DB.prepare("SELECT is_demo FROM devices WHERE id = ?")
-    .bind(auth.sub)
-    .first<{ is_demo: number }>();
+  const device = await getDeviceDemo(c.env, auth.sub);
   if (!device) throw new ApiError("unauthorized", "Dispositivo no registrado");
 
   // En el demo, el script de los casos A, B y C pide el código con este header.
@@ -112,28 +104,18 @@ victimRoutes.post("/cases", async (c) => {
   for (let attempt = 0; attempt < 6 && !row; attempt++) {
     const code = useDemoCode ? demoCode! : caseCode();
     try {
-      const [inserted] = await c.env.DB.batch([
-        c.env.DB.prepare(
-          `INSERT INTO cases (id, code, org_id, device_id, seudonimo_victima, sector, zona_cuadricula, consent_mode, is_demo, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
-        ).bind(
-          id,
-          code,
-          auth.org,
-          auth.sub,
-          auth.pse ?? "",
-          body.sector ?? null,
-          zona,
-          body.consent_mode,
-          device.is_demo,
-          now,
-          now,
-        ),
-        c.env.DB.prepare(
-          "INSERT INTO consents (id, case_id, device_id, mode, text_version, granted_at) VALUES (?, ?, ?, ?, ?, ?)",
-        ).bind(newId(), id, auth.sub, body.consent_mode, CONSENT_TEXT_VERSION, now),
-      ]);
-      row = (inserted!.results[0] as CaseRow | undefined) ?? null;
+      row = await insertCase(c.env, {
+        id,
+        code,
+        org_id: auth.org,
+        device_id: auth.sub,
+        seudonimo_victima: auth.pse ?? "",
+        sector: body.sector ?? null,
+        zona,
+        consent_mode: body.consent_mode,
+        is_demo: device.is_demo,
+        now,
+      });
     } catch (err) {
       if (!isUniqueViolation(err)) throw err;
       if (useDemoCode) throw new ApiError("conflict", `El código de demo ${demoCode} ya está en uso`);
@@ -152,12 +134,7 @@ victimRoutes.post("/cases", async (c) => {
 
 victimRoutes.get("/cases", async (c) => {
   const auth = getAuth(c);
-  const { results } = await c.env.DB.prepare(
-    `SELECT c.*, (SELECT COUNT(*) FROM evidence e WHERE e.case_id = c.id) AS evidence_count
-     FROM cases c WHERE c.device_id = ? ORDER BY c.created_at DESC`,
-  )
-    .bind(auth.sub)
-    .all<CaseRow & { evidence_count: number }>();
+  const results = await listDeviceCases(c.env, auth.sub);
   return victimJson(c, CaseListResponse, {
     cases: results.map((r) => toCaseSummary(r, r.evidence_count)),
   });
@@ -191,9 +168,7 @@ victimRoutes.post("/cases/:id/evidence", rateLimit("upload"), async (c) => {
     // Caso ya enviado: un reintento de la misma subida sigue siendo idempotente (200); evidencia
     // nueva va a un caso nuevo (la app abre uno y reintenta).
     const sha = await sha256Hex(bytes);
-    const dup = await c.env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? AND sha256 = ?")
-      .bind(cs.id, sha)
-      .first<EvidenceRow>();
+    const dup = await findEvidenceBySha(c.env, cs.id, sha);
     if (dup && sha === h["x-content-sha256"]) return victimJson(c, EvidenceItem, toEvidenceItem(dup), 200);
     throw new ApiError(
       "conflict",
@@ -242,28 +217,21 @@ victimRoutes.post("/cases/:id/submit", rateLimit("submit"), async (c) => {
       source: "relato",
     });
   }
-  const n = await c.env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?")
-    .bind(cs.id)
-    .first<{ n: number }>();
-  if (!n?.n) throw new ApiError("bad_request", "Agrega al menos una evidencia o cuéntanos qué pasó");
+  const n = await countEvidence(c.env, cs.id);
+  if (!n) throw new ApiError("bad_request", "Agrega al menos una evidencia o cuéntanos qué pasó");
 
   const instanceId = `${cs.id}-${Date.now()}`;
   await c.env.PROCESAR_CASO.create({
     id: instanceId,
     params: { case_id: cs.id, requested_by: auth.pse ?? cs.seudonimo_victima },
   });
-  const now = nowIso();
-  await c.env.DB.prepare(
-    "UPDATE cases SET estado = 'procesando', workflow_id = ?, submitted_at = ?, updated_at = ?, error = NULL WHERE id = ?",
-  )
-    .bind(instanceId, now, now, cs.id)
-    .run();
+  await markCaseProcessing(c.env, cs.id, instanceId);
   await audit(c.env, {
     ...actorOf(auth),
     action: "case.submit",
     target_type: "case",
     target_id: cs.id,
-    details: { workflow_instance: instanceId, evidence: n.n, narrative: Boolean(narrative) },
+    details: { workflow_instance: instanceId, evidence: n, narrative: Boolean(narrative) },
   });
   return victimJson(c, SubmitCaseResponse, { case_id: cs.id, status: "procesando" }, 202);
 });
@@ -318,31 +286,6 @@ victimRoutes.delete("/cases/:id", async (c) => {
   await deleteCaseFully(c.env, cs, actorOf(auth));
   return c.body(null, 204);
 });
-
-/**
- * Zona de los avisos de la víctima: el distrito que manda la app (`?zona=`, el que eligió en el
- * celular) o, si no lo manda, el de SU caso más reciente con distrito (o la zona tal cual de un caso
- * antiguo, como clave de zoneKey). Sin ninguno, null: no hay avisos de zona. Nada de otros casos.
- */
-async function victimZone(
-  env: AppEnv["Bindings"],
-  deviceId: string,
-  zona: string | undefined,
-): Promise<{ zona: string | null; isDemo: boolean }> {
-  const [device, cases] = await env.DB.batch([
-    env.DB.prepare("SELECT is_demo FROM devices WHERE id = ?").bind(deviceId),
-    env.DB.prepare("SELECT zona_cuadricula, ficha_json FROM cases WHERE device_id = ? ORDER BY created_at DESC").bind(
-      deviceId,
-    ),
-  ]);
-  const isDemo = (device!.results[0] as { is_demo: number } | undefined)?.is_demo === 1;
-  if (zona) return { zona, isDemo };
-  for (const r of cases!.results as Array<{ zona_cuadricula: string | null; ficha_json: string | null }>) {
-    const k = zoneKey(r.zona_cuadricula ?? parseJsonColumn<FichaStored>(r.ficha_json)?.zona ?? null);
-    if (k) return { zona: k, isDemo };
-  }
-  return { zona: null, isDemo };
-}
 
 /**
  * Avisos de su zona: alertas aprobadas por el equipo central para su distrito (no por su

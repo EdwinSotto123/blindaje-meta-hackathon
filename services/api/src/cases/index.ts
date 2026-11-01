@@ -11,6 +11,7 @@ import {
 import type { Env } from "../env";
 import { audit } from "../audit";
 import { consejosParaVictima } from "../business/consejos";
+import { zoneKey } from "../business/risk";
 import { openString } from "../lib/crypto";
 import { parseJsonColumn } from "../lib/db";
 import { newId, nowIso } from "../lib/ids";
@@ -55,6 +56,98 @@ export async function getOwnedCase(env: Env, caseId: string, deviceId: string): 
     .first<CaseRow>();
   if (!row) throw notFound("Caso");
   return row;
+}
+
+/**
+ * Crea el caso y su primer consentimiento en un solo batch y devuelve la fila. Un código repetido
+ * falla con UNIQUE (quien llama reintenta con otro).
+ */
+export async function insertCase(
+  env: Env,
+  c: {
+    id: string;
+    code: string;
+    org_id: string;
+    device_id: string;
+    seudonimo_victima: string;
+    sector: string | null;
+    zona: string | null;
+    consent_mode: ConsentMode;
+    is_demo: number;
+    now: string;
+  },
+): Promise<CaseRow | null> {
+  const [inserted] = await env.DB.batch([
+    env.DB.prepare(
+      `INSERT INTO cases (id, code, org_id, device_id, seudonimo_victima, sector, zona_cuadricula, consent_mode, is_demo, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+    ).bind(
+      c.id,
+      c.code,
+      c.org_id,
+      c.device_id,
+      c.seudonimo_victima,
+      c.sector,
+      c.zona,
+      c.consent_mode,
+      c.is_demo,
+      c.now,
+      c.now,
+    ),
+    env.DB.prepare(
+      "INSERT INTO consents (id, case_id, device_id, mode, text_version, granted_at) VALUES (?, ?, ?, ?, ?, ?)",
+    ).bind(newId(), c.id, c.device_id, c.consent_mode, CONSENT_TEXT_VERSION, c.now),
+  ]);
+  return (inserted!.results[0] as CaseRow | undefined) ?? null;
+}
+
+/** Casos de un dispositivo, del más reciente al más antiguo, con su cantidad de evidencias. */
+export async function listDeviceCases(
+  env: Env,
+  deviceId: string,
+): Promise<Array<CaseRow & { evidence_count: number }>> {
+  const { results } = await env.DB.prepare(
+    `SELECT c.*, (SELECT COUNT(*) FROM evidence e WHERE e.case_id = c.id) AS evidence_count
+     FROM cases c WHERE c.device_id = ? ORDER BY c.created_at DESC`,
+  )
+    .bind(deviceId)
+    .all<CaseRow & { evidence_count: number }>();
+  return results;
+}
+
+/** Marca el caso como enviado: queda procesando en la instancia `workflowId` del Workflow. */
+export async function markCaseProcessing(env: Env, caseId: string, workflowId: string): Promise<void> {
+  const now = nowIso();
+  await env.DB.prepare(
+    "UPDATE cases SET estado = 'procesando', workflow_id = ?, submitted_at = ?, updated_at = ?, error = NULL WHERE id = ?",
+  )
+    .bind(workflowId, now, now, caseId)
+    .run();
+}
+
+/**
+ * Zona de los avisos de la víctima: el distrito que manda la app (`?zona=`, el que eligió en el
+ * celular) o, si no lo manda, el de SU caso más reciente con distrito (o la zona tal cual de un caso
+ * antiguo, como clave de zoneKey). Sin ninguno, null: no hay avisos de zona. Nada de otros casos.
+ */
+export async function victimZone(
+  env: Env,
+  deviceId: string,
+  zona: string | undefined,
+): Promise<{ zona: string | null; isDemo: boolean }> {
+  const [device, cases] = await env.DB.batch([
+    env.DB.prepare("SELECT is_demo FROM devices WHERE id = ?").bind(deviceId),
+    env.DB.prepare("SELECT zona_cuadricula, ficha_json FROM cases WHERE device_id = ? ORDER BY created_at DESC").bind(
+      deviceId,
+    ),
+  ]);
+  const isDemo = (device!.results[0] as { is_demo: number } | undefined)?.is_demo === 1;
+  if (zona) return { zona, isDemo };
+  for (const r of cases!.results as Array<{ zona_cuadricula: string | null; ficha_json: string | null }>) {
+    const k = zoneKey(r.zona_cuadricula ?? parseJsonColumn<FichaStored>(r.ficha_json)?.zona ?? null);
+    if (k) return { zona: k, isDemo };
+  }
+  return { zona: null, isDemo };
 }
 
 export async function caseSummary(env: Env, c: CaseRow): Promise<CaseSummary> {

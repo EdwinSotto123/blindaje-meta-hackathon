@@ -12,6 +12,7 @@ import {
   TokenPair,
 } from "@blindaje/shared";
 import { audit } from "../audit";
+import { findInvite, getDeviceKey, getDeviceOrg, insertDevice, redeemInvite, touchDevice } from "../auth/devices";
 import {
   consoleUserView,
   consumeRefreshToken,
@@ -20,7 +21,7 @@ import {
   issueTokens,
   revokeRefreshToken,
 } from "../auth/tokens";
-import { businessMeView, getBusinessByEmail, getBusinessById } from "../business/accounts";
+import { businessMeView, getBusinessByEmail, getBusinessById, touchBusinessLogin } from "../business/accounts";
 import { ApiError } from "../lib/errors";
 import { isUniqueViolation } from "../lib/db";
 import {
@@ -60,21 +61,12 @@ authRoutes.post("/device/register", rateLimitUnlessDemo("register"), async (c) =
   const now = nowIso();
   let orgId = CENTRAL_ORG_ID;
   if (code) {
-    const invite = await c.env.DB.prepare("SELECT code, org_id FROM invites WHERE code = ?")
-      .bind(code)
-      .first<{ code: string; org_id: string }>();
+    const invite = await findInvite(c.env, code);
     if (!invite) throw invalidInvite();
-    const used = await c.env.DB.prepare(
-      "UPDATE invites SET uses = uses + 1 WHERE code = ? AND uses < max_uses AND (expires_at IS NULL OR expires_at > ?)",
-    )
-      .bind(code, now)
-      .run();
-    if (!used.meta.changes) throw invalidInvite();
+    if (!(await redeemInvite(c.env, code, now))) throw invalidInvite();
     orgId = invite.org_id;
   }
-  const org = await c.env.DB.prepare("SELECT id, name, is_demo FROM organizations WHERE id = ?")
-    .bind(orgId)
-    .first<{ id: string; name: string; is_demo: number }>();
+  const org = await getDeviceOrg(c.env, orgId);
   if (!org) {
     if (code) throw invalidInvite();
     // Sin la migración 0004 no hay organización central: es un error de despliegue, no de la víctima.
@@ -86,12 +78,16 @@ authRoutes.post("/device/register", rateLimitUnlessDemo("register"), async (c) =
   for (let attempt = 0; attempt < 5 && !pse; attempt++) {
     const candidate = pseudonym();
     try {
-      await c.env.DB.prepare(
-        `INSERT INTO devices (id, org_id, pseudonym, public_key_jwk, platform, invite_code, is_demo, created_at, last_seen_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-        .bind(deviceId, org.id, candidate, JSON.stringify(body.public_key), body.platform, code, org.is_demo, now, now)
-        .run();
+      await insertDevice(c.env, {
+        id: deviceId,
+        org_id: org.id,
+        pseudonym: candidate,
+        public_key: body.public_key,
+        platform: body.platform,
+        invite_code: code,
+        is_demo: org.is_demo,
+        now,
+      });
       pse = candidate;
     } catch (err) {
       if (!isUniqueViolation(err)) throw err;
@@ -122,9 +118,7 @@ authRoutes.post("/device/refresh", rateLimit("auth"), async (c) => {
   if (!Number.isFinite(body.timestamp) || Math.abs(Date.now() - body.timestamp) > DEVICE_SIGNATURE_SKEW_MS) {
     throw new ApiError("unauthorized", "La hora del dispositivo no coincide. Revisa la fecha y hora del celular.");
   }
-  const device = await c.env.DB.prepare("SELECT id, org_id, pseudonym, public_key_jwk FROM devices WHERE id = ?")
-    .bind(body.device_id)
-    .first<{ id: string; org_id: string; pseudonym: string; public_key_jwk: string }>();
+  const device = await getDeviceKey(c.env, body.device_id);
   if (!device) throw unauthorized();
   const ok = await verifyDeviceSignature(
     JSON.parse(device.public_key_jwk),
@@ -136,7 +130,7 @@ authRoutes.post("/device/refresh", rateLimit("auth"), async (c) => {
     throw unauthorized();
   }
   await consumeRefreshToken(c.env, body.refresh_token, "device", device.id);
-  await c.env.DB.prepare("UPDATE devices SET last_seen_at = ? WHERE id = ?").bind(nowIso(), device.id).run();
+  await touchDevice(c.env, device.id);
   const tokens = await issueTokens(
     c.env,
     { sub: device.id, role: "victim", org: device.org_id, pse: device.pseudonym },
@@ -197,9 +191,7 @@ authRoutes.post("/business/login", rateLimit("login"), async (c) => {
     throw invalidLogin();
   }
   const tokens = await issueTokens(c.env, { sub: account.id, role: "business", org: account.org_id }, "business");
-  await c.env.DB.prepare("UPDATE business_accounts SET last_login_at = ? WHERE id = ?")
-    .bind(nowIso(), account.id)
-    .run();
+  await touchBusinessLogin(c.env, account.id);
   await audit(c.env, {
     actor_type: "business",
     actor_id: account.id,

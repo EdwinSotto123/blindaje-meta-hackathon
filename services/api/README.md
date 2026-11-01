@@ -191,8 +191,13 @@ víctima suba evidencia).
 src/
   index.ts            fetch (Hono), queue (INGESTA, VINCULACION), scheduled (Vigía); exporta DOs, Workflow y MlContainer
   app.ts              middlewares (logs, cabeceras, CORS, rate limit) y rutas
-  routes/             auth, victim, console, public, demo
+  routes/             auth, victim, public, business, demo y console/ (un archivo por sección); solo HTTP, sin SQL
   auth/tokens.ts      access/refresh tokens, rotación y detección de reutilización
+  auth/devices.ts     registro de dispositivos con invitación y refresh firmado
+  admin/              organizaciones, invitaciones y usuarios de la consola
+  alerts/             alertas del Vigía en la consola: lista y decisión
+  demo/               datos ficticios, seed y reset del modo demo
+  pilot/              solicitudes de piloto de la landing
   audit/              hash encadenado, verificación; do/audit-chain.ts serializa las escrituras
   costs/              recordCost, budgetGuard, caché por hash, hooks para meta-client
   evidence/           subida, cifrado y lectura de evidencia y derivados

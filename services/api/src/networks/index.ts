@@ -170,4 +170,9 @@ export async function recomputeNetworks(env: Env): Promise<RecomputeResult> {
   return result;
 }
 
+/** La red (solo su id) si existe. */
+export async function findNetwork(env: Env, id: string): Promise<{ id: string } | null> {
+  return env.DB.prepare("SELECT id FROM networks WHERE id = ?").bind(id).first<{ id: string }>();
+}
+
 export * from "./graph";

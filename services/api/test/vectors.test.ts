@@ -100,7 +100,8 @@ beforeAll(async () => {
   await seedCase("R", { demo: false, voice: near(extorsionador, "R", 0.08) });
   // Un caso ficticio sin consentimiento comunitario: no está en los índices.
   await seedCase("N", { demo: true, voice: near(extorsionador, "N", 0.08), indexed: false });
-});
+  // Siembra varios casos con auditoría: con la máquina cargada pasa los 10 s por defecto.
+}, 60_000);
 
 afterAll(() => {
   setChromaForTests(null);

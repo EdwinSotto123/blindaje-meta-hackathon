@@ -57,6 +57,38 @@ export function toEvidenceItem(r: EvidenceRow): EvidenceItem {
   };
 }
 
+export async function getEvidence(env: Env, id: string): Promise<EvidenceRow | null> {
+  return env.DB.prepare("SELECT * FROM evidence WHERE id = ?").bind(id).first<EvidenceRow>();
+}
+
+/** La evidencia de un caso con ese SHA-256 (la misma subida repetida), o null. */
+export async function findEvidenceBySha(env: Env, caseId: string, sha256: string): Promise<EvidenceRow | null> {
+  return env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? AND sha256 = ?")
+    .bind(caseId, sha256)
+    .first<EvidenceRow>();
+}
+
+export async function countEvidence(env: Env, caseId: string): Promise<number> {
+  const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?")
+    .bind(caseId)
+    .first<{ n: number }>();
+  return n?.n ?? 0;
+}
+
+const DERIVATIVE_FILE_SQL = {
+  wav: "SELECT id, r2_key FROM derivatives WHERE evidence_id = ? AND tipo = 'wav' LIMIT 1",
+  redactada: "SELECT id, r2_key FROM derivatives WHERE evidence_id = ? AND tipo = 'redactada' LIMIT 1",
+} as const;
+
+/** Derivado binario de una evidencia (WAV o imagen tapada), si existe. */
+export async function derivativeFile(
+  env: Env,
+  evidenceId: string,
+  tipo: keyof typeof DERIVATIVE_FILE_SQL,
+): Promise<{ id: string; r2_key: string | null } | null> {
+  return env.DB.prepare(DERIVATIVE_FILE_SQL[tipo]).bind(evidenceId).first<{ id: string; r2_key: string | null }>();
+}
+
 export interface StoreEvidenceInput {
   caseId: string;
   caseCode: string;

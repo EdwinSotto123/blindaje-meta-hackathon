@@ -162,3 +162,9 @@ export async function getUserByEmail(env: Env, email: string): Promise<UserRow |
     .bind(email.trim().toLowerCase())
     .first<UserRow>();
 }
+
+/** Si la cuenta de consola es del demo (users.is_demo). */
+export async function isDemoUser(env: Env, id: string): Promise<boolean> {
+  const u = await env.DB.prepare("SELECT is_demo FROM users WHERE id = ?").bind(id).first<{ is_demo: number }>();
+  return u?.is_demo === 1;
+}

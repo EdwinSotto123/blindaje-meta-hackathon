@@ -10,6 +10,8 @@ import {
 } from "@blindaje/shared";
 import type { Env } from "../env";
 import { parseJsonColumn } from "../lib/db";
+import { notFound } from "../lib/errors";
+import { nowIso } from "../lib/ids";
 import { sectorKey, zoneKey } from "./risk";
 import { sanitizeDeep } from "./safety";
 
@@ -33,6 +35,47 @@ export interface RecommendationRow {
 /** Uso: `${RECOMMENDATION_SELECT} WHERE …`. */
 export const RECOMMENDATION_SELECT = `SELECT r.*, u.display_name AS approver_name FROM business_recommendations r
   LEFT JOIN users u ON u.id = r.approved_by`;
+
+/** Recomendaciones de todas las zonas para la consola (las 100 más recientes). */
+export async function listRecommendations(
+  env: Env,
+  status?: RecommendationRow["status"],
+): Promise<RecommendationRow[]> {
+  const where: string[] = [];
+  const binds: unknown[] = [];
+  if (status) {
+    where.push("r.status = ?");
+    binds.push(status);
+  }
+  const { results } = await env.DB.prepare(
+    `${RECOMMENDATION_SELECT}${where.length ? ` WHERE ${where.join(" AND ")}` : ""} ORDER BY r.created_at DESC LIMIT 100`,
+  )
+    .bind(...binds)
+    .all<RecommendationRow>();
+  return results;
+}
+
+export async function getRecommendation(env: Env, id: string): Promise<RecommendationRow> {
+  const r = await env.DB.prepare(`${RECOMMENDATION_SELECT} WHERE r.id = ?`).bind(id).first<RecommendationRow>();
+  if (!r) throw notFound("Recomendación");
+  return r;
+}
+
+export async function approveRecommendation(env: Env, id: string, approvedBy: string): Promise<void> {
+  await env.DB.prepare(
+    "UPDATE business_recommendations SET status = 'aprobada', approved_by = ?, approved_at = ? WHERE id = ?",
+  )
+    .bind(approvedBy, nowIso(), id)
+    .run();
+}
+
+export async function rejectRecommendation(env: Env, id: string): Promise<void> {
+  await env.DB.prepare(
+    "UPDATE business_recommendations SET status = 'rechazada', approved_by = NULL, approved_at = NULL WHERE id = ?",
+  )
+    .bind(id)
+    .run();
+}
 
 const EMPTY_CHECK: CitationCheck = { ok: false, total_afirmaciones: 0, sin_cita: [], citas_inexistentes: [] };
 

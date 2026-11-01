@@ -1,5 +1,7 @@
 import type { BusinessMe } from "@blindaje/shared";
 import type { Env } from "../env";
+import { nowIso } from "../lib/ids";
+import { hashPassword } from "../lib/password";
 
 /** Cuenta del portal de negocios (rol `business`). Ver infra/migrations/0002_business.sql. */
 export interface BusinessAccountRow {
@@ -26,6 +28,44 @@ export async function getBusinessById(env: Env, id: string): Promise<BusinessAcc
 
 export async function getBusinessByEmail(env: Env, email: string): Promise<BusinessAccountRow | null> {
   return env.DB.prepare(`${SELECT} WHERE b.email = ?`).bind(email.trim().toLowerCase()).first<BusinessAccountRow>();
+}
+
+/** Crea una cuenta del portal (correo ya normalizado). Un correo repetido falla con UNIQUE. */
+export async function insertBusinessAccount(
+  env: Env,
+  a: {
+    id: string;
+    org_id: string;
+    email: string;
+    password: string;
+    business_name: string;
+    sector: string;
+    zona: string;
+    is_demo: number;
+    created_by: string;
+  },
+): Promise<void> {
+  await env.DB.prepare(
+    `INSERT INTO business_accounts (id, org_id, email, password_hash, business_name, sector, zona, disabled, is_demo, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+  )
+    .bind(
+      a.id,
+      a.org_id,
+      a.email,
+      await hashPassword(a.password),
+      a.business_name,
+      a.sector,
+      a.zona,
+      a.is_demo,
+      a.created_by,
+      nowIso(),
+    )
+    .run();
+}
+
+export async function touchBusinessLogin(env: Env, id: string): Promise<void> {
+  await env.DB.prepare("UPDATE business_accounts SET last_login_at = ? WHERE id = ?").bind(nowIso(), id).run();
 }
 
 export function businessMeView(b: BusinessAccountRow): BusinessMe {

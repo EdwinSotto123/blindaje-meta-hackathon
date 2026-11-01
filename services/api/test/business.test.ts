@@ -15,7 +15,7 @@ import { AVISO_RUBRO, OTROS_RUBROS, VARIOS_RUBROS } from "../src/business/risk";
 import { isUnsafeAdvice, sanitizePublicText } from "../src/business/safety";
 import { newId, nowIso } from "../src/lib/ids";
 import { hashPassword } from "../src/lib/password";
-import { DEMO_BUSINESS } from "../src/routes/demo";
+import { DEMO_BUSINESS } from "../src/demo/data";
 import { api, apiJson, createCase, insertLink, loginAs, registerDevice, seedOrg } from "./helpers";
 import {
   call,

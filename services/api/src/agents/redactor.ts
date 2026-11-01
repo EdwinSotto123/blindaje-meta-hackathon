@@ -6,6 +6,7 @@ import {
   type NivelAutenticidad,
   type PerfilRed,
 } from "@blindaje/shared";
+import type { ExpedienteRow } from "../console/views";
 import type { Env } from "../env";
 import { audit } from "../audit";
 import { putEncrypted, sha256Hex } from "../lib/crypto";
@@ -444,4 +445,18 @@ export async function runRedactor(
     },
   });
   return { expediente_id: id };
+}
+
+export async function getExpediente(env: Env, id: string): Promise<ExpedienteRow | null> {
+  return env.DB.prepare("SELECT * FROM expedientes WHERE id = ?").bind(id).first<ExpedienteRow>();
+}
+
+/** Los 50 expedientes más recientes de una red. */
+export async function listExpedientes(env: Env, networkId: string): Promise<ExpedienteRow[]> {
+  const { results } = await env.DB.prepare(
+    "SELECT * FROM expedientes WHERE network_id = ? ORDER BY created_at DESC LIMIT 50",
+  )
+    .bind(networkId)
+    .all<ExpedienteRow>();
+  return results;
 }

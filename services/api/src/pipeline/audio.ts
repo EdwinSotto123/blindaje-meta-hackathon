@@ -3,7 +3,7 @@ import { TRANSCRIBE_KEYWORDS_BASE, voiceLabel } from "@blindaje/shared";
 import type { Env } from "../env";
 import { costCacheKey, withCostCache } from "../costs";
 import { readDerivativePlain, readEvidencePlain } from "../evidence";
-import { openString } from "../lib/crypto";
+import { openString, sealString } from "../lib/crypto";
 import { nextCounter, reserveCounter } from "../lib/db";
 import { bytesToB64 } from "../lib/encoding";
 import { ApiError } from "../lib/errors";
@@ -52,6 +52,22 @@ export async function transcribeKeywords(env: Env, caseId: string): Promise<stri
     out.push(g);
   }
   return out.slice(0, MAX_KEYWORDS);
+}
+
+/** Guarda (o reemplaza) la muestra de voz de la víctima, cifrada con AAD `voice:<device_id>`. */
+export async function saveVictimVoiceVector(
+  env: Env,
+  deviceId: string,
+  vector: number[],
+  model: string,
+): Promise<void> {
+  const vectorEnc = await sealString(env.EVIDENCE_ENCRYPTION_KEY, JSON.stringify(vector), `voice:${deviceId}`);
+  await env.DB.prepare(
+    `INSERT INTO victim_voice_samples (device_id, vector_enc, model, created_at) VALUES (?, ?, ?, ?)
+     ON CONFLICT(device_id) DO UPDATE SET vector_enc = excluded.vector_enc, model = excluded.model, created_at = excluded.created_at`,
+  )
+    .bind(deviceId, vectorEnc, model, nowIso())
+    .run();
 }
 
 /** Vector de la muestra de voz de la víctima (descifrado solo en memoria). */
