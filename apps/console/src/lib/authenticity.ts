@@ -19,7 +19,8 @@ export const NIVEL_META: Record<NivelAutenticidad, { label: string; tone: AuthTo
   indicios_debiles: {
     label: "Indicios débiles de IA",
     tone: "debil",
-    sentence: "Hay detalles que podrían indicar edición o generación con IA. Míralos junto con el resto de la evidencia.",
+    sentence:
+      "Hay detalles que podrían indicar edición o generación con IA. Míralos junto con el resto de la evidencia.",
   },
   indicios_fuertes: {
     label: "Indicios fuertes de IA",
@@ -29,7 +30,8 @@ export const NIVEL_META: Record<NivelAutenticidad, { label: string; tone: AuthTo
   generado_ia_confirmado: {
     label: "Generado con IA",
     tone: "confirmado",
-    sentence: "Una marca de agua o una credencial C2PA declaran que fue generado con IA. Igual es evidencia: alguien lo usó para extorsionar.",
+    sentence:
+      "Una marca de agua o una credencial C2PA declaran que fue generado con IA. Igual es evidencia: alguien lo usó para extorsionar.",
   },
 };
 
@@ -47,7 +49,9 @@ export interface FlaggedEvidence {
 /** Evidencia de un caso con indicios fuertes o marca de IA. */
 export function flaggedInCase(side: CaseSide): FlaggedEvidence[] {
   return side.evidencia.flatMap((e) =>
-    e.autenticidad && isStrong(e.autenticidad.nivel) ? [{ label: e.label, tipo: e.tipo, caseCode: side.code, nivel: e.autenticidad.nivel }] : [],
+    e.autenticidad && isStrong(e.autenticidad.nivel)
+      ? [{ label: e.label, tipo: e.tipo, caseCode: side.code, nivel: e.autenticidad.nivel }]
+      : [],
   );
 }
 
@@ -85,24 +89,42 @@ export function sourceLines(r: ResultadoAutenticidad): SourceLine[] {
     out.push({
       fuente: "Credenciales C2PA",
       estado:
-        (t.c2pa.ai_generated ? "Declaran contenido generado con IA" : t.c2pa.ai_generated === false ? "Presentes; no declaran IA" : "Presentes; no dicen si es IA") +
-        (t.c2pa.generator ? ` (${t.c2pa.generator})` : ""),
+        (t.c2pa.ai_generated
+          ? "Declaran contenido generado con IA"
+          : t.c2pa.ai_generated === false
+            ? "Presentes; no declaran IA"
+            : "Presentes; no dicen si es IA") + (t.c2pa.generator ? ` (${t.c2pa.generator})` : ""),
       alerta: t.c2pa.ai_generated === true,
     });
   if (!t.metadata) out.push({ fuente: "Metadatos", estado: "No se pudieron revisar", alerta: false });
-  else if (t.metadata.suspicious.length) out.push({ fuente: "Metadatos", estado: t.metadata.suspicious.join("; "), alerta: true });
-  else if (!t.metadata.present) out.push({ fuente: "Metadatos", estado: "El archivo no trae (común al reenviar por WhatsApp)", alerta: false });
-  else out.push({ fuente: "Metadatos", estado: t.metadata.software ? `Sin alertas (software: ${t.metadata.software})` : "Sin alertas", alerta: false });
+  else if (t.metadata.suspicious.length)
+    out.push({ fuente: "Metadatos", estado: t.metadata.suspicious.join("; "), alerta: true });
+  else if (!t.metadata.present)
+    out.push({ fuente: "Metadatos", estado: "El archivo no trae (común al reenviar por WhatsApp)", alerta: false });
+  else
+    out.push({
+      fuente: "Metadatos",
+      estado: t.metadata.software ? `Sin alertas (software: ${t.metadata.software})` : "Sin alertas",
+      alerta: false,
+    });
   if (r.tipo === "audio") {
     out.push(
       t.synthetic_speech?.available
-        ? { fuente: "Detector de voz sintética", estado: `Puntaje ${pct(t.synthetic_speech.score)} (1 = sintética)`, alerta: t.synthetic_speech.score >= 0.5 }
+        ? {
+            fuente: "Detector de voz sintética",
+            estado: `Puntaje ${pct(t.synthetic_speech.score)} (1 = sintética)`,
+            alerta: t.synthetic_speech.score >= 0.5,
+          }
         : { fuente: "Detector de voz sintética", estado: "No disponible", alerta: false },
     );
   }
   out.push(
     r.forense
-      ? { fuente: `Análisis forense (${r.model ?? "Muse Spark"})`, estado: NIVEL_META[r.forense.nivel].label, alerta: r.forense.nivel !== "sin_senales" }
+      ? {
+          fuente: `Análisis forense (${r.model ?? "Muse Spark"})`,
+          estado: NIVEL_META[r.forense.nivel].label,
+          alerta: r.forense.nivel !== "sin_senales",
+        }
       : { fuente: "Análisis forense (Muse Spark)", estado: "No disponible", alerta: false },
   );
   return out;

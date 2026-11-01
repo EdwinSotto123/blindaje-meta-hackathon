@@ -33,8 +33,19 @@ export default function Senuelo() {
         </>
       }
     >
-      <T variant="body">Si alguien te obliga a abrir la app, usa este PIN. Verá unas notas privadas vacías, como si nunca hubieras guardado nada.</T>
-      <Field label="PIN señuelo (4 a 8 números)" value={pin} onChangeText={setPin} keyboardType="number-pad" secureTextEntry maxLength={8} testID="pin-senuelo" />
+      <T variant="body">
+        Si alguien te obliga a abrir la app, usa este PIN. Verá unas notas privadas vacías, como si nunca hubieras
+        guardado nada.
+      </T>
+      <Field
+        label="PIN señuelo (4 a 8 números)"
+        value={pin}
+        onChangeText={setPin}
+        keyboardType="number-pad"
+        secureTextEntry
+        maxLength={8}
+        testID="pin-senuelo"
+      />
       <Notice>{error}</Notice>
       <Card>
         <T variant="small">Tu evidencia sigue a salvo en la nube. Con el PIN señuelo no se ve ni se borra nada.</T>

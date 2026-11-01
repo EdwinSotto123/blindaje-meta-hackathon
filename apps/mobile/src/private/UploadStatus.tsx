@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useState } from "react";
 import { View } from "react-native";
 
 import { Card, Chip, Mark, T } from "@/components/ui";
@@ -11,13 +11,20 @@ import { colors } from "@/theme/tokens";
  * Qué pasó con lo que acabas de guardar: espera conexión, se está subiendo, ya está en la nube
  * y, cuando el servidor lo procesa, la transcripción con los datos resaltados.
  */
-export function UploadStatus({ queueId, decoy, showTranscript = true }: { queueId: string | null; decoy: boolean; showTranscript?: boolean }) {
+export function UploadStatus({
+  queueId,
+  decoy,
+  showTranscript = true,
+}: {
+  queueId: string | null;
+  decoy: boolean;
+  showTranscript?: boolean;
+}) {
   const item = usePrivate((s) => s.queue.find((q) => q.id === queueId) ?? null);
   const report = usePrivate((s) => s.report);
   // La fila de la cola se borra cuando el reporte ya incluye la evidencia: se recuerda su id.
-  const evRef = useRef<string | null>(null);
-  if (item?.evidence_id) evRef.current = item.evidence_id;
-  const evidenceId = evRef.current;
+  const [evidenceId, setEvidenceId] = useState<string | null>(item?.evidence_id ?? null);
+  if (item?.evidence_id && item.evidence_id !== evidenceId) setEvidenceId(item.evidence_id);
   const ev = evidenceId ? (report?.evidencia.find((e) => e.id === evidenceId) ?? null) : null;
   const gone = !!queueId && !item; // ya se quitó de la cola porque el reporte la incluye
   const done = ev?.status === "procesado";
@@ -55,8 +62,12 @@ export function UploadStatus({ queueId, decoy, showTranscript = true }: { queueI
       <Chip label={label} icon={icon} color={color} testID="estado-subida" />
       {showTranscript && (item?.status === "subido" || ev) ? (
         <Card>
-          <T variant="h2">{done ? (ev?.transcripcion?.length ? "Lo que dice" : "Revisado") : "Revisando lo que subiste…"}</T>
-          {done && ev?.transcripcion?.length ? <Transcript turns={ev.transcripcion} terms={termsFromReport(report)} /> : null}
+          <T variant="h2">
+            {done ? (ev?.transcripcion?.length ? "Lo que dice" : "Revisado") : "Revisando lo que subiste…"}
+          </T>
+          {done && ev?.transcripcion?.length ? (
+            <Transcript turns={ev.transcripcion} terms={termsFromReport(report)} />
+          ) : null}
           {done && ev?.nota ? <T variant="secondary">{ev.nota}</T> : null}
           {done && hallazgos.length ? (
             <View style={{ gap: 8 }}>

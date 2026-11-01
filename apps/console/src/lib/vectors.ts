@@ -19,11 +19,26 @@ import { fmtScore } from "./format";
 
 export const INDEX_ORDER: VectorIndexName[] = ["voz", "voz_segmento", "texto", "imagen"];
 
-export const INDEX_META: Record<VectorIndexName, { label: string; corto: string; paso: string; coleccion: string; lane: Lane }> = {
+export const INDEX_META: Record<
+  VectorIndexName,
+  { label: string; corto: string; paso: string; coleccion: string; lane: Lane }
+> = {
   voz: { label: "Huellas de voz", corto: "huellas de voz", paso: "Voces", coleccion: "blindaje-voz", lane: "voz" },
-  voz_segmento: { label: "Segmentos de voz", corto: "segmentos de voz", paso: "Segmentos", coleccion: "blindaje-voz-segmento", lane: "voz" },
+  voz_segmento: {
+    label: "Segmentos de voz",
+    corto: "segmentos de voz",
+    paso: "Segmentos",
+    coleccion: "blindaje-voz-segmento",
+    lane: "voz",
+  },
   texto: { label: "Fichas", corto: "fichas", paso: "Fichas", coleccion: "blindaje-texto", lane: "texto" },
-  imagen: { label: "Recortes de imagen", corto: "recortes de imagen", paso: "Imágenes", coleccion: "blindaje-imagen", lane: "imagen" },
+  imagen: {
+    label: "Recortes de imagen",
+    corto: "recortes de imagen",
+    paso: "Imágenes",
+    coleccion: "blindaje-imagen",
+    lane: "imagen",
+  },
 };
 
 /** Carriles del recorrido: cada tipo de evidencia con su modelo. */
@@ -40,8 +55,18 @@ export interface ModelInfo {
 
 const KNOWN_MODELS: Array<{ test: RegExp; info: ModelInfo }> = [
   { test: /ecapa|speechbrain/i, info: { nombre: "ECAPA-TDNN", detalle: "huella de voz de SpeechBrain", previo: null } },
-  { test: /e5/i, info: { nombre: "multilingual-e5-small", detalle: "vuelve la ficha números", previo: "Muse Spark 1.3 escribe la ficha" } },
-  { test: /dinov2/i, info: { nombre: "DINOv2 de Meta", detalle: "describe cada recorte", previo: "SAM 3.1 de Meta recorta la imagen" } },
+  {
+    test: /e5/i,
+    info: {
+      nombre: "multilingual-e5-small",
+      detalle: "vuelve la ficha números",
+      previo: "Muse Spark 1.3 escribe la ficha",
+    },
+  },
+  {
+    test: /dinov2/i,
+    info: { nombre: "DINOv2 de Meta", detalle: "describe cada recorte", previo: "SAM 3.1 de Meta recorta la imagen" },
+  },
 ];
 
 /** Nombre para mostrar del modelo que está en D1 ("facebook/dinov2-small" → "DINOv2 de Meta"). */
@@ -235,7 +260,10 @@ export type SignalKey = keyof VectorCandidate["senales"];
 export const SIGNAL_ORDER: SignalKey[] = ["identificador", "voz", "imagen", "modus_operandi"];
 
 /** Mismos colores y formas que la leyenda del grafo (DESIGN.md, Señales). */
-export const SIGNAL_META: Record<SignalKey, { label: string; color: string; borde: string; forma: "rombo" | "circulo" | "hexagono" | "etiqueta" }> = {
+export const SIGNAL_META: Record<
+  SignalKey,
+  { label: string; color: string; borde: string; forma: "rombo" | "circulo" | "hexagono" | "etiqueta" }
+> = {
   identificador: { label: "Identificador igual", color: "#21763c", borde: "#045725", forma: "rombo" },
   voz: { label: "Voz", color: "#c59711", borde: "#815d00", forma: "circulo" },
   imagen: { label: "Imagen", color: "#105483", borde: "#003860", forma: "hexagono" },
@@ -287,7 +315,13 @@ export function buildSteps(c: VectorCaseSummary): Step[] {
     { kind: "vectores", titulo: "Vectores" },
     { kind: "base", titulo: "Guardar" },
   ];
-  for (const i of caseIndices(c)) steps.push({ kind: "busqueda", indice: i, titulo: `Buscar ${INDEX_META[i].paso.toLowerCase()}`, corto: INDEX_META[i].paso });
+  for (const i of caseIndices(c))
+    steps.push({
+      kind: "busqueda",
+      indice: i,
+      titulo: `Buscar ${INDEX_META[i].paso.toLowerCase()}`,
+      corto: INDEX_META[i].paso,
+    });
   steps.push({ kind: "senales", titulo: "Señales" }, { kind: "revision", titulo: "Revisión humana" });
   return steps;
 }
@@ -316,7 +350,13 @@ export function stepDuration(step: Step, trace: VectorTrace | null): number {
 }
 
 /** Texto del paso para la región que anuncian los lectores de pantalla (y la leyenda visible). */
-export function stepDescription(step: Step, c: VectorCaseSummary, overview: VectorOverview, trace: VectorTrace | null, loading: boolean): string {
+export function stepDescription(
+  step: Step,
+  c: VectorCaseSummary,
+  overview: VectorOverview,
+  trace: VectorTrace | null,
+  loading: boolean,
+): string {
   const provider = trace?.proveedor ?? overview.almacen.proveedor;
   const who = PROVIDER_LABEL[provider];
   switch (step.kind) {
@@ -343,7 +383,8 @@ export function stepDescription(step: Step, c: VectorCaseSummary, overview: Vect
     }
     case "busqueda": {
       const i = step.indice!;
-      if (loading || !trace) return `Consultando ${who}: buscando en ${INDEX_META[i].coleccion} los vectores más parecidos a los del caso ${c.caso}…`;
+      if (loading || !trace)
+        return `Consultando ${who}: buscando en ${INDEX_META[i].coleccion} los vectores más parecidos a los del caso ${c.caso}…`;
       return searchSummary(i, queriesOf(trace, i), provider);
     }
     case "senales": {
@@ -398,13 +439,19 @@ export function placeLabels(
   const R = 6.5;
   const boxOf = (x: number, y: number, w: number, anchor: "start" | "end"): [number, number, number, number] =>
     anchor === "start" ? [x, y - H + 2, x + w, y + 2] : [x - w, y - H + 2, x, y + 2];
-  const overlaps = (a: [number, number, number, number], b: [number, number, number, number]) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
-  const inside = (b: [number, number, number, number]) => b[0] >= 2 && b[2] <= MAP.w - 2 && b[1] >= 2 && b[3] <= MAP.h - 2;
+  const overlaps = (a: [number, number, number, number], b: [number, number, number, number]) =>
+    a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+  const inside = (b: [number, number, number, number]) =>
+    b[0] >= 2 && b[2] <= MAP.w - 2 && b[1] >= 2 && b[3] <= MAP.h - 2;
   for (const it of items.slice(0, max)) {
     const w = it.text.length * 6.2;
-    const others = [...obstacles, ...items.filter((o) => o.id !== it.id)].filter((o) => o.cx !== it.cx || o.cy !== it.cy);
+    const others = [...obstacles, ...items.filter((o) => o.id !== it.id)].filter(
+      (o) => o.cx !== it.cx || o.cy !== it.cy,
+    );
     const free = (b: [number, number, number, number]) =>
-      inside(b) && !placed.some((p) => overlaps(p.box, b)) && !others.some((o) => overlaps(b, [o.cx - R, o.cy - R, o.cx + R, o.cy + R]));
+      inside(b) &&
+      !placed.some((p) => overlaps(p.box, b)) &&
+      !others.some((o) => overlaps(b, [o.cx - R, o.cy - R, o.cx + R, o.cy + R]));
     const tries: Array<{ x: number; y: number; anchor: "start" | "end" }> = [
       { x: it.cx + 9, y: it.cy + 4, anchor: "start" },
       { x: it.cx - 9, y: it.cy + 4, anchor: "end" },
@@ -419,7 +466,12 @@ export function placeLabels(
     if (!pick) {
       const right = it.cx + 9 + w <= MAP.w - 2;
       pick = { x: right ? it.cx + 9 : it.cx - 9, y: it.cy + 4, anchor: right ? "start" : "end" };
-      for (let guard = 0; guard < 8 && placed.some((p) => overlaps(p.box, boxOf(pick!.x, pick!.y, w, pick!.anchor))); guard++) pick.y += H + 2;
+      for (
+        let guard = 0;
+        guard < 8 && placed.some((p) => overlaps(p.box, boxOf(pick!.x, pick!.y, w, pick!.anchor)));
+        guard++
+      )
+        pick.y += H + 2;
     }
     const y = Math.min(Math.max(pick.y, 12), MAP.h - 4);
     placed.push({ id: it.id, text: it.text, x: pick.x, y, anchor: pick.anchor, box: boxOf(pick.x, y, w, pick.anchor) });

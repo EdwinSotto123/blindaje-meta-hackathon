@@ -77,18 +77,27 @@ export interface StoreEvidenceInput {
  * mensaje a la cola INGESTA. Idempotente por (caso, SHA-256): reintentar la misma subida devuelve
  * la evidencia existente (`created: false`), útil para la cola sin conexión del celular.
  */
-export async function storeEvidence(env: Env, input: StoreEvidenceInput): Promise<{ item: EvidenceItem; created: boolean }> {
+export async function storeEvidence(
+  env: Env,
+  input: StoreEvidenceInput,
+): Promise<{ item: EvidenceItem; created: boolean }> {
   if (input.bytes.byteLength === 0) throw new ApiError("bad_request", "El archivo está vacío");
   if (input.bytes.byteLength > MAX_EVIDENCE_BYTES) throw new ApiError("payload_too_large", "El archivo supera 50 MB");
   const sha256 = await sha256Hex(input.bytes);
   if (sha256 !== input.sha256Client.toLowerCase()) {
     log("warn", "evidence_integrity_mismatch", { case_id: input.caseId, size: input.bytes.byteLength });
-    throw new ApiError("integrity_mismatch", "El archivo llegó distinto de como salió del celular. Vuelve a enviarlo.", {
-      details: { sha256_server: sha256 },
-    });
+    throw new ApiError(
+      "integrity_mismatch",
+      "El archivo llegó distinto de como salió del celular. Vuelve a enviarlo.",
+      {
+        details: { sha256_server: sha256 },
+      },
+    );
   }
 
-  const dup = await env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? AND sha256 = ?").bind(input.caseId, sha256).first<EvidenceRow>();
+  const dup = await env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? AND sha256 = ?")
+    .bind(input.caseId, sha256)
+    .first<EvidenceRow>();
   if (dup) return { item: toEvidenceItem(dup), created: false };
 
   const id = newId();
@@ -133,7 +142,9 @@ export async function storeEvidence(env: Env, input: StoreEvidenceInput): Promis
         throw err;
       }
       // Otra subida concurrente tomó el mismo número: reintentar. Si fue el mismo archivo, devolverlo.
-      const again = await env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? AND sha256 = ?").bind(input.caseId, sha256).first<EvidenceRow>();
+      const again = await env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? AND sha256 = ?")
+        .bind(input.caseId, sha256)
+        .first<EvidenceRow>();
       if (again) {
         await env.EVIDENCE.delete(r2Key);
         return { item: toEvidenceItem(again), created: false };
@@ -171,12 +182,18 @@ export async function storeEvidence(env: Env, input: StoreEvidenceInput): Promis
 }
 
 /** Descifra el original de una evidencia (solo en memoria). */
-export async function readEvidencePlain(env: Env, row: Pick<EvidenceRow, "id" | "r2_key">): Promise<ArrayBuffer | null> {
+export async function readEvidencePlain(
+  env: Env,
+  row: Pick<EvidenceRow, "id" | "r2_key">,
+): Promise<ArrayBuffer | null> {
   return getDecrypted(env.EVIDENCE, row.r2_key, env.EVIDENCE_ENCRYPTION_KEY, row.id);
 }
 
 /** Descifra un derivado binario (WAV, imagen tapada…). */
-export async function readDerivativePlain(env: Env, d: { id: string; r2_key: string | null }): Promise<ArrayBuffer | null> {
+export async function readDerivativePlain(
+  env: Env,
+  d: { id: string; r2_key: string | null },
+): Promise<ArrayBuffer | null> {
   if (!d.r2_key) return null;
   return getDecrypted(env.EVIDENCE, d.r2_key, env.EVIDENCE_ENCRYPTION_KEY, d.id);
 }

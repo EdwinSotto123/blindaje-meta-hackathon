@@ -47,8 +47,7 @@ def ffmpeg_encode(src: bytes, args: list[str], suffix: str, tmp_path: Path) -> b
     i = tmp_path / f"src-{hashlib.md5(src).hexdigest()[:8]}.wav"
     o = tmp_path / f"out{suffix}"
     i.write_bytes(src)
-    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(i), *args, str(o)],
-                   check=True)
+    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(i), *args, str(o)], check=True)
     return o.read_bytes()
 
 
@@ -206,9 +205,16 @@ def assert_senales(body: dict) -> None:
 
 @pytest.fixture
 def fakes() -> dict:
-    return {"voice": FakeVoice(), "text": FakeText(), "image": FakeImage(), "audioseal": FakeAudioSeal(),
-            "videoseal": FakeVideoSeal(), "audioseal_embedder": FakeAudioSealEmbedder(),
-            "videoseal_embedder": FakeVideoSealEmbedder(), "prompt_guard": FakePromptGuard()}
+    return {
+        "voice": FakeVoice(),
+        "text": FakeText(),
+        "image": FakeImage(),
+        "audioseal": FakeAudioSeal(),
+        "videoseal": FakeVideoSeal(),
+        "audioseal_embedder": FakeAudioSealEmbedder(),
+        "videoseal_embedder": FakeVideoSealEmbedder(),
+        "prompt_guard": FakePromptGuard(),
+    }
 
 
 @pytest.fixture

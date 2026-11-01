@@ -59,7 +59,12 @@ const invalidRefresh = () => new ApiError("unauthorized", "Sesión vencida. Vuel
  * Consume un refresh token (rotación). Si alguien presenta un token ya rotado, se asume robo y
  * se revocan todas las sesiones de ese sujeto.
  */
-export async function consumeRefreshToken(env: Env, token: string, subjectType: SubjectType, expectedSubject?: string): Promise<string> {
+export async function consumeRefreshToken(
+  env: Env,
+  token: string,
+  subjectType: SubjectType,
+  expectedSubject?: string,
+): Promise<string> {
   if (!token || token.length > 200) throw invalidRefresh();
   const hash = await sha256Hex(token);
   const table = tokenTable(subjectType);
@@ -81,21 +86,32 @@ export async function consumeRefreshToken(env: Env, token: string, subjectType: 
     throw invalidRefresh();
   }
   if (row.expires_at <= now) throw invalidRefresh();
-  const upd = await env.DB.prepare(`UPDATE ${table} SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL`).bind(now, row.id).run();
+  const upd = await env.DB.prepare(`UPDATE ${table} SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL`)
+    .bind(now, row.id)
+    .run();
   if (!upd.meta.changes) throw invalidRefresh();
   return row.subject_id;
 }
 
 export async function revokeAllForSubject(env: Env, subjectType: SubjectType, subjectId: string): Promise<void> {
-  await env.DB.prepare(`UPDATE ${tokenTable(subjectType)} SET revoked_at = ? WHERE subject_type = ? AND subject_id = ? AND revoked_at IS NULL`)
+  await env.DB.prepare(
+    `UPDATE ${tokenTable(subjectType)} SET revoked_at = ? WHERE subject_type = ? AND subject_id = ? AND revoked_at IS NULL`,
+  )
     .bind(nowIso(), subjectType, subjectId)
     .run();
 }
 
-export async function revokeRefreshToken(env: Env, token: string, subjectId: string, subjectType?: SubjectType): Promise<boolean> {
+export async function revokeRefreshToken(
+  env: Env,
+  token: string,
+  subjectId: string,
+  subjectType?: SubjectType,
+): Promise<boolean> {
   const hash = await sha256Hex(token);
   const table = tokenTable(subjectType ?? "user");
-  const res = await env.DB.prepare(`UPDATE ${table} SET revoked_at = ? WHERE token_hash = ? AND subject_id = ? AND revoked_at IS NULL`)
+  const res = await env.DB.prepare(
+    `UPDATE ${table} SET revoked_at = ? WHERE token_hash = ? AND subject_id = ? AND revoked_at IS NULL`,
+  )
     .bind(nowIso(), hash, subjectId)
     .run();
   return Boolean(res.meta.changes);
@@ -132,13 +148,17 @@ export function consoleUserView(u: UserRow): ConsoleUser {
 }
 
 export async function getUserById(env: Env, id: string): Promise<UserRow | null> {
-  return env.DB.prepare("SELECT u.*, o.name AS org_name FROM users u JOIN organizations o ON o.id = u.org_id WHERE u.id = ?")
+  return env.DB.prepare(
+    "SELECT u.*, o.name AS org_name FROM users u JOIN organizations o ON o.id = u.org_id WHERE u.id = ?",
+  )
     .bind(id)
     .first<UserRow>();
 }
 
 export async function getUserByEmail(env: Env, email: string): Promise<UserRow | null> {
-  return env.DB.prepare("SELECT u.*, o.name AS org_name FROM users u JOIN organizations o ON o.id = u.org_id WHERE u.email = ?")
+  return env.DB.prepare(
+    "SELECT u.*, o.name AS org_name FROM users u JOIN organizations o ON o.id = u.org_id WHERE u.email = ?",
+  )
     .bind(email.trim().toLowerCase())
     .first<UserRow>();
 }

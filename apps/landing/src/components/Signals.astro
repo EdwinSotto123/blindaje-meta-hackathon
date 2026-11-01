@@ -21,37 +21,53 @@ const GLYPH: Record<(typeof s.items)[number]["kind"], { fill: string; chip: stri
   imagen: { fill: "#105483", chip: "#e3f0fd", shape: '<path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/>' },
   frase: { fill: "#bf71a6", chip: "#fbe8f4", shape: '<path d="M3 6.5h12.5L21 12l-5.5 5.5H3z"/>' },
   id: { fill: "#21763c", chip: "#e3f4e5", shape: '<path d="M12 2.5L21.5 12 12 21.5 2.5 12z"/>' },
-  cobro: { fill: "#ffffff", chip: "#f2f1ef", shape: '<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 9h8M8 13h8M8 17h5" fill="none"/>' },
-  zona: { fill: "#d77a4c", chip: "#f3d6c4", shape: '<path d="M12 21.5s-7-6.2-7-11.5a7 7 0 0 1 14 0c0 5.3-7 11.5-7 11.5z"/><circle cx="12" cy="10" r="2.6" fill="#ffffff"/>' },
+  cobro: {
+    fill: "#ffffff",
+    chip: "#f2f1ef",
+    shape: '<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 9h8M8 13h8M8 17h5" fill="none"/>',
+  },
+  zona: {
+    fill: "#d77a4c",
+    chip: "#f3d6c4",
+    shape:
+      '<path d="M12 21.5s-7-6.2-7-11.5a7 7 0 0 1 14 0c0 5.3-7 11.5-7 11.5z"/><circle cx="12" cy="10" r="2.6" fill="#ffffff"/>',
+  },
 };
 ---
 
 <section class="section signals" id="huellas" aria-labelledby="huellas-title">
   <div class="wrap">
     <div class="sec-head" data-reveal>
-      <h2 id="huellas-title" class="head">{s.title}</h2>
+      <h2 id="huellas-title" class="head">
+        {s.title}
+      </h2>
       <p class="lead soft">{s.lead}</p>
     </div>
 
     <ul class="sig" role="list">
-      {
-        s.items.map((it) => (
-          <li class="sig__item" data-reveal>
-            <div class="sig__head">
-              <svg class="sig__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill={GLYPH[it.kind].fill} set:html={GLYPH[it.kind].shape} />
-              <h3 class="sig__name">{it.name}</h3>
-            </div>
-            <p class="sig__text">{it.text}</p>
-            <p class="sig__example" style={`--chip:${GLYPH[it.kind].chip}`}>
-              {it.example}
-            </p>
-            <p class="sig__how small">
-              <Icon name="chip" />
-              <span>{it.how}</span>
-            </p>
-          </li>
-        ))
-      }
+      {s.items.map((it) => (
+        <li class="sig__item" data-reveal>
+          <div class="sig__head">
+            <svg
+              class="sig__glyph"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+              fill={GLYPH[it.kind].fill}
+              set:html={GLYPH[it.kind].shape}
+            />
+            <h3 class="sig__name">{it.name}</h3>
+          </div>
+          <p class="sig__text">{it.text}</p>
+          <p class="sig__example" style={`--chip:${GLYPH[it.kind].chip}`}>
+            {it.example}
+          </p>
+          <p class="sig__how small">
+            <Icon name="chip" />
+            <span>{it.how}</span>
+          </p>
+        </li>
+      ))}
     </ul>
 
     <p class="sig__note" data-reveal>

@@ -112,7 +112,9 @@ export function caseCodeOf(node: NetworkView["nodes"][number]): string {
   return typeof node.data?.code === "string" ? node.data.code : node.label.replace(/^caso\s+/i, "");
 }
 
-export function networkToElements(net: Pick<NetworkView, "nodes" | "edges"> & { timeline?: NetworkView["timeline"] }): cytoscape.ElementDefinition[] {
+export function networkToElements(
+  net: Pick<NetworkView, "nodes" | "edges"> & { timeline?: NetworkView["timeline"] },
+): cytoscape.ElementDefinition[] {
   // Fecha de cada caso: primer_contacto si la API la manda; si no, su primer evento en la línea de tiempo.
   const firstEvent = new Map<string, string>();
   for (const t of net.timeline ?? []) {
@@ -130,7 +132,9 @@ export function networkToElements(net: Pick<NetworkView, "nodes" | "edges"> & { 
   const edges = net.edges.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target) && e.source !== e.target);
 
   // Posiciones: casos en fila por fecha; señales en su carril, en el promedio de sus casos.
-  const cases = net.nodes.filter((n) => n.type === "caso").sort((a, b) => caseDate(a) - caseDate(b) || a.id.localeCompare(b.id));
+  const cases = net.nodes
+    .filter((n) => n.type === "caso")
+    .sort((a, b) => caseDate(a) - caseDate(b) || a.id.localeCompare(b.id));
   const pos = new Map<string, { x: number; y: number }>();
   cases.forEach((c, i) => pos.set(c.id, { x: i * CASE_GAP, y: 0 }));
   const caseX = (id: string) => pos.get(id)?.x;
@@ -178,7 +182,10 @@ export function networkToElements(net: Pick<NetworkView, "nodes" | "edges"> & { 
       source: e.source,
       target: e.target,
       type: e.type,
-      label: e.type === "vinculo" ? [e.label, e.weight != null ? `(${e.weight.toFixed(2)})` : null].filter(Boolean).join(" ") : "",
+      label:
+        e.type === "vinculo"
+          ? [e.label, e.weight != null ? `(${e.weight.toFixed(2)})` : null].filter(Boolean).join(" ")
+          : "",
       weight: e.weight ?? null,
     },
     classes: e.type,
@@ -274,7 +281,13 @@ export function graphStyle(): cytoscape.StylesheetJson {
     // Selección: trazo terracota grueso con un halo suave del mismo tono (la terracota marca la acción).
     {
       selector: "node:selected",
-      style: { "border-width": 4, "border-color": TERRACOTTA, "overlay-color": TERRACOTTA, "overlay-opacity": 0.14, "overlay-padding": 8 },
+      style: {
+        "border-width": 4,
+        "border-color": TERRACOTTA,
+        "overlay-color": TERRACOTTA,
+        "overlay-opacity": 0.14,
+        "overlay-padding": 8,
+      },
     },
     { selector: ".atenuado", style: { opacity: 0.22 } },
   ];

@@ -19,15 +19,16 @@ const icons = ["lock", "wave", "link", "pin"] as const;
 <section class="section how" id="como-funciona" aria-labelledby="como-title">
   <div class="wrap">
     <div class="sec-head" data-reveal>
-      <h2 id="como-title" class="head">{h.title}</h2>
+      <h2 id="como-title" class="head">
+        {h.title}
+      </h2>
       <p class="lead soft">{h.lead}</p>
     </div>
 
     <div class="steps-wrap">
-    <span class="steps__line" aria-hidden="true"></span>
-    <ol class="steps" role="list">
-      {
-        h.steps.map((s, i) => (
+      <span class="steps__line" aria-hidden="true"></span>
+      <ol class="steps" role="list">
+        {h.steps.map((s, i) => (
           <li class="step">
             <span class="step__num num" aria-hidden="true">
               {i + 1}
@@ -42,9 +43,8 @@ const icons = ["lock", "wave", "link", "pin"] as const;
               <span class="tag">{s.tag}</span>
             </div>
           </li>
-        ))
-      }
-    </ol>
+        ))}
+      </ol>
     </div>
 
     <div class="demo" data-reveal>

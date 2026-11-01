@@ -38,7 +38,14 @@ function text(html: string): string {
 }
 
 function zone(d: District, rubro: "bodega" | "mercado" | null = null, alert = false) {
-  const html = render(<Panorama risk={publicRisk(d.id, rubro)} district={d} rubro={rubro} latestAlert={alert ? publicAlerts(d.id)[0] : undefined} />);
+  const html = render(
+    <Panorama
+      risk={publicRisk(d.id, rubro)}
+      district={d}
+      rubro={rubro}
+      latestAlert={alert ? publicAlerts(d.id)[0] : undefined}
+    />,
+  );
   return { html, t: text(html) };
 }
 
@@ -144,7 +151,9 @@ describe("rangos", () => {
         { semana: "2026-10-14", casos: "10-19" },
         { semana: "2026-10-21", casos: null },
       ]),
-    ).toBe("Los casos por semana bajaron del rango de 20 a 49 al de 10 a 19 entre la semana del 7 de octubre y la del 14 de octubre. Una semana no llega al mínimo y va sin datos.");
+    ).toBe(
+      "Los casos por semana bajaron del rango de 20 a 49 al de 10 a 19 entre la semana del 7 de octubre y la del 14 de octubre. Una semana no llega al mínimo y va sin datos.",
+    );
   });
 });
 
@@ -193,7 +202,9 @@ describe("alertas", () => {
     expect(t).toMatch(/Aprobado por el equipo de Blindaje el 27 de octubre de 2026\s*, para Ate/);
     expect(t).toContain("Nuevo");
     expect(t).not.toMatch(/gremio|asociad/i);
-    const vacio = text(render(<AlertList alerts={publicAlerts("miraflores")} district={districtById("miraflores")!} now={now} />));
+    const vacio = text(
+      render(<AlertList alerts={publicAlerts("miraflores")} district={districtById("miraflores")!} now={now} />),
+    );
     expect(vacio).toContain("No hay alertas para Miraflores");
     expect(vacio).toContain("no quiere decir que no pase nada");
   });

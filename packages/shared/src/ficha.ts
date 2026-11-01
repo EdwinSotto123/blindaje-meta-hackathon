@@ -88,7 +88,9 @@ export const FichaStored = FichaExtraction.omit({ identificadores: true }).exten
 export type FichaStored = z.infer<typeof FichaStored>;
 
 /** Chips de "Lo que encontramos" para la víctima. Se generan de la ficha, sin datos de otros casos. */
-export function hallazgosParaVictima(f: Pick<FichaExtraction, "canal_pago" | "plazo" | "grupo_que_dice_ser" | "monto_soles" | "tipo_amenaza">): string[] {
+export function hallazgosParaVictima(
+  f: Pick<FichaExtraction, "canal_pago" | "plazo" | "grupo_que_dice_ser" | "monto_soles" | "tipo_amenaza">,
+): string[] {
   const out: string[] = [];
   const canal: Record<string, string> = {
     yape: "Yape",

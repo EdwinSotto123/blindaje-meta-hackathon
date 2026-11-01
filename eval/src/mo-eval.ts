@@ -1,7 +1,14 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { combineSignals, evidenceLabel, logistic, statusForScore, type Calibration, type FichaExtraction } from "@blindaje/shared";
+import {
+  combineSignals,
+  evidenceLabel,
+  logistic,
+  statusForScore,
+  type Calibration,
+  type FichaExtraction,
+} from "@blindaje/shared";
 // La fórmula del pipeline, sin copiarla: funciones puras de services/api (solo dependen de shared).
 import { commonPhrases, moProbability, sameGroup } from "../../services/api/src/linking/signals";
 import { CACHE_DIR, DEMO_DIR, ML_URL, RESULTS_DIR } from "./env";
@@ -35,10 +42,29 @@ export interface MoReport {
   pares: { mismo_guion: number; distintos: number };
   distribuciones?: Record<string, Record<string, number>>;
   coseno_texto?: Record<string, Record<string, number>>;
-  calibracion?: { a: number; b: number; p_max: number; b_gauss: number; b_restringido: number; p_crit: number; x_percentil_99_distintos: number };
-  comparacion?: Record<string, { a: number; b: number; mismo_guion_alcanzan_p_crit: number; distintos_alcanzan_p_crit: number; mo_max: number }>;
+  calibracion?: {
+    a: number;
+    b: number;
+    p_max: number;
+    b_gauss: number;
+    b_restringido: number;
+    p_crit: number;
+    x_percentil_99_distintos: number;
+  };
+  comparacion?: Record<
+    string,
+    { a: number; b: number; mismo_guion_alcanzan_p_crit: number; distintos_alcanzan_p_crit: number; mo_max: number }
+  >;
   verificaciones?: {
-    a_demo_AB: { voz_coseno: number; p_voz: number; p_mo: number; score: number; estado: string; cumple: boolean; con_calibracion_anterior: number };
+    a_demo_AB: {
+      voz_coseno: number;
+      p_voz: number;
+      p_mo: number;
+      score: number;
+      estado: string;
+      cumple: boolean;
+      con_calibracion_anterior: number;
+    };
     b_voz_sola_guion_distinto: {
       pares_guiones: number;
       llegan_a_probable: number;
@@ -48,7 +74,14 @@ export interface MoReport {
     };
     c_mo_solo: { mo_max: number; estado_max: string; cumple: boolean };
   };
-  demo_pares?: { par: string; similitud_texto: number; frases_comunes: string[]; mismo_canal: boolean; mismo_grupo: boolean; p_mo: number }[];
+  demo_pares?: {
+    par: string;
+    similitud_texto: number;
+    frases_comunes: string[];
+    mismo_canal: boolean;
+    mismo_grupo: boolean;
+    p_mo: number;
+  }[];
   costo_usd_fichas_nuevas: number;
 }
 
@@ -68,14 +101,20 @@ const dot = (a: number[], b: number[]) => a.reduce((s, v, i) => s + v * (b[i] ??
 const TEXT_CACHE = resolve(CACHE_DIR, "text-embed.json");
 
 async function embedPassages(texts: string[]): Promise<{ model: string; vectors: number[][] }> {
-  const cache: Record<string, { model: string; v: number[] }> = existsSync(TEXT_CACHE) ? JSON.parse(readFileSync(TEXT_CACHE, "utf8")) : {};
+  const cache: Record<string, { model: string; v: number[] }> = existsSync(TEXT_CACHE)
+    ? JSON.parse(readFileSync(TEXT_CACHE, "utf8"))
+    : {};
   const key = (t: string) => createHash("sha256").update(`passage\u0000${t}`).digest("hex");
   const faltan = [...new Set(texts.filter((t) => !cache[key(t)]))];
   let model = Object.values(cache)[0]?.model ?? "";
   if (faltan.length) {
     const headers: Record<string, string> = { "content-type": "application/json" };
     if (process.env.ML_TOKEN) headers["x-ml-token"] = process.env.ML_TOKEN;
-    const res = await fetch(`${ML_URL}/text/embed`, { method: "POST", headers, body: JSON.stringify({ texts: faltan, kind: "passage" }) });
+    const res = await fetch(`${ML_URL}/text/embed`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ texts: faltan, kind: "passage" }),
+    });
     if (!res.ok) throw new Error(`ML /text/embed respondió ${res.status}`);
     const d = (await res.json()) as { model: string; vectors: number[][] };
     model = d.model;
@@ -93,14 +132,23 @@ async function embedPassages(texts: string[]): Promise<{ model: string; vectors:
 function demoPiezas(): { code: string; piezas: PiezaEvidencia[] }[] {
   // Fecha fija para que la entrada (y la caché) no cambie de un día a otro.
   const demo = loadDemo(new Date("2026-11-02T12:00:00-05:00"));
-  const audios = JSON.parse(readFileSync(resolve(DEMO_DIR, "guiones-audio.json"), "utf8")).audios as Record<string, { texto: string }>;
+  const audios = JSON.parse(readFileSync(resolve(DEMO_DIR, "guiones-audio.json"), "utf8")).audios as Record<
+    string,
+    { texto: string }
+  >;
   return demo.casos.map((c) => {
     const origen = demo.identificadores[`contacto_${c.code}`] ?? null;
     const piezas: PiezaEvidencia[] = c.evidencia.map((e, i) => {
       const label = evidenceLabel(c.code, i + 1);
       if (e.tipo === "audio") {
         const nombre = e.archivo!.replace(/^audio\//, "").replace(/\.ogg$/, "");
-        return { label, tipo: "audio", recibido: e.captured_at, origen, contenido: `[Hablante A] ${audios[nombre]!.texto}` };
+        return {
+          label,
+          tipo: "audio",
+          recibido: e.captured_at,
+          origen,
+          contenido: `[Hablante A] ${audios[nombre]!.texto}`,
+        };
       }
       if (e.tipo === "imagen") {
         return {
@@ -108,12 +156,19 @@ function demoPiezas(): { code: string; piezas: PiezaEvidencia[] }[] {
           tipo: "imagen",
           recibido: e.captured_at,
           origen,
-          contenido: "Lectura de imagen: mostrador de una bodega con una bala encima y una nota escrita a mano que dice 'LOS X. 48 HORAS'.",
+          contenido:
+            "Lectura de imagen: mostrador de una bodega con una bala encima y una nota escrita a mano que dice 'LOS X. 48 HORAS'.",
         };
       }
       return { label, tipo: "texto", recibido: e.captured_at, origen, contenido: e.texto ?? "" };
     });
-    piezas.push({ label: evidenceLabel(c.code, piezas.length + 1), tipo: "relato", recibido: null, origen: null, contenido: c.relato });
+    piezas.push({
+      label: evidenceLabel(c.code, piezas.length + 1),
+      tipo: "relato",
+      recibido: null,
+      origen: null,
+      contenido: c.relato,
+    });
     return { code: c.code, piezas };
   });
 }
@@ -126,7 +181,11 @@ async function demoVoiceCentroid(files: string[]): Promise<number[]> {
   const headers: Record<string, string> = process.env.ML_TOKEN ? { "x-ml-token": process.env.ML_TOKEN } : {};
   const segs: number[][] = [];
   for (const f of files) {
-    const wav = await fetch(`${ML_URL}/audio/normalize`, { method: "POST", headers, body: readFileSync(resolve(DEMO_DIR, f)) });
+    const wav = await fetch(`${ML_URL}/audio/normalize`, {
+      method: "POST",
+      headers,
+      body: readFileSync(resolve(DEMO_DIR, f)),
+    });
     if (!wav.ok) throw new Error(`ML /audio/normalize respondió ${wav.status}`);
     const b64 = Buffer.from(await wav.arrayBuffer()).toString("base64");
     const r = await fetch(`${ML_URL}/voice/embed`, {
@@ -153,7 +212,17 @@ function stats(x: number[]) {
   const sd = Math.sqrt(x.reduce((s, v) => s + (v - mean) ** 2, 0) / (n - 1));
   const sorted = [...x].sort((a, b) => a - b);
   const q = (p: number) => sorted[Math.min(n - 1, Math.max(0, Math.round(p * (n - 1))))]!;
-  return { n, media: mean, std: sd, min: sorted[0]!, p05: q(0.05), p50: q(0.5), p95: q(0.95), p99: q(0.99), max: sorted[n - 1]! };
+  return {
+    n,
+    media: mean,
+    std: sd,
+    min: sorted[0]!,
+    p05: q(0.05),
+    p50: q(0.5),
+    p95: q(0.95),
+    p99: q(0.99),
+    max: sorted[n - 1]!,
+  };
 }
 
 /** Igual que calibracion_gaussiana de py/blindaje_eval/voice_eval.py. */
@@ -182,13 +251,25 @@ function moX(fa: FichaExtraction, fb: FichaExtraction, cos: number) {
   const mismoCanal = Boolean(fa.canal_pago && fa.canal_pago === fb.canal_pago);
   const mismoGrupo = sameGroup(fa.grupo_que_dice_ser, fb.grupo_que_dice_ser);
   const x = cos + 0.05 * Math.min(frases.length, 3) + (mismoCanal ? 0.03 : 0) + (mismoGrupo ? 0.05 : 0);
-  return { x, frases, mismoCanal, mismoGrupo, input: { similitud_texto: cos, frases_comunes: frases.length, mismo_canal_pago: mismoCanal, mismo_grupo: mismoGrupo } };
+  return {
+    x,
+    frases,
+    mismoCanal,
+    mismoGrupo,
+    input: {
+      similitud_texto: cos,
+      frases_comunes: frases.length,
+      mismo_canal_pago: mismoCanal,
+      mismo_grupo: mismoGrupo,
+    },
+  };
 }
 
 export async function runMoEval(cal: Calibration): Promise<{ report: MoReport; mo: Calibration["mo"] | null }> {
   const base: MoReport = {
     estado: "pendiente",
-    formula: "x = coseno(resumen_mo) + 0.05·min(frases comunes, 3) + 0.03·mismo canal + 0.05·mismo grupo; p = min(logística(x, a, b), p_max)",
+    formula:
+      "x = coseno(resumen_mo) + 0.05·min(frases comunes, 3) + 0.03·mismo canal + 0.05·mismo grupo; p = min(logística(x, a, b), p_max)",
     pares: { mismo_guion: 0, distintos: 0 },
     costo_usd_fichas_nuevas: 0,
   };
@@ -196,7 +277,10 @@ export async function runMoEval(cal: Calibration): Promise<{ report: MoReport; m
     const h = await fetch(`${ML_URL}/health`, { signal: AbortSignal.timeout(5000) });
     if (!h.ok) throw new Error(String(h.status));
   } catch {
-    return { report: { ...base, motivo: `El contenedor ML no responde en ${ML_URL} (hace falta /text/embed).` }, mo: null };
+    return {
+      report: { ...base, motivo: `El contenedor ML no responde en ${ML_URL} (hace falta /text/embed).` },
+      mo: null,
+    };
   }
 
   // 1) Fichas
@@ -264,7 +348,9 @@ export async function runMoEval(cal: Calibration): Promise<{ report: MoReport; m
   const a0 = G[0]!;
   const b0 = G[1]!;
   const chk = moX(a0.ficha, b0.ficha, dot(a0.vector, b0.vector));
-  if (Math.abs(moProbability(chk.input, calNueva) - Math.min(logistic(chk.x, propuesta.a, propuesta.b), pMax)) > 1e-12) {
+  if (
+    Math.abs(moProbability(chk.input, calNueva) - Math.min(logistic(chk.x, propuesta.a, propuesta.b), pMax)) > 1e-12
+  ) {
     throw new Error("La fórmula de la evaluación no coincide con moProbability del pipeline");
   }
 
@@ -285,7 +371,10 @@ export async function runMoEval(cal: Calibration): Promise<{ report: MoReport; m
 
   const pMoDiff = diff.map((x) => Math.min(logistic(x, propuesta.a, propuesta.b), pMax));
   const llegan = pMoDiff.filter((p) => combineSignals([cal.voz.p_max, p]) >= cal.thresholds.probable).length;
-  const demoDistintos = [["A", "C"], ["B", "C"]].map(([x, y]) => {
+  const demoDistintos = [
+    ["A", "C"],
+    ["B", "C"],
+  ].map(([x, y]) => {
     const r = pmo(x!, y!, calNueva);
     const s = combineSignals([cal.voz.p_max, r.p]);
     return { par: `${x}–${y}`, p_mo: r.p, score_con_voz_al_tope: s, estado: statusForScore(s, calNueva) };
@@ -313,7 +402,15 @@ export async function runMoEval(cal: Calibration): Promise<{ report: MoReport; m
     pares: { mismo_guion: same.length, distintos: diff.length },
     distribuciones: { x_mismo_guion: stats(same), x_distintos: stats(diff) },
     coseno_texto: { mismo_guion: stats(cosSame), distintos: stats(cosDiff) },
-    calibracion: { a: propuesta.a, b: propuesta.b, p_max: pMax, b_gauss: g.b, b_restringido: bRestr, p_crit: pCrit, x_percentil_99_distintos: q99 },
+    calibracion: {
+      a: propuesta.a,
+      b: propuesta.b,
+      p_max: pMax,
+      b_gauss: g.b,
+      b_restringido: bRestr,
+      p_crit: pCrit,
+      x_percentil_99_distintos: q99,
+    },
     comparacion,
     verificaciones: {
       a_demo_AB: {
@@ -330,9 +427,14 @@ export async function runMoEval(cal: Calibration): Promise<{ report: MoReport; m
         llegan_a_probable: llegan,
         tasa: llegan / diff.length,
         demo: demoDistintos,
-        cumple: demoDistintos.every((d) => d.score_con_voz_al_tope < cal.thresholds.probable) && llegan / diff.length <= 0.01,
+        cumple:
+          demoDistintos.every((d) => d.score_con_voz_al_tope < cal.thresholds.probable) && llegan / diff.length <= 0.01,
       },
-      c_mo_solo: { mo_max: moMax, estado_max: statusForScore(moMax, calNueva), cumple: statusForScore(moMax, calNueva) === "descartado_auto" },
+      c_mo_solo: {
+        mo_max: moMax,
+        estado_max: statusForScore(moMax, calNueva),
+        cumple: statusForScore(moMax, calNueva) === "descartado_auto",
+      },
     },
     demo_pares: demoPares,
     costo_usd_fichas_nuevas: costo,

@@ -17,24 +17,24 @@ const c = d.commitments;
 <section class="section" id="limites" aria-labelledby="limites-title">
   <div class="wrap">
     <div class="sec-head" data-reveal>
-      <h2 id="limites-title" class="head">{d.lp.trust.title}</h2>
+      <h2 id="limites-title" class="head">
+        {d.lp.trust.title}
+      </h2>
       <p class="lead soft">{d.lp.trust.lead}</p>
     </div>
 
     <ul class="lim" role="list" data-reveal>
-      {
-        c.items.map((it) => (
-          <li class="lim__item">
-            <span class="lim__icon">
-              <Icon name="x" />
-            </span>
-            <p>
-              <strong>{it.title}</strong>
-              {it.text && <span class="soft"> {it.text}</span>}
-            </p>
-          </li>
-        ))
-      }
+      {c.items.map((it) => (
+        <li class="lim__item">
+          <span class="lim__icon">
+            <Icon name="x" />
+          </span>
+          <p>
+            <strong>{it.title}</strong>
+            {it.text && <span class="soft"> {it.text}</span>}
+          </p>
+        </li>
+      ))}
     </ul>
 
     <div class="lim__honest" data-reveal>
@@ -43,7 +43,11 @@ const c = d.commitments;
         <p class="lim__honest-title">{c.honestyTitle}</p>
         <p>{c.honesty}</p>
         <p class="small soft">
-          {c.legal} <a href={c.legalLink.url} rel="noopener noreferrer">{c.legalLink.name}</a>.
+          {c.legal}{" "}
+          <a href={c.legalLink.url} rel="noopener noreferrer">
+            {c.legalLink.name}
+          </a>
+          .
         </p>
       </div>
     </div>

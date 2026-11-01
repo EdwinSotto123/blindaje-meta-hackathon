@@ -23,7 +23,13 @@ export const NAV: NavItem[] = [
   { to: "/redes", label: "Redes", icon: "network", cap: "networks.view", view: "networks" },
   { to: "/zonas", label: "Zonas", icon: "map", cap: "zones.view", view: "zones" },
   { to: "/alertas", label: "Alertas", icon: "megaphone", cap: "alerts.view", view: "alerts" },
-  { to: "/recomendaciones", label: "Recomendaciones", icon: "shield", cap: "recommendations.view", view: "recommendations" },
+  {
+    to: "/recomendaciones",
+    label: "Recomendaciones",
+    icon: "shield",
+    cap: "recommendations.view",
+    view: "recommendations",
+  },
   { to: "/expedientes", label: "Expedientes", icon: "file", cap: "expedientes", view: "expedientes" },
   { to: "/auditoria", label: "Auditoría", icon: "chain", cap: "audit.view", view: "audit" },
   { to: "/costos", label: "Costos", icon: "coins", cap: "costs.view", view: "costs" },
@@ -39,7 +45,10 @@ function usePreloadViews(items: NavItem[]) {
     const views = items.flatMap((n) => (n.view ? [n.view] : []));
     if (views.includes("networks")) views.push("networkDetail");
     const run = () => preloadViews(views);
-    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (h: number) => void };
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+      cancelIdleCallback?: (h: number) => void;
+    };
     if (w.requestIdleCallback) {
       const h = w.requestIdleCallback(run, { timeout: 3000 });
       return () => w.cancelIdleCallback?.(h);
@@ -72,7 +81,9 @@ export function DemoFlag() {
       <span>
         Entorno de demostración: ningún caso, voz, número ni cuenta es real.
         {mock ? " Modo simulado, sin API." : health?.version ? ` API ${health.version}.` : ""}
-        {user?.solo_lectura ? " Cuenta de solo lectura (read-only): puedes ver todo, pero no aprobar, editar ni correr agentes." : ""}
+        {user?.solo_lectura
+          ? " Cuenta de solo lectura (read-only): puedes ver todo, pero no aprobar, editar ni correr agentes."
+          : ""}
       </span>
       {mock ? (
         <div className="demo-tools">
@@ -125,7 +136,9 @@ export function Layout() {
         <div className="whoami">
           <span className="strong">{user.display_name}</span>
           {/* Todo el equipo es de Blindaje: no se muestra la organización de la cuenta. */}
-          <span className="muted">Equipo de Blindaje, {user.solo_lectura ? "Solo lectura" : (ROLE_LABEL[user.role] ?? user.role)}</span>
+          <span className="muted">
+            Equipo de Blindaje, {user.solo_lectura ? "Solo lectura" : (ROLE_LABEL[user.role] ?? user.role)}
+          </span>
           <span>
             <button
               type="button"

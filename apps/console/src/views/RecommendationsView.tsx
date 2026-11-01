@@ -24,9 +24,18 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "todas", label: "Todas" },
 ];
 
-const NIVEL: Record<AsesorOutput["nivel_riesgo"], string> = { sin_datos: "sin datos suficientes", bajo: "bajo", medio: "medio", alto: "alto" };
+const NIVEL: Record<AsesorOutput["nivel_riesgo"], string> = {
+  sin_datos: "sin datos suficientes",
+  bajo: "bajo",
+  medio: "medio",
+  alto: "alto",
+};
 const PRIORIDADES = ["alta", "media", "baja"] as const;
-const PRIORIDAD_TITULO: Record<(typeof PRIORIDADES)[number], string> = { alta: "Haz esto primero", media: "Después", baja: "Cuando puedas" };
+const PRIORIDAD_TITULO: Record<(typeof PRIORIDADES)[number], string> = {
+  alta: "Haz esto primero",
+  media: "Después",
+  baja: "Cuando puedas",
+};
 
 /** Rubro de la API (singular) en una frase: "bodega" → "bodegas". */
 const SECTOR_PLURAL: Record<string, string> = {
@@ -56,19 +65,36 @@ export function visibleTexts(c: AsesorOutput): string[] {
 
 /** Frases que aconsejan pagar o negociar (lo negado, como "No pagues ni negocies", está bien). */
 export function unsafeAdvice(texts: string[]): string[] {
-  const re = /(?:(\p{L}+)\s+)?(?<!\p{L})(paga|pagues|pague|pagar|págales|negocia|negocies|negocie|negociar)(?!\p{L})/giu;
-  return texts.filter((t) => [...t.matchAll(re)].some((m) => !["no", "ni", "nadie", "nunca"].includes((m[1] ?? "").toLowerCase())));
+  const re =
+    /(?:(\p{L}+)\s+)?(?<!\p{L})(paga|pagues|pague|pagar|págales|negocia|negocies|negocie|negociar)(?!\p{L})/giu;
+  return texts.filter((t) =>
+    [...t.matchAll(re)].some((m) => !["no", "ni", "nadie", "nunca"].includes((m[1] ?? "").toLowerCase())),
+  );
 }
 
 /** Revisión automática de las reglas de producto antes de aprobar. */
 export function ruleChecks(r: ConsoleRecommendationView): { ok: boolean; label: string }[] {
   const texts = visibleTexts(r.contenido);
   return [
-    { ok: r.citation_check.ok, label: r.citation_check.ok ? "Cada modalidad cita evidencia que existe" : "El validador de citas encontró problemas" },
-    { ok: !texts.some((t) => looksLikeFullNumber(t) || /\bID-/.test(t)), label: "Sin números, cuentas ni identificadores completos" },
+    {
+      ok: r.citation_check.ok,
+      label: r.citation_check.ok
+        ? "Cada modalidad cita evidencia que existe"
+        : "El validador de citas encontró problemas",
+    },
+    {
+      ok: !texts.some((t) => looksLikeFullNumber(t) || /\bID-/.test(t)),
+      label: "Sin números, cuentas ni identificadores completos",
+    },
     { ok: unsafeAdvice(texts).length === 0, label: "No aconseja pagar ni negociar" },
-    { ok: texts.some((t) => /se denuncia más/i.test(t)), label: "Advierte el sesgo (más casos puede ser más denuncia)" },
-    { ok: texts.some((t) => /\b105\b/.test(t)) && texts.some((t) => /1818/.test(t)), label: "Deriva al 105 y a la Línea 1818" },
+    {
+      ok: texts.some((t) => /se denuncia más/i.test(t)),
+      label: "Advierte el sesgo (más casos puede ser más denuncia)",
+    },
+    {
+      ok: texts.some((t) => /\b105\b/.test(t)) && texts.some((t) => /1818/.test(t)),
+      label: "Deriva al 105 y a la Línea 1818",
+    },
   ];
 }
 
@@ -98,20 +124,25 @@ export function RecommendationsView() {
         ? `Recomendación aprobada. Ya se ve en el portal público para ${sectorPhrase(r.contenido.sector)} de ${zoneName(r.contenido.zona)} y, en la app, para quien eligió ese distrito.`
         : "Recomendación rechazada. No se publica.",
     );
-    recs.setData((prev) => (prev ?? []).map((x) => (x.id === r.id ? r : x)).filter((x) => filter === "todas" || x.status === filter));
+    recs.setData((prev) =>
+      (prev ?? []).map((x) => (x.id === r.id ? r : x)).filter((x) => filter === "todas" || x.status === filter),
+    );
   };
 
   return (
     <>
       <PageHead title="Recomendaciones para negocios">
-        El Asesor redacta recomendaciones de prevención por distrito y rubro con datos agregados: cifras solo con 5 casos de 3 víctimas distintas. Nada se
-        publica en el portal ni en la app sin que alguien del equipo lo apruebe.
+        El Asesor redacta recomendaciones de prevención por distrito y rubro con datos agregados: cifras solo con 5
+        casos de 3 víctimas distintas. Nada se publica en el portal ni en la app sin que alguien del equipo lo apruebe.
       </PageHead>
       {flash}
       {can(user.role, "asesor.run") ? (
         <RunPanel advisor={advisor} onCreated={onCreated} />
       ) : (
-        <Notice>El Asesor lo corre análisis o administración. Tú revisas los borradores de cualquier distrito y decides si se publican.</Notice>
+        <Notice>
+          El Asesor lo corre análisis o administración. Tú revisas los borradores de cualquier distrito y decides si se
+          publican.
+        </Notice>
       )}
       <div className="segmented" role="group" aria-label="Filtrar recomendaciones">
         {FILTERS.map((f) => (
@@ -124,7 +155,11 @@ export function RecommendationsView() {
       {recs.loading && !recs.data ? <Loading /> : null}
       {recs.data && recs.data.length === 0 ? (
         <Empty title={filter === "borrador" ? "No hay borradores pendientes" : "No hay recomendaciones en este estado"}>
-          {filter === "borrador" ? (can(user.role, "asesor.run") ? "Corre el Asesor para un distrito y un rubro." : "Aparecerán aquí cuando el equipo de análisis corra el Asesor.") : null}
+          {filter === "borrador"
+            ? can(user.role, "asesor.run")
+              ? "Corre el Asesor para un distrito y un rubro."
+              : "Aparecerán aquí cuando el equipo de análisis corra el Asesor."
+            : null}
         </Empty>
       ) : null}
       <div className="stack">
@@ -151,7 +186,13 @@ export function asesorProblem(zona: string, sector: string): string | null {
   return null;
 }
 
-function RunPanel({ advisor, onCreated }: { advisor: AdvisorApi; onCreated: (r: ConsoleRecommendationView[]) => void }) {
+function RunPanel({
+  advisor,
+  onCreated,
+}: {
+  advisor: AdvisorApi;
+  onCreated: (r: ConsoleRecommendationView[]) => void;
+}) {
   const [zona, setZona] = useState("");
   const [sector, setSector] = useState("");
   const [busy, setBusy] = useState(false);
@@ -186,11 +227,23 @@ function RunPanel({ advisor, onCreated }: { advisor: AdvisorApi; onCreated: (r: 
       <form className="asesor-form" onSubmit={(e) => void submit(e)} noValidate>
         <div className="field">
           <label htmlFor="asesor-zona">Distrito</label>
-          <DistrictSelect id="asesor-zona" value={zona} onChange={setZona} emptyLabel="Elige un distrito" describedBy="asesor-nota" invalid={error === "Elige el distrito."} />
+          <DistrictSelect
+            id="asesor-zona"
+            value={zona}
+            onChange={setZona}
+            emptyLabel="Elige un distrito"
+            describedBy="asesor-nota"
+            invalid={error === "Elige el distrito."}
+          />
         </div>
         <div className="field">
           <label htmlFor="asesor-sector">Rubro</label>
-          <select id="asesor-sector" value={sector} onChange={(e) => setSector(e.target.value)} aria-invalid={error === "Elige el rubro." || undefined}>
+          <select
+            id="asesor-sector"
+            value={sector}
+            onChange={(e) => setSector(e.target.value)}
+            aria-invalid={error === "Elige el rubro." || undefined}
+          >
             <option value="">Elige un rubro</option>
             {Object.entries(SECTOR_LABEL).map(([k, v]) => (
               <option key={k} value={k}>
@@ -207,8 +260,8 @@ function RunPanel({ advisor, onCreated }: { advisor: AdvisorApi; onCreated: (r: 
         </Acciones>
       </form>
       <p id="asesor-nota" className="small muted">
-        Un borrador por distrito y rubro. Al aprobarlo, lo ve cualquiera que elija ese distrito y ese rubro en el portal público y, en la app, quien eligió
-        ese distrito.
+        Un borrador por distrito y rubro. Al aprobarlo, lo ve cualquiera que elija ese distrito y ese rubro en el portal
+        público y, en la app, quien eligió ese distrito.
       </p>
       {error ? <Notice kind="error-box">{error}</Notice> : null}
     </section>
@@ -308,7 +361,12 @@ function RecommendationCard({
                 ) : null}
                 {rec.citation_check.citas_inexistentes.length ? (
                   <p>
-                    Citas que no existen: <CiteList refs={rec.citation_check.citas_inexistentes} missing={rec.citation_check.citas_inexistentes} label="Citas inexistentes" />
+                    Citas que no existen:{" "}
+                    <CiteList
+                      refs={rec.citation_check.citas_inexistentes}
+                      missing={rec.citation_check.citas_inexistentes}
+                      label="Citas inexistentes"
+                    />
                   </p>
                 ) : null}
               </Notice>
@@ -321,12 +379,18 @@ function RecommendationCard({
                   <dt>Modalidad {i + 1}</dt>
                   <dd className="stack-sm">
                     <span>{m.descripcion}</span>
-                    <CiteList refs={m.evidencia} missing={rec.citation_check.citas_inexistentes} label={`Evidencia de la modalidad ${i + 1}`} />
+                    <CiteList
+                      refs={m.evidencia}
+                      missing={rec.citation_check.citas_inexistentes}
+                      label={`Evidencia de la modalidad ${i + 1}`}
+                    />
                   </dd>
                 </div>
               ))}
             </dl>
-            <p className="small muted">Las citas internas son solo para la consola: el portal y la app nunca las muestran.</p>
+            <p className="small muted">
+              Las citas internas son solo para la consola: el portal y la app nunca las muestran.
+            </p>
 
             {editable && ask === "aprobar" ? (
               <InlineConfirm
@@ -355,7 +419,13 @@ function RecommendationCard({
             ) : editable ? (
               <Acciones className="stack-sm">
                 <div className="row">
-                  <button type="button" className="btn btn-primary" disabled={blocked || busy} aria-describedby={blocked ? `${tid}-bloq` : undefined} onClick={() => setAsk("aprobar")}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={blocked || busy}
+                    aria-describedby={blocked ? `${tid}-bloq` : undefined}
+                    onClick={() => setAsk("aprobar")}
+                  >
                     <Icon name="check" size={16} />
                     Aprobar recomendación
                   </button>
@@ -367,7 +437,9 @@ function RecommendationCard({
                 {blocked ? (
                   <p id={`${tid}-bloq`} className="small decision-note">
                     No se puede aprobar: el validador de citas encontró problemas. Rechaza este borrador
-                    {canRun ? " o vuelve a correr el Asesor para este distrito y este rubro." : " y pide al equipo de análisis que vuelva a correr el Asesor."}
+                    {canRun
+                      ? " o vuelve a correr el Asesor para este distrito y este rubro."
+                      : " y pide al equipo de análisis que vuelva a correr el Asesor."}
                   </p>
                 ) : failing ? (
                   <p className="small decision-note">Revisa los puntos marcados antes de aprobar.</p>
@@ -387,7 +459,9 @@ function RecommendationCard({
           <div className="stack-sm">
             <h3 id={`${tid}-prev`}>Vista previa: así se ve en el portal</h3>
             <BusinessPreview content={c} labelledBy={`${tid}-prev`} />
-            <span className="small muted">Es la vista “Mi zona” del portal público, sin cuenta. Sin citas internas, números ni cuentas.</span>
+            <span className="small muted">
+              Es la vista “Mi zona” del portal público, sin cuenta. Sin citas internas, números ni cuentas.
+            </span>
           </div>
         </div>
       </article>
@@ -397,7 +471,9 @@ function RecommendationCard({
 
 /** Cómo verá la recomendación quien elija el distrito y el rubro en el portal público (apps/portal, vista Mi zona). */
 export function BusinessPreview({ content: c, labelledBy }: { content: AsesorOutput; labelledBy?: string }) {
-  const groups = PRIORIDADES.map((p) => ({ p, items: c.recomendaciones.filter((r) => r.prioridad === p) })).filter((g) => g.items.length);
+  const groups = PRIORIDADES.map((p) => ({ p, items: c.recomendaciones.filter((r) => r.prioridad === p) })).filter(
+    (g) => g.items.length,
+  );
   const starts = groups.map((_, gi) => 1 + groups.slice(0, gi).reduce((s, g) => s + g.items.length, 0));
   return (
     <div className="biz-preview" aria-labelledby={labelledBy} role="group">
@@ -409,9 +485,7 @@ export function BusinessPreview({ content: c, labelledBy }: { content: AsesorOut
       <p>{c.resumen}</p>
       {groups.map((g, gi) => (
         <div key={g.p} className="biz-group">
-          <p className="biz-group-h">
-            {PRIORIDAD_TITULO[g.p]}
-          </p>
+          <p className="biz-group-h">{PRIORIDAD_TITULO[g.p]}</p>
           <ol start={starts[gi]}>
             {g.items.map((r) => (
               <li key={r.titulo}>

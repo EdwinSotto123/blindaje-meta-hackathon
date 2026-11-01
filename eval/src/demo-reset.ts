@@ -11,13 +11,20 @@ import { demoApi, demoSecret } from "./demo-data";
 async function main() {
   const api = demoApi();
   console.log(`API: ${api.base}`);
-  const r = await api.request<{ ok: boolean; deleted: { cases: number; devices: number; users: number } }>("/v1/demo/reset", {
-    method: "POST",
-    headers: { "x-demo-secret": demoSecret() },
-  });
+  const r = await api.request<{ ok: boolean; deleted: { cases: number; devices: number; users: number } }>(
+    "/v1/demo/reset",
+    {
+      method: "POST",
+      headers: { "x-demo-secret": demoSecret() },
+    },
+  );
   forgetDevices();
-  console.log(`Borrado: ${r.deleted.cases} casos, ${r.deleted.devices} dispositivos, ${r.deleted.users} usuarios de demo.`);
-  console.log("Sesiones locales de los dispositivos del demo olvidadas. Corre `pnpm demo:seed` para cargar la historia de nuevo.");
+  console.log(
+    `Borrado: ${r.deleted.cases} casos, ${r.deleted.devices} dispositivos, ${r.deleted.users} usuarios de demo.`,
+  );
+  console.log(
+    "Sesiones locales de los dispositivos del demo olvidadas. Corre `pnpm demo:seed` para cargar la historia de nuevo.",
+  );
 }
 
 main().catch((e) => {

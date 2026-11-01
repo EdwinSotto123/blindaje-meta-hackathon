@@ -2,7 +2,16 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
 import { LEAK_TAG_MIN_DISTANCE, LeakTraceResult } from "@blindaje/shared";
 import { ensureUserTag, insertTagIfFar, resetLeaksForTests, TagSpaceExhaustedError } from "../src/leaks";
-import { bitAccuracy, bitsToInt16, hamming16, hexToBits, matchAudio, matchImage, pickTag, RESERVED_TAGS } from "../src/leaks/match";
+import {
+  bitAccuracy,
+  bitsToInt16,
+  hamming16,
+  hexToBits,
+  matchAudio,
+  matchImage,
+  pickTag,
+  RESERVED_TAGS,
+} from "../src/leaks/match";
 import { utf8 } from "../src/lib/encoding";
 import { newId, nowIso } from "../src/lib/ids";
 import { makeWav } from "../src/lib/wav";
@@ -37,7 +46,8 @@ describe("marcas de audio por cuenta (16 bits)", () => {
     }
     for (let i = 0; i < taken.length; i++) {
       for (const r of RESERVED_TAGS) expect(hamming16(taken[i]!, r)).toBeGreaterThanOrEqual(LEAK_TAG_MIN_DISTANCE);
-      for (let j = i + 1; j < taken.length; j++) expect(hamming16(taken[i]!, taken[j]!)).toBeGreaterThanOrEqual(LEAK_TAG_MIN_DISTANCE);
+      for (let j = i + 1; j < taken.length; j++)
+        expect(hamming16(taken[i]!, taken[j]!)).toBeGreaterThanOrEqual(LEAK_TAG_MIN_DISTANCE);
     }
   });
 
@@ -59,7 +69,8 @@ describe("marcas de audio por cuenta (16 bits)", () => {
     expect(await ensureUserTag(env, users[0]!.id)).toBe(tags[0]);
     const { results } = await env.DB.prepare("SELECT audio_tag FROM user_leak_tags").all<{ audio_tag: number }>();
     const all = results.map((r) => r.audio_tag);
-    for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) expect(hamming16(all[i]!, all[j]!)).toBeGreaterThanOrEqual(5);
+    for (let i = 0; i < all.length; i++)
+      for (let j = i + 1; j < all.length; j++) expect(hamming16(all[i]!, all[j]!)).toBeGreaterThanOrEqual(5);
   });
 
   it("D1 rechaza en la misma sentencia una marca demasiado cercana (dos cuentas nuevas a la vez)", async () => {
@@ -70,7 +81,11 @@ describe("marcas de audio por cuenta (16 bits)", () => {
     // Como si b hubiera elegido su marca antes de ver la de a: a 4 bits, la sentencia la rechaza.
     expect(await insertTagIfFar(env, b.id, tagA ^ 0b1111)).toBe(false);
     expect(await env.DB.prepare("SELECT 1 FROM user_leak_tags WHERE user_id = ?").bind(b.id).first()).toBeNull();
-    const far = pickTag((await env.DB.prepare("SELECT audio_tag FROM user_leak_tags").all<{ audio_tag: number }>()).results.map((r) => r.audio_tag))!;
+    const far = pickTag(
+      (await env.DB.prepare("SELECT audio_tag FROM user_leak_tags").all<{ audio_tag: number }>()).results.map(
+        (r) => r.audio_tag,
+      ),
+    )!;
     expect(await insertTagIfFar(env, b.id, far)).toBe(true);
     expect(await ensureUserTag(env, b.id)).toBe(far);
   });
@@ -164,13 +179,19 @@ describe("atribución de una imagen", () => {
   it("ambigua: dos entregas casi iguales", () => {
     const base = issues[0]!.message;
     const twin = { id: "gemela", message: base.slice(0, 60) + "0000" };
-    const m = matchImage(hexToBits(base).map((b) => (b ? 0.9 : 0.1)), [...issues, twin]);
+    const m = matchImage(
+      hexToBits(base).map((b) => (b ? 0.9 : 0.1)),
+      [...issues, twin],
+    );
     expect(m.ambiguo).toBe(true);
     expect(m.matches.map((x) => x.id).sort()).toEqual(["gemela", "i1"]);
   });
 
   it("sin coincidencia: una lectura al azar no llega a 0.85", () => {
-    const m = matchImage(hexToBits(rand(99)).map((b) => (b ? 0.9 : 0.1)), issues);
+    const m = matchImage(
+      hexToBits(rand(99)).map((b) => (b ? 0.9 : 0.1)),
+      issues,
+    );
     expect(m.matches).toEqual([]);
     expect(m.mejor!).toBeLessThan(0.85);
   });
@@ -215,7 +236,9 @@ describe("copias marcadas y rastreo", () => {
   afterAll(() => setMlClientForTests(null));
 
   const lastAudit = async (action: string) => {
-    const row = await env.DB.prepare("SELECT actor_id, details_json FROM audit_log WHERE action = ? ORDER BY seq DESC LIMIT 1")
+    const row = await env.DB.prepare(
+      "SELECT actor_id, details_json FROM audit_log WHERE action = ? ORDER BY seq DESC LIMIT 1",
+    )
       .bind(action)
       .first<{ actor_id: string; details_json: string }>();
     return { actor: row!.actor_id, details: JSON.parse(row!.details_json) as Record<string, unknown> };
@@ -230,7 +253,9 @@ describe("copias marcadas y rastreo", () => {
     expect(res.headers.get("x-blindaje-marca-motivo")).toBeNull();
     expect(res.headers.get("x-blindaje-variant")).toBe("original_recortado");
     expect(res.headers.get("content-type")).toBe("audio/wav");
-    const tag = (await env.DB.prepare("SELECT audio_tag FROM user_leak_tags WHERE user_id = ?").bind(reviewer.id).first<{ audio_tag: number }>())!.audio_tag;
+    const tag = (await env.DB.prepare("SELECT audio_tag FROM user_leak_tags WHERE user_id = ?")
+      .bind(reviewer.id)
+      .first<{ audio_tag: number }>())!.audio_tag;
     const body = latin1(await res.arrayBuffer());
     expect(body.startsWith("RIFF")).toBe(true);
     expect(body).toContain(`|wm-audio=${tag}|`);
@@ -238,7 +263,12 @@ describe("copias marcadas y rastreo", () => {
     const issue = await env.DB.prepare("SELECT * FROM watermark_issues WHERE evidence_id = ? AND user_id = ?")
       .bind(audioEv.id, reviewer.id)
       .first<{ id: string; kind: string; message: string; nbits: number; variant: string; r2_key: string }>();
-    expect(issue).toMatchObject({ kind: "audio", message: tag.toString(16).padStart(4, "0"), nbits: 16, variant: "original_recortado:1000-4000" });
+    expect(issue).toMatchObject({
+      kind: "audio",
+      message: tag.toString(16).padStart(4, "0"),
+      nbits: 16,
+      variant: "original_recortado:1000-4000",
+    });
     expect(issue!.r2_key).toBe(`cases/${caseId}/marked/${issue!.id}`);
     // La copia guardada está cifrada: no se lee la marca en claro.
     const raw = await env.EVIDENCE.get(issue!.r2_key);
@@ -246,7 +276,13 @@ describe("copias marcadas y rastreo", () => {
 
     const a1 = await lastAudit("evidence.media");
     expect(a1.actor).toBe(reviewer.id);
-    expect(a1.details).toMatchObject({ marca: "aplicada", marca_tipo: "audio", marca_entrega: issue!.id, marca_cache: "miss", marca_modelo: "audioseal-falso" });
+    expect(a1.details).toMatchObject({
+      marca: "aplicada",
+      marca_tipo: "audio",
+      marca_entrega: issue!.id,
+      marca_cache: "miss",
+      marca_modelo: "audioseal-falso",
+    });
 
     const embeds = ml.calls.filter((c) => c === "watermark:audio:embed").length;
     const again = await api(path, { token: reviewer.token });
@@ -263,7 +299,9 @@ describe("copias marcadas y rastreo", () => {
     expect(res.headers.get("content-type")).toBe("image/jpeg");
     const hex = /\|wm-img=([0-9a-f]+)\|/.exec(latin1(await res.arrayBuffer()))![1]!;
     expect(hex).toHaveLength(64);
-    const issue = await env.DB.prepare("SELECT kind, message, nbits, model FROM watermark_issues WHERE evidence_id = ? AND user_id = ?")
+    const issue = await env.DB.prepare(
+      "SELECT kind, message, nbits, model FROM watermark_issues WHERE evidence_id = ? AND user_id = ?",
+    )
       .bind(imageEv.id, analyst.id)
       .first();
     expect(issue).toEqual({ kind: "imagen", message: hex, nbits: 256, model: "videoseal-falso" });
@@ -283,7 +321,11 @@ describe("copias marcadas y rastreo", () => {
     expect(failed.headers.get("x-blindaje-marca")).toBe("no_aplicada");
     expect(failed.headers.get("x-blindaje-marca-motivo")).toBe("servicio_no_disponible");
     expect(latin1(await failed.arrayBuffer())).not.toContain("wm-img");
-    expect((await lastAudit("evidence.media")).details).toMatchObject({ marca: "no_aplicada", marca_motivo: "servicio_no_disponible", marca_error: "MlUnavailableError" });
+    expect((await lastAudit("evidence.media")).details).toMatchObject({
+      marca: "no_aplicada",
+      marca_motivo: "servicio_no_disponible",
+      marca_error: "MlUnavailableError",
+    });
 
     ml.watermarkMode = "cuelga";
     resetLeaksForTests(150);
@@ -295,8 +337,15 @@ describe("copias marcadas y rastreo", () => {
     setMlClientForTests("not_configured");
     const none = await api(path, { token: reviewer.token });
     expect(none.headers.get("x-blindaje-marca")).toBe("no_aplicada");
-    expect((await lastAudit("evidence.media")).details).toMatchObject({ marca: "no_aplicada", marca_error: "not_configured" });
-    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM watermark_issues WHERE user_id = ?").bind(reviewer.id).first<{ n: number }>()).toEqual({ n: 0 });
+    expect((await lastAudit("evidence.media")).details).toMatchObject({
+      marca: "no_aplicada",
+      marca_error: "not_configured",
+    });
+    expect(
+      await env.DB.prepare("SELECT COUNT(*) AS n FROM watermark_issues WHERE user_id = ?")
+        .bind(reviewer.id)
+        .first<{ n: number }>(),
+    ).toEqual({ n: 0 });
   });
 
   it("los videos todavía no se marcan (y lo dice)", async () => {
@@ -308,7 +357,10 @@ describe("copias marcadas y rastreo", () => {
 
   it("la consola puede leer el header por CORS", async () => {
     const reviewer = await loginAs("reviewer", org.orgId);
-    const res = await api(`/v1/console/evidence/${imageEv.id}/media`, { token: reviewer.token, headers: { origin: "http://localhost:5174" } });
+    const res = await api(`/v1/console/evidence/${imageEv.id}/media`, {
+      token: reviewer.token,
+      headers: { origin: "http://localhost:5174" },
+    });
     const exposed = (res.headers.get("access-control-expose-headers") ?? "").toLowerCase();
     expect(exposed).toContain("x-blindaje-marca");
     expect(exposed).toContain("x-blindaje-marca-motivo");
@@ -320,24 +372,40 @@ describe("copias marcadas y rastreo", () => {
     const victim = await registerDevice(org.invite);
     const body = fakeImage("cualquiera");
     for (const token of [reviewer.token, analyst.token, victim.access_token]) {
-      expect((await api("/v1/console/leaks/trace", { token, body, headers: { "content-type": "image/jpeg" } })).status).toBe(403);
+      expect(
+        (await api("/v1/console/leaks/trace", { token, body, headers: { "content-type": "image/jpeg" } })).status,
+      ).toBe(403);
     }
-    expect((await api("/v1/console/leaks/trace", { body, headers: { "content-type": "image/jpeg" } })).status).toBe(401);
+    expect((await api("/v1/console/leaks/trace", { body, headers: { "content-type": "image/jpeg" } })).status).toBe(
+      401,
+    );
   });
 
   it("rastrear un audio filtrado: encuentra la cuenta aunque la copia tenga 2 bits dañados; el archivo no se guarda", async () => {
     const reviewer = await loginAs("reviewer", org.orgId);
     const admin = await loginAs("admin", org.orgId);
-    const leaked = await (await api(`/v1/console/evidence/${audioEv.id}/media?start_ms=0&end_ms=3000`, { token: reviewer.token })).arrayBuffer();
+    const leaked = await (
+      await api(`/v1/console/evidence/${audioEv.id}/media?start_ms=0&end_ms=3000`, { token: reviewer.token })
+    ).arrayBuffer();
     const before = (await env.EVIDENCE.list()).objects.length;
 
     ml.bitFlips = [2, 11];
-    const res = await apiJson<LeakTraceResult>("/v1/console/leaks/trace", { token: admin.token, body: leaked, headers: { "content-type": "audio/wav" } });
+    const res = await apiJson<LeakTraceResult>("/v1/console/leaks/trace", {
+      token: admin.token,
+      body: leaked,
+      headers: { "content-type": "audio/wav" },
+    });
     expect(res.status).toBe(200);
     expect(LeakTraceResult.safeParse(res.body).success).toBe(true);
     expect(res.body).toMatchObject({ detected: true, kind: "audio", ambiguo: false });
     expect(res.body.candidates).toHaveLength(1);
-    expect(res.body.candidates[0]).toMatchObject({ user_id: reviewer.id, email_or_name: reviewer.email, role: "reviewer", evidence_label: null, case_id: null });
+    expect(res.body.candidates[0]).toMatchObject({
+      user_id: reviewer.id,
+      email_or_name: reviewer.email,
+      role: "reviewer",
+      evidence_label: null,
+      case_id: null,
+    });
     expect(res.body.candidates[0]!.bit_accuracy).toBeCloseTo(14 / 16);
     expect(res.body.candidates[0]!.issued_at).toBeTruthy();
     expect(res.body.nota).toMatch(/indicios, no prueba/);
@@ -345,38 +413,74 @@ describe("copias marcadas y rastreo", () => {
     expect((await env.EVIDENCE.list()).objects.length).toBe(before);
     const a = await lastAudit("leak.trace");
     expect(a.actor).toBe(admin.id);
-    expect(a.details).toMatchObject({ kind: "audio", detected: true, candidates: [reviewer.id], ambiguo: false, size_bytes: leaked.byteLength });
+    expect(a.details).toMatchObject({
+      kind: "audio",
+      detected: true,
+      candidates: [reviewer.id],
+      ambiguo: false,
+      size_bytes: leaked.byteLength,
+    });
     expect(a.details.sha256).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it("rastrear una imagen filtrada: cuenta, evidencia y hora de la entrega; una imagen sin marca no acusa a nadie", async () => {
     const analyst = await loginAs("analyst", org.orgId);
     const admin = await loginAs("admin", org.orgId);
-    const leaked = await (await api(`/v1/console/evidence/${imageEv.id}/media`, { token: analyst.token })).arrayBuffer();
+    const leaked = await (
+      await api(`/v1/console/evidence/${imageEv.id}/media`, { token: analyst.token })
+    ).arrayBuffer();
 
     ml.bitFlips = Array.from({ length: 20 }, (_, i) => i * 12); // ~8 % de bits dañados por la recompresión
     const res = await apiJson<LeakTraceResult>("/v1/console/leaks/trace", { token: admin.token, body: leaked });
     expect(res.status).toBe(200);
     expect(res.body.kind).toBe("imagen");
     expect(res.body.candidates).toHaveLength(1);
-    expect(res.body.candidates[0]).toMatchObject({ user_id: analyst.id, role: "analyst", evidence_label: imageEv.label, case_id: caseId });
+    expect(res.body.candidates[0]).toMatchObject({
+      user_id: analyst.id,
+      role: "analyst",
+      evidence_label: imageEv.label,
+      case_id: caseId,
+    });
     expect(res.body.candidates[0]!.bit_accuracy).toBeCloseTo(236 / 256, 3);
 
     ml.bitFlips = [];
-    const clean = await apiJson<LeakTraceResult>("/v1/console/leaks/trace", { token: admin.token, body: fakeImage("sin-marca"), headers: { "content-type": "image/jpeg" } });
+    const clean = await apiJson<LeakTraceResult>("/v1/console/leaks/trace", {
+      token: admin.token,
+      body: fakeImage("sin-marca"),
+      headers: { "content-type": "image/jpeg" },
+    });
     expect(clean.body).toMatchObject({ detected: false, kind: "imagen", candidates: [] });
     expect(clean.body.nota).toMatch(/no prueba/);
   });
 
   it("rastrear: tipo de archivo, videos y contenedor caído", async () => {
     const admin = await loginAs("admin", org.orgId);
-    const unknown = await apiJson<{ error: { code: string } }>("/v1/console/leaks/trace", { token: admin.token, body: utf8("hola"), headers: { "content-type": "application/octet-stream" } });
+    const unknown = await apiJson<{ error: { code: string } }>("/v1/console/leaks/trace", {
+      token: admin.token,
+      body: utf8("hola"),
+      headers: { "content-type": "application/octet-stream" },
+    });
     expect(unknown.status).toBe(400);
-    const video = await api("/v1/console/leaks/trace", { token: admin.token, body: utf8("x"), headers: { "content-type": "video/mp4" } });
+    const video = await api("/v1/console/leaks/trace", {
+      token: admin.token,
+      body: utf8("x"),
+      headers: { "content-type": "video/mp4" },
+    });
     expect(video.status).toBe(400);
-    expect((await api("/v1/console/leaks/trace", { token: admin.token, body: new Uint8Array(0), headers: { "content-type": "image/jpeg" } })).status).toBe(400);
+    expect(
+      (
+        await api("/v1/console/leaks/trace", {
+          token: admin.token,
+          body: new Uint8Array(0),
+          headers: { "content-type": "image/jpeg" },
+        })
+      ).status,
+    ).toBe(400);
     setMlClientForTests("not_configured");
-    const down = await api("/v1/console/leaks/trace?kind=audio", { token: admin.token, body: new Uint8Array(makeWav(500)) });
+    const down = await api("/v1/console/leaks/trace?kind=audio", {
+      token: admin.token,
+      body: new Uint8Array(makeWav(500)),
+    });
     expect(down.status).toBe(503);
   });
 
@@ -393,20 +497,23 @@ describe("copias marcadas y rastreo", () => {
     const stmts: D1PreparedStatement[] = [];
     fill.forEach((t, i) => {
       stmts.push(
-        env.DB.prepare("INSERT INTO users (id, org_id, email, display_name, password_hash, role, disabled, is_demo, created_at) VALUES (?, ?, ?, 'Relleno (ficticio)', 'x', 'reviewer', 1, 0, ?)").bind(
+        env.DB.prepare(
+          "INSERT INTO users (id, org_id, email, display_name, password_hash, role, disabled, is_demo, created_at) VALUES (?, ?, ?, 'Relleno (ficticio)', 'x', 'reviewer', 1, 0, ?)",
+        ).bind(ids[i], orgId, `${ids[i]}@prueba.blindaje.test`, nowIso()),
+        env.DB.prepare("INSERT INTO user_leak_tags (user_id, audio_tag, created_at) VALUES (?, ?, ?)").bind(
           ids[i],
-          orgId,
-          `${ids[i]}@prueba.blindaje.test`,
+          t,
           nowIso(),
         ),
-        env.DB.prepare("INSERT INTO user_leak_tags (user_id, audio_tag, created_at) VALUES (?, ?, ?)").bind(ids[i], t, nowIso()),
       );
     });
     for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
     try {
       const reviewer = await loginAs("reviewer", org.orgId);
       await expect(ensureUserTag(env, reviewer.id)).rejects.toBeInstanceOf(TagSpaceExhaustedError);
-      const res = await api(`/v1/console/evidence/${audioEv.id}/media?start_ms=0&end_ms=2000`, { token: reviewer.token });
+      const res = await api(`/v1/console/evidence/${audioEv.id}/media?start_ms=0&end_ms=2000`, {
+        token: reviewer.token,
+      });
       expect(res.status).toBe(200);
       expect(res.headers.get("x-blindaje-marca")).toBe("no_aplicada");
       expect(res.headers.get("x-blindaje-marca-motivo")).toBe("marcas_agotadas");
@@ -414,10 +521,15 @@ describe("copias marcadas y rastreo", () => {
       // Borrar las cuentas de relleno borra sus marcas (ON DELETE CASCADE).
       for (let i = 0; i < ids.length; i += 50) {
         const chunk = ids.slice(i, i + 50);
-        await env.DB.prepare(`DELETE FROM users WHERE id IN (${chunk.map(() => "?").join(",")})`).bind(...chunk).run();
+        await env.DB.prepare(`DELETE FROM users WHERE id IN (${chunk.map(() => "?").join(",")})`)
+          .bind(...chunk)
+          .run();
       }
     }
-    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM user_leak_tags WHERE user_id LIKE 'relleno-%'").first<{ n: number }>()).toEqual({ n: 0 });
+    expect(
+      await env.DB.prepare("SELECT COUNT(*) AS n FROM user_leak_tags WHERE user_id LIKE 'relleno-%'").first<{
+        n: number;
+      }>(),
+    ).toEqual({ n: 0 });
   });
 });
-

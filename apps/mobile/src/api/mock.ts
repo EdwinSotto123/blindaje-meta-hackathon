@@ -80,7 +80,8 @@ const ALERTAS: VictimAlert[] = [
   {
     id: "al_demo_2",
     titulo: "Fotos del local enviadas por WhatsApp",
-    cuerpo: "Varios comerciantes recibieron fotos de su local tomadas desde la calle. Si te pasa, guarda la foto aquí y no la publiques en redes.",
+    cuerpo:
+      "Varios comerciantes recibieron fotos de su local tomadas desde la calle. Si te pasa, guarda la foto aquí y no la publiques en redes.",
     zona: "San Juan de Miraflores",
     distrito: "san-juan-de-miraflores",
     que_hacer: ["Guarda la foto aquí", "No publiques la foto", "Si estás en peligro, llama al 105"],
@@ -105,19 +106,26 @@ const RECOMENDACIONES: BusinessRecommendationView[] = [
       "En las últimas semanas, varias bodegas de San Juan de Lurigancho recibieron audios de un grupo que dice ser “Los X”. Piden pagos por Yape y dan un plazo de 48 horas. No pagues ni negocies: guarda todo y denuncia.",
     modalidades: [
       {
-        descripcion: "Mandan audios o mensajes que dicen ser de “Los X”. Piden un pago por Yape y dan 48 horas para pagar.",
-        senales_de_alerta: ["Te dicen “habla con el jefe”.", "Te dan un plazo de 48 horas.", "Te piden yapear a un número que no conoces."],
+        descripcion:
+          "Mandan audios o mensajes que dicen ser de “Los X”. Piden un pago por Yape y dan 48 horas para pagar.",
+        senales_de_alerta: [
+          "Te dicen “habla con el jefe”.",
+          "Te dan un plazo de 48 horas.",
+          "Te piden yapear a un número que no conoces.",
+        ],
       },
     ],
     recomendaciones: [
       {
         titulo: "Cuida lo que publicas",
-        detalle: "No publiques en redes tus horarios ni cuánto vendes o guardas en caja. Revisa también lo que ya publicaste.",
+        detalle:
+          "No publiques en redes tus horarios ni cuánto vendes o guardas en caja. Revisa también lo que ya publicaste.",
         prioridad: "baja",
       },
       {
         titulo: "Guarda todo sin responder",
-        detalle: "Guarda cada audio y cada captura en tus notas privadas. No respondas, aunque te presionen con el plazo.",
+        detalle:
+          "Guarda cada audio y cada captura en tus notas privadas. No respondas, aunque te presionen con el plazo.",
         prioridad: "alta",
       },
       {
@@ -132,7 +140,8 @@ const RECOMENDACIONES: BusinessRecommendationView[] = [
       },
       {
         titulo: "Reconoce el guion",
-        detalle: "Si te dicen “habla con el jefe” o te dan 48 horas para pagar, es el mismo guion. No respondas y guarda el audio.",
+        detalle:
+          "Si te dicen “habla con el jefe” o te dan 48 horas para pagar, es el mismo guion. No respondas y guarda el audio.",
         prioridad: "media",
       },
     ],
@@ -157,8 +166,10 @@ const RECOMENDACIONES: BusinessRecommendationView[] = [
 function consejosPara(d: Datos, frases: string[]): string[] {
   const out = ["No respondas, no pagues y no negocies. Nadie de tu negocio debe hacerlo por ti."];
   if (d.canal_pago === "yape") out.push("No hagas ningún pago por Yape, aunque te presionen.");
-  if (d.plazo) out.push(`El plazo de ${d.plazo} es para presionarte. Si llegan más mensajes, guárdalos aquí sin responder.`);
-  if (frases.includes("habla con el jefe")) out.push("Si te vuelven a decir “habla con el jefe”, no contestes. Guarda el audio aquí.");
+  if (d.plazo)
+    out.push(`El plazo de ${d.plazo} es para presionarte. Si llegan más mensajes, guárdalos aquí sin responder.`);
+  if (frases.includes("habla con el jefe"))
+    out.push("Si te vuelven a decir “habla con el jefe”, no contestes. Guarda el audio aquí.");
   out.push("Acuerda con tu personal que nadie negocia ni paga, y que te pasan todo lo que reciban.");
   out.push("No publiques en redes tus horarios ni montos de caja.");
   out.push("Lleva tu denuncia a la Línea 1818 o a tu comisaría. Si estás en peligro, llama al 105.");
@@ -191,7 +202,9 @@ export function extraerDatos(texto: string): Datos {
     canal_pago: canal,
     monto_soles: monto,
     plazo: plazo ? `${plazo[1]} horas` : null,
-    grupo: grupo?.[1] ? grupo[1].replace(/^los/i, "Los").replace(/ (\w)/, (_s, c: string) => ` ${c.toUpperCase()}`) : null,
+    grupo: grupo?.[1]
+      ? grupo[1].replace(/^los/i, "Los").replace(/ (\w)/, (_s, c: string) => ` ${c.toUpperCase()}`)
+      : null,
     telefonos: Array.from(new Set(telefonos)),
   };
 }
@@ -225,8 +238,7 @@ function pdfEscape(s: string): string {
 }
 
 export function minimalPdf(lines: string[]): Uint8Array {
-  const content =
-    "BT /F1 12 Tf 56 780 Td 16 TL\n" + lines.map((l) => `(${pdfEscape(l)}) Tj T*`).join("\n") + "\nET";
+  const content = "BT /F1 12 Tf 56 780 Td 16 TL\n" + lines.map((l) => `(${pdfEscape(l)}) Tj T*`).join("\n") + "\nET";
   const objs = [
     "<< /Type /Catalog /Pages 2 0 R >>",
     "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
@@ -343,7 +355,9 @@ export function createMockServer(opts: MockOptions = {}) {
     const frases = ["habla con el jefe", "no llames a la policía"].filter((f) =>
       c.evidence.some((e) => (e.text ?? e.transcript?.map((x) => x.text).join(" ") ?? "").toLowerCase().includes(f)),
     );
-    const sorted = [...c.evidence].sort((a, b) => (a.item.captured_at ?? a.item.received_utc).localeCompare(b.item.captured_at ?? b.item.received_utc));
+    const sorted = [...c.evidence].sort((a, b) =>
+      (a.item.captured_at ?? a.item.received_utc).localeCompare(b.item.captured_at ?? b.item.received_utc),
+    );
     const cronologia: TimelineEvent[] = listo
       ? sorted.map((e) => ({
           fecha: (e.item.captured_at ?? e.item.received_utc).slice(0, 10),
@@ -373,7 +387,10 @@ export function createMockServer(opts: MockOptions = {}) {
             canal_pago: d.canal_pago,
             grupo_que_dice_ser: d.grupo,
             frases_firma: frases,
-            identificadores: d.telefonos.map((v) => ({ tipo: d.canal_pago === "yape" ? "cuenta_yape" : "telefono", valor: v })),
+            identificadores: d.telefonos.map((v) => ({
+              tipo: d.canal_pago === "yape" ? "cuenta_yape" : "telefono",
+              valor: v,
+            })),
             resumen:
               "Una voz masculina exige un pago por Yape con plazo de 48 horas, dice ser de un grupo y amenaza con dañar el local. Datos ficticios del demo.",
           }
@@ -384,7 +401,8 @@ export function createMockServer(opts: MockOptions = {}) {
         transcripcion: e.item.status === "procesado" ? e.transcript : null,
         nota: e.item.status === "procesado" ? e.nota : null,
         // Como el API: audio, imagen y video procesados traen el texto corto de autenticidad; el texto, null.
-        autenticidad: e.item.status === "procesado" && e.item.tipo !== "texto" ? textoAutenticidadVictima("sin_senales") : null,
+        autenticidad:
+          e.item.status === "procesado" && e.item.tipo !== "texto" ? textoAutenticidadVictima("sin_senales") : null,
         origen: e.source,
       })),
       updated_at: c.summary.updated_at,
@@ -403,7 +421,10 @@ export function createMockServer(opts: MockOptions = {}) {
   }
 
   async function route(url: string, req: HttpRequest): Promise<HttpResponse> {
-    const [path = "", search = ""] = url.replace(/^https?:\/\/[^/]+/, "").replace(/^\/v1/, "").split("?");
+    const [path = "", search = ""] = url
+      .replace(/^https?:\/\/[^/]+/, "")
+      .replace(/^\/v1/, "")
+      .split("?");
     const params = new URLSearchParams(search);
     const m = req.method;
 
@@ -415,7 +436,8 @@ export function createMockServer(opts: MockOptions = {}) {
       const code = b.invite_code == null ? null : String(b.invite_code);
       if (code !== null && !/^[A-Za-z0-9-]{4,32}$/.test(code)) return err(400, "bad_request", "Código inválido");
       // Igual que el Worker: código inexistente o agotado = 400 bad_request.
-      if (code?.toUpperCase().startsWith("NO")) return err(400, "bad_request", "El código de invitación no es válido o ya venció");
+      if (code?.toUpperCase().startsWith("NO"))
+        return err(400, "bad_request", "El código de invitación no es válido o ya venció");
       const org = code ? CANAL_DEMO : CENTRAL;
       const id = rid("dev");
       const pseudonym = `V-${toHex(utf8(id)).slice(-4).toUpperCase()}`;
@@ -426,7 +448,8 @@ export function createMockServer(opts: MockOptions = {}) {
     if (m === "POST" && path === "/auth/device/refresh") {
       const b = jsonBody(req);
       const d = devices.get(String(b.device_id));
-      if (!d || d.refresh !== b.refresh_token || typeof b.signature !== "string") return err(401, "unauthorized", "Sesión vencida");
+      if (!d || d.refresh !== b.refresh_token || typeof b.signature !== "string")
+        return err(401, "unauthorized", "Sesión vencida");
       return response(200, issue(d.id));
     }
 
@@ -459,11 +482,24 @@ export function createMockServer(opts: MockOptions = {}) {
       };
       // Como el API: la zona se normaliza a id de distrito; un texto que no es distrito queda como llegó.
       const zona = typeof b.zona === "string" ? (districtOfZone(b.zona)?.id ?? b.zona) : null;
-      cases.set(id, { device, summary, sector: (b.sector as string) ?? null, zona, evidence: [], narrative: null, readyAt: null });
+      cases.set(id, {
+        device,
+        summary,
+        sector: (b.sector as string) ?? null,
+        zona,
+        evidence: [],
+        narrative: null,
+        readyAt: null,
+      });
       return response(200, summary);
     }
 
-    if (m === "GET" && path === "/cases") return response(200, { cases: Array.from(cases.values()).filter((c) => c.device === device).map((c) => c.summary) });
+    if (m === "GET" && path === "/cases")
+      return response(200, {
+        cases: Array.from(cases.values())
+          .filter((c) => c.device === device)
+          .map((c) => c.summary),
+      });
 
     // Avisos y recomendaciones de su distrito, no de su organización. Sin distrito, todos.
     if (m === "GET" && path === "/alerts") {
@@ -473,7 +509,9 @@ export function createMockServer(opts: MockOptions = {}) {
 
     if (m === "GET" && path === "/recommendations") {
       const zona = zonaDe(device, params);
-      return response(200, { recommendations: zona ? RECOMENDACIONES.filter((r) => r.distrito === zona) : RECOMENDACIONES });
+      return response(200, {
+        recommendations: zona ? RECOMENDACIONES.filter((r) => r.distrito === zona) : RECOMENDACIONES,
+      });
     }
 
     const cm = path.match(/^\/cases\/([^/]+)(\/[a-z.]+)?$/);

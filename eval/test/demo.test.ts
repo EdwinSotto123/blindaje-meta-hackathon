@@ -38,7 +38,9 @@ describe("datos del demo", () => {
     const tel = (s: string) => normalizeIdentifier("telefono", s);
     expect(tel(demo.identificadores.contacto_A!)).not.toBe(tel(demo.identificadores.contacto_B!));
     const recaudadora = demo.identificadores.yape_recaudadora!.replace(/\D/g, "");
-    const pagan = demo.casos.filter((c) => c.evidencia.some((e) => (e.texto ?? "").replace(/\D/g, "").includes(recaudadora)));
+    const pagan = demo.casos.filter((c) =>
+      c.evidencia.some((e) => (e.texto ?? "").replace(/\D/g, "").includes(recaudadora)),
+    );
     const codes = pagan.map((c) => c.code);
     expect(codes).toContain("B");
     expect(codes).toContain("C");

@@ -17,7 +17,13 @@ import { LINEA_DENUNCIAS, LINEA_EMERGENCIAS } from "@/shared";
 import { endExternal, expectExternal, useSessionMode } from "@/state/session";
 import { colors } from "@/theme/tokens";
 
-const CANAL: Record<string, string> = { yape: "Yape", plin: "Plin", transferencia: "Transferencia", efectivo: "Efectivo", otro: "Otro" };
+const CANAL: Record<string, string> = {
+  yape: "Yape",
+  plin: "Plin",
+  transferencia: "Transferencia",
+  efectivo: "Efectivo",
+  otro: "Otro",
+};
 const TIPO_ID: Record<string, string> = {
   telefono: "Teléfono",
   cuenta_yape: "Cuenta Yape",
@@ -60,14 +66,10 @@ export default function DenunciaLista() {
       }
     };
     if (!on) return void apply();
-    Alert.alert(
-      CONSENT_CONFIRM_TITLE,
-      CONSENT_CONFIRM_BODY,
-      [
-        { text: "Ahora no", style: "cancel" },
-        { text: "Sumar mi caso", onPress: () => void apply() },
-      ],
-    );
+    Alert.alert(CONSENT_CONFIRM_TITLE, CONSENT_CONFIRM_BODY, [
+      { text: "Ahora no", style: "cancel" },
+      { text: "Sumar mi caso", onPress: () => void apply() },
+    ]);
   };
 
   const descargar = async () => {
@@ -81,7 +83,11 @@ export default function DenunciaLista() {
       file.create();
       await file.write(bytes);
       expectExternal();
-      await Sharing.shareAsync(file.uri, { mimeType: "application/pdf", dialogTitle: "Denuncia para la comisaría", UTI: "com.adobe.pdf" });
+      await Sharing.shareAsync(file.uri, {
+        mimeType: "application/pdf",
+        dialogTitle: "Denuncia para la comisaría",
+        UTI: "com.adobe.pdf",
+      });
     } catch (e) {
       setMsg(errorMessage(e));
     } finally {
@@ -109,7 +115,9 @@ export default function DenunciaLista() {
       }
     >
       {decoy || !report ? (
-        <T variant="secondary">{reportState === "offline" || decoy ? "Sin conexión. Inténtalo cuando tengas internet." : "Cargando…"}</T>
+        <T variant="secondary">
+          {reportState === "offline" || decoy ? "Sin conexión. Inténtalo cuando tengas internet." : "Cargando…"}
+        </T>
       ) : (
         <>
           <Chip
@@ -131,16 +139,22 @@ export default function DenunciaLista() {
             ) : null}
             {ficha ? (
               <View style={{ gap: 4 }}>
-                {ficha.monto_soles != null ? <T variant="body">Monto que piden: {soles(ficha.monto_soles * 100)}</T> : null}
+                {ficha.monto_soles != null ? (
+                  <T variant="body">Monto que piden: {soles(ficha.monto_soles * 100)}</T>
+                ) : null}
                 {ficha.plazo ? <T variant="body">Plazo: {ficha.plazo}</T> : null}
-                {ficha.canal_pago ? <T variant="body">Medio de pago: {CANAL[ficha.canal_pago] ?? ficha.canal_pago}</T> : null}
+                {ficha.canal_pago ? (
+                  <T variant="body">Medio de pago: {CANAL[ficha.canal_pago] ?? ficha.canal_pago}</T>
+                ) : null}
                 {ficha.grupo_que_dice_ser ? <T variant="body">Dice ser de: “{ficha.grupo_que_dice_ser}”</T> : null}
                 {ficha.identificadores.map((i) => (
                   <T key={`${i.tipo}-${i.valor}`} variant="body">
                     {TIPO_ID[i.tipo] ?? i.tipo}: {i.valor}
                   </T>
                 ))}
-                {ficha.frases_firma.length ? <T variant="body">Frases que repiten: {ficha.frases_firma.map((f) => `“${f}”`).join(", ")}</T> : null}
+                {ficha.frases_firma.length ? (
+                  <T variant="body">Frases que repiten: {ficha.frases_firma.map((f) => `“${f}”`).join(", ")}</T>
+                ) : null}
               </View>
             ) : null}
           </Card>
@@ -180,12 +194,20 @@ export default function DenunciaLista() {
           <View style={{ gap: 6 }}>
             <T variant="h2">Evidencia y huella de integridad</T>
             {report.evidencia.map((e) => (
-              <View key={e.id} style={{ gap: 2, borderBottomWidth: 1, borderBottomColor: colors.borde, paddingVertical: 6 }}>
+              <View
+                key={e.id}
+                style={{ gap: 2, borderBottomWidth: 1, borderBottomColor: colors.borde, paddingVertical: 6 }}
+              >
                 <T variant="bodyBold">
                   {e.label}: {titleFor(e.tipo, e.duration_ms)}
                 </T>
                 <T variant="small">Recibido: {shortDateTime(e.received_utc)}</T>
-                <T variant="small" selectable style={{ fontFamily: "monospace", fontSize: 12 }} accessibilityLabel={`Huella SHA-256 que empieza con ${e.sha256.slice(0, 8)}`}>
+                <T
+                  variant="small"
+                  selectable
+                  style={{ fontFamily: "monospace", fontSize: 12 }}
+                  accessibilityLabel={`Huella SHA-256 que empieza con ${e.sha256.slice(0, 8)}`}
+                >
                   SHA-256 {e.sha256}
                 </T>
               </View>
@@ -212,8 +234,20 @@ export default function DenunciaLista() {
             <T variant="small">{CONSENT_WHO} Puedes apagarlo cuando quieras.</T>
           </Card>
 
-          <Button label="Descargar para la comisaría" icon="download" onPress={descargar} loading={pdfBusy} disabled={!listo} testID="descargar-pdf" />
-          <Button label={`Llamar a la Línea ${LINEA_DENUNCIAS}`} kind="secondary" icon="phone" onPress={() => void Linking.openURL(`tel:${LINEA_DENUNCIAS}`)} />
+          <Button
+            label="Descargar para la comisaría"
+            icon="download"
+            onPress={descargar}
+            loading={pdfBusy}
+            disabled={!listo}
+            testID="descargar-pdf"
+          />
+          <Button
+            label={`Llamar a la Línea ${LINEA_DENUNCIAS}`}
+            kind="secondary"
+            icon="phone"
+            onPress={() => void Linking.openURL(`tel:${LINEA_DENUNCIAS}`)}
+          />
           <Notice>{msg}</Notice>
         </>
       )}

@@ -1,13 +1,35 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
-import { DEFAULT_CALIBRATION, evidenceLabel, type Calibration, type FichaExtraction, type LinkView, type Signals } from "@blindaje/shared";
+import {
+  DEFAULT_CALIBRATION,
+  evidenceLabel,
+  type Calibration,
+  type FichaExtraction,
+  type LinkView,
+  type Signals,
+} from "@blindaje/shared";
 import { setMetaFetchForTests } from "../src/agents/common";
 import { CALIBRATION_KV_KEY, findCandidates, indexCase } from "../src/linking";
-import { commonPhrases, finalScore, imageProbability, moProbability, phraseSimilarity, voiceProbability } from "../src/linking/signals";
+import {
+  commonPhrases,
+  finalScore,
+  imageProbability,
+  moProbability,
+  phraseSimilarity,
+  voiceProbability,
+} from "../src/linking/signals";
 import { setMlClientForTests } from "../src/ml/client";
 import { processCaseLinking } from "../src/pipeline/queues";
 import { buildFicha, ensureTextEmbedding, processEvidence, storeIdentifiers } from "../src/pipeline/steps";
-import { emptyMetaLog, fakeAudio, FakeMl, fakeMetaFetch, insertEvidence, metaNoSimulada, type FakeMetaConfig } from "./fakes";
+import {
+  emptyMetaLog,
+  fakeAudio,
+  FakeMl,
+  fakeMetaFetch,
+  insertEvidence,
+  metaNoSimulada,
+  type FakeMetaConfig,
+} from "./fakes";
 import { apiJson, createCase, loginAs, registerDevice, seedOrg, type TestDevice } from "./helpers";
 
 /** Calibración real de la evaluación (eval/calibration.json, versión v1-eval-2026-10-28). */
@@ -22,14 +44,17 @@ const EVAL_CAL: Calibration = {
   identificador: { p: 0.95 },
 };
 
-const RESUMEN_X = "Voz masculina por audio de WhatsApp que dice ser de Los X; exige pago por Yape con plazo de 48 horas y amenaza con dañar el local.";
+const RESUMEN_X =
+  "Voz masculina por audio de WhatsApp que dice ser de Los X; exige pago por Yape con plazo de 48 horas y amenaza con dañar el local.";
 const turno = (text: string) => [{ speaker: "A", startMs: 0, endMs: 12_000, transcript: text }];
 
 const log = emptyMetaLog();
 const cfg: FakeMetaConfig = {
   guiones: {
     A1: turno("Somos de Los X, aquí todos pagan su colaboración. Tienes 48 horas. No llames a la policía."),
-    B1: turno("Mototaxista, aquí mandamos Los X. Habla con el jefe para que te pase el Yape. Y no llames a la policía."),
+    B1: turno(
+      "Mototaxista, aquí mandamos Los X. Habla con el jefe para que te pase el Yape. Y no llames a la policía.",
+    ),
     C1: turno("Comerciante, tu cupo es de ochocientos soles a la semana. Tienes hasta el viernes."),
     D1: turno("Le llamo por la deuda del préstamo, deposite en la cuenta del banco o difundimos sus fotos."),
     F1: turno("Habla con el jefe. Yapea al número que te mandamos."),
@@ -68,7 +93,13 @@ const cases: Record<string, { id: string; code: string; device: TestDevice }> = 
 /** Lo que hace el Workflow, paso a paso y sin colas: ingesta, ficha, identificadores, indexar. */
 async function prepare(
   key: string,
-  opts: { voz?: { guion: string; persona: string }; mensaje?: string; ficha: (labels: string[]) => Partial<FichaExtraction>; consent?: "comunitario" | "solo_denuncia"; device?: TestDevice },
+  opts: {
+    voz?: { guion: string; persona: string };
+    mensaje?: string;
+    ficha: (labels: string[]) => Partial<FichaExtraction>;
+    consent?: "comunitario" | "solo_denuncia";
+    device?: TestDevice;
+  },
 ) {
   const device = opts.device ?? (await registerDevice(org.invite));
   const c = await createCase(device.access_token, opts.consent ?? "comunitario");
@@ -86,7 +117,9 @@ async function prepare(
   }
   cfg.fichas[c.code] = ficha({ fuentes: labels, ...opts.ficha(labels) });
   const f = await buildFicha(env, c.id);
-  await env.DB.prepare("UPDATE cases SET ficha_json = ?, estado = 'listo' WHERE id = ?").bind(JSON.stringify(f), c.id).run();
+  await env.DB.prepare("UPDATE cases SET ficha_json = ?, estado = 'listo' WHERE id = ?")
+    .bind(JSON.stringify(f), c.id)
+    .run();
   await storeIdentifiers(env, c.id);
   await ensureTextEmbedding(env, c.id, null);
   const idx = await indexCase(env, c.id);
@@ -158,13 +191,19 @@ describe("motor de vinculación sobre los casos A, B y C (calibración de la eva
     expect(ab!.signals.identificador).toBeUndefined();
     expect(ab!.signals.voz!.p).toBeCloseTo(0.85, 3);
     expect(ab!.signals.voz!.segmentos).toBeGreaterThanOrEqual(EVAL_CAL.voz.min_segmentos);
-    expect(ab!.signals.modus_operandi).toMatchObject({ mismo_canal_pago: true, mismo_grupo: true, frases_comunes: ["Habla con el jefe", "No llames a la policía!"] });
+    expect(ab!.signals.modus_operandi).toMatchObject({
+      mismo_canal_pago: true,
+      mismo_grupo: true,
+      frases_comunes: ["Habla con el jefe", "No llames a la policía!"],
+    });
     expect(ab!.signals.modus_operandi!.p).toBeLessThanOrEqual(EVAL_CAL.mo.p_max);
     expect(ab!.score_raw).toBeGreaterThanOrEqual(EVAL_CAL.thresholds.probable);
     expect(ab!.status).toBe("probable");
     expect(ab!.vinculador_valid).toBe(1);
     expect(summary.links.find((l) => l.other_case_id === cases.A!.id)?.status).toBe("probable");
-    console.log(`[escenario] A–B score_raw=${ab!.score_raw} voz=${ab!.signals.voz!.p.toFixed(3)} (coseno ${ab!.signals.voz!.similitud}) mo=${ab!.signals.modus_operandi!.p.toFixed(3)}`);
+    console.log(
+      `[escenario] A–B score_raw=${ab!.score_raw} voz=${ab!.signals.voz!.p.toFixed(3)} (coseno ${ab!.signals.voz!.similitud}) mo=${ab!.signals.modus_operandi!.p.toFixed(3)}`,
+    );
 
     // El Vinculador recibió las dos fichas, las señales y los fragmentos con su EV y su huella.
     const input = log.vinculador.at(-1)!;
@@ -183,7 +222,11 @@ describe("motor de vinculación sobre los casos A, B y C (calibración de la eva
       expect(f.text).toBeTruthy();
     }
     expect(new Set(view.body.fragments.map((f) => f.evidence_label)).size).toBe(2);
-    const audited = await env.DB.prepare("SELECT details_json FROM audit_log WHERE action = 'link.propose' AND target_id = ?").bind(ab!.id).first<{ details_json: string }>();
+    const audited = await env.DB.prepare(
+      "SELECT details_json FROM audit_log WHERE action = 'link.propose' AND target_id = ?",
+    )
+      .bind(ab!.id)
+      .first<{ details_json: string }>();
     expect(JSON.parse(audited!.details_json)).toMatchObject({ status: "probable", vinculador_valid: true });
   });
 
@@ -207,7 +250,10 @@ describe("motor de vinculación sobre los casos A, B y C (calibración de la eva
     });
     await processCaseLinking(env, cases.C!.id);
     const bc = await linkBetween("B", "C");
-    expect(bc!.signals.identificador).toMatchObject({ p: 0.95, compartidos: [expect.objectContaining({ tipo: "cuenta_yape", ultimos_3: "202" })] });
+    expect(bc!.signals.identificador).toMatchObject({
+      p: 0.95,
+      compartidos: [expect.objectContaining({ tipo: "cuenta_yape", ultimos_3: "202" })],
+    });
     expect(bc!.signals.voz!.p).toBeLessThan(0.01);
     expect(bc!.status).toBe("probable");
     expect(bc!.score_raw).toBeGreaterThanOrEqual(0.95);
@@ -228,8 +274,11 @@ describe("motor de vinculación sobre los casos A, B y C (calibración de la eva
         canal_pago: "transferencia",
         grupo_que_dice_ser: null,
         frases_firma: ["deposite en la cuenta del banco"],
-        resumen_mo: "Llamadas sobre una supuesta deuda de un préstamo; piden depósito bancario mensual y amenazan con difundir fotos.",
-        identificadores: [{ tipo: "cuenta_bancaria", valor: "0011-2233-4455667788", rol: "cobro", evidencia: [audio!] }],
+        resumen_mo:
+          "Llamadas sobre una supuesta deuda de un préstamo; piden depósito bancario mensual y amenazan con difundir fotos.",
+        identificadores: [
+          { tipo: "cuenta_bancaria", valor: "0011-2233-4455667788", rol: "cobro", evidencia: [audio!] },
+        ],
       }),
     });
     await processCaseLinking(env, cases.D!.id);
@@ -246,7 +295,9 @@ describe("motor de vinculación sobre los casos A, B y C (calibración de la eva
     const before = log.vinculador.length;
     await prepare("E", {
       mensaje: "Somos Los X. Yapea S/ 2,000 al 900 000 505 en 48 horas. Habla con el jefe y no llames a la policía.",
-      ficha: ([msg]) => ({ identificadores: [{ tipo: "cuenta_yape", valor: "900000505", rol: "cobro", evidencia: [msg!] }] }),
+      ficha: ([msg]) => ({
+        identificadores: [{ tipo: "cuenta_yape", valor: "900000505", rol: "cobro", evidencia: [msg!] }],
+      }),
     });
     const summary = await processCaseLinking(env, cases.E!.id);
     const ae = await linkBetween("A", "E");
@@ -273,13 +324,17 @@ describe("motor de vinculación sobre los casos A, B y C (calibración de la eva
     expect(f.indexed).toBe(false);
     const row = await env.DB.prepare("SELECT indexed FROM cases WHERE id = ?").bind(f.id).first<{ indexed: number }>();
     expect(row!.indexed).toBe(0);
-    const ci = await env.DB.prepare("SELECT MAX(indexed) AS m FROM case_identifiers WHERE case_id = ?").bind(f.id).first<{ m: number }>();
+    const ci = await env.DB.prepare("SELECT MAX(indexed) AS m FROM case_identifiers WHERE case_id = ?")
+      .bind(f.id)
+      .first<{ m: number }>();
     expect(ci!.m).toBe(0);
     expect(await findCandidates(env, f.id)).toEqual([]);
     const fromB = await findCandidates(env, cases.B!.id);
     expect(fromB.map((p) => p.other_case_id)).not.toContain(f.id);
     await processCaseLinking(env, cases.B!.id, "reindex");
-    const anyF = await env.DB.prepare("SELECT COUNT(*) AS n FROM links WHERE case_a = ? OR case_b = ?").bind(f.id, f.id).first<{ n: number }>();
+    const anyF = await env.DB.prepare("SELECT COUNT(*) AS n FROM links WHERE case_a = ? OR case_b = ?")
+      .bind(f.id, f.id)
+      .first<{ n: number }>();
     expect(anyF!.n).toBe(0);
   });
 
@@ -287,7 +342,9 @@ describe("motor de vinculación sobre los casos A, B y C (calibración de la eva
     await prepare("H", {
       device: cases.B!.device,
       mensaje: "Yapea al 900 000 202, habla con el jefe.",
-      ficha: ([msg]) => ({ identificadores: [{ tipo: "cuenta_yape", valor: "900000202", rol: "cobro", evidencia: [msg!] }] }),
+      ficha: ([msg]) => ({
+        identificadores: [{ tipo: "cuenta_yape", valor: "900000202", rol: "cobro", evidencia: [msg!] }],
+      }),
     });
     await processCaseLinking(env, cases.H!.id);
     expect(await linkBetween("B", "H")).toBeNull();
@@ -314,7 +371,9 @@ describe("motor de vinculación sobre los casos A, B y C (calibración de la eva
     expect(bg!.vinculador_valid).toBe(0);
     expect(bg!.score).toBe(bg!.score_raw);
     expect(bg!.status).toBe("probable");
-    const run = await env.DB.prepare("SELECT status, attempts FROM agent_runs WHERE agent = 'vinculador' ORDER BY created_at DESC LIMIT 1").first();
+    const run = await env.DB.prepare(
+      "SELECT status, attempts FROM agent_runs WHERE agent = 'vinculador' ORDER BY created_at DESC LIMIT 1",
+    ).first();
     expect(run).toEqual({ status: "invalido", attempts: 2 });
   });
 
@@ -331,7 +390,9 @@ describe("señales calibradas", () => {
     expect(voiceProbability(0.9, 3, EVAL_CAL)).toBeCloseTo(0.85, 6);
     expect(voiceProbability(0.9, 1, EVAL_CAL)).toBeCloseTo(0.85 * 0.25, 6);
     expect(voiceProbability(0.9, 0, EVAL_CAL)).toBe(0);
-    expect(moProbability({ similitud_texto: 1, frases_comunes: 5, mismo_canal_pago: true, mismo_grupo: true }, EVAL_CAL)).toBe(0.4);
+    expect(
+      moProbability({ similitud_texto: 1, frases_comunes: 5, mismo_canal_pago: true, mismo_grupo: true }, EVAL_CAL),
+    ).toBe(0.4);
     expect(imageProbability(4, 0.2, EVAL_CAL)).toBe(0.8);
     expect(imageProbability(30, 0.999, EVAL_CAL)).toBe(0.5);
     expect(imageProbability(30, 0.9, EVAL_CAL)).toBeLessThan(0.1);
@@ -346,7 +407,9 @@ describe("señales calibradas", () => {
 
   it("frases firma: coincidencia difusa sin tildes ni mayúsculas", () => {
     expect(phraseSimilarity("No llames a la policía!", "no llames a la policia")).toBe(1);
-    expect(commonPhrases(["Habla con el jefe", "tienes 48 horas"], ["habla con el jefe ya", "otra cosa"])).toEqual(["Habla con el jefe"]);
+    expect(commonPhrases(["Habla con el jefe", "tienes 48 horas"], ["habla con el jefe ya", "otra cosa"])).toEqual([
+      "Habla con el jefe",
+    ]);
     expect(evidenceLabel("A", 1)).toBe("EV-A1");
   });
 });

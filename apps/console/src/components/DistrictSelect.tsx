@@ -27,7 +27,13 @@ export function DistrictSelect({
   invalid?: boolean;
 }) {
   return (
-    <select id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-describedby={describedBy} aria-invalid={invalid || undefined}>
+    <select
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-describedby={describedBy}
+      aria-invalid={invalid || undefined}
+    >
       <option value="">{emptyLabel}</option>
       {DISTRICTS_BY_AREA.map((g) => (
         <optgroup key={g.area} label={g.area}>

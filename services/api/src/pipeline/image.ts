@@ -12,7 +12,15 @@ import { errorFields, log } from "../lib/log";
 import type { Box } from "../ml/client";
 import { once, requireMl, type EvidenceCtx } from "./context";
 import { isPermanentPipelineError } from "./errors";
-import { binaryDerivative, commitWrites, embeddingStatement, emptyWrites, jsonDerivative, previousOutputs, type PendingWrites } from "./store";
+import {
+  binaryDerivative,
+  commitWrites,
+  embeddingStatement,
+  emptyWrites,
+  jsonDerivative,
+  previousOutputs,
+  type PendingWrites,
+} from "./store";
 import type { LecturaContent, RedactadaContent, SegmentacionContent } from "./types";
 
 /**
@@ -47,9 +55,24 @@ export interface ImageConcept {
 export const IMAGE_CONCEPTS: ImageConcept[] = [
   { key: "bala", label: "bala", prompts: { es: ["bala"], en: ["bullet", "bullet casing"] }, uso: "comparar" },
   { key: "arma", label: "arma de fuego", prompts: { es: ["arma de fuego"], en: ["firearm"] }, uso: "comparar" },
-  { key: "nota", label: "nota escrita a mano", prompts: { es: ["nota escrita a mano"], en: ["handwritten note"] }, uso: "leer" },
-  { key: "placa", label: "placa de vehículo", prompts: { es: ["placa de vehículo"], en: ["license plate"] }, uso: "leer" },
-  { key: "fachada", label: "fachada de tienda", prompts: { es: ["fachada de tienda"], en: ["storefront"] }, uso: "contexto" },
+  {
+    key: "nota",
+    label: "nota escrita a mano",
+    prompts: { es: ["nota escrita a mano"], en: ["handwritten note"] },
+    uso: "leer",
+  },
+  {
+    key: "placa",
+    label: "placa de vehículo",
+    prompts: { es: ["placa de vehículo"], en: ["license plate"] },
+    uso: "leer",
+  },
+  {
+    key: "fachada",
+    label: "fachada de tienda",
+    prompts: { es: ["fachada de tienda"], en: ["storefront"] },
+    uso: "contexto",
+  },
   { key: "rostro", label: "rostro", prompts: { es: ["rostro"], en: ["face"] }, uso: "tapar" },
   { key: "nino", label: "niño", prompts: { es: ["niño"], en: ["child"] }, uso: "tapar" },
 ];
@@ -118,19 +141,30 @@ export function imageSource(ctx: EvidenceCtx, bytes: Uint8Array, name: string) {
 }
 
 /** SAM 3.1 sobre la imagen para un prompt, con caché por SHA-256 del original. */
-export async function samImage(ctx: EvidenceCtx, src: ReturnType<typeof imageSource>, prompt: string): Promise<SamLite> {
+export async function samImage(
+  ctx: EvidenceCtx,
+  src: ReturnType<typeof imageSource>,
+  prompt: string,
+): Promise<SamLite> {
   const cacheKey = await costCacheKey(ctx.ev.sha256, "sam_image", `v1:${prompt}`);
-  return withCostCache<SamLite>(ctx.env, { cache_key: cacheKey, model: SAM_MODEL, operation: "sam_image", case_id: ctx.caso.id }, async () => {
-    const r = await ctx.meta.segmentImage(
-      { ...(await src.params()), concept: prompt, includeConfidence: true, maskEncoding: "one_bit" },
-      { operation: "sam_image", context: { case_id: ctx.caso.id, cache_key: cacheKey } },
-    );
-    return {
-      objects: r.objects.map((o) => ({ box: { x1: o.box.x1, y1: o.box.y1, x2: o.box.x2, y2: o.box.y2 }, score: o.confidence ?? null })),
-      width: r.width,
-      height: r.height,
-    };
-  });
+  return withCostCache<SamLite>(
+    ctx.env,
+    { cache_key: cacheKey, model: SAM_MODEL, operation: "sam_image", case_id: ctx.caso.id },
+    async () => {
+      const r = await ctx.meta.segmentImage(
+        { ...(await src.params()), concept: prompt, includeConfidence: true, maskEncoding: "one_bit" },
+        { operation: "sam_image", context: { case_id: ctx.caso.id, cache_key: cacheKey } },
+      );
+      return {
+        objects: r.objects.map((o) => ({
+          box: { x1: o.box.x1, y1: o.box.y1, x2: o.box.x2, y2: o.box.y2 },
+          score: o.confidence ?? null,
+        })),
+        width: r.width,
+        height: r.height,
+      };
+    },
+  );
 }
 
 export const LecturaImagen = z
@@ -157,29 +191,36 @@ export async function readCrops(
   if (!crops.length) return { notas: [], placas: [] };
   // v2: regla contra instrucciones escritas en la imagen (PLAN D15).
   const cacheKey = await costCacheKey(ctx.ev.sha256, "lectura", `v2:${variant}`);
-  return withCostCache<LecturaImagen>(ctx.env, { cache_key: cacheKey, model: READ_MODEL, operation: "lectura", case_id: ctx.caso.id }, async () => {
-    const content: ContentPart[] = [{ type: "input_text", text: "Lee el texto de estos recortes." }];
-    crops.forEach((c, i) => {
-      content.push({ type: "input_text", text: `Recorte ${i + 1}: ${c.kind === "nota" ? "nota escrita a mano" : "placa de vehículo"}` });
-      content.push({ type: "input_image", image_url: `data:image/jpeg;base64,${c.jpeg_b64}` });
-    });
-    const r = await ctx.meta.responses.parse(
-      {
-        model: READ_MODEL,
-        instructions: LECTURA_INSTRUCTIONS,
-        input: [{ role: "user", content }],
-        schema: LecturaImagen,
-        schemaName: "lectura",
-        reasoningEffort: "minimal",
-        store: false,
-      },
-      { operation: "lectura", context: { case_id: ctx.caso.id, cache_key: cacheKey } },
-    );
-    return {
-      notas: r.output.notas.map((t) => t.trim()).filter(Boolean),
-      placas: r.output.placas.map((p) => p.trim().toUpperCase()).filter(Boolean),
-    };
-  });
+  return withCostCache<LecturaImagen>(
+    ctx.env,
+    { cache_key: cacheKey, model: READ_MODEL, operation: "lectura", case_id: ctx.caso.id },
+    async () => {
+      const content: ContentPart[] = [{ type: "input_text", text: "Lee el texto de estos recortes." }];
+      crops.forEach((c, i) => {
+        content.push({
+          type: "input_text",
+          text: `Recorte ${i + 1}: ${c.kind === "nota" ? "nota escrita a mano" : "placa de vehículo"}`,
+        });
+        content.push({ type: "input_image", image_url: `data:image/jpeg;base64,${c.jpeg_b64}` });
+      });
+      const r = await ctx.meta.responses.parse(
+        {
+          model: READ_MODEL,
+          instructions: LECTURA_INSTRUCTIONS,
+          input: [{ role: "user", content }],
+          schema: LecturaImagen,
+          schemaName: "lectura",
+          reasoningEffort: "minimal",
+          store: false,
+        },
+        { operation: "lectura", context: { case_id: ctx.caso.id, cache_key: cacheKey } },
+      );
+      return {
+        notas: r.output.notas.map((t) => t.trim()).filter(Boolean),
+        placas: r.output.placas.map((p) => p.trim().toUpperCase()).filter(Boolean),
+      };
+    },
+  );
 }
 
 function expandBox(b: Box, ratio: number): Box {
@@ -199,7 +240,14 @@ export async function storeCrops(
   ctx: EvidenceCtx,
   w: PendingWrites,
   model: string,
-  crops: Array<{ concept: string; box: Box; score: number | null; phash: string; vector: number[]; jpeg_b64: string | null }>,
+  crops: Array<{
+    concept: string;
+    box: Box;
+    score: number | null;
+    phash: string;
+    vector: number[];
+    jpeg_b64: string | null;
+  }>,
 ): Promise<string[]> {
   const { env, ev, caso } = ctx;
   if (!crops.length) return [];
@@ -221,7 +269,17 @@ export async function storeCrops(
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(id, num, caso.id, ev.id, c.concept, JSON.stringify(c.box), c.score, c.phash, faissId, r2Key, nowIso()),
     );
-    w.statements.push(embeddingStatement(env, { faiss_id: faissId, index_name: "imagen", case_id: caso.id, ref_type: "image_crop", ref_id: id, vector: c.vector, model }));
+    w.statements.push(
+      embeddingStatement(env, {
+        faiss_id: faissId,
+        index_name: "imagen",
+        case_id: caso.id,
+        ref_type: "image_crop",
+        ref_id: id,
+        vector: c.vector,
+        model,
+      }),
+    );
     labels.push(imageLabel(num));
   }
   return labels;
@@ -241,7 +299,9 @@ export async function processImage(ctx: EvidenceCtx): Promise<void> {
 
   // 0. JPEG normalizado: orientación EXIF aplicada y sin metadatos (GPS, modelo del celular). Así SAM,
   //    el tapado y los recortes trabajan sobre las mismas coordenadas.
-  const normalized = new Uint8Array(await ml.imageRedact({ image_b64: bytesToB64(new Uint8Array(original)), regions: [] }));
+  const normalized = new Uint8Array(
+    await ml.imageRedact({ image_b64: bytesToB64(new Uint8Array(original)), regions: [] }),
+  );
   const src = imageSource(ctx, normalized, `${ev.id}.jpg`);
 
   let detections: DetectedObject[] = [];
@@ -266,8 +326,12 @@ export async function processImage(ctx: EvidenceCtx): Promise<void> {
 
   const w = emptyWrites();
   // 2. Tapado de rostros y niños.
-  const toCover = detections.filter((d) => d.concept.uso === "tapar").map((d) => clampBox(expandBox(d.box, 0.15), width, height));
-  const redacted = toCover.length ? new Uint8Array(await ml.imageRedact({ image_b64: bytesToB64(normalized), regions: toCover })) : normalized;
+  const toCover = detections
+    .filter((d) => d.concept.uso === "tapar")
+    .map((d) => clampBox(expandBox(d.box, 0.15), width, height));
+  const redacted = toCover.length
+    ? new Uint8Array(await ml.imageRedact({ image_b64: bytesToB64(normalized), regions: toCover }))
+    : normalized;
   const redactada: RedactadaContent = {
     regiones: toCover.length,
     nota: toCover.length ? "Tapamos rostros antes de compartir la imagen" : null,
@@ -310,7 +374,14 @@ export async function processImage(ctx: EvidenceCtx): Promise<void> {
     },
     ...crops.crops.map((c) => {
       const det = cropTargets.find((d) => d.concept.label === c.concept && iou(d.box, c.box) > 0.5);
-      return { concept: c.concept, box: c.box, score: det?.score ?? null, phash: c.phash, vector: c.vector, jpeg_b64: c.crop_jpeg_b64 };
+      return {
+        concept: c.concept,
+        box: c.box,
+        score: det?.score ?? null,
+        phash: c.phash,
+        vector: c.vector,
+        jpeg_b64: c.crop_jpeg_b64,
+      };
     }),
   ];
   await storeCrops(ctx, w, crops.model, toStore);
@@ -318,7 +389,10 @@ export async function processImage(ctx: EvidenceCtx): Promise<void> {
   // 5. Lectura de notas y placas.
   const legibles = crops.crops
     .filter((c) => c.concept === "nota escrita a mano" || c.concept === "placa de vehículo")
-    .map((c) => ({ kind: (c.concept === "placa de vehículo" ? "placa" : "nota") as "nota" | "placa", jpeg_b64: c.crop_jpeg_b64 }));
+    .map((c) => ({
+      kind: (c.concept === "placa de vehículo" ? "placa" : "nota") as "nota" | "placa",
+      jpeg_b64: c.crop_jpeg_b64,
+    }));
   if (legibles.length) {
     try {
       const lectura = await readCrops(ctx, legibles, `img:${legibles.length}`);
@@ -332,5 +406,11 @@ export async function processImage(ctx: EvidenceCtx): Promise<void> {
 
   const prev = await previousOutputs(env, ev.id);
   await commitWrites(env, prev, w);
-  log("info", "image_processed", { evidence_id: ev.id, objects: detections.length, covered: toCover.length, crops: toStore.length, lang: SAM_LANG });
+  log("info", "image_processed", {
+    evidence_id: ev.id,
+    objects: detections.length,
+    covered: toCover.length,
+    crops: toStore.length,
+    lang: SAM_LANG,
+  });
 }

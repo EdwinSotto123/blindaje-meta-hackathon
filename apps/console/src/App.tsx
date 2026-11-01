@@ -18,7 +18,9 @@ const LeaksView = lazy(() => VIEW_LOADERS.leaks().then((m) => ({ default: m.Leak
 const MonitorView = lazy(() => VIEW_LOADERS.monitor().then((m) => ({ default: m.MonitorView })));
 const NetworkDetailView = lazy(() => VIEW_LOADERS.networkDetail().then((m) => ({ default: m.NetworkDetailView })));
 const NetworksView = lazy(() => VIEW_LOADERS.networks().then((m) => ({ default: m.NetworksView })));
-const RecommendationsView = lazy(() => VIEW_LOADERS.recommendations().then((m) => ({ default: m.RecommendationsView })));
+const RecommendationsView = lazy(() =>
+  VIEW_LOADERS.recommendations().then((m) => ({ default: m.RecommendationsView })),
+);
 const VectorsView = lazy(() => VIEW_LOADERS.vectors().then((m) => ({ default: m.VectorsView })));
 const ZonesView = lazy(() => VIEW_LOADERS.zones().then((m) => ({ default: m.ZonesView })));
 
@@ -57,7 +59,9 @@ function RequireCap({ cap, children }: { cap: Capability; children: ReactNode })
     return (
       <>
         <PageHead title="Sin acceso" />
-        <Empty title="Tu rol no tiene acceso a esta sección">Si lo necesitas, pídelo a la administración de Blindaje.</Empty>
+        <Empty title="Tu rol no tiene acceso a esta sección">
+          Si lo necesitas, pídelo a la administración de Blindaje.
+        </Empty>
       </>
     );
   }

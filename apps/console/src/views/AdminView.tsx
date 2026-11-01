@@ -34,7 +34,8 @@ export function AdminView() {
   return (
     <>
       <PageHead title="Administración">
-        El equipo de Blindaje revisa y aprueba para todos los distritos. Las organizaciones solo difunden la app: no ven casos ni aprueban nada.
+        El equipo de Blindaje revisa y aprueba para todos los distritos. Las organizaciones solo difunden la app: no ven
+        casos ni aprueban nada.
       </PageHead>
       {flash}
       <section className="panel stack-sm" aria-labelledby="users-titulo">
@@ -42,13 +43,18 @@ export function AdminView() {
           <h2 id="users-titulo">Equipo de la consola</h2>
         </div>
         <p className="small muted">
-          Revisión confirma vínculos y aprueba alertas y consejos de cualquier distrito. Análisis hace lo mismo y además corre el Cartógrafo, el Vigía y el
-          Asesor. Administración gestiona el equipo y los canales.
+          Revisión confirma vínculos y aprueba alertas y consejos de cualquier distrito. Análisis hace lo mismo y además
+          corre el Cartógrafo, el Vigía y el Asesor. Administración gestiona el equipo y los canales.
         </p>
         {users.error ? <ErrorBox error={users.error} onRetry={users.reload} /> : null}
         {!users.data && users.loading ? <Loading /> : null}
         {users.data ? (
-          <div className="table-wrap" tabIndex={0} role="region" aria-label="Usuarios de la consola (se desplaza a los lados)">
+          <div
+            className="table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label="Usuarios de la consola (se desplaza a los lados)"
+          >
             <table className="table">
               <thead>
                 <tr>
@@ -64,7 +70,13 @@ export function AdminView() {
                     <td className="strong">{u.display_name}</td>
                     <td>{u.email}</td>
                     <td>{ROLE_LABEL[u.role] ?? u.role}</td>
-                    <td>{u.disabled ? <span className="chip chip-danger">Desactivado</span> : <span className="chip chip-mint">Activo</span>}</td>
+                    <td>
+                      {u.disabled ? (
+                        <span className="chip chip-danger">Desactivado</span>
+                      ) : (
+                        <span className="chip chip-mint">Activo</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -86,13 +98,19 @@ export function AdminView() {
           </h2>
         </div>
         <p className="small muted">
-          Gremios, asociaciones y juntas que reparten la app. La víctima no necesita código: si usa uno, solo queda anotado por qué canal llegó a Blindaje.
+          Gremios, asociaciones y juntas que reparten la app. La víctima no necesita código: si usa uno, solo queda
+          anotado por qué canal llegó a Blindaje.
         </p>
         {orgs.error ? <ErrorBox error={orgs.error} onRetry={orgs.reload} /> : null}
         {!orgs.data && orgs.loading ? <Loading /> : null}
         {orgs.data && channels.length === 0 ? <p className="small">Aún no hay canales de difusión.</p> : null}
         {channels.length ? (
-          <div className="table-wrap" tabIndex={0} role="region" aria-label="Canales de difusión (se desplaza a los lados)">
+          <div
+            className="table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label="Canales de difusión (se desplaza a los lados)"
+          >
             <table className="table">
               <thead>
                 <tr>
@@ -161,7 +179,16 @@ function NewOrgForm({ onCreated }: { onCreated: (o: OrgView) => void }) {
         <div className="grid-3">
           <div className="field">
             <label htmlFor="org-name">Nombre</label>
-            <input id="org-name" type="text" required minLength={2} maxLength={160} autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
+            <input
+              id="org-name"
+              type="text"
+              required
+              minLength={2}
+              maxLength={160}
+              autoComplete="off"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
           <div className="field">
             <label htmlFor="org-kind">Tipo</label>
@@ -205,7 +232,15 @@ function NewUserForm({ onCreated }: { onCreated: (u: UserView) => void }) {
     setBusy(true);
     setError(null);
     try {
-      onCreated(await api.createUser({ email: email.trim(), display_name: name.trim(), role, org_id: CENTRAL_ORG_ID, password }));
+      onCreated(
+        await api.createUser({
+          email: email.trim(),
+          display_name: name.trim(),
+          role,
+          org_id: CENTRAL_ORG_ID,
+          password,
+        }),
+      );
       setEmail("");
       setName("");
       setPassword("");
@@ -222,11 +257,27 @@ function NewUserForm({ onCreated }: { onCreated: (u: UserView) => void }) {
         <div className="grid-3">
           <div className="field">
             <label htmlFor="u-email">Correo</label>
-            <input id="u-email" type="email" required autoComplete="off" spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input
+              id="u-email"
+              type="email"
+              required
+              autoComplete="off"
+              spellCheck={false}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div className="field">
             <label htmlFor="u-name">Nombre visible</label>
-            <input id="u-name" type="text" required minLength={2} autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
+            <input
+              id="u-name"
+              type="text"
+              required
+              minLength={2}
+              autoComplete="off"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
           <div className="field">
             <label htmlFor="u-role">Rol</label>
@@ -298,7 +349,8 @@ export function InvitesPanel({ channels }: { channels: OrgView[] }) {
         <Icon name="key" /> Códigos de un canal (opcional)
       </h3>
       <p className="small muted">
-        Sirven para saber cuántas personas llegaron por cada canal. Cada código sirve una vez y vence en 30 días. Sin código, la app funciona igual.
+        Sirven para saber cuántas personas llegaron por cada canal. Cada código sirve una vez y vence en 30 días. Sin
+        código, la app funciona igual.
       </p>
       <div className="row" style={{ alignItems: "flex-end" }}>
         <div className="field" style={{ minWidth: 260 }}>
@@ -313,7 +365,14 @@ export function InvitesPanel({ channels }: { channels: OrgView[] }) {
         </div>
         <div className="field" style={{ width: 120 }}>
           <label htmlFor="inv-count">Cantidad</label>
-          <input id="inv-count" type="number" min={1} max={50} value={count} onChange={(e) => setCount(Number(e.target.value) || 1)} />
+          <input
+            id="inv-count"
+            type="number"
+            min={1}
+            max={50}
+            value={count}
+            onChange={(e) => setCount(Number(e.target.value) || 1)}
+          />
         </div>
         <Acciones compact>
           <button type="submit" className="btn" disabled={busy || !org}>

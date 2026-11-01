@@ -19,7 +19,10 @@ const lp = d.lp.tech;
 const groups = [
   { label: lp.apiLabel, short: t.groups[0]?.rows ?? [], full: d.tech.groups[0]?.rows ?? [] },
   { label: lp.openLabel, short: t.groups[1]?.rows ?? [], full: d.tech.groups[1]?.rows ?? [] },
-].map((g) => ({ label: g.label, rows: g.short.map((r, i) => ({ name: r.name, use: r.use, id: g.full[i]?.id ?? "" })) }));
+].map((g) => ({
+  label: g.label,
+  rows: g.short.map((r, i) => ({ name: r.name, use: r.use, id: g.full[i]?.id ?? "" })),
+}));
 const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent: "Agent", what: "What it does" };
 ---
 
@@ -27,8 +30,7 @@ const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent:
   <div class="wrap">
     <div class="sec-head" data-reveal>
       <h2 id="tecnologia-title" class="head">
-        <span class="tech__line">{t.title[0]}</span>{" "}
-        <span class="tech__line">{t.title[1]}</span>
+        <span class="tech__line">{t.title[0]}</span> <span class="tech__line">{t.title[1]}</span>
       </h2>
       <p class="lead soft">{t.lead}</p>
     </div>
@@ -38,29 +40,27 @@ const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent:
     </div>
 
     <div class="stack stack--models">
-      {
-        groups.map((g, gi) => (
-          <div class="mlist" data-reveal>
-            <h3 class="stack__title">
-              <Icon name={gi === 0 ? "chip" : "file"} />
-              {g.label}
-            </h3>
-            <ul role="list">
-              {g.rows.map((m) => (
-                <li>
-                  <p>
-                    <span class="mlist__name">{m.name}</span>{" "}
-                    <code class="mlist__id" translate="no">
-                      {m.id}
-                    </code>
-                  </p>
-                  <p class="mlist__use soft">{m.use}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
+      {groups.map((g, gi) => (
+        <div class="mlist" data-reveal>
+          <h3 class="stack__title">
+            <Icon name={gi === 0 ? "chip" : "file"} />
+            {g.label}
+          </h3>
+          <ul role="list">
+            {g.rows.map((m) => (
+              <li>
+                <p>
+                  <span class="mlist__name">{m.name}</span>{" "}
+                  <code class="mlist__id" translate="no">
+                    {m.id}
+                  </code>
+                </p>
+                <p class="mlist__use soft">{m.use}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
 
     <div class="stack stack--agents">
@@ -79,18 +79,16 @@ const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent:
             </tr>
           </thead>
           <tbody>
-            {
-              t.agents.map((a) => (
-                <tr>
-                  <th scope="row">{a.name}</th>
-                  <td class="soft">{a.what}</td>
-                  <td class="agt__ok">
-                    <Icon name="check" />
-                    {a.approves}
-                  </td>
-                </tr>
-              ))
-            }
+            {t.agents.map((a) => (
+              <tr>
+                <th scope="row">{a.name}</th>
+                <td class="soft">{a.what}</td>
+                <td class="agt__ok">
+                  <Icon name="check" />
+                  {a.approves}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -99,7 +97,9 @@ const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent:
         <Icon name="alert" />
         <div>
           <p class="honest__title">{d.tech.honestTitle}</p>
-          {d.tech.honest.map((h) => <p class="soft small">{h}</p>)}
+          {d.tech.honest.map((h) => (
+            <p class="soft small">{h}</p>
+          ))}
         </div>
       </div>
     </div>

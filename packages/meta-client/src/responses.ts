@@ -276,7 +276,9 @@ export function strictSubsetProblems(schema: Record<string, unknown>): string[] 
       const required = new Set(Array.isArray(n.required) ? (n.required as string[]) : []);
       const missing = keys.filter((k) => !required.has(k));
       if (missing.length > 0) {
-        problems.push(`${path}: required debe listar todas las propiedades (faltan ${missing.join(", ")}; usa .nullable() en vez de .optional())`);
+        problems.push(
+          `${path}: required debe listar todas las propiedades (faltan ${missing.join(", ")}; usa .nullable() en vez de .optional())`,
+        );
       }
     }
     for (const [key, value] of Object.entries(n)) {
@@ -321,7 +323,11 @@ export function zodTextFormat(schema: z.ZodType, name: string, options: TextForm
 }
 
 /** Parsea y valida el texto JSON de una respuesta con un esquema Zod. */
-export function parseStructuredText<S extends z.ZodType>(text: string, schema: S, responseId: string | null = null): z.output<S> {
+export function parseStructuredText<S extends z.ZodType>(
+  text: string,
+  schema: S,
+  responseId: string | null = null,
+): z.output<S> {
   const trimmed = stripCodeFence(text.trim());
   if (trimmed === "") throw new MetaOutputError("empty_output", "La respuesta no trae texto", { responseId });
   let data: unknown;
@@ -332,11 +338,15 @@ export function parseStructuredText<S extends z.ZodType>(text: string, schema: S
   }
   const result = schema.safeParse(data);
   if (!result.success) {
-    throw new MetaOutputError("schema_mismatch", `La respuesta no cumple el esquema: ${z.prettifyError(result.error)}`, {
-      rawText: text,
-      responseId,
-      issues: result.error.issues,
-    });
+    throw new MetaOutputError(
+      "schema_mismatch",
+      `La respuesta no cumple el esquema: ${z.prettifyError(result.error)}`,
+      {
+        rawText: text,
+        responseId,
+        issues: result.error.issues,
+      },
+    );
   }
   return result.data;
 }

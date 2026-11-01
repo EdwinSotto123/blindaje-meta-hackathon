@@ -37,7 +37,9 @@ function render(user: ConsoleUser, compact = false) {
 describe("acciones de la consola con la cuenta de jurado", () => {
   it("quedan desactivadas, con el motivo escrito y ligado al grupo", () => {
     const html = render({ ...base, id: "usr-demo-jurado", solo_lectura: true });
-    expect(html).toMatch(/<fieldset class="acciones row" disabled="" aria-label="Decisión" aria-describedby="([^"]+)">/);
+    expect(html).toMatch(
+      /<fieldset class="acciones row" disabled="" aria-label="Decisión" aria-describedby="([^"]+)">/,
+    );
     const id = /aria-describedby="([^"]+)"/.exec(html)![1];
     expect(html).toContain(`<p id="${id}" class="solo-lectura-nota">`);
     expect(html).toContain(SOLO_LECTURA_TEXTO);

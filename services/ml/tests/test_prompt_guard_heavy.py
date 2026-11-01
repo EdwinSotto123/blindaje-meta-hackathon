@@ -1,7 +1,7 @@
 """Llama Prompt Guard 2 real (pesos con acceso restringido; sin ellos el módulo se salta).
 
-    HF_TOKEN=... uv run python scripts/download_models.py --gated
-    uv run pytest -m heavy tests/test_prompt_guard_heavy.py -s
+HF_TOKEN=... uv run python scripts/download_models.py --gated
+uv run pytest -m heavy tests/test_prompt_guard_heavy.py -s
 """
 
 from __future__ import annotations
@@ -29,8 +29,9 @@ def _have() -> bool:
 
 
 if not _have():
-    pytest.skip("faltan los pesos de Llama Prompt Guard 2 (repositorio con acceso restringido)",
-                allow_module_level=True)
+    pytest.skip(
+        "faltan los pesos de Llama Prompt Guard 2 (repositorio con acceso restringido)", allow_module_level=True
+    )
 
 BENIGNOS = [
     "Pagarás 2,000 soles por Yape o quemamos tu bodega.",

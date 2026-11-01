@@ -6,7 +6,14 @@ import { putEncrypted } from "../src/lib/crypto";
 import { b64ToBytes, bytesToB64, utf8 } from "../src/lib/encoding";
 import { newId, nowIso } from "../src/lib/ids";
 import { makeWav } from "../src/lib/wav";
-import { MlUnavailableError, type Box, type MlClient, type MlIndexName, type VoiceEmbedRequest, type VoiceEmbedResponse } from "../src/ml/client";
+import {
+  MlUnavailableError,
+  type Box,
+  type MlClient,
+  type MlIndexName,
+  type VoiceEmbedRequest,
+  type VoiceEmbedResponse,
+} from "../src/ml/client";
 
 /**
  * Dobles de prueba del contenedor ML y de la Meta API. Todo es determinista y ficticio.
@@ -91,7 +98,11 @@ export function fakeImage(id: string): Uint8Array {
 }
 
 export function fakeAudio(guion: string, hablantes: Record<string, string>): Uint8Array {
-  return utf8(`AUDIO|guion=${guion}|hablantes=${Object.entries(hablantes).map(([k, v]) => `${k}:${v}`).join(",")}|`);
+  return utf8(
+    `AUDIO|guion=${guion}|hablantes=${Object.entries(hablantes)
+      .map(([k, v]) => `${k}:${v}`)
+      .join(",")}|`,
+  );
 }
 
 function audioMarker(bytes: Uint8Array | ArrayBuffer) {
@@ -120,7 +131,10 @@ export function markerOf(bytes: Uint8Array | ArrayBuffer): string {
 /** Señales técnicas por defecto: se revisó todo y no hay nada. */
 export function senalesLimpias(kind: "audio" | "image" | "video"): SenalesTecnicas {
   return {
-    watermark: kind === "image" ? null : { detector: kind === "audio" ? "audioseal" : "videoseal", detected: false, score: 0.02 },
+    watermark:
+      kind === "image"
+        ? null
+        : { detector: kind === "audio" ? "audioseal" : "videoseal", detected: false, score: 0.02 },
     c2pa: { present: false, ai_generated: null, generator: null, claims: [] },
     metadata: { present: true, software: null, digital_source_type: null, suspicious: [], fields: {} },
     synthetic_speech: kind === "audio" ? { detector: "ninguno", score: 0, available: false } : null,
@@ -138,7 +152,10 @@ export class FakeMl implements MlClient {
   /** true: `/authenticity/*` falla como un contenedor caído. */
   authenticityFails = false;
 
-  private async authenticityOf(kind: "audio" | "image" | "video", body: ArrayBuffer | Uint8Array | ReadableStream): Promise<SenalesTecnicas> {
+  private async authenticityOf(
+    kind: "audio" | "image" | "video",
+    body: ArrayBuffer | Uint8Array | ReadableStream,
+  ): Promise<SenalesTecnicas> {
     this.calls.push(`authenticity:${kind}`);
     if (this.authenticityFails) throw new MlUnavailableError("status_503");
     return { ...senalesLimpias(kind), ...(this.authenticity[markerOf(body as Uint8Array)] ?? {}) };
@@ -164,8 +181,16 @@ export class FakeMl implements MlClient {
   }
   async health() {
     this.calls.push("health");
-    const indices = Object.fromEntries((["voz", "voz_segmento", "texto", "imagen"] as const).map((n) => [n, this.idx(n).size]));
-    return { ok: true, models: { voice: true, text: true, image: true }, indices, index_version: null, cohort: { size: this.cohortSize } };
+    const indices = Object.fromEntries(
+      (["voz", "voz_segmento", "texto", "imagen"] as const).map((n) => [n, this.idx(n).size]),
+    );
+    return {
+      ok: true,
+      models: { voice: true, text: true, image: true },
+      indices,
+      index_version: null,
+      cohort: { size: this.cohortSize },
+    };
   }
   async normalizeAudio(body: ArrayBuffer | Uint8Array | ReadableStream) {
     this.calls.push("normalize");
@@ -191,17 +216,41 @@ export class FakeMl implements MlClient {
       speakers: speakers.flatMap((spk) => {
         const persona = hablantes[spk] ?? "desconocida";
         const base = mix(voiceOf(persona), `canal:${guion}`, 0.3);
-        const segments: Array<{ start_ms: number; end_ms: number; vector: number[]; excluded: boolean; victim_similarity: number | null }> = [];
+        const segments: Array<{
+          start_ms: number;
+          end_ms: number;
+          vector: number[];
+          excluded: boolean;
+          victim_similarity: number | null;
+        }> = [];
         for (const t of turns.filter((x) => x.speaker === spk)) {
           for (let s = t.start_ms; s + 3000 <= t.end_ms; s += 3000) {
-            segments.push({ start_ms: s, end_ms: s + 3000, vector: mix(base, `seg:${guion}:${spk}:${s}`, 0.15), excluded: false, victim_similarity: null });
+            segments.push({
+              start_ms: s,
+              end_ms: s + 3000,
+              vector: mix(base, `seg:${guion}:${spk}:${s}`, 0.15),
+              excluded: false,
+              victim_similarity: null,
+            });
           }
         }
         if (!segments.length) return [];
         const centroid = normalize(base.map((_, i) => segments.reduce((sum, g) => sum + g.vector[i]!, 0)));
-        const sim = req.exclude_vectors.length ? Math.max(...req.exclude_vectors.map((v) => v.reduce((a, x, i) => a + x * centroid[i]!, 0))) : null;
+        const sim = req.exclude_vectors.length
+          ? Math.max(...req.exclude_vectors.map((v) => v.reduce((a, x, i) => a + x * centroid[i]!, 0)))
+          : null;
         const excluded = sim !== null && sim > threshold;
-        return [{ speaker: spk, centroid, segments, n_segments: segments.length, duration_sec: segments.length * 3, victim_similarity: sim, excluded }];
+        return [
+          {
+            speaker: spk,
+            centroid,
+            segments,
+            n_segments: segments.length,
+            duration_sec: segments.length * 3,
+            victim_similarity: sim,
+            excluded,
+          },
+        ];
       }),
     };
   }
@@ -316,41 +365,76 @@ export class FakeMl implements MlClient {
     });
   }
 
-  async watermarkAudioEmbed(body: ArrayBuffer | Uint8Array | ReadableStream, message: number, opts?: { signal?: AbortSignal }) {
+  async watermarkAudioEmbed(
+    body: ArrayBuffer | Uint8Array | ReadableStream,
+    message: number,
+    opts?: { signal?: AbortSignal },
+  ) {
     await this.watermarkGate("audio:embed", opts);
     const src = new Uint8Array(body as ArrayBuffer);
     const mark = utf8(`|wm-audio=${message}|`);
     const out = new Uint8Array(src.length + mark.length);
     out.set(src);
     out.set(mark, src.length);
-    return { bytes: out.buffer, content_type: "audio/wav", model: "audioseal-falso", message: String(message), nbits: 16 };
+    return {
+      bytes: out.buffer,
+      content_type: "audio/wav",
+      model: "audioseal-falso",
+      message: String(message),
+      nbits: 16,
+    };
   }
 
   async watermarkAudioDetect(body: ArrayBuffer | Uint8Array | ReadableStream) {
     await this.watermarkGate("audio:detect");
     const m = /\|wm-audio=(\d+)\|/.exec(latin1(body as ArrayBuffer));
-    if (!m) return { detected: false, score: 0.03, message: null, bits: Array.from({ length: 16 }, (_, i) => (i % 3 ? 0.4 : 0.6)), bit_confidence: 0.1, model: "audioseal-falso" };
+    if (!m)
+      return {
+        detected: false,
+        score: 0.03,
+        message: null,
+        bits: Array.from({ length: 16 }, (_, i) => (i % 3 ? 0.4 : 0.6)),
+        bit_confidence: 0.1,
+        model: "audioseal-falso",
+      };
     const n = Number(m[1]);
     const bits = this.softBits(Array.from({ length: 16 }, (_, i) => (n >> (15 - i)) & 1));
     return { detected: true, score: 0.97, message: n, bits, bit_confidence: 0.9, model: "audioseal-falso" };
   }
 
-  async watermarkImageEmbed(body: ArrayBuffer | Uint8Array | ReadableStream, messageHex: string, opts?: { signal?: AbortSignal }) {
+  async watermarkImageEmbed(
+    body: ArrayBuffer | Uint8Array | ReadableStream,
+    messageHex: string,
+    opts?: { signal?: AbortSignal },
+  ) {
     await this.watermarkGate("image:embed", opts);
-    if (messageHex.length * 4 !== this.imageNbits) throw new Error(`mensaje de ${messageHex.length * 4} bits, el modelo usa ${this.imageNbits}`);
+    if (messageHex.length * 4 !== this.imageNbits)
+      throw new Error(`mensaje de ${messageHex.length * 4} bits, el modelo usa ${this.imageNbits}`);
     const src = new Uint8Array(body as ArrayBuffer);
     const mark = utf8(`|wm-img=${messageHex}|`);
     const out = new Uint8Array(src.length + mark.length);
     out.set(src);
     out.set(mark, src.length);
-    return { bytes: out.buffer, content_type: "image/jpeg", model: "videoseal-falso", message: messageHex, nbits: this.imageNbits };
+    return {
+      bytes: out.buffer,
+      content_type: "image/jpeg",
+      model: "videoseal-falso",
+      message: messageHex,
+      nbits: this.imageNbits,
+    };
   }
 
   async watermarkImageDetect(body: ArrayBuffer | Uint8Array | ReadableStream) {
     await this.watermarkGate("image:detect");
     const m = /\|wm-img=([0-9a-f]+)\|/.exec(latin1(body as ArrayBuffer));
     if (!m) {
-      return { detected: false, score: 0.04, bits: Array.from({ length: this.imageNbits }, (_, i) => (i % 2 ? 0.45 : 0.55)), message_hex: "", model: "videoseal-falso" };
+      return {
+        detected: false,
+        score: 0.04,
+        bits: Array.from({ length: this.imageNbits }, (_, i) => (i % 2 ? 0.45 : 0.55)),
+        message_hex: "",
+        model: "videoseal-falso",
+      };
     }
     const hard = [...m[1]!].flatMap((ch) => {
       const v = parseInt(ch, 16);
@@ -366,7 +450,11 @@ export class FakeMl implements MlClient {
     return {
       model: "llama-prompt-guard-2-86m-falso",
       threshold: 0.5,
-      results: texts.map((t) => (this.promptGuardPattern.test(t) ? { score: 0.991, label: "inyeccion" as const, chunks: 1 } : { score: 0.012, label: "benigno" as const, chunks: 1 })),
+      results: texts.map((t) =>
+        this.promptGuardPattern.test(t)
+          ? { score: 0.991, label: "inyeccion" as const, chunks: 1 }
+          : { score: 0.012, label: "benigno" as const, chunks: 1 },
+      ),
     };
   }
 }
@@ -402,7 +490,14 @@ export interface FakeMetaLog {
   ficha: string[];
   vinculador: string[];
   lectura: number;
-  autenticidad: Array<{ model: string; marker: string; text: string; parts: string[]; effort: string | null; max_output_tokens: number | null }>;
+  autenticidad: Array<{
+    model: string;
+    marker: string;
+    text: string;
+    parts: string[];
+    effort: string | null;
+    max_output_tokens: number | null;
+  }>;
 }
 
 function responseJson(model: string, output: unknown) {
@@ -412,15 +507,35 @@ function responseJson(model: string, output: unknown) {
       object: "response",
       model,
       status: "completed",
-      output: [{ type: "message", id: "msg_1", role: "assistant", status: "completed", content: [{ type: "output_text", text: JSON.stringify(output), annotations: [] }] }],
-      usage: { input_tokens: 2000, output_tokens: 300, input_tokens_details: { cached_tokens: 0 }, output_tokens_details: { reasoning_tokens: 100 } },
+      output: [
+        {
+          type: "message",
+          id: "msg_1",
+          role: "assistant",
+          status: "completed",
+          content: [{ type: "output_text", text: JSON.stringify(output), annotations: [] }],
+        },
+      ],
+      usage: {
+        input_tokens: 2000,
+        output_tokens: 300,
+        input_tokens_details: { cached_tokens: 0 },
+        output_tokens_details: { reasoning_tokens: 100 },
+      },
     },
     { headers: { "x-request-id": "req-falso" } },
   );
 }
 
 function samSse(text: string): Response {
-  const resp = (status: string, extra: Record<string, unknown> = {}) => ({ id: "resp_sam", object: "response", model: "sam-3.1", status, output: [], ...extra });
+  const resp = (status: string, extra: Record<string, unknown> = {}) => ({
+    id: "resp_sam",
+    object: "response",
+    model: "sam-3.1",
+    status,
+    output: [],
+    ...extra,
+  });
   const events: Array<[string, Record<string, unknown>]> = [
     ["response.created", { response: resp("in_progress") }],
     ["response.output_text.delta", { output_index: 0, content_index: 0, delta: text }],
@@ -435,7 +550,10 @@ function samSse(text: string): Response {
       },
     ],
   ];
-  const body = events.map(([type, data], i) => `event: ${type}\ndata: ${JSON.stringify({ ...data, type, sequence_number: i })}\n\n`).join("") + "data: [DONE]\n\n";
+  const body =
+    events
+      .map(([type, data], i) => `event: ${type}\ndata: ${JSON.stringify({ ...data, type, sequence_number: i })}\n\n`)
+      .join("") + "data: [DONE]\n\n";
   return new Response(body, { headers: { "content-type": "text/event-stream", "x-request-id": "req-sam" } });
 }
 
@@ -449,7 +567,9 @@ function textOfInput(input: unknown): string {
   const parts: string[] = [];
   for (const item of (input as Array<{ content?: unknown }>) ?? []) {
     if (typeof item.content === "string") parts.push(item.content);
-    else for (const p of (item.content as Array<{ type: string; text?: string }>) ?? []) if (p.type === "input_text" && p.text) parts.push(p.text);
+    else
+      for (const p of (item.content as Array<{ type: string; text?: string }>) ?? [])
+        if (p.type === "input_text" && p.text) parts.push(p.text);
   }
   return parts.join("\n");
 }
@@ -459,7 +579,8 @@ function imagesOfInput(input: unknown): Uint8Array[] {
   for (const item of (input as Array<{ content?: unknown }>) ?? []) {
     if (!Array.isArray(item.content)) continue;
     for (const p of item.content as Array<{ type: string; image_url?: string }>) {
-      if (p.type === "input_image" && p.image_url?.startsWith("data:")) out.push(b64ToBytes(p.image_url.split(",")[1]!));
+      if (p.type === "input_image" && p.image_url?.startsWith("data:"))
+        out.push(b64ToBytes(p.image_url.split(",")[1]!));
     }
   }
   return out;
@@ -470,7 +591,9 @@ export function fakeMetaFetch(cfg: FakeMetaConfig, log: FakeMetaLog): FetchLike 
     if (url.endsWith("/asr/transcribe")) {
       const raw = latin1(init.body as ArrayBuffer);
       const guion = /guion=([A-Za-z0-9_-]+)\|/.exec(raw)?.[1] ?? "desconocido";
-      const req = JSON.parse(/\{"model":"muse-voice-transcribe[^\r\n]*\}/.exec(raw)?.[0] ?? "{}") as { keywords?: string[] };
+      const req = JSON.parse(/\{"model":"muse-voice-transcribe[^\r\n]*\}/.exec(raw)?.[0] ?? "{}") as {
+        keywords?: string[];
+      };
       log.transcribe.push({ guion, keywords: req.keywords ?? [] });
       const turns = cfg.guiones[guion] ?? [];
       return Response.json({
@@ -481,11 +604,25 @@ export function fakeMetaFetch(cfg: FakeMetaConfig, log: FakeMetaLog): FetchLike 
       });
     }
     if (url.endsWith("/files") && init.method === "POST") {
-      return Response.json({ id: `file-${newId().slice(0, 6)}`, object: "file", bytes: 1, created_at: 0, filename: "x", purpose: "user_data", status: "uploaded" });
+      return Response.json({
+        id: `file-${newId().slice(0, 6)}`,
+        object: "file",
+        bytes: 1,
+        created_at: 0,
+        filename: "x",
+        purpose: "user_data",
+        status: "uploaded",
+      });
     }
-    if (url.includes("/files/") && init.method === "DELETE") return Response.json({ id: "file", object: "file", deleted: true });
+    if (url.includes("/files/") && init.method === "DELETE")
+      return Response.json({ id: "file", object: "file", deleted: true });
     if (url.endsWith("/responses")) {
-      const body = JSON.parse(String(init.body)) as { model: string; stream?: boolean; input: unknown; text?: { format?: { name?: string } } };
+      const body = JSON.parse(String(init.body)) as {
+        model: string;
+        stream?: boolean;
+        input: unknown;
+        text?: { format?: { name?: string } };
+      };
       if (body.stream) {
         const concept = textOfInput(body.input).trim();
         log.sam.push(concept);
@@ -509,11 +646,14 @@ export function fakeMetaFetch(cfg: FakeMetaConfig, log: FakeMetaLog): FetchLike 
         return responseJson(body.model, cfg.lecturas[id] ?? { notas: [], placas: [] });
       }
       if (name === "autenticidad") {
-        const parts = ((body.input as Array<{ content?: unknown }>)[0]?.content ?? []) as Array<Record<string, unknown>>;
+        const parts = ((body.input as Array<{ content?: unknown }>)[0]?.content ?? []) as Array<
+          Record<string, unknown>
+        >;
         let marker = "x";
         for (const p of parts) {
           if (p.type === "input_audio") marker = markerOf(b64ToBytes((p.input_audio as { data: string }).data));
-          if (p.type === "input_image" && typeof p.image_url === "string") marker = markerOf(b64ToBytes(p.image_url.split(",")[1]!));
+          if (p.type === "input_image" && typeof p.image_url === "string")
+            marker = markerOf(b64ToBytes(p.image_url.split(",")[1]!));
         }
         const req = body as { reasoning?: { effort?: string }; max_output_tokens?: number };
         log.autenticidad.push({
@@ -525,10 +665,19 @@ export function fakeMetaFetch(cfg: FakeMetaConfig, log: FakeMetaLog): FetchLike 
           max_output_tokens: req.max_output_tokens ?? null,
         });
         const out = cfg.autenticidad?.[marker];
-        if (out === "falla") return Response.json({ error: { message: "falla simulada", type: "invalid_request_error" } }, { status: 400 });
+        if (out === "falla")
+          return Response.json(
+            { error: { message: "falla simulada", type: "invalid_request_error" } },
+            { status: 400 },
+          );
         return responseJson(
           body.model,
-          out ?? { nivel: "sin_senales", senales: [], explicacion: "No se observan señales de generación con IA.", limitaciones: "Un análisis visual o de audio no descarta una edición cuidadosa." },
+          out ?? {
+            nivel: "sin_senales",
+            senales: [],
+            explicacion: "No se observan señales de generación con IA.",
+            limitaciones: "Un análisis visual o de audio no descarta una edición cuidadosa.",
+          },
         );
       }
       if (name === "vinculador") {
@@ -560,7 +709,10 @@ export function fakeMetaFetch(cfg: FakeMetaConfig, log: FakeMetaLog): FetchLike 
 
 /** Lo que ve un test que no simula Meta: 401 (error permanente, la ficha queda pendiente). */
 export const metaNoSimulada: FetchLike = async () =>
-  Response.json({ error: { message: "Meta API no simulada en este test", type: "invalid_request_error", code: "unauthorized" } }, { status: 401 });
+  Response.json(
+    { error: { message: "Meta API no simulada en este test", type: "invalid_request_error", code: "unauthorized" } },
+    { status: 401 },
+  );
 
 export function emptyMetaLog(): FakeMetaLog {
   return { transcribe: [], sam: [], ficha: [], vinculador: [], lectura: 0, autenticidad: [] };
@@ -581,12 +733,28 @@ export async function insertEvidence(
   const label = evidenceLabel(c.code, n);
   const key = evidenceR2Key(c.id, id);
   await putEncrypted(env.EVIDENCE, key, env.EVIDENCE_ENCRYPTION_KEY, bytes, id);
-  const sha = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const sha = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
   await env.DB.prepare(
     `INSERT INTO evidence (id, case_id, label, seq, tipo, mime, size_bytes, sha256, sha256_client, received_utc, captured_at, source, r2_key, uploader_pseudonym, status)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'V-TEST', 'recibido')`,
   )
-    .bind(id, c.id, label, n, tipo, opts.mime ?? "application/octet-stream", bytes.byteLength, sha, sha, nowIso(), opts.captured_at ?? null, opts.source ?? null, key)
+    .bind(
+      id,
+      c.id,
+      label,
+      n,
+      tipo,
+      opts.mime ?? "application/octet-stream",
+      bytes.byteLength,
+      sha,
+      sha,
+      nowIso(),
+      opts.captured_at ?? null,
+      opts.source ?? null,
+      key,
+    )
     .run();
   return { id, label };
 }

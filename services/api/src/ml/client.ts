@@ -117,7 +117,9 @@ export type ImageWatermarkDetection = z.infer<typeof ImageWatermarkDetection>;
 export const PromptGuardResponse = z.object({
   model: z.string(),
   threshold: z.number(),
-  results: z.array(z.object({ score: z.number().min(0).max(1), label: PromptGuardLabel, chunks: z.number().int().optional() })),
+  results: z.array(
+    z.object({ score: z.number().min(0).max(1), label: PromptGuardLabel, chunks: z.number().int().optional() }),
+  ),
 });
 export type PromptGuardResponse = z.infer<typeof PromptGuardResponse>;
 
@@ -191,7 +193,13 @@ function parseMl<S extends z.ZodType>(schema: S, raw: unknown, what: string): z.
  */
 export function parseSenalesTecnicas(raw: unknown): SenalesTecnicas {
   const base = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
-  const parsed = SenalesTecnicas.safeParse({ watermark: null, c2pa: null, metadata: null, synthetic_speech: null, ...base });
+  const parsed = SenalesTecnicas.safeParse({
+    watermark: null,
+    c2pa: null,
+    metadata: null,
+    synthetic_speech: null,
+    ...base,
+  });
   if (!parsed.success) {
     throw new ApiError("upstream_error", "El servicio de análisis devolvió señales de autenticidad con otra forma", {
       status: 502,
@@ -203,11 +211,15 @@ export function parseSenalesTecnicas(raw: unknown): SenalesTecnicas {
 
 export class MlUnavailableError extends ApiError {
   constructor(reason: string) {
-    super("upstream_error", "El servicio de análisis no está disponible en este momento. Intenta de nuevo en unos minutos.", {
-      status: 503,
-      details: { service: "ml", reason },
-      headers: { "retry-after": "60" },
-    });
+    super(
+      "upstream_error",
+      "El servicio de análisis no está disponible en este momento. Intenta de nuevo en unos minutos.",
+      {
+        status: 503,
+        details: { service: "ml", reason },
+        headers: { "retry-after": "60" },
+      },
+    );
     this.name = "MlUnavailableError";
   }
 }
@@ -246,7 +258,12 @@ abstract class BaseMlClient implements MlClient {
   }
 
   private async json<T>(path: string, body: unknown, opts: MlCallOptions = {}): Promise<T> {
-    const res = await this.raw(path, { method: "POST", headers: JSON_HEADERS, body: JSON.stringify(body), ...(opts.signal ? { signal: opts.signal } : {}) });
+    const res = await this.raw(path, {
+      method: "POST",
+      headers: JSON_HEADERS,
+      body: JSON.stringify(body),
+      ...(opts.signal ? { signal: opts.signal } : {}),
+    });
     return (await res.json()) as T;
   }
 
@@ -281,7 +298,11 @@ abstract class BaseMlClient implements MlClient {
   }
 
   async voiceEnroll(body: BinaryBody) {
-    return (await (await this.binary("/voice/enroll", body)).json()) as { model: string; dim: number; vector: number[] };
+    return (await (await this.binary("/voice/enroll", body)).json()) as {
+      model: string;
+      dim: number;
+      vector: number[];
+    };
   }
 
   voiceEmbed(req: VoiceEmbedRequest) {
@@ -356,7 +377,11 @@ abstract class BaseMlClient implements MlClient {
   }
 
   async pdfRender(template: "denuncia" | "expediente", data: unknown) {
-    const res = await this.raw("/pdf/render", { method: "POST", headers: JSON_HEADERS, body: JSON.stringify({ template, data }) });
+    const res = await this.raw("/pdf/render", {
+      method: "POST",
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ template, data }),
+    });
     return res.arrayBuffer();
   }
 
@@ -380,7 +405,11 @@ abstract class BaseMlClient implements MlClient {
   }
 
   async watermarkAudioEmbed(body: BinaryBody, message: number, opts: MlCallOptions = {}) {
-    const res = await this.binary(`/watermark/audio/embed?${new URLSearchParams({ message: String(message) })}`, body, opts);
+    const res = await this.binary(
+      `/watermark/audio/embed?${new URLSearchParams({ message: String(message) })}`,
+      body,
+      opts,
+    );
     return this.embedResult(res, "audio/wav");
   }
 
@@ -400,10 +429,18 @@ abstract class BaseMlClient implements MlClient {
   }
 
   async promptGuard(texts: string[], opts: MlCallOptions = {}) {
-    if (texts.length > PROMPT_GUARD_MAX_TEXTS) throw new ApiError("bad_request", `Prompt Guard acepta hasta ${PROMPT_GUARD_MAX_TEXTS} textos por llamada`);
-    const out = parseMl(PromptGuardResponse, await this.json<unknown>("/safety/prompt-guard", { texts }, opts), "un resultado de Prompt Guard");
+    if (texts.length > PROMPT_GUARD_MAX_TEXTS)
+      throw new ApiError("bad_request", `Prompt Guard acepta hasta ${PROMPT_GUARD_MAX_TEXTS} textos por llamada`);
+    const out = parseMl(
+      PromptGuardResponse,
+      await this.json<unknown>("/safety/prompt-guard", { texts }, opts),
+      "un resultado de Prompt Guard",
+    );
     if (out.results.length !== texts.length) {
-      throw new ApiError("upstream_error", "Prompt Guard devolvió otra cantidad de resultados", { status: 502, details: { service: "ml" } });
+      throw new ApiError("upstream_error", "Prompt Guard devolvió otra cantidad de resultados", {
+        status: 502,
+        details: { service: "ml" },
+      });
     }
     return out;
   }

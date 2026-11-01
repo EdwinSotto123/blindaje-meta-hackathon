@@ -130,9 +130,7 @@ export function parseSamOutput(text: string): SamParseResult {
     }
     byFrame.set(frame, objects);
   }
-  const frames = [...byFrame.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([frame, objects]) => ({ frame, objects }));
+  const frames = [...byFrame.entries()].sort(([a], [b]) => a - b).map(([frame, objects]) => ({ frame, objects }));
   return { frames, problems };
 }
 
@@ -149,7 +147,8 @@ export function parseMaskToken(token: string): ParsedMaskToken {
   const inner = token.startsWith("<|") ? token.slice(2, token.endsWith("|>") ? -2 : undefined) : `mask;data=${token}`;
   const fields = fieldsOf(inner.replace(/^mask/, ""));
   const data = /^(\d+),(\d+),([!~][^|]*)$/.exec(fields.get("data") ?? "");
-  if (!data) throw new MetaOutputError("invalid_json", "Token de máscara SAM inválido", { rawText: token.slice(0, 200) });
+  if (!data)
+    throw new MetaOutputError("invalid_json", "Token de máscara SAM inválido", { rawText: token.slice(0, 200) });
   const confidence = confidenceOf(fields.get("c"));
   return {
     height: Number(data[1]),

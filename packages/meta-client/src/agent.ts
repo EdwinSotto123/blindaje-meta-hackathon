@@ -89,7 +89,12 @@ export interface RunAgentParams<S extends z.ZodType | undefined = undefined> {
   /** "return" (por defecto): el error del handler se le devuelve al modelo. "throw": aborta. */
   onToolError?: "return" | "throw";
   /** Parámetros extra de la Responses API (metadata, safety_identifier, prompt_cache_key…). */
-  extra?: Partial<Omit<ResponsesCreateParams, "model" | "input" | "instructions" | "tools" | "text" | "previous_response_id" | "store">>;
+  extra?: Partial<
+    Omit<
+      ResponsesCreateParams,
+      "model" | "input" | "instructions" | "tools" | "text" | "previous_response_id" | "store"
+    >
+  >;
 }
 
 export interface AgentResult<T> {
@@ -199,9 +204,7 @@ export async function runAgent<S extends z.ZodType | undefined = undefined>(
       try {
         assertCompleted(response);
         const text = getOutputText(response);
-        const output = params.finalSchema
-          ? parseStructuredText(text, params.finalSchema, response.id)
-          : text;
+        const output = params.finalSchema ? parseStructuredText(text, params.finalSchema, response.id) : text;
         return {
           output: output as AgentOutput<S>,
           outputText: text,
@@ -213,9 +216,14 @@ export async function runAgent<S extends z.ZodType | undefined = undefined>(
       } catch (error) {
         const fixable = error instanceof MetaOutputError && error.code !== "failed";
         if (!fixable || validationRetriesLeft <= 0 || turn >= maxTurns) {
-          throw new MetaAgentError("invalid_final_output", `La salida final no es válida: ${(error as Error).message}`, partial(), {
-            cause: error,
-          });
+          throw new MetaAgentError(
+            "invalid_final_output",
+            `La salida final no es válida: ${(error as Error).message}`,
+            partial(),
+            {
+              cause: error,
+            },
+          );
         }
         validationRetriesLeft--;
         turn++;
@@ -229,13 +237,20 @@ export async function runAgent<S extends z.ZodType | undefined = undefined>(
       throw new MetaAgentError("max_turns", `El agente agotó ${maxTurns} turnos sin respuesta final`, partial());
     }
 
-    const outputs = await Promise.all(functionCalls.map((fc) => executeTool(fc, byName, turn, params.onToolError ?? "return", call.signal)));
+    const outputs = await Promise.all(
+      functionCalls.map((fc) => executeTool(fc, byName, turn, params.onToolError ?? "return", call.signal)),
+    );
     for (const o of outputs) trace.push(o.trace);
     const failed = outputs.find((o) => o.fatal);
     if (failed) {
-      throw new MetaAgentError("tool_error", `La herramienta ${failed.trace.name} falló: ${failed.trace.error}`, partial(), {
-        cause: failed.fatal,
-      });
+      throw new MetaAgentError(
+        "tool_error",
+        `La herramienta ${failed.trace.name} falló: ${failed.trace.error}`,
+        partial(),
+        {
+          cause: failed.fatal,
+        },
+      );
     }
 
     turn++;
@@ -256,7 +271,16 @@ async function executeTool(
   const started = Date.now();
   const finish = (output: string, ok: boolean, args: unknown, error?: string, fatal?: unknown) => ({
     item: { type: "function_call_output" as const, call_id: fc.call_id, output },
-    trace: { turn, callId: fc.call_id, name: fc.name, arguments: args, output, ok, ...(error ? { error } : {}), durationMs: Date.now() - started },
+    trace: {
+      turn,
+      callId: fc.call_id,
+      name: fc.name,
+      arguments: args,
+      output,
+      ok,
+      ...(error ? { error } : {}),
+      durationMs: Date.now() - started,
+    },
     ...(fatal !== undefined ? { fatal } : {}),
   });
 
@@ -291,7 +315,11 @@ async function executeTool(
  * La persistencia de una respuesta puede tardar un poco tras `response.completed`; encadenar
  * enseguida con `previous_response_id` puede dar 400/404 unos segundos. Se reintenta dos veces.
  */
-async function createChained(create: CreateResponse, request: ResponsesCreateParams, call: CallOptions): Promise<MetaResponse> {
+async function createChained(
+  create: CreateResponse,
+  request: ResponsesCreateParams,
+  call: CallOptions,
+): Promise<MetaResponse> {
   for (let attempt = 0; ; attempt++) {
     try {
       return await create(request, call);
@@ -325,7 +353,10 @@ export function replayableItems(response: MetaResponse): InputItem[] {
       items.push({ type: "function_call", call_id: f.call_id, name: f.name, arguments: f.arguments });
     } else if (item.type === "message") {
       const parts = Array.isArray(item.content) ? (item.content as Array<{ type: string; text?: string }>) : [];
-      const text = parts.filter((p) => p.type === "output_text").map((p) => p.text ?? "").join("");
+      const text = parts
+        .filter((p) => p.type === "output_text")
+        .map((p) => p.text ?? "")
+        .join("");
       items.push({ role: "assistant", content: [{ type: "output_text", text }] });
     }
   }

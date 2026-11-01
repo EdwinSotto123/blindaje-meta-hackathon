@@ -46,7 +46,11 @@ export default function Avisos() {
       }
     >
       <T variant="secondary" testID="avisos-zona">
-        {decoy ? "Avisos de tu zona." : distrito ? `Avisos de ${distrito.name}, tu zona.` : "Elige tu distrito en Ajustes para ver los avisos de tu zona."}{" "}
+        {decoy
+          ? "Avisos de tu zona."
+          : distrito
+            ? `Avisos de ${distrito.name}, tu zona.`
+            : "Elige tu distrito en Ajustes para ver los avisos de tu zona."}{" "}
         Los revisa nuestro equipo. Nunca te llegará nada como notificación.
       </T>
       {alerts === null ? (
@@ -88,7 +92,9 @@ export default function Avisos() {
           <T variant="h2" accessibilityRole="header" style={{ fontSize: 18, lineHeight: 24 }}>
             Recomendaciones para tu zona
           </T>
-          <T variant="secondary">Consejos de prevención para negocios como el tuyo. Nuestro equipo los revisó antes de mostrártelos.</T>
+          <T variant="secondary">
+            Consejos de prevención para negocios como el tuyo. Nuestro equipo los revisó antes de mostrártelos.
+          </T>
         </View>
         {recs === null ? (
           recsState === "offline" || recsState === "error" ? (
@@ -98,7 +104,13 @@ export default function Avisos() {
                   ? "Sin conexión. Vuelve a intentarlo cuando tengas internet."
                   : "No pudimos cargar las recomendaciones. Inténtalo de nuevo en un momento."}
               </T>
-              <Button label="Volver a intentar" kind="secondary" compact style={{ alignSelf: "flex-start" }} onPress={() => void refreshRecommendations()} />
+              <Button
+                label="Volver a intentar"
+                kind="secondary"
+                compact
+                style={{ alignSelf: "flex-start" }}
+                onPress={() => void refreshRecommendations()}
+              />
             </View>
           ) : (
             <T variant="secondary">Cargando…</T>

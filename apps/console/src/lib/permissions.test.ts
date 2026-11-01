@@ -22,10 +22,26 @@ describe("permisos del equipo central (rediseño del 28/10)", () => {
 
   it("la administración ve y hace todo, y empieza en Monitoreo (29/10)", () => {
     const caps = Object.keys({
-      "links.review": 1, "networks.view": 1, "cartografo.run": 1, "hypotheses.decide": 1, "alerts.view": 1, "alerts.decide": 1,
-      "vigia.run": 1, expedientes: 1, "audit.view": 1, "costs.view": 1, "zones.view": 1, "admin.orgs": 1, "admin.users": 1,
-      "invites.create": 1, "recommendations.view": 1, "recommendations.decide": 1, "asesor.run": 1, "leaks.trace": 1,
-      "vectors.view": 1, "monitor.view": 1,
+      "links.review": 1,
+      "networks.view": 1,
+      "cartografo.run": 1,
+      "hypotheses.decide": 1,
+      "alerts.view": 1,
+      "alerts.decide": 1,
+      "vigia.run": 1,
+      expedientes: 1,
+      "audit.view": 1,
+      "costs.view": 1,
+      "zones.view": 1,
+      "admin.orgs": 1,
+      "admin.users": 1,
+      "invites.create": 1,
+      "recommendations.view": 1,
+      "recommendations.decide": 1,
+      "asesor.run": 1,
+      "leaks.trace": 1,
+      "vectors.view": 1,
+      "monitor.view": 1,
     } satisfies Record<Capability, 1>) as Capability[];
     for (const cap of caps) expect(can("admin", cap), cap).toBe(true);
     expect(homeFor("admin")).toBe("/monitoreo");

@@ -1,5 +1,13 @@
 import { CITATION_RE } from "@blindaje/shared";
-import type { AudioFragment, CaseSide, FichaStored, LinkView, NetworkView, PromptGuardResult, ResultadoAutenticidad } from "../api/types";
+import type {
+  AudioFragment,
+  CaseSide,
+  FichaStored,
+  LinkView,
+  NetworkView,
+  PromptGuardResult,
+  ResultadoAutenticidad,
+} from "../api/types";
 
 /**
  * Citas de los agentes (packages/shared/src/labels.ts):
@@ -62,8 +70,23 @@ export type CitationTarget =
       promptGuard?: PromptGuardResult | null;
     }
   | { kind: "ficha"; ref: string; caseCode: string; ficha: FichaStored | null }
-  | { kind: "voz"; ref: string; cases: string[]; huellas: string[]; fragments: AudioFragment[]; segmentos: number | null }
-  | { kind: "identificador"; ref: string; tipo: string | null; rol: string | null; ultimos_3: string | null; cases: string[]; evidencia: string[] }
+  | {
+      kind: "voz";
+      ref: string;
+      cases: string[];
+      huellas: string[];
+      fragments: AudioFragment[];
+      segmentos: number | null;
+    }
+  | {
+      kind: "identificador";
+      ref: string;
+      tipo: string | null;
+      rol: string | null;
+      ultimos_3: string | null;
+      cases: string[];
+      evidencia: string[];
+    }
   | { kind: "vinculo"; ref: string; linkId: string | null; cases: string[]; score: number | null }
   | { kind: "imagen"; ref: string; evidencia: string[]; cases: string[]; descripcion: string | null }
   | { kind: "red"; ref: string; networkId: string | null };
@@ -171,7 +194,9 @@ export function indexFromNetwork(net: NetworkView): CitationIndex {
   const index: CitationIndex = new Map();
   // Casos conectados a cada nodo (la API no siempre manda data.casos).
   const codeOf = new Map(
-    net.nodes.filter((n) => n.type === "caso").map((n) => [n.id, str(n.data?.code) ?? n.label.replace(/^Caso\s+/i, "")]),
+    net.nodes
+      .filter((n) => n.type === "caso")
+      .map((n) => [n.id, str(n.data?.code) ?? n.label.replace(/^Caso\s+/i, "")]),
   );
   const casesOf = (id: string, d: Record<string, unknown>): string[] => {
     const own = strArr(d.casos);
@@ -275,7 +300,10 @@ export function citationAriaLabel(ref: string, index?: CitationIndex): string {
     case "voz":
       return `Abrir huella de voz ${ref}`;
     case "identificador": {
-      const tipo = t?.kind === "identificador" && t.tipo ? (ID_TYPE_LABEL[t.tipo] ?? "Identificador").toLowerCase() : "identificador cifrado";
+      const tipo =
+        t?.kind === "identificador" && t.tipo
+          ? (ID_TYPE_LABEL[t.tipo] ?? "Identificador").toLowerCase()
+          : "identificador cifrado";
       const shown = citationText(ref, index);
       return shown.includes("…") ? `Abrir ${tipo} terminado en ${shown.split("…")[1]}` : `Abrir ${tipo} ${ref}`;
     }

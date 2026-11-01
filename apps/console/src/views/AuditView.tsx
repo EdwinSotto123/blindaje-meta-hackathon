@@ -132,13 +132,16 @@ export function AuditView() {
           </>
         }
       >
-        Cada acción (subidas, accesos a medios, decisiones, exportaciones) guarda el hash de la entrada anterior. Si alguien cambia una fila, la cadena se rompe
-        desde ahí.
+        Cada acción (subidas, accesos a medios, decisiones, exportaciones) guarda el hash de la entrada anterior. Si
+        alguien cambia una fila, la cadena se rompe desde ahí.
       </PageHead>
 
       <div aria-live="polite" className="stack-sm">
         {tampered != null && !verify ? (
-          <Notice kind="warn">Modo simulado: se alteró la entrada #{tampered} sin recalcular su hash. Verifica la cadena para ver cómo se detecta.</Notice>
+          <Notice kind="warn">
+            Modo simulado: se alteró la entrada #{tampered} sin recalcular su hash. Verifica la cadena para ver cómo se
+            detecta.
+          </Notice>
         ) : null}
         {verify ? (
           verify.ok ? (
@@ -150,10 +153,14 @@ export function AuditView() {
             <Notice kind="error-box">
               <div className="stack-sm">
                 <span>
-                  <strong>La cadena está rota en la entrada #{verify.broken_at_seq ?? "?"}.</strong> Su contenido no coincide con su hash o con el de la entrada
-                  anterior, así que desde ahí las entradas no se pueden dar por verificadas.
+                  <strong>La cadena está rota en la entrada #{verify.broken_at_seq ?? "?"}.</strong> Su contenido no
+                  coincide con su hash o con el de la entrada anterior, así que desde ahí las entradas no se pueden dar
+                  por verificadas.
                 </span>
-                <span>Avisa a la administración de Blindaje con el número de la entrada. No la corrijas a mano: la fila alterada es la evidencia.</span>
+                <span>
+                  Avisa a la administración de Blindaje con el número de la entrada. No la corrijas a mano: la fila
+                  alterada es la evidencia.
+                </span>
                 {verify.broken_at_seq != null ? (
                   <span>
                     <button type="button" className="btn btn-sm" onClick={() => goToRow(verify.broken_at_seq!)}>
@@ -167,7 +174,9 @@ export function AuditView() {
         ) : null}
         {verifyError ? <Notice kind="error-box">{verifyError}</Notice> : null}
         {localBreaks.length ? (
-          <Notice kind="warn">En las filas cargadas, el hash anterior no coincide en: {localBreaks.map((s) => `#${s}`).join(", ")}.</Notice>
+          <Notice kind="warn">
+            En las filas cargadas, el hash anterior no coincide en: {localBreaks.map((s) => `#${s}`).join(", ")}.
+          </Notice>
         ) : null}
       </div>
 
@@ -175,7 +184,12 @@ export function AuditView() {
       {first.loading && !first.data ? <Loading /> : null}
       {first.data && entries.length === 0 ? <Empty title="No hay entradas" /> : null}
       {entries.length ? (
-        <div className="table-wrap" tabIndex={0} role="region" aria-label="Registro de auditoría (se desplaza a los lados)">
+        <div
+          className="table-wrap"
+          tabIndex={0}
+          role="region"
+          aria-label="Registro de auditoría (se desplaza a los lados)"
+        >
           <table className="table">
             <caption className="sr-only">Registro de auditoría, de la entrada más reciente a la más antigua</caption>
             <thead>
@@ -215,7 +229,9 @@ export function AuditView() {
                       <br />
                       <code className="small muted">{e.action}</code>
                     </td>
-                    <td className="small">{e.target_type ? `${e.target_type}${e.target_id ? `: ${e.target_id}` : ""}` : "—"}</td>
+                    <td className="small">
+                      {e.target_type ? `${e.target_type}${e.target_id ? `: ${e.target_id}` : ""}` : "—"}
+                    </td>
                     <td>
                       <code className="small muted" title={e.prev_hash}>
                         {shortHash(e.prev_hash)}

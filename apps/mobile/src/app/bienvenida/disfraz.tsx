@@ -27,23 +27,50 @@ export default function Disfraz() {
   };
 
   return (
-    <Step n={3} title="Cómo se verá la app" testID="disfraz" footer={<Button label="Continuar" onPress={seguir} testID="continuar" />}>
-      <T variant="body">Elige el disfraz. Todos funcionan de verdad. Si muchas personas usan el mismo, es más difícil saber qué buscar.</T>
+    <Step
+      n={3}
+      title="Cómo se verá la app"
+      testID="disfraz"
+      footer={<Button label="Continuar" onPress={seguir} testID="continuar" />}
+    >
+      <T variant="body">
+        Elige el disfraz. Todos funcionan de verdad. Si muchas personas usan el mismo, es más difícil saber qué buscar.
+      </T>
       <DisguisePicker value={disguise} onChange={(d) => draftStore.set({ disguise: d })} />
       <T variant="h2">Cómo entrarás a tus notas</T>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
         <T variant="body" style={{ flex: 1 }}>
           Mantener presionado el título 2 segundos
         </T>
-        <Switch value={hold} onValueChange={(v) => draftStore.set({ holdTitle: v })} accessibilityLabel="Mantener presionado el título" trackColor={{ false: colors.borde, true: colors.tinta }} thumbColor={colors.blanco} />
+        <Switch
+          value={hold}
+          onValueChange={(v) => draftStore.set({ holdTitle: v })}
+          accessibilityLabel="Mantener presionado el título"
+          trackColor={{ false: colors.borde, true: colors.tinta }}
+          thumbColor={colors.blanco}
+        />
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
         <T variant="body" style={{ flex: 1 }}>
           Anotar una venta con un monto secreto
         </T>
-        <Switch value={montoOn} onValueChange={setMontoOn} accessibilityLabel="Monto secreto" trackColor={{ false: colors.borde, true: colors.tinta }} thumbColor={colors.blanco} />
+        <Switch
+          value={montoOn}
+          onValueChange={setMontoOn}
+          accessibilityLabel="Monto secreto"
+          trackColor={{ false: colors.borde, true: colors.tinta }}
+          thumbColor={colors.blanco}
+        />
       </View>
-      {montoOn ? <Field label="Monto secreto" hint="Una venta con este monto no se anota: abre la calculadora." keyboardType="decimal-pad" value={monto} onChangeText={setMonto} /> : null}
+      {montoOn ? (
+        <Field
+          label="Monto secreto"
+          hint="Una venta con este monto no se anota: abre la calculadora."
+          keyboardType="decimal-pad"
+          value={monto}
+          onChangeText={setMonto}
+        />
+      ) : null}
       <Notice>{error}</Notice>
     </Step>
   );

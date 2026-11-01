@@ -50,7 +50,17 @@ export class AuditChain extends DurableObject<Env> {
       `INSERT INTO audit_log (ts, actor_type, actor_id, action, target_type, target_id, details_json, prev_hash, hash)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING seq`,
     )
-      .bind(ts, hashable.actor_type, hashable.actor_id, hashable.action, hashable.target_type, hashable.target_id, detailsJson, prevHash, hash)
+      .bind(
+        ts,
+        hashable.actor_type,
+        hashable.actor_id,
+        hashable.action,
+        hashable.target_type,
+        hashable.target_id,
+        detailsJson,
+        prevHash,
+        hash,
+      )
       .first<{ seq: number }>();
     if (!row) throw new Error("audit_insert_failed");
     this.ctx.storage.kv.put("head", { seq: row.seq, hash } satisfies AuditHead);

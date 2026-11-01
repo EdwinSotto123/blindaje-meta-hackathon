@@ -7,19 +7,50 @@ import { MemoryTokenStore } from "../api/client";
 import { HttpApi } from "../api/httpApi";
 import type { NetworkSummary } from "../api/types";
 import { mockConsoleZones } from "../mock/zonesMock";
-import { BIAS_NOTE, buildCells, cellLabel, neighbor, trendOf, ZoneDetail, ZoneNotes, ZonesBody, ZoneTable, type ZoneCell } from "./ZonesView";
+import {
+  BIAS_NOTE,
+  buildCells,
+  cellLabel,
+  neighbor,
+  trendOf,
+  ZoneDetail,
+  ZoneNotes,
+  ZonesBody,
+  ZoneTable,
+  type ZoneCell,
+} from "./ZonesView";
 
 const NOW = new Date("2026-10-28T15:00:00Z");
 const data = mockConsoleZones(28, NOW, ["R-001", "R-002"]);
 const cells = buildCells(data);
 const cell = (id: string) => cells.find((c) => c.district.id === id)!;
 const NETS: NetworkSummary[] = [
-  { id: "net-1", label: "R-001", n_cases: 3, sectores: [], periodo: null, updated_at: "2026-10-20T15:00:00Z", profile_status: null },
-  { id: "net-2", label: "R-002", n_cases: 2, sectores: [], periodo: null, updated_at: "2026-10-01T15:00:00Z", profile_status: null },
+  {
+    id: "net-1",
+    label: "R-001",
+    n_cases: 3,
+    sectores: [],
+    periodo: null,
+    updated_at: "2026-10-20T15:00:00Z",
+    profile_status: null,
+  },
+  {
+    id: "net-2",
+    label: "R-002",
+    n_cases: 2,
+    sectores: [],
+    periodo: null,
+    updated_at: "2026-10-01T15:00:00Z",
+    profile_status: null,
+  },
 ];
 
 const html = (node: ReactNode) => renderToStaticMarkup(<MemoryRouter>{node}</MemoryRouter>);
-const text = (h: string) => h.replace(/<[^>]+>/g, " ").replace(/&quot;/g, '"').replace(/\s+/g, " ");
+const text = (h: string) =>
+  h
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, " ");
 
 /** El HTML del botón de un distrito en la grilla. */
 function cellButton(markup: string, name: string): string {
@@ -30,7 +61,14 @@ function cellButton(markup: string, name: string): string {
 
 function body(selected: string | null, canNetworks = true) {
   return html(
-    <ZonesBody data={data} cells={cells} selected={selected ? S.districtById(selected) : null} onSelect={() => {}} networks={NETS} canNetworks={canNetworks} />,
+    <ZonesBody
+      data={data}
+      cells={cells}
+      selected={selected ? S.districtById(selected) : null}
+      onSelect={() => {}}
+      networks={NETS}
+      canNetworks={canNetworks}
+    />,
   );
 }
 
@@ -63,7 +101,20 @@ describe("grilla de distritos", () => {
   });
 
   it("aunque la API marque mal una fila, el umbral se vuelve a revisar", () => {
-    const bad: S.ConsoleZones = { ...data, filas: [{ distrito: "lince", casos: 4, victimas: 4, casos_previos: 1, redes: ["R-009"], modalidades: ["x"], sobre_umbral: true }] };
+    const bad: S.ConsoleZones = {
+      ...data,
+      filas: [
+        {
+          distrito: "lince",
+          casos: 4,
+          victimas: 4,
+          casos_previos: 1,
+          redes: ["R-009"],
+          modalidades: ["x"],
+          sobre_umbral: true,
+        },
+      ],
+    };
     expect(buildCells(bad).find((c) => c.district.id === "lince")!.row).toBeNull();
   });
 
@@ -113,7 +164,9 @@ describe("detalle del distrito", () => {
   it("el periodo anterior bajo el umbral no se da en cifra", () => {
     const vic: ZoneCell = { ...cell("villa-el-salvador") };
     expect(vic.row!.casos_previos).toBeLessThan(S.MIN_CASES_FOR_STATS);
-    expect(text(html(<ZoneDetail cell={vic} dias={28} networks={[]} canNetworks={false} />))).toContain("Periodo anterior menos de 5 casos");
+    expect(text(html(<ZoneDetail cell={vic} dias={28} networks={[]} canNetworks={false} />))).toContain(
+      "Periodo anterior menos de 5 casos",
+    );
   });
 });
 
@@ -147,9 +200,16 @@ describe("API de zonas", () => {
     const urls: string[] = [];
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       urls.push(String(input));
-      return new Response(JSON.stringify(mockConsoleZones(14, NOW, [])), { status: 200, headers: { "content-type": "application/json" } });
+      return new Response(JSON.stringify(mockConsoleZones(14, NOW, [])), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
     });
-    const api = new HttpApi("https://api.blindaje.test", new MemoryTokenStore({ accessToken: "t", refreshToken: "r", expiresAt: Date.now() + 600_000 }), fetchImpl);
+    const api = new HttpApi(
+      "https://api.blindaje.test",
+      new MemoryTokenStore({ accessToken: "t", refreshToken: "r", expiresAt: Date.now() + 600_000 }),
+      fetchImpl,
+    );
     const z = await api.zones(14);
     expect(urls).toEqual(["https://api.blindaje.test/v1/console/zones?dias=14"]);
     expect(z.periodo_dias).toBe(14);

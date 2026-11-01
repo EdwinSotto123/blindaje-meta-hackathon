@@ -137,7 +137,9 @@ def main() -> None:
     else:
         hs = hablantes()
         p = particion()
-        print(json.dumps({"hablantes": len(hs), "cohorte": p["cohorte"], "prueba": len(p["prueba"])}, indent=2))
+        print(
+            json.dumps({"hablantes": len(hs), "cohorte": p["cohorte"], "prueba": len(p["prueba"])}, indent=2)
+        )
 
 
 if __name__ == "__main__":

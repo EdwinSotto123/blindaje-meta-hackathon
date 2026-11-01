@@ -52,8 +52,18 @@ async function approveProfile(net: SeededNetwork, analystId: string) {
   )
     .bind(profileId, net.networkId, JSON.stringify(perfil), analystId, nowIso(), nowIso())
     .run();
-  const approved = { id: newId(), num: 9001, texto: `${net.identifier} funciona como cuenta recaudadora`, evidencia: [net.identifier] };
-  const draft = { id: newId(), num: 9002, texto: "Hipótesis en borrador que no debe salir", evidencia: [net.identifier] };
+  const approved = {
+    id: newId(),
+    num: 9001,
+    texto: `${net.identifier} funciona como cuenta recaudadora`,
+    evidencia: [net.identifier],
+  };
+  const draft = {
+    id: newId(),
+    num: 9002,
+    texto: "Hipótesis en borrador que no debe salir",
+    evidencia: [net.identifier],
+  };
   for (const [h, status] of [
     [approved, "aprobada"],
     [draft, "borrador"],
@@ -72,9 +82,22 @@ function expediente(net: SeededNetwork, over: Partial<Expediente> = {}): Expedie
   return {
     red: "R-999",
     resumen: `Red de ${net.cases.length} casos vinculados por voz y una cuenta de cobro compartida (${net.identifier}, VIN-${net.links[0]!.num}).`,
-    cronologia: [{ fecha: "2026-10-08", texto: `Primer contacto del caso ${a!.code}`, evidencia: [`FICHA-${a!.code}`] }],
-    vinculos: [{ vinculo: `VIN-${net.links[0]!.num}`, texto: `Los casos ${a!.code} y ${b!.code} comparten la cuenta ${net.identifier}`, evidencia: [net.identifier, `VIN-${net.links[0]!.num}`] }],
-    hechos: [{ texto: `La cuenta ${net.identifier} aparece en los casos ${a!.code} y ${b!.code}`, evidencia: [net.identifier] }],
+    cronologia: [
+      { fecha: "2026-10-08", texto: `Primer contacto del caso ${a!.code}`, evidencia: [`FICHA-${a!.code}`] },
+    ],
+    vinculos: [
+      {
+        vinculo: `VIN-${net.links[0]!.num}`,
+        texto: `Los casos ${a!.code} y ${b!.code} comparten la cuenta ${net.identifier}`,
+        evidencia: [net.identifier, `VIN-${net.links[0]!.num}`],
+      },
+    ],
+    hechos: [
+      {
+        texto: `La cuenta ${net.identifier} aparece en los casos ${a!.code} y ${b!.code}`,
+        evidencia: [net.identifier],
+      },
+    ],
     hipotesis: [{ texto: "Una hipótesis que nadie aprobó", confianza: "alta", evidencia: [net.identifier] }],
     brechas: ["Faltan los audios originales de un caso"],
     ...over,
@@ -89,7 +112,14 @@ describe("Redactor de expedientes", () => {
     // Entradas de custodia de la evidencia (lo que escribe la subida real).
     for (const c of net.cases) {
       for (const e of c.evidence) {
-        await audit(env, { actor_type: "victim", actor_id: "V-PRB1", action: "evidence.upload", target_type: "evidence", target_id: e.id, details: { label: e.label, sha256: e.sha256 } });
+        await audit(env, {
+          actor_type: "victim",
+          actor_id: "V-PRB1",
+          action: "evidence.upload",
+          target_type: "evidence",
+          target_id: e.id,
+          details: { label: e.label, sha256: e.sha256 },
+        });
       }
     }
     const rendered = fakeMl();
@@ -104,10 +134,13 @@ describe("Redactor de expedientes", () => {
       () => [final(expediente(net))],
     ]);
 
-    const res = await apiJson<{ id: string; status: string; sha256: string; download_url: string }>(`/v1/console/networks/${net.networkId}/expediente`, {
-      token: analyst.token,
-      method: "POST",
-    });
+    const res = await apiJson<{ id: string; status: string; sha256: string; download_url: string }>(
+      `/v1/console/networks/${net.networkId}/expediente`,
+      {
+        token: analyst.token,
+        method: "POST",
+      },
+    );
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(res.body.status).toBe("listo");
     expect(res.body.sha256).toBe(await sha256Hex(FAKE_PDF));
@@ -151,7 +184,9 @@ describe("Redactor de expedientes", () => {
     const seqs = data.custodia.map((x) => x.seq);
     expect([...seqs].sort((p, q) => p - q)).toEqual(seqs);
     // Las filas de custodia son las de la auditoría encadenada.
-    const row = await env.DB.prepare("SELECT hash FROM audit_log WHERE seq = ?").bind(uploads[0]!.seq).first<{ hash: string }>();
+    const row = await env.DB.prepare("SELECT hash FROM audit_log WHERE seq = ?")
+      .bind(uploads[0]!.seq)
+      .first<{ hash: string }>();
     expect(row!.hash).toBe(uploads[0]!.hash);
     expect(JSON.stringify(data)).not.toContain("V-PRB1");
 
@@ -161,26 +196,43 @@ describe("Redactor de expedientes", () => {
     expect(new Uint8Array(await pdf.arrayBuffer())).toEqual(FAKE_PDF);
     const stored = await env.EVIDENCE.get(`expedientes/${res.body.id}.pdf`);
     expect(new Uint8Array(await stored!.arrayBuffer())).not.toEqual(FAKE_PDF);
-    const created = await env.DB.prepare("SELECT details_json FROM audit_log WHERE action = 'expediente.create' AND target_id = ?").bind(res.body.id).first<{ details_json: string }>();
+    const created = await env.DB.prepare(
+      "SELECT details_json FROM audit_log WHERE action = 'expediente.create' AND target_id = ?",
+    )
+      .bind(res.body.id)
+      .first<{ details_json: string }>();
     expect(JSON.parse(created!.details_json)).toMatchObject({ sha256: res.body.sha256, hipotesis_aprobadas: 1 });
 
-    const list = await apiJson<{ expedientes: Array<{ id: string; status: string }> }>(`/v1/console/networks/${net.networkId}/expedientes`, { token: analyst.token });
+    const list = await apiJson<{ expedientes: Array<{ id: string; status: string }> }>(
+      `/v1/console/networks/${net.networkId}/expedientes`,
+      { token: analyst.token },
+    );
     expect(list.status).toBe(200);
     expect(list.body.expedientes.map((e) => e.id)).toEqual([res.body.id]);
     const admin = await loginAs("admin", net.orgId);
     expect((await api(`/v1/console/networks/${net.networkId}/expedientes`, { token: admin.token })).status).toBe(200);
     const reviewer = await loginAs("reviewer", net.orgId);
-    expect((await api(`/v1/console/networks/${net.networkId}/expedientes`, { token: reviewer.token })).status).toBe(403);
+    expect((await api(`/v1/console/networks/${net.networkId}/expedientes`, { token: reviewer.token })).status).toBe(
+      403,
+    );
   });
 
   it("sin el contenedor ML responde 503 claro y el expediente queda en error", async () => {
     const net = await seedNetwork({ n: 2 });
     const analyst = await loginAs("analyst", net.orgId);
-    fakeMeta([() => [call("obtener_red", { red_id: net.label })], () => [final(expediente(net, { cronologia: [], hechos: [], resumen: "Red de dos casos (ficticia)." }))]]);
-    const res = await apiJson<{ error: { code: string; message: string } }>(`/v1/console/networks/${net.networkId}/expediente`, { token: analyst.token, method: "POST" });
+    fakeMeta([
+      () => [call("obtener_red", { red_id: net.label })],
+      () => [final(expediente(net, { cronologia: [], hechos: [], resumen: "Red de dos casos (ficticia)." }))],
+    ]);
+    const res = await apiJson<{ error: { code: string; message: string } }>(
+      `/v1/console/networks/${net.networkId}/expediente`,
+      { token: analyst.token, method: "POST" },
+    );
     expect(res.status).toBe(503);
     expect(res.body.error.code).toBe("upstream_error");
-    const row = await env.DB.prepare("SELECT status, content_json FROM expedientes WHERE network_id = ?").bind(net.networkId).first<{ status: string; content_json: string }>();
+    const row = await env.DB.prepare("SELECT status, content_json FROM expedientes WHERE network_id = ?")
+      .bind(net.networkId)
+      .first<{ status: string; content_json: string }>();
     expect(row!.status).toBe("error");
     expect(row!.content_json).toBeTruthy();
   });
@@ -191,7 +243,9 @@ describe("Redactor de expedientes", () => {
     const rendered = fakeMl();
     const bad = expediente(net, { hechos: [{ texto: "Hecho inventado", evidencia: ["EV-ZZ9"] }] });
     fakeMeta([() => [final(bad)], () => [final(bad)]]);
-    const res = await apiJson<{ error: { code: string; details: { citation_check: { citas_inexistentes: string[] } } } }>(`/v1/console/networks/${net.networkId}/expediente`, {
+    const res = await apiJson<{
+      error: { code: string; details: { citation_check: { citas_inexistentes: string[] } } };
+    }>(`/v1/console/networks/${net.networkId}/expediente`, {
       token: analyst.token,
       method: "POST",
     });

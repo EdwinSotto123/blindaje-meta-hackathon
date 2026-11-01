@@ -63,21 +63,33 @@ victimRoutes.post("/me/voice-sample", rateLimit("upload"), async (c) => {
   if (!bytes.byteLength) throw new ApiError("bad_request", "Falta el audio");
   const ml = getMlClient(c.env);
   const enrolled = await ml.voiceEnroll(bytes);
-  const vectorEnc = await sealString(c.env.EVIDENCE_ENCRYPTION_KEY, JSON.stringify(enrolled.vector), `voice:${auth.sub}`);
+  const vectorEnc = await sealString(
+    c.env.EVIDENCE_ENCRYPTION_KEY,
+    JSON.stringify(enrolled.vector),
+    `voice:${auth.sub}`,
+  );
   await c.env.DB.prepare(
     `INSERT INTO victim_voice_samples (device_id, vector_enc, model, created_at) VALUES (?, ?, ?, ?)
      ON CONFLICT(device_id) DO UPDATE SET vector_enc = excluded.vector_enc, model = excluded.model, created_at = excluded.created_at`,
   )
     .bind(auth.sub, vectorEnc, enrolled.model, nowIso())
     .run();
-  await audit(c.env, { ...actorOf(auth), action: "voice_sample.enroll", target_type: "device", target_id: auth.sub, details: { model: enrolled.model } });
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "voice_sample.enroll",
+    target_type: "device",
+    target_id: auth.sub,
+    details: { model: enrolled.model },
+  });
   return victimJson(c, z.object({ ok: z.literal(true) }), { ok: true });
 });
 
 victimRoutes.post("/cases", async (c) => {
   const auth = getAuth(c);
   const body = await readJson(c, CreateCaseRequest);
-  const device = await c.env.DB.prepare("SELECT is_demo FROM devices WHERE id = ?").bind(auth.sub).first<{ is_demo: number }>();
+  const device = await c.env.DB.prepare("SELECT is_demo FROM devices WHERE id = ?")
+    .bind(auth.sub)
+    .first<{ is_demo: number }>();
   if (!device) throw new ApiError("unauthorized", "Dispositivo no registrado");
 
   // En el demo, el script de los casos A, B y C pide el código con este header.
@@ -100,15 +112,22 @@ victimRoutes.post("/cases", async (c) => {
         c.env.DB.prepare(
           `INSERT INTO cases (id, code, org_id, device_id, seudonimo_victima, sector, zona_cuadricula, consent_mode, is_demo, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
-        ).bind(id, code, auth.org, auth.sub, auth.pse ?? "", body.sector ?? null, zona, body.consent_mode, device.is_demo, now, now),
-        c.env.DB.prepare("INSERT INTO consents (id, case_id, device_id, mode, text_version, granted_at) VALUES (?, ?, ?, ?, ?, ?)").bind(
-          newId(),
+        ).bind(
           id,
+          code,
+          auth.org,
           auth.sub,
+          auth.pse ?? "",
+          body.sector ?? null,
+          zona,
           body.consent_mode,
-          CONSENT_TEXT_VERSION,
+          device.is_demo,
+          now,
           now,
         ),
+        c.env.DB.prepare(
+          "INSERT INTO consents (id, case_id, device_id, mode, text_version, granted_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ).bind(newId(), id, auth.sub, body.consent_mode, CONSENT_TEXT_VERSION, now),
       ]);
       row = (inserted!.results[0] as CaseRow | undefined) ?? null;
     } catch (err) {
@@ -135,7 +154,9 @@ victimRoutes.get("/cases", async (c) => {
   )
     .bind(auth.sub)
     .all<CaseRow & { evidence_count: number }>();
-  return victimJson(c, z.object({ cases: z.array(CaseSummary) }), { cases: results.map((r) => toCaseSummary(r, r.evidence_count)) });
+  return victimJson(c, z.object({ cases: z.array(CaseSummary) }), {
+    cases: results.map((r) => toCaseSummary(r, r.evidence_count)),
+  });
 });
 
 victimRoutes.post("/cases/:id/evidence", rateLimit("upload"), async (c) => {
@@ -148,21 +169,35 @@ victimRoutes.post("/cases/:id/evidence", rateLimit("upload"), async (c) => {
     "x-source": c.req.header("x-source") || undefined,
     "x-duration-ms": c.req.header("x-duration-ms") || undefined,
   });
-  if (!headers.success) throw new ApiError("bad_request", "Faltan o son inválidos los headers de la evidencia", { details: zodDetails(headers.error) });
+  if (!headers.success)
+    throw new ApiError("bad_request", "Faltan o son inválidos los headers de la evidencia", {
+      details: zodDetails(headers.error),
+    });
   const h = headers.data;
   const capturedAt = h["x-captured-at"];
-  if (capturedAt && Number.isNaN(Date.parse(capturedAt))) throw new ApiError("bad_request", "x-captured-at debe ser ISO 8601");
-  const mime = (c.req.header("content-type") ?? "application/octet-stream").split(";")[0]!.trim().toLowerCase().slice(0, 100);
+  if (capturedAt && Number.isNaN(Date.parse(capturedAt)))
+    throw new ApiError("bad_request", "x-captured-at debe ser ISO 8601");
+  const mime = (c.req.header("content-type") ?? "application/octet-stream")
+    .split(";")[0]!
+    .trim()
+    .toLowerCase()
+    .slice(0, 100);
   const bytes = await readBodyLimited(c, MAX_EVIDENCE_BYTES);
   if (cs.estado === "procesando" || cs.estado === "listo") {
     // Caso ya enviado: un reintento de la misma subida sigue siendo idempotente (200); evidencia
     // nueva va a un caso nuevo (la app abre uno y reintenta).
     const sha = await sha256Hex(bytes);
-    const dup = await c.env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? AND sha256 = ?").bind(cs.id, sha).first<EvidenceRow>();
+    const dup = await c.env.DB.prepare("SELECT * FROM evidence WHERE case_id = ? AND sha256 = ?")
+      .bind(cs.id, sha)
+      .first<EvidenceRow>();
     if (dup && sha === h["x-content-sha256"]) return victimJson(c, EvidenceItem, toEvidenceItem(dup), 200);
-    throw new ApiError("conflict", "Este caso ya fue enviado y no admite más evidencia. Abre un caso nuevo para agregarla.", {
-      details: { case_status: cs.estado },
-    });
+    throw new ApiError(
+      "conflict",
+      "Este caso ya fue enviado y no admite más evidencia. Abre un caso nuevo para agregarla.",
+      {
+        details: { case_status: cs.estado },
+      },
+    );
   }
   const { item, created } = await storeEvidence(c.env, {
     caseId: cs.id,
@@ -203,11 +238,16 @@ victimRoutes.post("/cases/:id/submit", rateLimit("submit"), async (c) => {
       source: "relato",
     });
   }
-  const n = await c.env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?").bind(cs.id).first<{ n: number }>();
+  const n = await c.env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?")
+    .bind(cs.id)
+    .first<{ n: number }>();
   if (!n?.n) throw new ApiError("bad_request", "Agrega al menos una evidencia o cuéntanos qué pasó");
 
   const instanceId = `${cs.id}-${Date.now()}`;
-  await c.env.PROCESAR_CASO.create({ id: instanceId, params: { case_id: cs.id, requested_by: auth.pse ?? cs.seudonimo_victima } });
+  await c.env.PROCESAR_CASO.create({
+    id: instanceId,
+    params: { case_id: cs.id, requested_by: auth.pse ?? cs.seudonimo_victima },
+  });
   const now = nowIso();
   await c.env.DB.prepare(
     "UPDATE cases SET estado = 'procesando', workflow_id = ?, submitted_at = ?, updated_at = ?, error = NULL WHERE id = ?",
@@ -294,10 +334,16 @@ const ZonaQuery = z
  * celular) o, si no lo manda, el de SU caso más reciente con distrito (o la zona tal cual de un caso
  * antiguo, como clave de zoneKey). Sin ninguno, null: no hay avisos de zona. Nada de otros casos.
  */
-async function victimZone(env: AppEnv["Bindings"], deviceId: string, zona: string | undefined): Promise<{ zona: string | null; isDemo: boolean }> {
+async function victimZone(
+  env: AppEnv["Bindings"],
+  deviceId: string,
+  zona: string | undefined,
+): Promise<{ zona: string | null; isDemo: boolean }> {
   const [device, cases] = await env.DB.batch([
     env.DB.prepare("SELECT is_demo FROM devices WHERE id = ?").bind(deviceId),
-    env.DB.prepare("SELECT zona_cuadricula, ficha_json FROM cases WHERE device_id = ? ORDER BY created_at DESC").bind(deviceId),
+    env.DB.prepare("SELECT zona_cuadricula, ficha_json FROM cases WHERE device_id = ? ORDER BY created_at DESC").bind(
+      deviceId,
+    ),
   ]);
   const isDemo = (device!.results[0] as { is_demo: number } | undefined)?.is_demo === 1;
   if (zona) return { zona, isDemo };
@@ -320,7 +366,15 @@ victimRoutes.get("/alerts", async (c) => {
     ? (await approvedAlerts(c.env, { isDemo }))
         .filter((a) => a.key === zona)
         .slice(0, 50)
-        .map((a) => ({ id: a.id, titulo: a.titulo, cuerpo: a.cuerpo, zona: a.zona, distrito: a.distrito, que_hacer: a.que_hacer, approved_at: a.approved_at }))
+        .map((a) => ({
+          id: a.id,
+          titulo: a.titulo,
+          cuerpo: a.cuerpo,
+          zona: a.zona,
+          distrito: a.distrito,
+          que_hacer: a.que_hacer,
+          approved_at: a.approved_at,
+        }))
     : [];
   return victimJson(c, z.object({ alerts: z.array(VictimAlert) }), { alerts });
 });
@@ -334,6 +388,8 @@ victimRoutes.get("/recommendations", async (c) => {
   const auth = getAuth(c);
   const q = parseQuery(c, z.object({ zona: ZonaQuery.optional(), sector: Sector.optional() }));
   const { zona, isDemo } = await victimZone(c.env, auth.sub, q.zona);
-  const recommendations = zona ? await approvedRecommendations(c.env, { isDemo, zonas: [zona], sector: q.sector ?? null }) : [];
+  const recommendations = zona
+    ? await approvedRecommendations(c.env, { isDemo, zonas: [zona], sector: q.sector ?? null })
+    : [];
   return victimJson(c, z.object({ recommendations: z.array(BusinessRecommendationView) }), { recommendations });
 });

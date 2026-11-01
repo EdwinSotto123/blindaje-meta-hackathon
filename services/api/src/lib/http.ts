@@ -62,7 +62,12 @@ export function findForbiddenKeys(value: unknown, path = "$"): string[] {
  * Única salida JSON para el rol victim: valida con el esquema del contrato (que descarta claves
  * desconocidas) y falla cerrado si quedara alguna clave de VICTIM_FORBIDDEN_KEYS.
  */
-export function victimJson<S extends z.ZodType>(c: AppContext, schema: S, data: unknown, status: 200 | 201 | 202 = 200) {
+export function victimJson<S extends z.ZodType>(
+  c: AppContext,
+  schema: S,
+  data: unknown,
+  status: 200 | 201 | 202 = 200,
+) {
   const parsed = schema.parse(data);
   const bad = findForbiddenKeys(parsed);
   if (bad.length) {

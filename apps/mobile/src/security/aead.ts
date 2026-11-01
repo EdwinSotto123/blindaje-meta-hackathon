@@ -11,7 +11,12 @@ import { randomBytes } from "@/security/random";
 const VERSION = 1;
 const IV_LEN = 12;
 
-export function seal(key: Uint8Array, plaintext: Uint8Array, aad?: Uint8Array, iv: Uint8Array = randomBytes(IV_LEN)): Uint8Array {
+export function seal(
+  key: Uint8Array,
+  plaintext: Uint8Array,
+  aad?: Uint8Array,
+  iv: Uint8Array = randomBytes(IV_LEN),
+): Uint8Array {
   if (key.length !== 32) throw new Error("La llave debe tener 32 bytes");
   if (iv.length !== IV_LEN) throw new Error("IV inválido");
   const ct = gcm(key, iv, aad).encrypt(plaintext);

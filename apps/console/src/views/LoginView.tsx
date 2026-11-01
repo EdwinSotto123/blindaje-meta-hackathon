@@ -9,9 +9,21 @@ import { DEMO_PASSWORD, demoUser } from "../mock/fixtures";
 
 /** Las tres cuentas ficticias del equipo central, tomadas por rol (no por posición). */
 export const DEMO_ROLES: { email: string; label: string; desc: string }[] = [
-  { email: demoUser("reviewer").email, label: "revisora del equipo", desc: "Confirma vínculos y aprueba alertas y consejos de cualquier distrito" },
-  { email: demoUser("analyst").email, label: "analista del equipo", desc: "Redes, zonas, Cartógrafo, Vigía, Asesor, expedientes, auditoría y costos" },
-  { email: demoUser("admin").email, label: "administración", desc: "Todo lo de la consola, más monitoreo, equipo, filtraciones y motor vectorial" },
+  {
+    email: demoUser("reviewer").email,
+    label: "revisora del equipo",
+    desc: "Confirma vínculos y aprueba alertas y consejos de cualquier distrito",
+  },
+  {
+    email: demoUser("analyst").email,
+    label: "analista del equipo",
+    desc: "Redes, zonas, Cartógrafo, Vigía, Asesor, expedientes, auditoría y costos",
+  },
+  {
+    email: demoUser("admin").email,
+    label: "administración",
+    desc: "Todo lo de la consola, más monitoreo, equipo, filtraciones y motor vectorial",
+  },
 ];
 
 /** Validación mínima en el cliente: algo@algo.algo, sin espacios. La API decide el resto. */
@@ -149,7 +161,13 @@ export function LoginView() {
       </div>
       {/* La única foto de la consola: una calle de Lima, con su crédito a la vista. */}
       <figure className="login-photo">
-        <img src="/fotos/cerro.jpg" alt="Una avenida de Lima con un cerro poblado al fondo" width={1600} height={1200} decoding="async" />
+        <img
+          src="/fotos/cerro.jpg"
+          alt="Una avenida de Lima con un cerro poblado al fondo"
+          width={1600}
+          height={1200}
+          decoding="async"
+        />
         <figcaption>Foto: moctezuma nacario, CC BY 3.0</figcaption>
       </figure>
     </main>

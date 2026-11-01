@@ -29,14 +29,18 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
 
     const realCase = await createCase(real.access_token, "comunitario");
     const infCase = await createCase(infiltrado.access_token, "comunitario");
-    expect((await upload(real.access_token, realCase.id, new TextEncoder().encode("audio real ficticio"))).status).toBe(201);
+    expect((await upload(real.access_token, realCase.id, new TextEncoder().encode("audio real ficticio"))).status).toBe(
+      201,
+    );
 
     // El motor encontró un vínculo entre el caso del infiltrado y el caso real, y alguien lo confirmó.
     await markIndexed(realCase.id);
     await markIndexed(infCase.id);
     const link = await insertLink(realCase.id, infCase.id, "confirmado", 0.97);
     await recomputeNetworks(env);
-    const net = await env.DB.prepare("SELECT network_id FROM network_cases WHERE case_id = ?").bind(infCase.id).first<{ network_id: string }>();
+    const net = await env.DB.prepare("SELECT network_id FROM network_cases WHERE case_id = ?")
+      .bind(infCase.id)
+      .first<{ network_id: string }>();
     expect(net).toBeTruthy();
     // Y una alerta aprobada por el equipo central para su distrito, con citas internas.
     await env.DB.prepare(
@@ -69,12 +73,21 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
     responses.push({ route: "register", status: 201, body: infiltrado.raw, text: JSON.stringify(infiltrado.raw) });
     await record("GET /cases", await api("/v1/cases", { token: tok }));
     await record("POST /cases", await api("/v1/cases", { token: tok, json: { consent_mode: "comunitario" } }));
-    await record("POST evidence", await upload(tok, infCase.id, new TextEncoder().encode("evidencia de prueba del infiltrado")));
+    await record(
+      "POST evidence",
+      await upload(tok, infCase.id, new TextEncoder().encode("evidencia de prueba del infiltrado")),
+    );
     await record("GET report", await api(`/v1/cases/${infCase.id}/report`, { token: tok }));
-    await record("PUT consent", await api(`/v1/cases/${infCase.id}/consent`, { method: "PUT", token: tok, json: { mode: "comunitario" } }));
+    await record(
+      "PUT consent",
+      await api(`/v1/cases/${infCase.id}/consent`, { method: "PUT", token: tok, json: { mode: "comunitario" } }),
+    );
     await record("GET alerts", await api("/v1/alerts", { token: tok }));
     await record("GET alerts?zona", await api("/v1/alerts?zona=san-juan-de-lurigancho", { token: tok }));
-    await record("GET recommendations", await api("/v1/recommendations?zona=san-juan-de-lurigancho&sector=bodega", { token: tok }));
+    await record(
+      "GET recommendations",
+      await api("/v1/recommendations?zona=san-juan-de-lurigancho&sector=bodega", { token: tok }),
+    );
     const ts = Date.now();
     await record(
       "refresh",
@@ -88,7 +101,10 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
       }),
     );
     await using wf = await introspectWorkflow(env.PROCESAR_CASO);
-    await record("POST submit", await api(`/v1/cases/${infCase.id}/submit`, { token: tok, json: { narrative: "Me llamaron (ficticio)." } }));
+    await record(
+      "POST submit",
+      await api(`/v1/cases/${infCase.id}/submit`, { token: tok, json: { narrative: "Me llamaron (ficticio)." } }),
+    );
     for (const inst of await wf.get()) await inst.waitForStatus("complete");
     await record("GET report (listo)", await api(`/v1/cases/${infCase.id}/report`, { token: tok }));
 
@@ -103,7 +119,15 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
     }
     const alerts = responses.find((r) => r.route === "GET alerts")!.body as { alerts: Array<Record<string, unknown>> };
     expect(alerts.alerts).toHaveLength(1);
-    expect(Object.keys(alerts.alerts[0]!).sort()).toEqual(["approved_at", "cuerpo", "distrito", "id", "que_hacer", "titulo", "zona"]);
+    expect(Object.keys(alerts.alerts[0]!).sort()).toEqual([
+      "approved_at",
+      "cuerpo",
+      "distrito",
+      "id",
+      "que_hacer",
+      "titulo",
+      "zona",
+    ]);
     expect(alerts.alerts[0]).toMatchObject({ zona: "San Juan de Lurigancho", distrito: "san-juan-de-lurigancho" });
     expect(JSON.stringify(alerts)).not.toMatch(/FICHA-|VIN-|org_id|"evidencia"/);
 
@@ -146,17 +170,18 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
     const b = await seedOrg();
     const d = await registerDevice(a.invite);
     await createCase(d.access_token, "solo_denuncia", { zona: "Comas" });
-    const draft = (zona: string, titulo: string) => JSON.stringify({ titulo, cuerpo: "c", zona, modalidad: "m", que_hacer: [], evidencia: ["FICHA-A"] });
-    const ins = (org: string, zona: string, titulo: string, status: "aprobada" | "borrador", patternKey: string | null = null) =>
-      env.DB.prepare("INSERT INTO alerts (id, org_id, pattern_key, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(
-        newId(),
-        org,
-        patternKey,
-        draft(zona, titulo),
-        status,
-        status === "aprobada" ? nowIso() : null,
-        nowIso(),
-      );
+    const draft = (zona: string, titulo: string) =>
+      JSON.stringify({ titulo, cuerpo: "c", zona, modalidad: "m", que_hacer: [], evidencia: ["FICHA-A"] });
+    const ins = (
+      org: string,
+      zona: string,
+      titulo: string,
+      status: "aprobada" | "borrador",
+      patternKey: string | null = null,
+    ) =>
+      env.DB.prepare(
+        "INSERT INTO alerts (id, org_id, pattern_key, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      ).bind(newId(), org, patternKey, draft(zona, titulo), status, status === "aprobada" ? nowIso() : null, nowIso());
     await env.DB.batch([
       ins(CENTRAL_ORG_ID, "Comas", "comas aprobada", "aprobada"),
       ins(CENTRAL_ORG_ID, "Comas", "comas borrador", "borrador"),
@@ -167,7 +192,9 @@ describe("aislamiento de la víctima (sección 5 y 12.3)", () => {
       ins(b.orgId, "Comas", "comas de otra organización", "aprobada"),
     ]);
     const titulos = async (token: string, q = "") =>
-      ((await (await api(`/v1/alerts${q}`, { token })).json()) as { alerts: Array<{ titulo: string }> }).alerts.map((x) => x.titulo);
+      ((await (await api(`/v1/alerts${q}`, { token })).json()) as { alerts: Array<{ titulo: string }> }).alerts.map(
+        (x) => x.titulo,
+      );
     // Sin ?zona=: el distrito de su caso más reciente.
     expect(await titulos(d.access_token)).toEqual(["comas aprobada"]);
     // Con ?zona=: el distrito que eligió en el celular (id o nombre).

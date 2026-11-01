@@ -159,7 +159,10 @@ function fromGeneric(m: unknown): EvalMetric[] {
       meets: o && typeof o.passed === "boolean" ? o.passed : null,
       pending: value === null,
       note: o ? str(o.note) : null,
-      label: { es: o ? (str(o.label_es) ?? str(o.label) ?? undefined) : undefined, en: o ? (str(o.label_en) ?? undefined) : undefined },
+      label: {
+        es: o ? (str(o.label_es) ?? str(o.label) ?? undefined) : undefined,
+        en: o ? (str(o.label_en) ?? undefined) : undefined,
+      },
       target: null,
     });
   };

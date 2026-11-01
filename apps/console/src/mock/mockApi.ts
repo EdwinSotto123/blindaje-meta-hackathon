@@ -105,19 +105,37 @@ function seedCosts(now: Date): CostEntry[] {
   const t0 = now.getTime();
   // "2026-10-26T20:00:00Z" → mismo desfase respecto de 2026-10-28T15:00Z, trasladado a "ahora".
   const rel = (iso: string) => new Date(t0 - (Date.parse("2026-10-28T15:00:00Z") - Date.parse(iso))).toISOString();
-  const batch = (ts: string, model: string, operation: string, calls: number, cost: number, units: Record<string, number>) =>
-    out.push({ ts: rel(ts), model, operation, calls, cost_usd: cost, status: "ok", units });
+  const batch = (
+    ts: string,
+    model: string,
+    operation: string,
+    calls: number,
+    cost: number,
+    units: Record<string, number>,
+  ) => out.push({ ts: rel(ts), model, operation, calls, cost_usd: cost, status: "ok", units });
   batch("2026-10-26T20:00:00Z", "muse-spark-1.3", "ficha", 28, 1.31, { input_tokens: 812_000, output_tokens: 84_000 });
   batch("2026-10-26T21:00:00Z", "muse-voice-transcribe-1.0", "transcribe", 22, 0.07, { audio_seconds: 1_420 });
   batch("2026-10-26T22:00:00Z", "sam-3.1", "sam_image", 36, 0.09, { images: 36 });
-  batch("2026-10-27T15:00:00Z", "muse-spark-1.3", "ficha", 54, 2.62, { input_tokens: 1_610_000, output_tokens: 142_000 });
-  batch("2026-10-27T16:00:00Z", "muse-spark-1.3", "vinculador", 24, 1.58, { input_tokens: 1_020_000, output_tokens: 72_000 });
+  batch("2026-10-27T15:00:00Z", "muse-spark-1.3", "ficha", 54, 2.62, {
+    input_tokens: 1_610_000,
+    output_tokens: 142_000,
+  });
+  batch("2026-10-27T16:00:00Z", "muse-spark-1.3", "vinculador", 24, 1.58, {
+    input_tokens: 1_020_000,
+    output_tokens: 72_000,
+  });
   batch("2026-10-27T17:00:00Z", "muse-voice-transcribe-1.0", "transcribe", 41, 0.19, { audio_seconds: 3_810 });
   batch("2026-10-27T18:00:00Z", "sam-3.1", "sam_image", 72, 0.18, { images: 72 });
   batch("2026-10-27T19:00:00Z", "sam-3.1", "sam_video", 3, 0.03, { frames: 150 });
-  batch("2026-10-27T20:00:00Z", "muse-wonder-1.0", "cartografo", 2, 2.08, { input_tokens: 402_000, output_tokens: 23_500 });
+  batch("2026-10-27T20:00:00Z", "muse-wonder-1.0", "cartografo", 2, 2.08, {
+    input_tokens: 402_000,
+    output_tokens: 23_500,
+  });
   batch("2026-10-27T21:00:00Z", "muse-image-1.0", "image", 4, 0.04, { images: 4 });
-  batch("2026-10-27T22:00:00Z", "muse-spark-1.2", "transcribe_audio", 6, 0.29, { input_tokens: 196_000, output_tokens: 10_000 });
+  batch("2026-10-27T22:00:00Z", "muse-spark-1.2", "transcribe_audio", 6, 0.29, {
+    input_tokens: 196_000,
+    output_tokens: 10_000,
+  });
   batch("2026-10-28T13:00:00Z", "muse-spark-1.3", "ficha", 22, 1.07, { input_tokens: 662_000, output_tokens: 57_000 });
   batch("2026-10-28T13:30:00Z", "muse-voice-transcribe-1.0", "transcribe", 18, 0.08, { audio_seconds: 1_550 });
   const recent: [string, string, string, number, Record<string, number>, string?][] = [
@@ -216,11 +234,23 @@ export class MockApi implements BlindajeApi {
       seq: 10,
     };
     const log = (d: AuditDraft) => appendEntry(state.audit, d);
-    const sys = (ts: string, action: string, target_type: string | null, target_id: string | null, details: Record<string, unknown> | null = null) =>
-      log({ ts, actor_type: "system", actor_id: "system", action, target_type, target_id, details });
+    const sys = (
+      ts: string,
+      action: string,
+      target_type: string | null,
+      target_id: string | null,
+      details: Record<string, unknown> | null = null,
+    ) => log({ ts, actor_type: "system", actor_id: "system", action, target_type, target_id, details });
 
     // Historia de custodia de los casos, en orden cronológico.
-    const pseudo: Record<string, string> = { A: "V-7F3K", B: "V-Q2M8", C: "V-H5T1", D: "V-N4D2", E: "V-R8W6", F: "V-K3P9" };
+    const pseudo: Record<string, string> = {
+      A: "V-7F3K",
+      B: "V-Q2M8",
+      C: "V-H5T1",
+      D: "V-N4D2",
+      E: "V-R8W6",
+      F: "V-K3P9",
+    };
     const events: { ts: string; fn: () => Promise<AuditEntry> }[] = [];
     for (const c of Object.values(CASES)) {
       for (const ev of c.evidencia) {
@@ -240,18 +270,43 @@ export class MockApi implements BlindajeApi {
       }
     }
     for (const l of links) {
-      events.push({ ts: l.created_at, fn: () => sys(l.created_at, "link.propose", "link", l.label, { score: l.score }) });
+      events.push({
+        ts: l.created_at,
+        fn: () => sys(l.created_at, "link.propose", "link", l.label, { score: l.score }),
+      });
     }
     events.push({
       ts: "2026-10-01T15:30:00Z",
       fn: () =>
-        log({ ts: "2026-10-01T15:30:00Z", actor_type: "analyst", actor_id: "usr-analista", action: "link.decision", target_type: "link", target_id: "VIN-4", details: null }),
+        log({
+          ts: "2026-10-01T15:30:00Z",
+          actor_type: "analyst",
+          actor_id: "usr-analista",
+          action: "link.decision",
+          target_type: "link",
+          target_id: "VIN-4",
+          details: null,
+        }),
     });
-    events.push({ ts: "2026-10-02T16:00:00Z", fn: () => sys("2026-10-02T16:00:00Z", "cartografo.invalid_citations", "network", "R-002", { citas_inexistentes: ["EV-D9"] }) });
+    events.push({
+      ts: "2026-10-02T16:00:00Z",
+      fn: () =>
+        sys("2026-10-02T16:00:00Z", "cartografo.invalid_citations", "network", "R-002", {
+          citas_inexistentes: ["EV-D9"],
+        }),
+    });
     events.push({
       ts: "2026-10-02T18:30:00Z",
       fn: () =>
-        log({ ts: "2026-10-02T18:30:00Z", actor_type: "reviewer", actor_id: "usr-revisora", action: "alert.decision", target_type: "alert", target_id: "alert-0", details: { zona: "Comas" } }),
+        log({
+          ts: "2026-10-02T18:30:00Z",
+          actor_type: "reviewer",
+          actor_id: "usr-revisora",
+          action: "alert.decision",
+          target_type: "alert",
+          target_id: "alert-0",
+          details: { zona: "Comas" },
+        }),
     });
     events.sort((a, b) => a.ts.localeCompare(b.ts));
     for (const e of events) await e.fn();
@@ -262,8 +317,19 @@ export class MockApi implements BlindajeApi {
         l.status = "confirmado";
         l.reviewed_by = "Analista Demo";
         l.reviewed_at = "2026-10-20T15:00:00Z";
-        l.review_note = id === "link-1" ? "La voz coincide en los dos audios del caso B." : "Misma cuenta de cobro en los dos mensajes.";
-        await log({ ts: "2026-10-20T15:00:00Z", actor_type: "analyst", actor_id: "usr-analista", action: "link.decision", target_type: "link", target_id: l.label, details: null });
+        l.review_note =
+          id === "link-1"
+            ? "La voz coincide en los dos audios del caso B."
+            : "Misma cuenta de cobro en los dos mensajes.";
+        await log({
+          ts: "2026-10-20T15:00:00Z",
+          actor_type: "analyst",
+          actor_id: "usr-analista",
+          action: "link.decision",
+          target_type: "link",
+          target_id: l.label,
+          details: null,
+        });
       }
       state.profiles.unshift(profileForR001("prof-r001-1", "muse-spark-1.3", "2026-10-20T15:20:00Z", 3));
       await sys("2026-10-20T15:20:00Z", "agent.cartografo.run", "network", "R-001", { model: "muse-spark-1.3" });
@@ -298,7 +364,12 @@ export class MockApi implements BlindajeApi {
     return u;
   }
 
-  private async audit(action: string, target_type: string | null, target_id: string | null, details: Record<string, unknown> | null = null): Promise<void> {
+  private async audit(
+    action: string,
+    target_type: string | null,
+    target_id: string | null,
+    details: Record<string, unknown> | null = null,
+  ): Promise<void> {
     const u = this.user;
     await appendEntry(this.state!.audit, {
       ts: this.nowIso(),
@@ -461,7 +532,11 @@ export class MockApi implements BlindajeApi {
     this.save();
     const blob =
       ev.tipo === "audio"
-        ? synthVoiceWav(Object.values(FRAGMENTS).find((f) => f.evidence_id === ev.id)?.voice_label ?? "V-0", Math.max(1000, end - start), ev.label.length + start)
+        ? synthVoiceWav(
+            Object.values(FRAGMENTS).find((f) => f.evidence_id === ev.id)?.voice_label ?? "V-0",
+            Math.max(1000, end - start),
+            ev.label.length + start,
+          )
         : synthImageSvg(`${ev.label}: imagen redactada`, "Ilustración ficticia: rostros y datos tapados");
     if (!kind) return { blob, marca: "no_aplicada", motivo: "tipo_no_soportado" };
     const marked = await withMockMark(blob, { u: u.id, k: kind, e: ev.label, c: owner.id, t: this.nowIso() });
@@ -522,7 +597,11 @@ export class MockApi implements BlindajeApi {
     const dates = g.timeline.map((t) => t.fecha.slice(0, 10)).sort();
     const sectores = [...new Set(n.cases.map((c) => CASES[c]?.sector).filter((x): x is string => !!x))];
     const profile = s.profiles.find((p) => p.network_id === n.id);
-    const updated = n.links.map((l) => l.reviewed_at ?? l.created_at).sort().pop() ?? this.nowIso();
+    const updated =
+      n.links
+        .map((l) => l.reviewed_at ?? l.created_at)
+        .sort()
+        .pop() ?? this.nowIso();
     return {
       id: n.id,
       label: n.label,
@@ -555,7 +634,13 @@ export class MockApi implements BlindajeApi {
       nodes: g.nodes,
       edges: g.edges,
       timeline: g.timeline,
-      links: n.links.map((l) => ({ id: l.id, label: l.label, case_a: l.case_a.code, case_b: l.case_b.code, score: l.score })),
+      links: n.links.map((l) => ({
+        id: l.id,
+        label: l.label,
+        case_a: l.case_a.code,
+        case_b: l.case_b.code,
+        score: l.score,
+      })),
     };
   }
 
@@ -573,7 +658,11 @@ export class MockApi implements BlindajeApi {
     if (model === "muse-wonder-1.0" && costs.nonessential_blocked) {
       this.addCost(model, "cartografo", 0, { input_tokens: 0, output_tokens: 0 }, "blocked");
       this.save();
-      throw new ApiRequestError(402, "budget_exceeded", "Muse Wonder está bloqueado: el gasto superó el 80% del presupuesto.");
+      throw new ApiRequestError(
+        402,
+        "budget_exceeded",
+        "Muse Wonder está bloqueado: el gasto superó el 80% del presupuesto.",
+      );
     }
     const n = this.networks().find((x) => x.id === networkId);
     if (!n) notFound("la red");
@@ -593,17 +682,35 @@ export class MockApi implements BlindajeApi {
         perfil: {
           ...base.perfil,
           hechos: base.perfil.hechos.filter((h) => h.evidencia.length > 0),
-          hipotesis: [{ texto: "La moto de ID-a4419b hace el seguimiento físico.", confianza: "media", evidencia: ["ID-a4419b", "EV-D2", "EV-E1"] }],
+          hipotesis: [
+            {
+              texto: "La moto de ID-a4419b hace el seguimiento físico.",
+              confianza: "media",
+              evidencia: ["ID-a4419b", "EV-D2", "EV-E1"],
+            },
+          ],
         },
         hypotheses: [
-          { id: `${id}-h1`, texto: "La moto de ID-a4419b hace el seguimiento físico.", confianza: "media", evidencia: ["ID-a4419b", "EV-D2", "EV-E1"], status: "borrador", reviewed_by: null },
+          {
+            id: `${id}-h1`,
+            texto: "La moto de ID-a4419b hace el seguimiento físico.",
+            confianza: "media",
+            evidencia: ["ID-a4419b", "EV-D2", "EV-E1"],
+            status: "borrador",
+            reviewed_by: null,
+          },
         ],
         citation_check: { ok: true, sin_cita: [], citas_inexistentes: [] },
       };
     }
     s.profiles.unshift(profile);
     const wonder = model === "muse-wonder-1.0";
-    this.addCost(model, "cartografo", wonder ? 1.04 : 0.31, wonder ? { input_tokens: 201_000, output_tokens: 11_800 } : { input_tokens: 198_000, output_tokens: 14_600 });
+    this.addCost(
+      model,
+      "cartografo",
+      wonder ? 1.04 : 0.31,
+      wonder ? { input_tokens: 201_000, output_tokens: 11_800 } : { input_tokens: 198_000, output_tokens: 14_600 },
+    );
     await this.audit("agent.cartografo.run", "network", n.label, { model, citation_ok: profile.citation_check.ok });
     this.save();
     return structuredClone(profile);
@@ -616,7 +723,12 @@ export class MockApi implements BlindajeApi {
     for (const p of s.profiles) {
       const h = p.hypotheses.find((x) => x.id === id);
       if (!h) continue;
-      if (p.status === "invalido") throw new ApiRequestError(409, "conflict", "El perfil no pasó el validador de citas: no se pueden aprobar sus hipótesis.");
+      if (p.status === "invalido")
+        throw new ApiRequestError(
+          409,
+          "conflict",
+          "El perfil no pasó el validador de citas: no se pueden aprobar sus hipótesis.",
+        );
       h.status = decision === "aprobar" ? "aprobada" : "descartada";
       h.reviewed_by = u.display_name;
       if (p.hypotheses.every((x) => x.status !== "borrador")) {
@@ -785,7 +897,10 @@ export class MockApi implements BlindajeApi {
   private async costsNow(): Promise<CostsResponse> {
     const s = await this.init();
     const total = s.costs.reduce((acc, c) => acc + c.cost_usd, 0);
-    const byModel = new Map<string, { model: string; calls: number; cost_usd: number; units: Record<string, number> }>();
+    const byModel = new Map<
+      string,
+      { model: string; calls: number; cost_usd: number; units: Record<string, number> }
+    >();
     const byDay = new Map<string, number>();
     for (const c of s.costs) {
       const m = byModel.get(c.model) ?? { model: c.model, calls: 0, cost_usd: 0, units: {} };
@@ -832,8 +947,17 @@ export class MockApi implements BlindajeApi {
     const s = await this.init();
     this.requireRole("admin");
     await this.wait();
-    if (req.name.trim().length < 2) throw new ApiRequestError(400, "bad_request", "El nombre debe tener al menos 2 letras.");
-    const org: OrgView = { id: this.nextId("org"), name: req.name.trim(), kind: req.kind, district: req.district?.trim() || null, created_at: this.nowIso(), devices: 0, users: 0 };
+    if (req.name.trim().length < 2)
+      throw new ApiRequestError(400, "bad_request", "El nombre debe tener al menos 2 letras.");
+    const org: OrgView = {
+      id: this.nextId("org"),
+      name: req.name.trim(),
+      kind: req.kind,
+      district: req.district?.trim() || null,
+      created_at: this.nowIso(),
+      devices: 0,
+      users: 0,
+    };
     s.orgs.push(org);
     await this.audit("org.create", "org", org.id);
     this.save();
@@ -872,7 +996,8 @@ export class MockApi implements BlindajeApi {
     if (s.users.some((u) => u.email.toLowerCase() === req.email.toLowerCase())) {
       throw new ApiRequestError(409, "conflict", "Ya existe un usuario con ese correo.");
     }
-    if (req.password.length < MIN_PASSWORD) throw new ApiRequestError(400, "bad_request", `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`);
+    if (req.password.length < MIN_PASSWORD)
+      throw new ApiRequestError(400, "bad_request", `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`);
     const org = s.orgs.find((o) => o.id === req.org_id);
     if (!org) throw new ApiRequestError(400, "bad_request", "La organización no existe.");
     const user: UserView = {

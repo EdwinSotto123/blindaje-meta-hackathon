@@ -17,8 +17,8 @@ export function RecommendationsView() {
       <PageHead title="Consejos para tu zona">
         <p>
           Qué hacer para prevenir en {distrito ? distrito.name : "tu distrito"}
-          {rubro ? `, para ${sectorLabel(rubro)}` : ""}. Los escribe un asistente de Blindaje con datos agregados, y el equipo de Blindaje los revisa y
-          aprueba antes de publicarlos aquí.
+          {rubro ? `, para ${sectorLabel(rubro)}` : ""}. Los escribe un asistente de Blindaje con datos agregados, y el
+          equipo de Blindaje los revisa y aprueba antes de publicarlos aquí.
         </p>
       </PageHead>
       {distrito ? <Recommendations distrito={distrito} rubro={rubro} /> : <ChooseZone what="consejos" rubro={rubro} />}
@@ -28,7 +28,10 @@ export function RecommendationsView() {
 
 function Recommendations({ distrito, rubro }: { distrito: District; rubro: Rubro | null }) {
   const api = useApi();
-  const recs = useAsync(() => api.recommendations({ zona: distrito.id, sector: rubro }), `recs:${distrito.id}:${rubro ?? ""}`);
+  const recs = useAsync(
+    () => api.recommendations({ zona: distrito.id, sector: rubro }),
+    `recs:${distrito.id}:${rubro ?? ""}`,
+  );
   const [latest, ...older] = recs.data ?? [];
   const search = choiceSearch({ distrito: distrito.id, rubro });
 
@@ -37,13 +40,18 @@ function Recommendations({ distrito, rubro }: { distrito: District; rubro: Rubro
       {recs.error ? <ErrorBox error={recs.error} onRetry={recs.reload} /> : null}
       {recs.loading && !recs.data ? <Loading label="Cargando los consejos…" /> : null}
       {recs.data && !latest ? (
-        <Empty title={`Todavía no hay consejos aprobados para ${distrito.name}${rubro ? ` y ${sectorLabel(rubro)}` : ""}`}>
+        <Empty
+          title={`Todavía no hay consejos aprobados para ${distrito.name}${rubro ? ` y ${sectorLabel(rubro)}` : ""}`}
+        >
           Cuando el equipo de Blindaje apruebe uno, lo verás aquí. Mientras tanto, revisa{" "}
           <Link to={{ pathname: "/si-te-pasa", search }}>qué hacer si te pasa</Link>
           {rubro ? (
             <>
               {" "}
-              o <Link to={{ pathname: "/recomendaciones", search: choiceSearch({ distrito: distrito.id }) }}>los consejos de todos los rubros</Link>
+              o{" "}
+              <Link to={{ pathname: "/recomendaciones", search: choiceSearch({ distrito: distrito.id }) }}>
+                los consejos de todos los rubros
+              </Link>
             </>
           ) : null}
           .

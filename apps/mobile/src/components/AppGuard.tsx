@@ -1,6 +1,6 @@
 import * as Network from "expo-network";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AppState, StyleSheet, View } from "react-native";
 
 import { GridPaper, T } from "@/components/ui";
@@ -26,7 +26,9 @@ export function AppGuard() {
   const router = useRouter();
   const [covered, setCovered] = useState(false);
   const routerRef = useRef(router);
-  routerRef.current = router;
+  useLayoutEffect(() => {
+    routerRef.current = router;
+  });
 
   useEffect(() => {
     const sub = AppState.addEventListener("change", (next) => {

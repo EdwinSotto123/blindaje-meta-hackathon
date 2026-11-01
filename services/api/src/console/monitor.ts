@@ -17,9 +17,19 @@ import { getChromaClient } from "../vectors/chroma";
 
 const PROBE_TIMEOUT_MS = 3_000;
 /** Sobre esto un servicio que respondió se marca "lento". */
-const SLOW_MS: Record<MonitorService["servicio"], number> = { d1: 250, chroma: 600, ml: 1_500, meta: 1_500, auditoria: 400 };
+const SLOW_MS: Record<MonitorService["servicio"], number> = {
+  d1: 250,
+  chroma: 600,
+  ml: 1_500,
+  meta: 1_500,
+  auditoria: 400,
+};
 
-async function probe(servicio: MonitorService["servicio"], detalle: string, fn: () => Promise<string | void>): Promise<MonitorService> {
+async function probe(
+  servicio: MonitorService["servicio"],
+  detalle: string,
+  fn: () => Promise<string | void>,
+): Promise<MonitorService> {
   const t = Date.now();
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -30,7 +40,13 @@ async function probe(servicio: MonitorService["servicio"], detalle: string, fn: 
       }),
     ]);
     const ms = Date.now() - t;
-    return { servicio, estado: ms > SLOW_MS[servicio] ? "lento" : "ok", latencia_ms: ms, detalle: extra || detalle, medido_en: new Date().toISOString() };
+    return {
+      servicio,
+      estado: ms > SLOW_MS[servicio] ? "lento" : "ok",
+      latencia_ms: ms,
+      detalle: extra || detalle,
+      medido_en: new Date().toISOString(),
+    };
   } catch (err) {
     log("warn", "monitor_probe_failed", { servicio, ...errorFields(err) });
     return { servicio, estado: "caido", latencia_ms: null, detalle, medido_en: new Date().toISOString() };
@@ -56,7 +72,12 @@ const PROBE_KV_PREFIX = "monitor:";
 
 type WaitUntil = (p: Promise<unknown>) => void;
 
-async function cachedProbe(env: Env, servicio: MonitorService["servicio"], waitUntil: WaitUntil, run: () => Promise<MonitorService>): Promise<MonitorService> {
+async function cachedProbe(
+  env: Env,
+  servicio: MonitorService["servicio"],
+  waitUntil: WaitUntil,
+  run: () => Promise<MonitorService>,
+): Promise<MonitorService> {
   const key = PROBE_KV_PREFIX + servicio;
   const refresh = async () => {
     const result = await run();
@@ -85,7 +106,8 @@ function chromaService(env: Env, waitUntil: WaitUntil): Promise<MonitorService> 
  */
 function mlService(env: Env, waitUntil: WaitUntil): Promise<MonitorService> {
   const ml = tryGetMlClient(env);
-  if (!ml) return Promise.resolve(off("ml", "Contenedor no desplegado: los casos nuevos no generan voz, imagen ni marcas"));
+  if (!ml)
+    return Promise.resolve(off("ml", "Contenedor no desplegado: los casos nuevos no generan voz, imagen ni marcas"));
   return cachedProbe(env, "ml", waitUntil, () =>
     probe("ml", "Contenedor ML en Cloudflare (voz, imagen, marcas de agua)", async () => {
       await ml.health();
@@ -147,8 +169,12 @@ export async function consoleMonitor(
            COALESCE(SUM(indexed = 1), 0) AS indexados
          FROM cases WHERE is_demo = ?`,
       ).bind(day, week, demo),
-      env.DB.prepare(`SELECT l.status, COUNT(*) AS n FROM links l JOIN cases c ON c.id = l.case_a WHERE c.is_demo = ? GROUP BY l.status`).bind(demo),
-      env.DB.prepare(`SELECT COUNT(DISTINCT nc.network_id) AS n FROM network_cases nc JOIN cases c ON c.id = nc.case_id WHERE c.is_demo = ?`).bind(demo),
+      env.DB.prepare(
+        `SELECT l.status, COUNT(*) AS n FROM links l JOIN cases c ON c.id = l.case_a WHERE c.is_demo = ? GROUP BY l.status`,
+      ).bind(demo),
+      env.DB.prepare(
+        `SELECT COUNT(DISTINCT nc.network_id) AS n FROM network_cases nc JOIN cases c ON c.id = nc.case_id WHERE c.is_demo = ?`,
+      ).bind(demo),
       env.DB.prepare(
         `SELECT (SELECT COUNT(*) FROM alerts WHERE status = 'borrador') AS alertas,
            (SELECT COUNT(*) FROM business_recommendations WHERE status = 'borrador' AND is_demo = ?) AS recomendaciones,
@@ -163,7 +189,9 @@ export async function consoleMonitor(
            COALESCE(SUM(created_at >= ? AND status <> 'ok'), 0) AS error_7d
          FROM agent_runs GROUP BY agent ORDER BY ultima DESC`,
       ).bind(week, week),
-      env.DB.prepare("SELECT seq, ts, action AS accion, actor_type AS actor_tipo FROM audit_log ORDER BY seq DESC LIMIT 10"),
+      env.DB.prepare(
+        "SELECT seq, ts, action AS accion, actor_type AS actor_tipo FROM audit_log ORDER BY seq DESC LIMIT 10",
+      ),
     ]);
     return { res, ms: Date.now() - t };
   };
@@ -176,9 +204,20 @@ export async function consoleMonitor(
     auditService(env),
   ]);
   const [casesRes, linksRes, netsRes, pendRes, costRes, agentsRes, auditRes] = res;
-  const casos = (casesRes!.results[0] ?? { total: 0, nuevos_24h: 0, nuevos_7d: 0, procesando: 0, con_error: 0, indexados: 0 }) as Counts;
+  const casos = (casesRes!.results[0] ?? {
+    total: 0,
+    nuevos_24h: 0,
+    nuevos_7d: 0,
+    procesando: 0,
+    con_error: 0,
+    indexados: 0,
+  }) as Counts;
   const byStatus = new Map((linksRes!.results as Array<{ status: string; n: number }>).map((r) => [r.status, r.n]));
-  const pend = (pendRes!.results[0] ?? { alertas: 0, recomendaciones: 0, hipotesis: 0 }) as ConsoleMonitor["pendientes"];
+  const pend = (pendRes!.results[0] ?? {
+    alertas: 0,
+    recomendaciones: 0,
+    hipotesis: 0,
+  }) as ConsoleMonitor["pendientes"];
   const cost = (costRes!.results[0] ?? { total: 0, hoy: 0 }) as { total: number; hoy: number };
   const budget = budgetUsd(env);
 
@@ -193,7 +232,13 @@ export async function consoleMonitor(
   return {
     generado_en: new Date().toISOString(),
     mundo: opts.demo ? "demo" : "real",
-    api: { version: API_VERSION, entorno: env.ENVIRONMENT, colo: opts.colo, ubicacion: opts.placement, ms: Date.now() - opts.started },
+    api: {
+      version: API_VERSION,
+      entorno: env.ENVIRONMENT,
+      colo: opts.colo,
+      ubicacion: opts.placement,
+      ms: Date.now() - opts.started,
+    },
     servicios: [d1, ...services],
     casos: {
       total: Number(casos.total),
@@ -211,14 +256,22 @@ export async function consoleMonitor(
       descartado: (byStatus.get("descartado") ?? 0) + (byStatus.get("descartado_auto") ?? 0),
     },
     redes: Number((netsRes!.results[0] as { n: number } | undefined)?.n ?? 0),
-    pendientes: { alertas: Number(pend.alertas), recomendaciones: Number(pend.recomendaciones), hipotesis: Number(pend.hipotesis) },
+    pendientes: {
+      alertas: Number(pend.alertas),
+      recomendaciones: Number(pend.recomendaciones),
+      hipotesis: Number(pend.hipotesis),
+    },
     presupuesto: {
       gastado_usd: Math.round(cost.total * 10_000) / 10_000,
       hoy_usd: Math.round(cost.hoy * 10_000) / 10_000,
       presupuesto_usd: budget,
       pct: Math.round((cost.total / budget) * 10_000) / 10_000,
     },
-    agentes: (agentsRes!.results as MonitorAgent[]).map((a) => ({ ...a, ok_7d: Number(a.ok_7d), error_7d: Number(a.error_7d) })),
+    agentes: (agentsRes!.results as MonitorAgent[]).map((a) => ({
+      ...a,
+      ok_7d: Number(a.ok_7d),
+      error_7d: Number(a.error_7d),
+    })),
     actividad: auditRes!.results as MonitorActivity[],
   };
 }

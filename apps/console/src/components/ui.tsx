@@ -38,7 +38,13 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
   );
 }
 
-export function Notice({ kind = "notice", children }: { kind?: "notice" | "warn" | "success-box" | "error-box"; children: ReactNode }) {
+export function Notice({
+  kind = "notice",
+  children,
+}: {
+  kind?: "notice" | "warn" | "success-box" | "error-box";
+  children: ReactNode;
+}) {
   const icon = kind === "warn" || kind === "error-box" ? "alert" : kind === "success-box" ? "check" : "info";
   return (
     <div className={kind} role={kind === "error-box" ? "alert" : undefined}>
@@ -181,7 +187,12 @@ export function InlineConfirm({
         </p>
       ) : null}
       <div className="row">
-        <button type="button" className={`btn btn-lg ${tone === "danger" ? "btn-danger" : "btn-primary"}`} disabled={busy} onClick={onConfirm}>
+        <button
+          type="button"
+          className={`btn btn-lg ${tone === "danger" ? "btn-danger" : "btn-primary"}`}
+          disabled={busy}
+          onClick={onConfirm}
+        >
           <Icon name={icon} />
           {busy ? busyLabel : confirmLabel}
         </button>
@@ -240,7 +251,9 @@ export function PageHead({ title, children, actions }: { title: string; children
 
 /** Mensaje temporal anunciado por lectores de pantalla. */
 export function useFlash(): [ReactNode, (msg: string, kind?: "success-box" | "error-box" | "notice") => void] {
-  const [flash, setFlash] = useState<{ msg: string; kind: "success-box" | "error-box" | "notice"; id: number } | null>(null);
+  const [flash, setFlash] = useState<{ msg: string; kind: "success-box" | "error-box" | "notice"; id: number } | null>(
+    null,
+  );
   useEffect(() => {
     if (!flash) return;
     const t = setTimeout(() => setFlash(null), 5000);

@@ -152,7 +152,14 @@ function buildData() {
 
   const vecs: MockVec[] = [];
   let nextId = 101;
-  const add = (indice: VectorIndexName, code: string, ref: string, evidencia: string | null, clusterName: string, noise = 0.11) => {
+  const add = (
+    indice: VectorIndexName,
+    code: string,
+    ref: string,
+    evidencia: string | null,
+    clusterName: string,
+    noise = 0.11,
+  ) => {
     const cl = clusters.get(clusterName)!;
     const latent = unit(cl.center.map((x) => x + gauss(r) * noise));
     const raw = cl.pattern.map((x) => x + gauss(r) * 0.45);
@@ -244,7 +251,14 @@ function summaries(): VectorCaseSummary[] {
   return CASES.map((c) => {
     const vectores = { voz: 0, voz_segmento: 0, texto: 0, imagen: 0 } as Record<VectorIndexName, number>;
     for (const v of VECS) if (v.point.caso === c.code) vectores[v.indice] += 1;
-    return { case_id: caseId(c.code), caso: c.caso, distrito: c.distrito, evidencia: c.evidencia, vectores, identificadores: c.identificadores };
+    return {
+      case_id: caseId(c.code),
+      caso: c.caso,
+      distrito: c.distrito,
+      evidencia: c.evidencia,
+      vectores,
+      identificadores: c.identificadores,
+    };
   });
 }
 
@@ -252,7 +266,14 @@ function summaries(): VectorCaseSummary[] {
 export function mockVectorOverview(syncedAt = "2026-10-29T14:02:00Z"): VectorOverview {
   const indices: VectorIndexName[] = ["voz", "voz_segmento", "texto", "imagen"];
   return {
-    almacen: { proveedor: "chroma-cloud", base: "blindaje", conectado: true, latencia_ms: 132, sincronizado_en: syncedAt, solo_demo: true },
+    almacen: {
+      proveedor: "chroma-cloud",
+      base: "blindaje",
+      conectado: true,
+      latencia_ms: 132,
+      sincronizado_en: syncedAt,
+      solo_demo: true,
+    },
     colecciones: indices.map((i) => {
       const n = VECS.filter((v) => v.indice === i).length;
       return {
@@ -265,7 +286,11 @@ export function mockVectorOverview(syncedAt = "2026-10-29T14:02:00Z"): VectorOve
       };
     }),
     casos: summaries(),
-    mapas: indices.map((i) => ({ indice: i, varianza: VARIANZA[i], puntos: VECS.filter((v) => v.indice === i).map((v) => v.point) })),
+    mapas: indices.map((i) => ({
+      indice: i,
+      varianza: VARIANZA[i],
+      puntos: VECS.filter((v) => v.indice === i).map((v) => v.point),
+    })),
   };
 }
 
@@ -287,7 +312,14 @@ export function mockVectorTrace(id: string): VectorTrace {
       const vecinos = others
         .map((o) => {
           const score = scoreFor(indice, dot(q.latent, o.latent));
-          return { id: o.point.id, case_id: o.point.case_id, caso: o.point.caso, ref: o.point.ref, score, pasa: umbral === null || score >= umbral };
+          return {
+            id: o.point.id,
+            case_id: o.point.case_id,
+            caso: o.point.caso,
+            ref: o.point.ref,
+            score,
+            pasa: umbral === null || score >= umbral,
+          };
         })
         .sort((a, b) => b.score - a.score)
         .slice(0, K[indice]);
@@ -323,10 +355,12 @@ export function mockVectorTrace(id: string): VectorTrace {
     const senales: VectorCandidate["senales"] = {};
     if (src.has("identificador")) senales.identificador = cal.identificador.p;
     let bestVoice = -1;
-    for (const a of mine("voz")) for (const b of theirs("voz")) bestVoice = Math.max(bestVoice, dot(a.latent, b.latent));
+    for (const a of mine("voz"))
+      for (const b of theirs("voz")) bestVoice = Math.max(bestVoice, dot(a.latent, b.latent));
     if (bestVoice > -1) {
       let matched = 0;
-      for (const a of mine("voz_segmento")) if (theirs("voz_segmento").some((b) => dot(a.latent, b.latent) >= cal.voz.b)) matched++;
+      for (const a of mine("voz_segmento"))
+        if (theirs("voz_segmento").some((b) => dot(a.latent, b.latent) >= cal.voz.b)) matched++;
       const base = Math.min(logistic(bestVoice, cal.voz.a, cal.voz.b), cal.voz.p_max);
       senales.voz = round(matched >= cal.voz.min_segmentos ? base : base * 0.5 * (matched / cal.voz.min_segmentos));
     }
@@ -338,9 +372,18 @@ export function mockVectorTrace(id: string): VectorTrace {
       const x = cos + (sameMo ? 0.05 : 0);
       senales.modus_operandi = round(Math.min(logistic(x, cal.mo.a, cal.mo.b), cal.mo.p_max));
     }
-    const ps = [senales.identificador, senales.voz, senales.imagen, senales.modus_operandi].filter((p): p is number => typeof p === "number");
+    const ps = [senales.identificador, senales.voz, senales.imagen, senales.modus_operandi].filter(
+      (p): p is number => typeof p === "number",
+    );
     const puntaje = round(combineSignals(ps));
-    return { case_id: otherId, caso: other.caso, fuentes: [...src], senales, puntaje, estado: statusForScore(puntaje, cal) };
+    return {
+      case_id: otherId,
+      caso: other.caso,
+      fuentes: [...src],
+      senales,
+      puntaje,
+      estado: statusForScore(puntaje, cal),
+    };
   });
   candidatos.sort((a, b) => b.puntaje - a.puntaje);
 
@@ -376,7 +419,8 @@ export class MockVectorsApi implements VectorsApi {
   }
 
   private check(): void {
-    if (this.actor.role !== "admin") throw new ApiRequestError(403, "forbidden", "Tu rol no tiene permiso para esta acción.");
+    if (this.actor.role !== "admin")
+      throw new ApiRequestError(403, "forbidden", "Tu rol no tiene permiso para esta acción.");
   }
 
   async overview(): Promise<VectorOverview> {

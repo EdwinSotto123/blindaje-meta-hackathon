@@ -99,8 +99,12 @@ export function validateCitations(output: unknown, known: Set<string>): Citation
 
 export function citationFeedback(check: CitationCheck): string {
   const parts = ["Tu respuesta anterior no pasó el validador de citas. Corrígela y entrégala completa otra vez."];
-  if (check.sin_cita.length) parts.push(`Afirmaciones sin cita (agrega al menos un identificador que exista o elimínalas): ${check.sin_cita.map((t) => `"${t}"`).join("; ")}.`);
-  if (check.citas_inexistentes.length) parts.push(`Identificadores que no existen en el material (no los uses): ${check.citas_inexistentes.join(", ")}.`);
+  if (check.sin_cita.length)
+    parts.push(
+      `Afirmaciones sin cita (agrega al menos un identificador que exista o elimínalas): ${check.sin_cita.map((t) => `"${t}"`).join("; ")}.`,
+    );
+  if (check.citas_inexistentes.length)
+    parts.push(`Identificadores que no existen en el material (no los uses): ${check.citas_inexistentes.join(", ")}.`);
   parts.push("Solo puedes citar identificadores que aparecen en el material o en lo que devolvieron tus herramientas.");
   return parts.join("\n");
 }
@@ -156,16 +160,37 @@ export async function runCheckedAgent<T>(
       last = { output: res.output, check };
       if (check.ok) break;
       feedback = citationFeedback(check);
-      log("warn", "agent_citation_retry", { agent: args.agent, target: args.target_id, sin_cita: check.sin_cita.length, inexistentes: check.citas_inexistentes.length });
+      log("warn", "agent_citation_retry", {
+        agent: args.agent,
+        target: args.target_id,
+        sin_cita: check.sin_cita.length,
+        inexistentes: check.citas_inexistentes.length,
+      });
     } catch (err) {
-      await recordAgentRun(env, { ...args, status: "error", attempts, tool_calls: toolCalls, output: null, check: null, cost_usd: cost });
+      await recordAgentRun(env, {
+        ...args,
+        status: "error",
+        attempts,
+        tool_calls: toolCalls,
+        output: null,
+        check: null,
+        cost_usd: cost,
+      });
       throw err;
     }
   }
 
   const final = last!;
   const status = final.check.ok ? "ok" : "invalido";
-  const run_id = await recordAgentRun(env, { ...args, status, attempts, tool_calls: toolCalls, output: final.output, check: final.check, cost_usd: cost });
+  const run_id = await recordAgentRun(env, {
+    ...args,
+    status,
+    attempts,
+    tool_calls: toolCalls,
+    output: final.output,
+    check: final.check,
+    cost_usd: cost,
+  });
   return { run_id, output: final.output, check: final.check, status, attempts, cost_usd: cost };
 }
 

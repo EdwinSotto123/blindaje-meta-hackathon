@@ -10,7 +10,17 @@ import { Icon, type IconName } from "../components/Icons";
 import { AudioClip } from "../components/Media";
 import { isFlagged, PromptGuardBadge } from "../components/PromptGuard";
 import { Acciones } from "../components/SoloLectura";
-import { Empty, ErrorBox, InlineConfirm, Loading, Meter, Notice, PageHead, StatusBadge, useFlash } from "../components/ui";
+import {
+  Empty,
+  ErrorBox,
+  InlineConfirm,
+  Loading,
+  Meter,
+  Notice,
+  PageHead,
+  StatusBadge,
+  useFlash,
+} from "../components/ui";
 import { flaggedInLink, isStrong, NOTA_AUSENCIA, type FlaggedEvidence } from "../lib/authenticity";
 import { indexFromLink } from "../lib/citations";
 import { CANAL_LABEL, SECTOR_LABEL, fmtDateTime, fmtScore } from "../lib/format";
@@ -29,7 +39,8 @@ const SIGNAL_META: Record<keyof Signals, { label: string; short: string; peso: s
 const SIGNAL_ORDER: (keyof Signals)[] = ["identificador", "voz", "imagen", "modus_operandi"];
 
 /** Lo que dice la consola al confirmar: el vínculo sigue siendo una hipótesis y nadie recibe aviso. */
-const CONFIRM_CONSEQUENCE = "Confirmar suma el vínculo al grafo y recalcula las redes; sigue siendo una hipótesis. Ninguna víctima recibe aviso.";
+const CONFIRM_CONSEQUENCE =
+  "Confirmar suma el vínculo al grafo y recalcula las redes; sigue siendo una hipótesis. Ninguna víctima recibe aviso.";
 
 export type Verdict = { text: string; tone: "si" | "parcial" | "no" };
 
@@ -69,9 +80,13 @@ export function LinksView() {
   // El filtro vive en la URL (?ver=revisados) para poder compartir o recargar la vista.
   const [params, setParams] = useSearchParams();
   const tab: "pendientes" | "revisados" = params.get("ver") === "revisados" ? "revisados" : "pendientes";
-  const setTab = (t: "pendientes" | "revisados") => setParams(t === "revisados" ? { ver: "revisados" } : {}, { replace: true });
+  const setTab = (t: "pendientes" | "revisados") =>
+    setParams(t === "revisados" ? { ver: "revisados" } : {}, { replace: true });
   const suffix = tab === "revisados" ? "?ver=revisados" : "";
-  const queue = useAsync(() => api.listLinks(tab === "pendientes" ? PENDING : REVIEWED).then(sortQueue), `links:${tab}`);
+  const queue = useAsync(
+    () => api.listLinks(tab === "pendientes" ? PENDING : REVIEWED).then(sortQueue),
+    `links:${tab}`,
+  );
   const [flash, showFlash] = useFlash();
 
   // Sin vínculo elegido: abrir el primero de la cola.
@@ -95,8 +110,8 @@ export function LinksView() {
   return (
     <>
       <PageHead title="Cola de vínculos">
-        Cada vínculo es una hipótesis: solo entra al grafo cuando una persona lo confirma. Primero los probables (0.90 o más), luego los que están por
-        revisar (0.60 a 0.90).
+        Cada vínculo es una hipótesis: solo entra al grafo cuando una persona lo confirma. Primero los probables (0.90 o
+        más), luego los que están por revisar (0.60 a 0.90).
       </PageHead>
       {flash}
       <div className="queue-layout">
@@ -122,7 +137,11 @@ export function LinksView() {
           <ul className="list-plain queue-list">
             {queue.data?.map((l) => (
               <li key={l.id}>
-                <Link to={`/vinculos/${encodeURIComponent(l.id)}${suffix}`} className="queue-item" aria-current={l.id === id ? "page" : undefined}>
+                <Link
+                  to={`/vinculos/${encodeURIComponent(l.id)}${suffix}`}
+                  className="queue-item"
+                  aria-current={l.id === id ? "page" : undefined}
+                >
                   <span className="top">
                     <span className="strong">
                       Caso {l.case_a.code} y Caso {l.case_b.code}
@@ -168,7 +187,10 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
   const index = useMemo(() => (link.data ? indexFromLink(link.data) : null), [link.data]);
   // Fragmentos que la persona ya escuchó: la confirmación avisa si falta alguno.
   const [heard, setHeard] = useState<ReadonlySet<string>>(() => new Set());
-  const markHeard = useCallback((key: string) => setHeard((prev) => (prev.has(key) ? prev : new Set(prev).add(key))), []);
+  const markHeard = useCallback(
+    (key: string) => setHeard((prev) => (prev.has(key) ? prev : new Set(prev).add(key))),
+    [],
+  );
 
   if (link.error) return <ErrorBox error={link.error} onRetry={link.reload} />;
   if (!link.data || !index) return <Loading label="Cargando el vínculo…" />;
@@ -215,13 +237,13 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
             </div>
             {l.signals.voz ? (
               <p className="voice-verdict">
-                <strong>Voz: {signalVerdict(l.signals.voz.p).text.toLowerCase()}.</strong> {l.signals.voz.segmentos} de {l.signals.voz.segmentos_total}{" "}
-                segmentos coinciden sobre el umbral (p {fmtScore(l.signals.voz.p)}).
+                <strong>Voz: {signalVerdict(l.signals.voz.p).text.toLowerCase()}.</strong> {l.signals.voz.segmentos} de{" "}
+                {l.signals.voz.segmentos_total} segmentos coinciden sobre el umbral (p {fmtScore(l.signals.voz.p)}).
                 {l.signals.voz.voz_sintetica ? (
                   <>
                     {" "}
-                    <strong>Pesa la mitad</strong> porque {l.signals.voz.voz_sintetica.evidencia.join(", ")} tiene indicios de voz sintética: una voz hecha con IA
-                    podría imitar a otra.
+                    <strong>Pesa la mitad</strong> porque {l.signals.voz.voz_sintetica.evidencia.join(", ")} tiene
+                    indicios de voz sintética: una voz hecha con IA podría imitar a otra.
                   </>
                 ) : null}
               </p>
@@ -250,11 +272,16 @@ function LinkDetail({ id, onDecided }: { id: string; onDecided: (l: LinkView) =>
 
         {l.status === "confirmado" || l.status === "descartado" ? (
           <Notice kind={l.status === "confirmado" ? "success-box" : "notice"}>
-            {l.status === "confirmado" ? "Confirmado" : "Descartado"} por {l.reviewed_by ?? "—"} el {fmtDateTime(l.reviewed_at)}.
-            {l.review_note ? ` Nota: “${l.review_note}”` : ""}
+            {l.status === "confirmado" ? "Confirmado" : "Descartado"} por {l.reviewed_by ?? "—"} el{" "}
+            {fmtDateTime(l.reviewed_at)}.{l.review_note ? ` Nota: “${l.review_note}”` : ""}
           </Notice>
         ) : (
-          <DecisionBar link={l} unheard={l.fragments.length - heard.size} totalFragments={l.fragments.length} onDecided={onDecided} />
+          <DecisionBar
+            link={l}
+            unheard={l.fragments.length - heard.size}
+            totalFragments={l.fragments.length}
+            onDecided={onDecided}
+          />
         )}
       </article>
     </CitationProvider>
@@ -280,7 +307,10 @@ function Explanation({ link }: { link: LinkView }) {
         <CitedText text={v.explicacion} />
       </p>
       {link.vinculador_valid === false ? (
-        <Notice kind="error-box">El validador de citas encontró afirmaciones sin evidencia o con citas inexistentes. No te apoyes en esta explicación.</Notice>
+        <Notice kind="error-box">
+          El validador de citas encontró afirmaciones sin evidencia o con citas inexistentes. No te apoyes en esta
+          explicación.
+        </Notice>
       ) : null}
       <div className="grid-2">
         <div className="stack-sm">
@@ -300,7 +330,8 @@ function Explanation({ link }: { link: LinkView }) {
         </div>
         <div className="stack-sm">
           <h3 className="row" style={{ gap: 6 }}>
-            <Icon name="alert" size={16} /> Contradicciones{v.contradicciones.length ? ` (${v.contradicciones.length})` : ""}
+            <Icon name="alert" size={16} /> Contradicciones
+            {v.contradicciones.length ? ` (${v.contradicciones.length})` : ""}
           </h3>
           {v.contradicciones.length ? (
             <ul className="list-plain list-lines">
@@ -369,7 +400,11 @@ function CaseCard({ side, shared }: { side: CaseSide; shared: Set<string> }) {
           </div>
           <div className="row" style={{ gap: 6 }}>
             <span className="small muted">Identificadores</span>
-            {f.identificadores.length ? f.identificadores.map((i) => <CiteChip key={i.ref} refId={i.ref} />) : <span className="muted">ninguno</span>}
+            {f.identificadores.length ? (
+              f.identificadores.map((i) => <CiteChip key={i.ref} refId={i.ref} />)
+            ) : (
+              <span className="muted">ninguno</span>
+            )}
           </div>
         </>
       ) : (
@@ -391,7 +426,15 @@ function CaseCard({ side, shared }: { side: CaseSide; shared: Set<string> }) {
   );
 }
 
-function FragmentColumn({ code, frags, onListened }: { code: string; frags: AudioFragment[]; onListened: (key: string) => void }) {
+function FragmentColumn({
+  code,
+  frags,
+  onListened,
+}: {
+  code: string;
+  frags: AudioFragment[];
+  onListened: (key: string) => void;
+}) {
   return (
     <div className="stack-sm">
       <span className="strong">Caso {code}</span>
@@ -411,7 +454,9 @@ const TIPO_LABEL: Record<string, string> = { audio: "audio", imagen: "imagen", v
 
 /** Evidencia del par marcada por Llama Prompt Guard 2 como posible inyección de instrucciones. */
 export function injectedInLink(link: LinkView): string[] {
-  return [link.case_a, link.case_b].flatMap((side) => side.evidencia.filter((e) => isFlagged(e.prompt_guard)).map((e) => e.label));
+  return [link.case_a, link.case_b].flatMap((side) =>
+    side.evidencia.filter((e) => isFlagged(e.prompt_guard)).map((e) => e.label),
+  );
 }
 
 export function InjectionChip({ labels }: { labels: string[] }) {
@@ -439,11 +484,12 @@ function InjectionNotice({ labels }: { labels: string[] }) {
               <CiteChip refId={l} />
             </span>
           ))}{" "}
-          {labels.length === 1 ? "trae" : "traen"} texto que parece dar órdenes a un modelo de IA (Llama Prompt Guard 2).
+          {labels.length === 1 ? "trae" : "traen"} texto que parece dar órdenes a un modelo de IA (Llama Prompt Guard
+          2).
         </span>
         <span className="small">
-          Sigue siendo evidencia. Los agentes la recibieron delimitada como dato y con aviso, y tienen prohibido seguir esas instrucciones; igual, lee la
-          explicación del Vinculador con ojo crítico.
+          Sigue siendo evidencia. Los agentes la recibieron delimitada como dato y con aviso, y tienen prohibido seguir
+          esas instrucciones; igual, lee la explicación del Vinculador con ojo crítico.
         </span>
       </div>
     </div>
@@ -456,7 +502,9 @@ export function AuthenticityWarningChip({ flagged }: { flagged: FlaggedEvidence[
   return (
     <span className="chip chip-auth" data-tone="fuerte">
       <Icon name="alert" size={13} />
-      {flagged.length === 1 ? `${flagged[0]!.label}: indicios de IA` : `${flagged.length} evidencias con indicios de IA`}
+      {flagged.length === 1
+        ? `${flagged[0]!.label}: indicios de IA`
+        : `${flagged.length} evidencias con indicios de IA`}
     </span>
   );
 }
@@ -475,8 +523,11 @@ function AuthenticityNotice({ flagged, link }: { flagged: FlaggedEvidence[]; lin
               <CiteChip refId={f.label} /> ({TIPO_LABEL[f.tipo] ?? f.tipo}, caso {f.caseCode})
             </span>
           ))}{" "}
-          {flagged.length === 1 ? "tiene" : "tienen"} {flagged.some((f) => f.nivel === "generado_ia_confirmado") ? "marca de IA o indicios fuertes" : "indicios fuertes"} de
-          haber sido generada con IA o manipulada.
+          {flagged.length === 1 ? "tiene" : "tienen"}{" "}
+          {flagged.some((f) => f.nivel === "generado_ia_confirmado")
+            ? "marca de IA o indicios fuertes"
+            : "indicios fuertes"}{" "}
+          de haber sido generada con IA o manipulada.
           {voz ? " Por eso la señal de voz pesa la mitad." : ""}
         </span>
         <span className="small">
@@ -490,7 +541,9 @@ function AuthenticityNotice({ flagged, link }: { flagged: FlaggedEvidence[]; lin
 
 /** Autenticidad de cada audio, imagen y video del par: nivel, señales, explicación y limitaciones. */
 function AuthenticitySection({ link }: { link: LinkView }) {
-  const items = [link.case_a, link.case_b].flatMap((side) => side.evidencia.filter((e) => e.tipo !== "texto").map((e) => ({ e, code: side.code })));
+  const items = [link.case_a, link.case_b].flatMap((side) =>
+    side.evidencia.filter((e) => e.tipo !== "texto").map((e) => ({ e, code: side.code })),
+  );
   if (!items.length) return null;
   const analyzed = items.filter((x) => x.e.autenticidad);
   const withSignals = analyzed.filter((x) => x.e.autenticidad!.nivel !== "sin_senales").length;
@@ -501,7 +554,8 @@ function AuthenticitySection({ link }: { link: LinkView }) {
           <Icon name="shield" /> Autenticidad de la evidencia
         </h3>
         <span className="small muted">
-          {analyzed.length} de {items.length} analizadas, {withSignals ? `${withSignals} con indicios` : "ninguna con indicios"}
+          {analyzed.length} de {items.length} analizadas,{" "}
+          {withSignals ? `${withSignals} con indicios` : "ninguna con indicios"}
         </span>
       </div>
       <div className="auth-list">
@@ -590,8 +644,9 @@ function SignalsPanel({ link }: { link: LinkView }) {
               </span>
               {k === "voz" && s.voz?.voz_sintetica ? (
                 <span className="small">
-                  <Icon name="alert" size={13} /> Reducida a la mitad (era {fmtScore(s.voz.voz_sintetica.p_sin_ajuste)}):{" "}
-                  <CiteList refs={s.voz.voz_sintetica.evidencia} label="Audios con indicios de voz sintética" /> con indicios de voz sintética.
+                  <Icon name="alert" size={13} /> Reducida a la mitad (era {fmtScore(s.voz.voz_sintetica.p_sin_ajuste)}
+                  ): <CiteList refs={s.voz.voz_sintetica.evidencia} label="Audios con indicios de voz sintética" /> con
+                  indicios de voz sintética.
                 </span>
               ) : null}
               <Meter value={sig.p} label={`Probabilidad calibrada de ${meta.label}: ${fmtScore(sig.p)}`} />
@@ -611,7 +666,8 @@ function SignalsPanel({ link }: { link: LinkView }) {
       <details className="tech" style={{ marginTop: 10 }}>
         <summary>Cómo se calcula el puntaje</summary>
         <p className="small">
-          Combinación de las señales: 1 − ∏(1 − pᵢ) = <strong>{fmtScore(combined)}</strong>. Puntaje del motor {fmtScore(link.score_raw)}
+          Combinación de las señales: 1 − ∏(1 − pᵢ) = <strong>{fmtScore(combined)}</strong>. Puntaje del motor{" "}
+          {fmtScore(link.score_raw)}
           {link.vinculador ? `; ajustado por el Vinculador a ${fmtScore(link.vinculador.puntaje_ajustado)}` : ""}.
         </p>
       </details>
@@ -726,7 +782,10 @@ function DecisionBar({
     <Acciones className="decision-bar" label={`Decisión sobre el vínculo entre ${pair}`}>
       <div className="field">
         <label htmlFor="nota">
-          Nota para el registro <span className="muted" style={{ fontWeight: 400 }}>(opcional; decides como {user.display_name})</span>
+          Nota para el registro{" "}
+          <span className="muted" style={{ fontWeight: 400 }}>
+            (opcional; decides como {user.display_name})
+          </span>
         </label>
         <textarea
           id="nota"
@@ -745,7 +804,8 @@ function DecisionBar({
             <>
               {unheard > 0 ? (
                 <strong>
-                  Aún no escuchaste {unheard === totalFragments ? "ninguno de los" : `${unheard} de los`} {totalFragments} fragmentos de audio.{" "}
+                  Aún no escuchaste {unheard === totalFragments ? "ninguno de los" : `${unheard} de los`}{" "}
+                  {totalFragments} fragmentos de audio.{" "}
                 </strong>
               ) : null}
               {CONFIRM_CONSEQUENCE}
@@ -773,7 +833,12 @@ function DecisionBar({
       ) : (
         <div className="decision-actions">
           <div className="row">
-            <button type="button" className="btn btn-primary btn-lg" onClick={() => setAsk("confirmar")} aria-describedby="decision-nota">
+            <button
+              type="button"
+              className="btn btn-primary btn-lg"
+              onClick={() => setAsk("confirmar")}
+              aria-describedby="decision-nota"
+            >
               <Icon name="check" />
               Confirmar vínculo
             </button>

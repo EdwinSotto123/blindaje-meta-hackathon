@@ -22,7 +22,10 @@ export async function auditHead(env: Env): Promise<AuditHead | null> {
 
 export async function listAudit(env: Env, opts: { before_seq?: number; limit: number }): Promise<AuditEntry[]> {
   const stmt = opts.before_seq
-    ? env.DB.prepare("SELECT * FROM audit_log WHERE seq < ? ORDER BY seq DESC LIMIT ?").bind(opts.before_seq, opts.limit)
+    ? env.DB.prepare("SELECT * FROM audit_log WHERE seq < ? ORDER BY seq DESC LIMIT ?").bind(
+        opts.before_seq,
+        opts.limit,
+      )
     : env.DB.prepare("SELECT * FROM audit_log ORDER BY seq DESC LIMIT ?").bind(opts.limit);
   const { results } = await stmt.all<AuditRow>();
   return results.map(rowToEntry);

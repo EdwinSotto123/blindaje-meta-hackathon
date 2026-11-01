@@ -108,7 +108,8 @@ describe("collectSamStream (captura real de video)", () => {
 });
 
 describe("parseSamOutput (gramática)", () => {
-  const box = (x1: number, c?: number) => `<|box;x1=${x1};y1=1;x2=${x1 + 9};y2=10;w=320;h=240${c !== undefined ? `;c=${c}` : ""}|>`;
+  const box = (x1: number, c?: number) =>
+    `<|box;x1=${x1};y1=1;x2=${x1 + 9};y2=10;w=320;h=240${c !== undefined ? `;c=${c}` : ""}|>`;
   const mask = "<|mask;x=0;y=0;data=10,10,!abc|>";
 
   it("varios frames, ids dispersos, frames salteados y desordenados", () => {
@@ -150,18 +151,32 @@ describe("segmentImage / segmentVideo con fetch simulado", () => {
     expect(res).toMatchObject({ width: 256, height: 192, responseId: expect.stringMatching(/^resp_/), problems: [] });
     expect(res.usage?.images_processed).toBe(1);
     const body = fetch.calls[0]!.json!;
-    expect(body).toMatchObject({ model: "sam-3.1", stream: true, store: false, metadata: { include_confidence: "true" } });
+    expect(body).toMatchObject({
+      model: "sam-3.1",
+      stream: true,
+      store: false,
+      metadata: { include_confidence: "true" },
+    });
     const content = (body.input as Array<{ content: Array<Record<string, string>> }>)[0]!.content;
     expect(content[0]).toEqual({ type: "input_text", text: "circle" });
     expect(content[1]!.image_url).toMatch(/^data:image\/png;base64,iVBOR/);
     expect(fetch.calls[0]!.init.headers.Accept).toBe("text/event-stream");
-    expect(events[0]).toMatchObject({ model: "sam-3.1", operation: "sam_image", units: { images: 1 }, cost_usd: 0.0025, status: "ok" });
+    expect(events[0]).toMatchObject({
+      model: "sam-3.1",
+      operation: "sam_image",
+      units: { images: 1 },
+      cost_usd: 0.0025,
+      status: "ok",
+    });
   });
 
   it("cero coincidencias: stream completo con texto vacío", async () => {
     const text = sseText([
       { type: "response.created", response: { id: "resp_e", status: "in_progress" } },
-      { type: "response.completed", response: { id: "resp_e", status: "completed", output: [], usage: { images_processed: 1 } } },
+      {
+        type: "response.completed",
+        response: { id: "resp_e", status: "completed", output: [], usage: { images_processed: 1 } },
+      },
     ]);
     const c = new MetaClient({ apiKey: "k", fetch: mockFetch(() => sseResponse(text)) });
     const res = await c.segmentImage({ image: "https://example.com/a.png", concept: "gato" });
@@ -170,10 +185,17 @@ describe("segmentImage / segmentVideo con fetch simulado", () => {
   });
 
   it("response.failed se reintenta y luego sale como MetaApiError", async () => {
-    const failed = sseText([{ type: "response.failed", response: { id: "r", status: "failed", error: { code: "server_error", message: "falló" } } }]);
+    const failed = sseText([
+      {
+        type: "response.failed",
+        response: { id: "r", status: "failed", error: { code: "server_error", message: "falló" } },
+      },
+    ]);
     const fetch = mockFetch(() => sseResponse(failed));
     const c = new MetaClient({ apiKey: "k", fetch, maxRetries: 1, sleep: async () => {} });
-    const error = (await c.segmentImage({ image: "https://example.com/a.png", concept: "gato" }).catch((e: unknown) => e)) as MetaApiError;
+    const error = (await c
+      .segmentImage({ image: "https://example.com/a.png", concept: "gato" })
+      .catch((e: unknown) => e)) as MetaApiError;
     expect(error).toBeInstanceOf(MetaApiError);
     expect(error.inStream).toBe(true);
     expect(fetch.calls).toHaveLength(2);
@@ -181,7 +203,10 @@ describe("segmentImage / segmentVideo con fetch simulado", () => {
 
   it("un stream cortado sin evento terminal se reintenta", async () => {
     const cut = fixture(ONE_BIT).split("event: response.completed")[0]!;
-    const fetch = mockFetch(() => sseResponse(cut), () => sseResponse(fixture(ONE_BIT)));
+    const fetch = mockFetch(
+      () => sseResponse(cut),
+      () => sseResponse(fixture(ONE_BIT)),
+    );
     const c = new MetaClient({ apiKey: "k", fetch, sleep: async () => {} });
     const res = await c.segmentImage({ image: "https://example.com/a.png", concept: "circle" });
     expect(res.objects).toHaveLength(1);
@@ -190,13 +215,17 @@ describe("segmentImage / segmentVideo con fetch simulado", () => {
 
   it("video por file_id: frames en orden, one_bit por defecto, costo por frames facturados", async () => {
     const events: UsageEvent[] = [];
-    const line = (f: number, x: number) => `<${f}f>0<|box;x1=${x};y1=10;x2=${x + 20};y2=30;w=160;h=120|><|mask;x=0;y=0;data=21,21,!abc|>\n`;
+    const line = (f: number, x: number) =>
+      `<${f}f>0<|box;x1=${x};y1=10;x2=${x + 20};y2=30;w=160;h=120|><|mask;x=0;y=0;data=21,21,!abc|>\n`;
     const text = sseText([
       { type: "response.created", response: { id: "resp_v" } },
       { type: "response.output_text.delta", output_index: 0, content_index: 0, delta: line(0, 10) },
       { type: "response.output_text.delta", output_index: 0, content_index: 0, delta: line(1, 14) },
       { type: "response.output_text.delta", output_index: 0, content_index: 0, delta: line(3, 22) },
-      { type: "response.completed", response: { id: "resp_v", status: "completed", usage: { video_frames_processed: 50 } } },
+      {
+        type: "response.completed",
+        response: { id: "resp_v", status: "completed", usage: { video_frames_processed: 50 } },
+      },
     ]);
     const fetch = mockFetch(() => sseResponse(text));
     const c = new MetaClient({ apiKey: "k", fetch, hooks: { onUsage: (e) => void events.push(e) } });
@@ -209,7 +238,10 @@ describe("segmentImage / segmentVideo con fetch simulado", () => {
     expect(res.framesProcessed).toBe(50);
     const body = fetch.calls[0]!.json!;
     expect(body.metadata).toEqual({ mask_encoding: "one_bit" });
-    expect((body.input as Array<{ content: unknown[] }>)[0]!.content[1]).toEqual({ type: "input_video", file_id: "file-123" });
+    expect((body.input as Array<{ content: unknown[] }>)[0]!.content[1]).toEqual({
+      type: "input_video",
+      file_id: "file-123",
+    });
     expect(events[0]).toMatchObject({ operation: "sam_video", units: { frames: 50 }, cost_usd: 0.01 });
   });
 
@@ -254,6 +286,13 @@ describe("pixelado", () => {
   });
 
   it("expandBox agrega margen sin salir de la imagen", () => {
-    expect(expandBox({ x1: 0, y1: 10, x2: 9, y2: 19, w: 20, h: 25 }, 0.5)).toEqual({ x1: 0, y1: 5, x2: 14, y2: 24, w: 20, h: 25 });
+    expect(expandBox({ x1: 0, y1: 10, x2: 9, y2: 19, w: 20, h: 25 }, 0.5)).toEqual({
+      x1: 0,
+      y1: 5,
+      x2: 14,
+      y2: 24,
+      w: 20,
+      h: 25,
+    });
   });
 });

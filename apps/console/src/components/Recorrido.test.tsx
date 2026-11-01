@@ -10,7 +10,12 @@ describe("recorrido sugerido de la cuenta de jurado", () => {
         <Recorrido />
       </MemoryRouter>,
     );
-    expect([...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1])).toEqual(["/vinculos", "/alertas", "/vectores", "/auditoria"]);
+    expect([...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1])).toEqual([
+      "/vinculos",
+      "/alertas",
+      "/vectores",
+      "/auditoria",
+    ]);
     expect(html).toContain('lang="en"');
     expect(html).toContain("Ocultar");
   });

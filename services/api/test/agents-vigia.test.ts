@@ -3,7 +3,17 @@ import { env } from "cloudflare:workers";
 import { CENTRAL_ORG_ID, type AlertView } from "@blindaje/shared";
 import { detectPatterns, sanitizeAlert } from "../src/agents/vigia";
 import { api, apiJson, createCase, loginAs, registerDevice, seedOrg } from "./helpers";
-import { daysAgo, fakeMeta, final, PNG_BYTES, restoreMeta, seedCase, seedDevice, seedOrgRow, type RecordedRequest } from "./agents-helpers";
+import {
+  daysAgo,
+  fakeMeta,
+  final,
+  PNG_BYTES,
+  restoreMeta,
+  seedCase,
+  seedDevice,
+  seedOrgRow,
+  type RecordedRequest,
+} from "./agents-helpers";
 
 afterEach(() => restoreMeta());
 
@@ -21,14 +31,24 @@ function draftFrom(req: RecordedRequest) {
   };
 }
 
-async function seedPattern(opts: { zona: string; n: number; victims: number; orgs?: string[]; grupo?: string; spanDays?: number; demo?: boolean }) {
+async function seedPattern(opts: {
+  zona: string;
+  n: number;
+  victims: number;
+  orgs?: string[];
+  grupo?: string;
+  spanDays?: number;
+  demo?: boolean;
+}) {
   const orgs = opts.orgs ?? [await seedOrgRow()];
   const devices = [];
   for (let i = 0; i < opts.victims; i++) devices.push(await seedDevice(orgs[i % orgs.length]!));
   const cases = [];
   for (let i = 0; i < opts.n; i++) {
     const device = devices[i % devices.length]!;
-    const orgId = (await env.DB.prepare("SELECT org_id FROM devices WHERE id = ?").bind(device.id).first<{ org_id: string }>())!.org_id;
+    const orgId = (await env.DB.prepare("SELECT org_id FROM devices WHERE id = ?")
+      .bind(device.id)
+      .first<{ org_id: string }>())!.org_id;
     cases.push(
       await seedCase({
         orgId,
@@ -56,15 +76,27 @@ describe("Vigía: detección de patrones", () => {
 
     const meta = fakeMeta([]);
     const analyst = await loginAs("analyst", await seedOrgRow());
-    const none = await apiJson<{ alerts: AlertView[] }>("/v1/console/vigia/run", { method: "POST", token: analyst.token });
+    const none = await apiJson<{ alerts: AlertView[] }>("/v1/console/vigia/run", {
+      method: "POST",
+      token: analyst.token,
+    });
     expect(none.status).toBe(200);
     expect(none.body.alerts).toEqual([]);
     expect(meta.requests).toHaveLength(0);
 
     // Un quinto caso de una tercera víctima en Santa Rosa: ahora sí (la celda se normaliza al distrito).
-    const org = (await env.DB.prepare("SELECT org_id FROM cases WHERE zona_cuadricula = 'Santa Rosa - S1' LIMIT 1").first<{ org_id: string }>())!.org_id;
+    const org = (await env.DB.prepare(
+      "SELECT org_id FROM cases WHERE zona_cuadricula = 'Santa Rosa - S1' LIMIT 1",
+    ).first<{ org_id: string }>())!.org_id;
     const third = await seedDevice(org);
-    await seedCase({ orgId: org, device: third, zona: "santa-rosa", grupo: "Los Ficticios del Cerro", canal: "otro", primer_contacto: daysAgo(3) });
+    await seedCase({
+      orgId: org,
+      device: third,
+      zona: "santa-rosa",
+      grupo: "Los Ficticios del Cerro",
+      canal: "otro",
+      primer_contacto: daysAgo(3),
+    });
     patterns = await detectPatterns(env);
     const sur = patterns.filter((p) => p.zona === "santa-rosa");
     expect(sur).toHaveLength(1);
@@ -78,15 +110,47 @@ describe("Vigía: detección de patrones", () => {
   it("los casos fuera de la ventana de 14 días, sin consentimiento comunitario o sin distrito no cuentan", async () => {
     const org = await seedOrgRow();
     const devs = [await seedDevice(org), await seedDevice(org), await seedDevice(org)];
-    for (let i = 0; i < 3; i++) await seedCase({ orgId: org, device: devs[i]!, zona: "chaclacayo", grupo: "Los Lejanos", canal: "otro", primer_contacto: daysAgo(2 + i) });
+    for (let i = 0; i < 3; i++)
+      await seedCase({
+        orgId: org,
+        device: devs[i]!,
+        zona: "chaclacayo",
+        grupo: "Los Lejanos",
+        canal: "otro",
+        primer_contacto: daysAgo(2 + i),
+      });
     // Dos casos más del mismo patrón, pero 20 días antes: no caben en la misma ventana.
-    for (let i = 0; i < 2; i++) await seedCase({ orgId: org, device: devs[i]!, zona: "chaclacayo", grupo: "Los Lejanos", canal: "otro", primer_contacto: daysAgo(25 + i) });
+    for (let i = 0; i < 2; i++)
+      await seedCase({
+        orgId: org,
+        device: devs[i]!,
+        zona: "chaclacayo",
+        grupo: "Los Lejanos",
+        canal: "otro",
+        primer_contacto: daysAgo(25 + i),
+      });
     // Y dos dentro de la ventana pero sin consentimiento comunitario.
     for (let i = 0; i < 2; i++) {
-      await seedCase({ orgId: org, device: devs[i]!, zona: "chaclacayo", grupo: "Los Lejanos", canal: "otro", primer_contacto: daysAgo(4), consent: "solo_denuncia" });
+      await seedCase({
+        orgId: org,
+        device: devs[i]!,
+        zona: "chaclacayo",
+        grupo: "Los Lejanos",
+        canal: "otro",
+        primer_contacto: daysAgo(4),
+        consent: "solo_denuncia",
+      });
     }
     // Y cinco en una zona que no es un distrito (un área de una app antigua).
-    for (let i = 0; i < 5; i++) await seedCase({ orgId: org, device: devs[i % 3]!, zona: "Lima Este", grupo: "Los Lejanos", canal: "otro", primer_contacto: daysAgo(3) });
+    for (let i = 0; i < 5; i++)
+      await seedCase({
+        orgId: org,
+        device: devs[i % 3]!,
+        zona: "Lima Este",
+        grupo: "Los Lejanos",
+        canal: "otro",
+        primer_contacto: daysAgo(3),
+      });
     const patterns = await detectPatterns(env);
     expect(patterns.some((p) => p.zona === "chaclacayo")).toBe(false);
     expect(patterns.some((p) => p.cases.some((c) => c.zona === "Lima Este"))).toBe(false);
@@ -95,16 +159,44 @@ describe("Vigía: detección de patrones", () => {
   it("forma del seed del demo: agrupa por distrito (con sus celdas) y reúne Los X + Yape en San Juan de Lurigancho", async () => {
     const org = await seedOrgRow("Asociación ficticia del demo");
     const mk = async (o: { zona: string; dia: number; grupo: string | null; frases: string[] }) =>
-      seedCase({ orgId: org, device: await seedDevice(org), zona: o.zona, grupo: o.grupo, canal: "yape", frases: o.frases, primer_contacto: daysAgo(o.dia) });
+      seedCase({
+        orgId: org,
+        device: await seedDevice(org),
+        zona: o.zona,
+        grupo: o.grupo,
+        canal: "yape",
+        frases: o.frases,
+        primer_contacto: daysAgo(o.dia),
+      });
     const A = await mk({ zona: "san-juan-de-lurigancho", dia: 13, grupo: "Los X", frases: ["ya sabes lo que pasa"] });
-    const D = await mk({ zona: "san-juan-de-lurigancho", dia: 11, grupo: "Los X", frases: ["aquí todos pagan su colaboración", "habla con el jefe"] });
-    const E = await mk({ zona: "san-juan-de-lurigancho", dia: 9, grupo: "Los X", frases: ["no llames a la policía", "habla con el jefe"] });
+    const D = await mk({
+      zona: "san-juan-de-lurigancho",
+      dia: 11,
+      grupo: "Los X",
+      frases: ["aquí todos pagan su colaboración", "habla con el jefe"],
+    });
+    const E = await mk({
+      zona: "san-juan-de-lurigancho",
+      dia: 9,
+      grupo: "Los X",
+      frases: ["no llames a la policía", "habla con el jefe"],
+    });
     const B = await mk({ zona: "comas", dia: 8, grupo: null, frases: ["habla con el jefe"] });
-    const F = await mk({ zona: "san-juan-de-lurigancho", dia: 6, grupo: "Los X", frases: ["habla con el jefe si quieres arreglar"] });
+    const F = await mk({
+      zona: "san-juan-de-lurigancho",
+      dia: 6,
+      grupo: "Los X",
+      frases: ["habla con el jefe si quieres arreglar"],
+    });
     const C = await mk({ zona: "san-juan-de-lurigancho", dia: 5, grupo: null, frases: ["tienes hasta el viernes"] });
     const G = await mk({ zona: "san-juan-de-lurigancho", dia: 3, grupo: "Los X", frases: ["habla con el jefe"] });
     // Una celda del mismo distrito es el mismo distrito; un área ("Lima Este") no es un distrito.
-    const E12 = await mk({ zona: "San Juan de Lurigancho - E12", dia: 4, grupo: "Los X", frases: ["habla con el jefe"] });
+    const E12 = await mk({
+      zona: "San Juan de Lurigancho - E12",
+      dia: 4,
+      grupo: "Los X",
+      frases: ["habla con el jefe"],
+    });
     await mk({ zona: "Lima Este", dia: 4, grupo: "Los X", frases: ["habla con el jefe"] });
 
     const patterns = (await detectPatterns(env)).filter((p) => ["san-juan-de-lurigancho", "comas"].includes(p.zona));
@@ -137,11 +229,21 @@ describe("Vigía: borradores, aprobación y aislamiento", () => {
   it("redacta una alerta por patrón y distrito en la organización central, sin números completos y con tarjeta; la ve la víctima de ese distrito", async () => {
     const orgA = await seedOrg({ invites: 2 });
     const orgB = await seedOrg({ invites: 2 });
-    const { cases } = await seedPattern({ zona: "mi-peru", n: 5, victims: 3, orgs: [orgA.orgId, orgB.orgId], grupo: "Los Inventados" });
+    const { cases } = await seedPattern({
+      zona: "mi-peru",
+      n: 5,
+      victims: 3,
+      orgs: [orgA.orgId, orgB.orgId],
+      grupo: "Los Inventados",
+    });
     // Otros patrones de este archivo también pueden disparar: el modelo simulado responde a todos.
     const meta = fakeMeta([], (req) => [final(draftFrom(req))]);
     const analyst = await loginAs("analyst", orgA.orgId);
-    const run = await apiJson<{ alerts: AlertView[] }>("/v1/console/vigia/run", { method: "POST", token: analyst.token, json: { image: true } });
+    const run = await apiJson<{ alerts: AlertView[] }>("/v1/console/vigia/run", {
+      method: "POST",
+      token: analyst.token,
+      json: { image: true },
+    });
     expect(run.status).toBe(200);
     // Una sola alerta, aunque los casos lleguen por dos organizaciones.
     const alerts = run.body.alerts.filter((a) => a.distrito === "mi-peru");
@@ -155,7 +257,9 @@ describe("Vigía: borradores, aprobación y aislamiento", () => {
     // La petición al modelo no lleva seudónimos ni identificadores de dispositivo.
     const sent = JSON.stringify(mine[0]!.body);
     for (const c of cases) {
-      const row = await env.DB.prepare("SELECT device_id, seudonimo_victima FROM cases WHERE id = ?").bind(c.id).first<{ device_id: string; seudonimo_victima: string }>();
+      const row = await env.DB.prepare("SELECT device_id, seudonimo_victima FROM cases WHERE id = ?")
+        .bind(c.id)
+        .first<{ device_id: string; seudonimo_victima: string }>();
       expect(sent).not.toContain(row!.device_id);
       expect(sent).not.toContain(row!.seudonimo_victima);
     }
@@ -172,7 +276,11 @@ describe("Vigía: borradores, aprobación y aislamiento", () => {
     expect(images).toBe(meta.responses().length);
     // Segunda corrida: el patrón ya tiene alerta en el distrito (deduplicación por pattern_key): no llama al modelo.
     const calls = meta.requests.length;
-    const run2 = await apiJson<{ alerts: AlertView[] }>("/v1/console/vigia/run", { method: "POST", token: analyst.token, json: { image: false } });
+    const run2 = await apiJson<{ alerts: AlertView[] }>("/v1/console/vigia/run", {
+      method: "POST",
+      token: analyst.token,
+      json: { image: false },
+    });
     expect(run2.body.alerts).toEqual([]);
     expect(meta.requests.length).toBe(calls);
 
@@ -189,16 +297,25 @@ describe("Vigía: borradores, aprobación y aislamiento", () => {
     const before = await apiJson<{ alerts: unknown[] }>("/v1/alerts", { token: victimMiPeru.access_token });
     expect(before.body.alerts).toEqual([]);
 
-    const approved = await apiJson<AlertView>(`/v1/console/alerts/${alert.id}/decision`, { token: reviewerB.token, json: { decision: "aprobar" } });
+    const approved = await apiJson<AlertView>(`/v1/console/alerts/${alert.id}/decision`, {
+      token: reviewerB.token,
+      json: { decision: "aprobar" },
+    });
     expect(approved.status).toBe(200);
     expect(approved.body.status).toBe("aprobada");
 
-    const seen = await apiJson<{ alerts: Array<{ id: string; zona: string; distrito: string }> }>("/v1/alerts", { token: victimMiPeru.access_token });
+    const seen = await apiJson<{ alerts: Array<{ id: string; zona: string; distrito: string }> }>("/v1/alerts", {
+      token: victimMiPeru.access_token,
+    });
     expect(seen.body.alerts.map((a) => a.id)).toEqual([alert.id]);
     expect(seen.body.alerts[0]).toMatchObject({ zona: "Mi Perú", distrito: "mi-peru" });
-    expect((await apiJson<{ alerts: unknown[] }>("/v1/alerts", { token: victimOtra.access_token })).body.alerts).toEqual([]);
+    expect(
+      (await apiJson<{ alerts: unknown[] }>("/v1/alerts", { token: victimOtra.access_token })).body.alerts,
+    ).toEqual([]);
     // La app puede pedir el distrito elegido en el celular.
-    const elegido = await apiJson<{ alerts: Array<{ id: string }> }>("/v1/alerts?zona=mi-peru", { token: victimOtra.access_token });
+    const elegido = await apiJson<{ alerts: Array<{ id: string }> }>("/v1/alerts?zona=mi-peru", {
+      token: victimOtra.access_token,
+    });
     expect(elegido.body.alerts.map((a) => a.id)).toEqual([alert.id]);
     // Y está en el portal público del distrito.
     const pub = await apiJson<{ alerts: Array<{ id: string }> }>("/v1/public/alerts?zona=mi-peru");
@@ -222,7 +339,11 @@ describe("Vigía: borradores, aprobación y aislamiento", () => {
     expect(out.cuerpo).toBe("Desde el 12 de octubre piden pagar a la cuenta [número omitido]. Llama al 105.");
     expect(out.zona).toBe("Lima Este");
     expect(out.evidencia).toEqual(["FICHA-A"]);
-    const d = sanitizeAlert({ titulo: "t", cuerpo: "c", zona: "x", modalidad: "m", que_hacer: [], evidencia: [] }, "san-juan-de-lurigancho", []);
+    const d = sanitizeAlert(
+      { titulo: "t", cuerpo: "c", zona: "x", modalidad: "m", que_hacer: [], evidencia: [] },
+      "san-juan-de-lurigancho",
+      [],
+    );
     expect(d.zona).toBe("San Juan de Lurigancho");
   });
 });

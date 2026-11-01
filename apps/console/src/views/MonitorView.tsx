@@ -57,7 +57,12 @@ const ACTION_LABEL: Record<string, string> = {
   "case.submit": "Se envió un caso",
 };
 
-const ACTOR_LABEL: Record<string, string> = { ...ROLE_LABEL, victim: "Víctima", system: "Sistema", business: "Negocio" };
+const ACTOR_LABEL: Record<string, string> = {
+  ...ROLE_LABEL,
+  victim: "Víctima",
+  system: "Sistema",
+  business: "Negocio",
+};
 
 export function actionLabel(action: string): string {
   return ACTION_LABEL[action] ?? action;
@@ -105,14 +110,17 @@ export function MonitorView() {
         title="Monitoreo"
         actions={
           <>
-            {mon.data ? <span className="small muted">Leído a las {fmtStamp(mon.data.generado_en).slice(-8)}</span> : null}
+            {mon.data ? (
+              <span className="small muted">Leído a las {fmtStamp(mon.data.generado_en).slice(-8)}</span>
+            ) : null}
             <button type="button" className="btn btn-sm" onClick={reload} disabled={mon.loading}>
               <Icon name="refresh" size={15} /> {mon.loading && mon.data ? "Actualizando…" : "Actualizar"}
             </button>
           </>
         }
       >
-        Blindaje en vivo: lo que espera al equipo, cada servicio medido ahora y la velocidad de esta consola. Se actualiza cada 30 segundos.
+        Blindaje en vivo: lo que espera al equipo, cada servicio medido ahora y la velocidad de esta consola. Se
+        actualiza cada 30 segundos.
       </PageHead>
       {soloLectura ? <Recorrido /> : null}
       {mon.error ? <ErrorBox error={mon.error} onRetry={reload} /> : null}
@@ -142,10 +150,34 @@ export function MonitorBody({ m }: { m: ConsoleMonitor }) {
 
 function Queues({ m }: { m: ConsoleMonitor }) {
   const rows: Array<{ n: number; one: string; many: string; to: string; action: string }> = [
-    { n: m.vinculos.probable + m.vinculos.por_revisar, one: "vínculo por revisar", many: "vínculos por revisar", to: "/vinculos", action: "Abrir la cola" },
-    { n: m.pendientes.alertas, one: "alerta por aprobar", many: "alertas por aprobar", to: "/alertas", action: "Ver alertas" },
-    { n: m.pendientes.recomendaciones, one: "consejo por aprobar", many: "consejos por aprobar", to: "/recomendaciones", action: "Ver consejos" },
-    { n: m.pendientes.hipotesis, one: "hipótesis por decidir", many: "hipótesis por decidir", to: "/redes", action: "Ver redes" },
+    {
+      n: m.vinculos.probable + m.vinculos.por_revisar,
+      one: "vínculo por revisar",
+      many: "vínculos por revisar",
+      to: "/vinculos",
+      action: "Abrir la cola",
+    },
+    {
+      n: m.pendientes.alertas,
+      one: "alerta por aprobar",
+      many: "alertas por aprobar",
+      to: "/alertas",
+      action: "Ver alertas",
+    },
+    {
+      n: m.pendientes.recomendaciones,
+      one: "consejo por aprobar",
+      many: "consejos por aprobar",
+      to: "/recomendaciones",
+      action: "Ver consejos",
+    },
+    {
+      n: m.pendientes.hipotesis,
+      one: "hipótesis por decidir",
+      many: "hipótesis por decidir",
+      to: "/redes",
+      action: "Ver redes",
+    },
   ];
   const total = rows.reduce((s, r) => s + r.n, 0);
   return (
@@ -212,7 +244,9 @@ function Services({ m }: { m: ConsoleMonitor }) {
                   </td>
                   <td className="num">
                     {fmtMs(s.latencia_ms)}
-                    {measuredAgo(s.medido_en, m.generado_en) ? <span className="small muted mon-detail">{measuredAgo(s.medido_en, m.generado_en)}</span> : null}
+                    {measuredAgo(s.medido_en, m.generado_en) ? (
+                      <span className="small muted mon-detail">{measuredAgo(s.medido_en, m.generado_en)}</span>
+                    ) : null}
                   </td>
                 </tr>
               );
@@ -223,7 +257,8 @@ function Services({ m }: { m: ConsoleMonitor }) {
       <p className="small muted mon-foot">
         API {m.api.version} ({m.api.entorno}).
         {m.api.colo ? ` Entró por ${m.api.colo}.` : ""}
-        {m.api.ubicacion ? ` Corre en ${m.api.ubicacion}, junto a la base.` : ""} Esta lectura tardó {fmtMs(m.api.ms)} en el servidor.
+        {m.api.ubicacion ? ` Corre en ${m.api.ubicacion}, junto a la base.` : ""} Esta lectura tardó {fmtMs(m.api.ms)}{" "}
+        en el servidor.
       </p>
     </section>
   );
@@ -255,7 +290,8 @@ function Speed({ m }: { m: ConsoleMonitor }) {
       ) : (
         <>
           <p className="small muted mon-explain">
-            Total es lo que esperaste desde tu navegador; servidor, lo que trabajó la API; la diferencia es el viaje por la red hasta Cloudflare.
+            Total es lo que esperaste desde tu navegador; servidor, lo que trabajó la API; la diferencia es el viaje por
+            la red hasta Cloudflare.
           </p>
           <div className="table-wrap">
             <table className="table mon-speed">
@@ -327,7 +363,8 @@ function Cases({ m }: { m: ConsoleMonitor }) {
         <dd className={c.con_error ? "mon-bad" : ""}>{fmtInt(c.con_error)}</dd>
         <dt>Vínculos</dt>
         <dd>
-          {fmtInt(v.confirmado)} confirmados, {fmtInt(v.probable + v.por_revisar)} por revisar y {fmtInt(v.descartado)} descartados
+          {fmtInt(v.confirmado)} confirmados, {fmtInt(v.probable + v.por_revisar)} por revisar y {fmtInt(v.descartado)}{" "}
+          descartados
         </dd>
         <dt>Redes</dt>
         <dd>{fmtInt(m.redes)}</dd>
@@ -350,7 +387,8 @@ function Budget({ m }: { m: ConsoleMonitor }) {
       </div>
       <Meter value={p.pct} label={`Presupuesto usado: ${fmtPct(p.pct * 100, 1)}`} ticks={[0.8]} />
       <p className="small mon-budget">
-        <span className="strong">{fmtUsd(p.gastado_usd)}</span> de {fmtUsd(p.presupuesto_usd, 0)} ({fmtPct(p.pct * 100, 1)}), hoy {fmtUsd(p.hoy_usd)}
+        <span className="strong">{fmtUsd(p.gastado_usd)}</span> de {fmtUsd(p.presupuesto_usd, 0)} (
+        {fmtPct(p.pct * 100, 1)}), hoy {fmtUsd(p.hoy_usd)}
       </p>
     </section>
   );

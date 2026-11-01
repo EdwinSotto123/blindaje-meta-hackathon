@@ -1,14 +1,24 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Icon } from "@/components/Icon";
 import { T } from "@/components/ui";
 import { disguiseCopy as c } from "@/disguise/copy";
 import { getDisguiseRepo } from "@/disguise/provider";
-import { calculate, focus, initialVuelto, type Field, type Key, PinThrottle, pinCandidate, press, type VueltoState } from "@/disguise/vuelto";
+import {
+  calculate,
+  focus,
+  initialVuelto,
+  type Field,
+  type Key,
+  PinThrottle,
+  pinCandidate,
+  press,
+  type VueltoState,
+} from "@/disguise/vuelto";
 import { parseSoles, soles } from "@/lib/format";
 import type { AccessResult } from "@/security/access";
-import { colors, fonts, MAX_FONT_SCALE, radius } from "@/theme/tokens";
+import { colors, fonts, radius } from "@/theme/tokens";
 
 type Props = {
   initialTotalCents?: number | null;
@@ -40,7 +50,9 @@ export function VueltoCalculator({ initialTotalCents, armed, tryAccess, onAccess
   const [st, setSt] = useState<VueltoState>(() => initialVuelto(initialTotalCents));
   const [busy, setBusy] = useState(false);
   const stRef = useRef(st);
-  stRef.current = st;
+  useLayoutEffect(() => {
+    stRef.current = st;
+  });
 
   const tap = (k: Key) => setSt((s) => press(s, k));
   const pick = (f: Field) => setSt((s) => focus(s, f));
@@ -105,7 +117,14 @@ export function VueltoCalculator({ initialTotalCents, armed, tryAccess, onAccess
             </Pressable>
           );
         })}
-        <View style={s.result} accessibilityLiveRegion="polite" accessible accessibilityLabel={result === null ? "" : `${result >= 0 ? c.vueltos.vuelto : c.vueltos.falta} ${soles(Math.abs(result))}`}>
+        <View
+          style={s.result}
+          accessibilityLiveRegion="polite"
+          accessible
+          accessibilityLabel={
+            result === null ? "" : `${result >= 0 ? c.vueltos.vuelto : c.vueltos.falta} ${soles(Math.abs(result))}`
+          }
+        >
           {result !== null ? (
             <>
               <T variant="h2">{result >= 0 ? c.vueltos.vuelto : c.vueltos.falta}</T>
@@ -132,7 +151,13 @@ export function VueltoCalculator({ initialTotalCents, armed, tryAccess, onAccess
                 testID={`tecla-${k}`}
                 style={({ pressed }) => [s.key, pressed && s.keyPressed]}
               >
-                {k === "back" ? <Icon name="back" size={26} /> : <Text maxFontSizeMultiplier={1.2} style={s.keyText}>{k}</Text>}
+                {k === "back" ? (
+                  <Icon name="back" size={26} />
+                ) : (
+                  <Text maxFontSizeMultiplier={1.2} style={s.keyText}>
+                    {k}
+                  </Text>
+                )}
               </Pressable>
             ))}
           </View>
@@ -184,7 +209,13 @@ const s = StyleSheet.create({
   },
   fieldOn: { borderColor: colors.tinta, borderWidth: 2.5 },
   fieldValue: { fontFamily: fonts.textoBold, fontSize: 28, color: colors.tinta, flexShrink: 1, textAlign: "right" },
-  result: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
+  result: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 4,
+  },
   mark: { backgroundColor: colors.resaltador, borderRadius: radius.marca, paddingHorizontal: 10, paddingVertical: 2 },
   resultValue: { fontFamily: fonts.textoBold, fontSize: 26, color: colors.tinta },
   row: { flexDirection: "row", gap: 8 },

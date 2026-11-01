@@ -14,7 +14,8 @@ export interface WavInfo {
 export function parseWav(buf: ArrayBuffer): WavInfo | null {
   if (buf.byteLength < 44) return null;
   const v = new DataView(buf);
-  const tag = (o: number) => String.fromCharCode(v.getUint8(o), v.getUint8(o + 1), v.getUint8(o + 2), v.getUint8(o + 3));
+  const tag = (o: number) =>
+    String.fromCharCode(v.getUint8(o), v.getUint8(o + 1), v.getUint8(o + 2), v.getUint8(o + 3));
   if (tag(0) !== "RIFF" || tag(8) !== "WAVE") return null;
   let off = 12;
   let fmt: { format: number; channels: number; sampleRate: number; bits: number } | null = null;

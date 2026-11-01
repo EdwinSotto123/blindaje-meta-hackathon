@@ -33,13 +33,29 @@ export class CitationCollector {
 /** Siete o más dígitos seguidos (con espacios, puntos o guiones sueltos): teléfonos y cuentas. */
 const LONG_NUMBER_RE = /\+?\d(?:[\s.-]?\d){6,}/g;
 const ISO_DATE_RE = /\b(\d{4})-(\d{2})-(\d{2})(?:T[\d:.]+(?:Z|[+-]\d{2}:?\d{2})?)?\b/g;
-const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const MESES = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
 
 export const NUMBER_PLACEHOLDER = "[número omitido]";
 
 /** Reemplaza fechas ISO por "12 de octubre" (para que no parezcan números largos). */
 export function humanizeIsoDates(text: string): string {
-  return text.replace(ISO_DATE_RE, (_m, _y: string, mo: string, d: string) => `${Number(d)} de ${MESES[Number(mo) - 1] ?? mo}`);
+  return text.replace(
+    ISO_DATE_RE,
+    (_m, _y: string, mo: string, d: string) => `${Number(d)} de ${MESES[Number(mo) - 1] ?? mo}`,
+  );
 }
 
 /** Reemplaza teléfonos y cuentas por un marcador. Las fechas ISO (2026-10-12) se respetan. */
@@ -76,7 +92,10 @@ export function mapStrings<T>(value: T, fn: (s: string, key: string | null) => s
 export function stripCitations(text: string): string {
   return text
     .replace(/\s*\(\s*(?:(?:EV|FICHA|VIN|V|ID|IMG|R)-[A-Za-z0-9-]+\s*[,;]?\s*)+\)/g, "")
-    .replace(/\b(?:EV-[A-Z0-9]{1,6}(?:-\d+|\d+)|FICHA-[A-Z0-9]{1,6}|VIN-\d+|V-\d+|ID-[0-9a-f]{6}|IMG-\d+|R-\d{3,})\b/g, "")
+    .replace(
+      /\b(?:EV-[A-Z0-9]{1,6}(?:-\d+|\d+)|FICHA-[A-Z0-9]{1,6}|VIN-\d+|V-\d+|ID-[0-9a-f]{6}|IMG-\d+|R-\d{3,})\b/g,
+      "",
+    )
     .replace(/\s{2,}/g, " ")
     .replace(/\s+([.,;:])/g, "$1")
     .trim();
@@ -97,10 +116,19 @@ export function toAgentError(err: unknown, agent: string): unknown {
       param: (err as { param?: unknown }).param ?? null,
       message: err.message.slice(0, 300),
     });
-    return new ApiError("upstream_error", `El agente ${agent} no pudo completar el análisis con la Meta Model API. Intenta de nuevo en unos minutos.`, {
-      status: 502,
-      details: { agent, error: err.name, ...(typeof code === "string" ? { code } : {}), ...(typeof status === "number" ? { status } : {}) },
-    });
+    return new ApiError(
+      "upstream_error",
+      `El agente ${agent} no pudo completar el análisis con la Meta Model API. Intenta de nuevo en unos minutos.`,
+      {
+        status: 502,
+        details: {
+          agent,
+          error: err.name,
+          ...(typeof code === "string" ? { code } : {}),
+          ...(typeof status === "number" ? { status } : {}),
+        },
+      },
+    );
   }
   return err;
 }

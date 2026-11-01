@@ -19,7 +19,12 @@ export default function Calculadora() {
   return (
     <Paper testID="calculadora">
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginLeft: -12 }}>
-        <IconButton icon="back" label={c.vueltos.volver} onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} testID="volver" />
+        <IconButton
+          icon="back"
+          label={c.vueltos.volver}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
+          testID="volver"
+        />
         <T variant="title">{c.vueltos.title}</T>
       </View>
       <VueltoCalculator

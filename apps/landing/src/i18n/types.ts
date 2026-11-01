@@ -271,7 +271,13 @@ export interface Dict {
     signals: {
       title: string;
       lead: string;
-      items: { kind: "voz" | "imagen" | "frase" | "id" | "cobro" | "zona"; name: string; text: string; example: string; how: string }[];
+      items: {
+        kind: "voz" | "imagen" | "frase" | "id" | "cobro" | "zona";
+        name: string;
+        text: string;
+        example: string;
+        how: string;
+      }[];
       note: string;
     };
     problem: { gapsTitle: string };
@@ -322,7 +328,14 @@ export interface Dict {
     /** Menú de secciones en celular y tableta. */
     menu: { label: string; faq: string };
     /** Cuatro resultados medidos, arriba de las tablas. */
-    results: { label: string; highlights: { id: string; label: string }[]; leakId: string; leakLabel: string; target: string; more: string };
+    results: {
+      label: string;
+      highlights: { id: string; label: string }[];
+      leakId: string;
+      leakLabel: string;
+      target: string;
+      more: string;
+    };
     faq: { title: string; lead: string; items: { q: string; a: string }[] };
   };
   /** Texto propio del diseño "informe impreso": titulares cortos, entradas, filas y pies de foto. */

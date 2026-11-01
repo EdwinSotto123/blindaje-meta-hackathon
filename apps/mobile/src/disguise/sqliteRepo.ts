@@ -1,5 +1,14 @@
 import { DEMO_SEED } from "@/config";
-import { DEMO_COMPRAS, DEMO_FIADOS, DEMO_VENTAS, type Compra, type DisguiseRepo, type Fiado, type Venta, type Vuelto } from "@/disguise/repo";
+import {
+  DEMO_COMPRAS,
+  DEMO_FIADOS,
+  DEMO_VENTAS,
+  type Compra,
+  type DisguiseRepo,
+  type Fiado,
+  type Venta,
+  type Vuelto,
+} from "@/disguise/repo";
 import { dayKey } from "@/lib/format";
 import { disguiseDb } from "@/storage/db";
 
@@ -20,18 +29,35 @@ export class SqliteDisguiseRepo implements DisguiseRepo {
     if ((n?.n ?? 0) > 0) return;
     const base = Date.now() - DEMO_VENTAS.length * 600_000;
     for (const [i, [d, c]] of DEMO_VENTAS.entries()) {
-      await db.runAsync("INSERT INTO ventas (descripcion, cents, dia, created_at) VALUES (?, ?, ?, ?)", d, c, dayKey(), base + i * 600_000);
+      await db.runAsync(
+        "INSERT INTO ventas (descripcion, cents, dia, created_at) VALUES (?, ?, ?, ?)",
+        d,
+        c,
+        dayKey(),
+        base + i * 600_000,
+      );
     }
     const f = await db.getFirstAsync<{ n: number }>("SELECT COUNT(*) AS n FROM fiados");
     if ((f?.n ?? 0) === 0) {
       for (const [i, [nombre, d, c]] of DEMO_FIADOS.entries()) {
-        await db.runAsync("INSERT INTO fiados (nombre, descripcion, cents, pagado, created_at) VALUES (?, ?, ?, 0, ?)", nombre, d, c, base + i);
+        await db.runAsync(
+          "INSERT INTO fiados (nombre, descripcion, cents, pagado, created_at) VALUES (?, ?, ?, 0, ?)",
+          nombre,
+          d,
+          c,
+          base + i,
+        );
       }
     }
     const k = await db.getFirstAsync<{ n: number }>("SELECT COUNT(*) AS n FROM compras");
     if ((k?.n ?? 0) === 0) {
       for (const [i, [nombre, c]] of DEMO_COMPRAS.entries()) {
-        await db.runAsync("INSERT INTO compras (nombre, cents, hecho, created_at) VALUES (?, ?, 0, ?)", nombre, c, base + i);
+        await db.runAsync(
+          "INSERT INTO compras (nombre, cents, hecho, created_at) VALUES (?, ?, 0, ?)",
+          nombre,
+          c,
+          base + i,
+        );
       }
     }
   }
@@ -42,7 +68,13 @@ export class SqliteDisguiseRepo implements DisguiseRepo {
   }
   async addVenta(descripcion: string, cents: number) {
     const db = await this.db();
-    await db.runAsync("INSERT INTO ventas (descripcion, cents, dia, created_at) VALUES (?, ?, ?, ?)", descripcion, cents, dayKey(), Date.now());
+    await db.runAsync(
+      "INSERT INTO ventas (descripcion, cents, dia, created_at) VALUES (?, ?, ?, ?)",
+      descripcion,
+      cents,
+      dayKey(),
+      Date.now(),
+    );
   }
   async deleteVenta(id: number) {
     const db = await this.db();
@@ -54,7 +86,13 @@ export class SqliteDisguiseRepo implements DisguiseRepo {
   }
   async addFiado(nombre: string, descripcion: string, cents: number) {
     const db = await this.db();
-    await db.runAsync("INSERT INTO fiados (nombre, descripcion, cents, pagado, created_at) VALUES (?, ?, ?, 0, ?)", nombre, descripcion, cents, Date.now());
+    await db.runAsync(
+      "INSERT INTO fiados (nombre, descripcion, cents, pagado, created_at) VALUES (?, ?, ?, 0, ?)",
+      nombre,
+      descripcion,
+      cents,
+      Date.now(),
+    );
   }
   async setFiadoPagado(id: number, pagado: boolean) {
     const db = await this.db();
@@ -66,7 +104,12 @@ export class SqliteDisguiseRepo implements DisguiseRepo {
   }
   async addCompra(nombre: string, cents: number | null) {
     const db = await this.db();
-    await db.runAsync("INSERT INTO compras (nombre, cents, hecho, created_at) VALUES (?, ?, 0, ?)", nombre, cents, Date.now());
+    await db.runAsync(
+      "INSERT INTO compras (nombre, cents, hecho, created_at) VALUES (?, ?, 0, ?)",
+      nombre,
+      cents,
+      Date.now(),
+    );
   }
   async toggleCompra(id: number) {
     const db = await this.db();
@@ -86,6 +129,11 @@ export class SqliteDisguiseRepo implements DisguiseRepo {
   }
   async addVuelto(totalCents: number, pagoCents: number) {
     const db = await this.db();
-    await db.runAsync("INSERT INTO vueltos (total_cents, pago_cents, created_at) VALUES (?, ?, ?)", totalCents, pagoCents, Date.now());
+    await db.runAsync(
+      "INSERT INTO vueltos (total_cents, pago_cents, created_at) VALUES (?, ?, ?)",
+      totalCents,
+      pagoCents,
+      Date.now(),
+    );
   }
 }

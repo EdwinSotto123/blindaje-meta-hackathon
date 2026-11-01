@@ -36,13 +36,17 @@ const messages = {
 <section class="section pilot-field" id="piloto" aria-labelledby="piloto-title">
   <div class="wrap grid pilot">
     <div class="pilot__text" data-reveal>
-      <h2 id="piloto-title" class="head">{d.page.pilot.title}</h2>
+      <h2 id="piloto-title" class="head">
+        {d.page.pilot.title}
+      </h2>
       <p class="lead">{p.lead}</p>
       <p class="soft">{p.who}</p>
       <ol class="pilot__steps" role="list">
         {p.steps.map((st, i) => (
           <li>
-            <span class="pilot__n num" aria-hidden="true">{i + 1}</span>
+            <span class="pilot__n num" aria-hidden="true">
+              {i + 1}
+            </span>
             <span>{st}</span>
           </li>
         ))}
@@ -65,18 +69,48 @@ const messages = {
         <div class="pform__grid">
           <div class="field field--full">
             <label for="pf-org">{f.org}</label>
-            <input id="pf-org" name="org_name" type="text" autocomplete="organization" required minlength="2" maxlength="160" aria-describedby="pf-org-err" />
+            <input
+              id="pf-org"
+              name="org_name"
+              type="text"
+              autocomplete="organization"
+              required
+              minlength="2"
+              maxlength="160"
+              aria-describedby="pf-org-err"
+            />
             <p class="field__err" id="pf-org-err" hidden></p>
           </div>
           <div class="field">
             <label for="pf-name">{f.name}</label>
-            <input id="pf-name" name="contact_name" type="text" autocomplete="name" required minlength="2" maxlength="120" aria-describedby="pf-name-err" />
+            <input
+              id="pf-name"
+              name="contact_name"
+              type="text"
+              autocomplete="name"
+              required
+              minlength="2"
+              maxlength="120"
+              aria-describedby="pf-name-err"
+            />
             <p class="field__err" id="pf-name-err" hidden></p>
           </div>
           <div class="field">
             <label for="pf-contact">{f.contact}</label>
-            <input id="pf-contact" name="contact" type="text" spellcheck="false" autocapitalize="off" required minlength="5" maxlength="160" aria-describedby="pf-contact-hint pf-contact-err" />
-            <p class="field__hint" id="pf-contact-hint">{f.contactHint}</p>
+            <input
+              id="pf-contact"
+              name="contact"
+              type="text"
+              spellcheck="false"
+              autocapitalize="off"
+              required
+              minlength="5"
+              maxlength="160"
+              aria-describedby="pf-contact-hint pf-contact-err"
+            />
+            <p class="field__hint" id="pf-contact-hint">
+              {f.contactHint}
+            </p>
             <p class="field__err" id="pf-contact-err" hidden></p>
           </div>
         </div>
@@ -84,35 +118,49 @@ const messages = {
         <details class="more">
           <summary>{f.more}</summary>
           <div class="pform__grid more__grid">
-          <div class="field">
-            <label for="pf-sector">{f.sector}</label>
-            <select id="pf-sector" name="sector">
-              <option value="">{f.sectorNone}</option>
-              {f.sectors.map((s) => <option value={s.value}>{s.label}</option>)}
-            </select>
-          </div>
-          <div class="field">
-            <label for="pf-district">{f.district}</label>
-            <input id="pf-district" name="district" type="text" autocomplete="address-level2" maxlength="80" />
-          </div>
-          <div class="field">
-            <label for="pf-members">{f.members}</label>
-            <input id="pf-members" name="members" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="7" aria-describedby="pf-members-err" />
-            <p class="field__err" id="pf-members-err" hidden></p>
-          </div>
-          <div class="field field--full">
-            <label for="pf-message">{f.message}</label>
-            <textarea id="pf-message" name="message" rows="4" maxlength="2000"></textarea>
-          </div>
+            <div class="field">
+              <label for="pf-sector">{f.sector}</label>
+              <select id="pf-sector" name="sector">
+                <option value="">{f.sectorNone}</option>
+                {f.sectors.map((s) => (
+                  <option value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+            <div class="field">
+              <label for="pf-district">{f.district}</label>
+              <input id="pf-district" name="district" type="text" autocomplete="address-level2" maxlength="80" />
+            </div>
+            <div class="field">
+              <label for="pf-members">{f.members}</label>
+              <input
+                id="pf-members"
+                name="members"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="7"
+                aria-describedby="pf-members-err"
+              />
+              <p class="field__err" id="pf-members-err" hidden></p>
+            </div>
+            <div class="field field--full">
+              <label for="pf-message">{f.message}</label>
+              <textarea id="pf-message" name="message" rows="4" maxlength="2000"></textarea>
+            </div>
           </div>
         </details>
 
         <div class="pform__captcha">
-          <p class="pform__captcha-label">{p.verifying}. <span data-turnstile-wait>{p.verifyingWait}</span></p>
+          <p class="pform__captcha-label">
+            {p.verifying}. <span data-turnstile-wait>{p.verifyingWait}</span>
+          </p>
           <div class="pform__turnstile" data-turnstile></div>
         </div>
 
-        <noscript><p class="pform__noscript">{p.noscript}</p></noscript>
+        <noscript>
+          <p class="pform__noscript">{p.noscript}</p>
+        </noscript>
 
         <div class="pform__actions">
           <button class="btn btn--mark" type="submit" data-submit disabled>
@@ -121,12 +169,18 @@ const messages = {
         </div>
 
         <div class="pform__status" role="status" aria-live="polite" data-status></div>
-        <p class="pform__privacy" id="pform-privacy">{p.privacy}</p>
+        <p class="pform__privacy" id="pform-privacy">
+          {p.privacy}
+        </p>
       </form>
 
       <div class="pform__done" data-done hidden tabindex="-1" role="region" aria-labelledby="pform-done-title">
-        <span class="pform__done-icon" aria-hidden="true"><Icon name="check" /></span>
-        <h3 id="pform-done-title" class="pform__done-title">{p.successTitle}</h3>
+        <span class="pform__done-icon" aria-hidden="true">
+          <Icon name="check" />
+        </span>
+        <h3 id="pform-done-title" class="pform__done-title">
+          {p.successTitle}
+        </h3>
         <p>{p.success}</p>
       </div>
     </div>
@@ -192,7 +246,9 @@ const messages = {
     border-radius: var(--radius);
     background: var(--papel);
     color: var(--ink);
-    box-shadow: 0 2px 4px rgb(90 30 12 / 0.2), 0 36px 60px -30px rgb(90 30 12 / 0.7);
+    box-shadow:
+      0 2px 4px rgb(90 30 12 / 0.2),
+      0 36px 60px -30px rgb(90 30 12 / 0.7);
   }
 
   .pilot__sheet :global(.soft),
@@ -449,7 +505,8 @@ const messages = {
     return (t.match(/\d/g) ?? []).length >= 6;
   }
 
-  const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=blindajeTurnstileReady";
+  const TURNSTILE_SRC =
+    "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=blindajeTurnstileReady";
 
   function initPilotForm(form: HTMLFormElement) {
     const msg = JSON.parse(form.dataset.messages ?? "{}") as Messages;
@@ -549,7 +606,11 @@ const messages = {
         [fields.org_name, fields.org_name.value.trim().length >= 2, msg.org],
         [fields.contact_name, fields.contact_name.value.trim().length >= 2, msg.name],
         [fields.contact, contactOk(fields.contact.value), msg.contact],
-        [fields.members, /^\d{0,7}$/.test(fields.members.value.trim()) && Number(fields.members.value.trim() || 0) <= 1_000_000, msg.members],
+        [
+          fields.members,
+          /^\d{0,7}$/.test(fields.members.value.trim()) && Number(fields.members.value.trim() || 0) <= 1_000_000,
+          msg.members,
+        ],
       ];
       let first: HTMLInputElement | null = null;
       for (const [input, ok, text] of checks) {

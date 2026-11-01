@@ -1,9 +1,9 @@
 """Tests con los modelos reales. Requieren el extra `models` y los pesos en ML_MODELS_DIR:
 
-    uv sync --extra dev --extra models
-    uv run python scripts/download_models.py
-    powershell -File scripts/make_test_audio.ps1   # voces sintéticas para la huella de voz
-    uv run pytest -m heavy
+uv sync --extra dev --extra models
+uv run python scripts/download_models.py
+powershell -File scripts/make_test_audio.ps1   # voces sintéticas para la huella de voz
+uv run pytest -m heavy
 """
 
 from __future__ import annotations
@@ -34,9 +34,10 @@ def _have_models() -> bool:
         import transformers  # noqa: F401
     except ImportError:
         return False
-    return all((MODELS / d / "config.json").exists() for d in ("multilingual-e5-small", "dinov2-small")) and (
-        MODELS / "spkrec-ecapa-voxceleb" / "hyperparams.yaml"
-    ).exists()
+    return (
+        all((MODELS / d / "config.json").exists() for d in ("multilingual-e5-small", "dinov2-small"))
+        and (MODELS / "spkrec-ecapa-voxceleb" / "hyperparams.yaml").exists()
+    )
 
 
 if not _have_models():
@@ -98,8 +99,10 @@ def _scene(seed: int) -> Image.Image:
     d = ImageDraw.Draw(img)
     for _ in range(12):
         x, y = rng.integers(0, 440), rng.integers(0, 280)
-        d.ellipse((x, y, x + rng.integers(20, 120), y + rng.integers(20, 120)),
-                  fill=tuple(int(c) for c in rng.integers(0, 255, 3)))
+        d.ellipse(
+            (x, y, x + rng.integers(20, 120), y + rng.integers(20, 120)),
+            fill=tuple(int(c) for c in rng.integers(0, 255, 3)),
+        )
     return img
 
 
@@ -114,8 +117,13 @@ def test_image_dinov2_reuse(real_client):
     a_recompressed = a.resize((360, 240)).rotate(3)
     b = _scene(2)
     outs = [
-        real_client.post("/image/crops", json={"image_b64": _b64(x, q), "boxes": [
-            {"x1": 0.1, "y1": 0.1, "x2": 0.6, "y2": 0.7, "concept": "fachada de tienda"}]}).json()
+        real_client.post(
+            "/image/crops",
+            json={
+                "image_b64": _b64(x, q),
+                "boxes": [{"x1": 0.1, "y1": 0.1, "x2": 0.6, "y2": 0.7, "concept": "fachada de tienda"}],
+            },
+        ).json()
         for x, q in ((a, 92), (a_recompressed, 40), (b, 92))
     ]
     assert outs[0]["model"] == "facebook/dinov2-small" and outs[0]["dim"] == 384
@@ -131,8 +139,10 @@ def test_image_dinov2_reuse(real_client):
 
 
 def _embed(client, wav: bytes, turns=None, exclude=None) -> dict:
-    r = client.post("/voice/embed", json={
-        "wav_b64": base64.b64encode(wav).decode(), "turns": turns, "exclude_vectors": exclude or []})
+    r = client.post(
+        "/voice/embed",
+        json={"wav_b64": base64.b64encode(wav).decode(), "turns": turns, "exclude_vectors": exclude or []},
+    )
     assert r.status_code == 200, r.text
     return r.json()
 
@@ -161,9 +171,12 @@ def test_voice_enroll_and_exclusion_with_turns(real_client):
     mixed = np.concatenate([a, z])
     cut = a.size * 1000 // 16_000
     end = mixed.size * 1000 // 16_000
-    body = _embed(real_client, to_wav(mixed), turns=[
-        {"speaker": "S1", "start_ms": 0, "end_ms": cut}, {"speaker": "S2", "start_ms": cut, "end_ms": end}],
-        exclude=[victim])
+    body = _embed(
+        real_client,
+        to_wav(mixed),
+        turns=[{"speaker": "S1", "start_ms": 0, "end_ms": cut}, {"speaker": "S2", "start_ms": cut, "end_ms": end}],
+        exclude=[victim],
+    )
     sp = {s["speaker"]: s for s in body["speakers"]}
     print(f"similitud con la víctima: S1={sp['S1']['victim_similarity']}, S2={sp['S2']['victim_similarity']}")
     assert sp["S1"]["excluded"] is True

@@ -1,0 +1,25 @@
+# Generados, dependencias y builds
+node_modules/
+dist/
+.astro/
+.wrangler/
+.turbo/
+coverage/
+pnpm-lock.yaml
+**/package-lock.json
+**/worker-configuration.d.ts
+# Copia generada de packages/shared (la escribe apps/mobile/scripts/sync-shared.mjs)
+apps/mobile/src/shared/
+apps/mobile/android/
+apps/mobile/ios/
+# Prosa, datos y código que no es JS/TS (Python usa ruff; SQL y Kotlin quedan como están)
+*.md
+docs/
+design/
+eval/data/
+eval/results/
+eval/report.json
+eval/demo/
+services/ml/
+eval/py/
+infra/

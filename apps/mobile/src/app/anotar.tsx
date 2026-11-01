@@ -41,7 +41,15 @@ export default function Anotar() {
         <T variant="titleSmall">{fiado ? c.anotar.tituloFiado : c.anotar.tituloVenta}</T>
       </View>
       {fiado ? (
-        <Field label={c.anotar.quien} placeholder={c.anotar.quienPlaceholder} value={nombre} onChangeText={setNombre} hand autoFocus testID="nombre" />
+        <Field
+          label={c.anotar.quien}
+          placeholder={c.anotar.quienPlaceholder}
+          value={nombre}
+          onChangeText={setNombre}
+          hand
+          autoFocus
+          testID="nombre"
+        />
       ) : null}
       <Field
         label={fiado ? c.anotar.queFiado : c.anotar.que}

@@ -22,26 +22,32 @@ const audience = new Intl.ListFormat(d.htmlLang, { type: "conjunction" }).format
 const photo = await getImage({ src: calle, widths: [480, 720, 960, 1200], format: "webp", quality: 78 });
 const portal = productShot("portal-zona-movil");
 const portalImg = portal
-  ? await getImage({ src: portal, widths: [240, 360, 480].filter((w) => w <= portal.width), format: "webp", quality: 80 })
+  ? await getImage({
+      src: portal,
+      widths: [240, 360, 480].filter((w) => w <= portal.width),
+      format: "webp",
+      quality: 80,
+    })
   : null;
 ---
 
 <section class="hero" aria-labelledby="hero-title">
   <div class="wrap hero__grid">
     <div class="hero__copy">
-      <h1 id="hero-title" class="display hero__title">{h.title}</h1>
+      <h1 id="hero-title" class="display hero__title">
+        {h.title}
+      </h1>
       <p class="lead hero__lead">{h.lead}</p>
       <div class="hero__cta">
         <a class="btn btn--mark" href={`${PORTAL_URL}/mapa`}>
           {h.ctaMap}
         </a>
-        <a class="btn btn--ghost" href="#como-funciona">{d.hero.ctaHow}</a>
+        <a class="btn btn--ghost" href="#como-funciona">
+          {d.hero.ctaHow}
+        </a>
       </div>
       <p class="hero__for">
-        {h.audienceLabel}{" "}
-        {
-          audience.map((p) => (p.type === "element" ? <strong>{p.value}</strong> : p.value))
-        }
+        {h.audienceLabel} {audience.map((p) => (p.type === "element" ? <strong>{p.value}</strong> : p.value))}
       </p>
     </div>
 
@@ -58,22 +64,20 @@ const portalImg = portal
           decoding="async"
         />
       </div>
-      {
-        portal && portalImg && (
-          <div class="phone">
-            <img
-              src={portalImg.src}
-              srcset={portalImg.srcSet.attribute}
-              sizes="210px"
-              width={portal.width}
-              height={portal.height}
-              alt={h.phoneAlt}
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        )
-      }
+      {portal && portalImg && (
+        <div class="phone">
+          <img
+            src={portalImg.src}
+            srcset={portalImg.srcSet.attribute}
+            sizes="210px"
+            width={portal.width}
+            height={portal.height}
+            alt={h.phoneAlt}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      )}
       <figcaption class="hero__cap">
         <span>{h.photoCredit}</span>
         <span>{h.phoneCap}</span>
@@ -85,7 +89,9 @@ const portalImg = portal
     <div class="wrap built__in">
       <p class="built__label">{d.lp.built.label}</p>
       <ul class="built__list" role="list">
-        {d.lp.built.items.map((m) => <li>{m}</li>)}
+        {d.lp.built.items.map((m) => (
+          <li>{m}</li>
+        ))}
       </ul>
     </div>
   </div>

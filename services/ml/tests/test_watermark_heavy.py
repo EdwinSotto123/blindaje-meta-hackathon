@@ -1,8 +1,8 @@
 """Trazabilidad de filtraciones con los modelos reales: insertar un mensaje y recuperarlo.
 
-    uv sync --extra dev --extra models
-    uv run python scripts/download_models.py
-    uv run pytest -m heavy tests/test_watermark_heavy.py -s
+uv sync --extra dev --extra models
+uv run python scripts/download_models.py
+uv run pytest -m heavy tests/test_watermark_heavy.py -s
 """
 
 from __future__ import annotations
@@ -28,8 +28,12 @@ os.environ.setdefault("NO_TORCH_COMPILE", "1")
 _DEFAULT_MODELS = Path(__file__).resolve().parent.parent / "models"
 MODELS = Path(os.environ.get("ML_MODELS_DIR", _DEFAULT_MODELS))
 SR = 16_000
-NEEDED = ["audioseal/detector_base.pth", "audioseal/generator_base.pth", "videoseal/detector.jit",
-          "videoseal/embedder.jit"]
+NEEDED = [
+    "audioseal/detector_base.pth",
+    "audioseal/generator_base.pth",
+    "videoseal/detector.jit",
+    "videoseal/embedder.jit",
+]
 
 
 def _have() -> bool:
@@ -75,15 +79,18 @@ def _speechlike(seconds: float = 8.0, seed: int = 0) -> np.ndarray:
 def _scene(w: int = 640, h: int = 480, seed: int = 0) -> Image.Image:
     rng = np.random.default_rng(seed)
     yy, xx = np.mgrid[0:h, 0:w]
-    base = np.stack([120 + 60 * np.sin(xx / 37.0), 110 + 50 * np.cos(yy / 23.0), 90 + 40 * np.sin((xx + yy) / 51.0)],
-                    axis=-1)
+    base = np.stack(
+        [120 + 60 * np.sin(xx / 37.0), 110 + 50 * np.cos(yy / 23.0), 90 + 40 * np.sin((xx + yy) / 51.0)], axis=-1
+    )
     base += rng.normal(0, 18, base.shape)
     img = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2))
     d = ImageDraw.Draw(img)
     for _ in range(25):
         x, y = int(rng.integers(0, w - 60)), int(rng.integers(0, h - 60))
-        d.rectangle((x, y, x + int(rng.integers(10, 60)), y + int(rng.integers(10, 60))),
-                    fill=tuple(int(c) for c in rng.integers(0, 255, 3)))
+        d.rectangle(
+            (x, y, x + int(rng.integers(10, 60)), y + int(rng.integers(10, 60))),
+            fill=tuple(int(c) for c in rng.integers(0, 255, 3)),
+        )
     return img
 
 
@@ -96,8 +103,25 @@ def _jpeg(img: Image.Image, q: int = 90) -> bytes:
 def _opus(wav: bytes, tmp: Path, bitrate: str = "16k") -> bytes:
     src, dst = tmp / "wm.wav", tmp / "wm.ogg"
     src.write_bytes(wav)
-    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(src), "-ac", "1",
-                    "-c:a", "libopus", "-b:a", bitrate, str(dst)], check=True)
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-i",
+            str(src),
+            "-ac",
+            "1",
+            "-c:a",
+            "libopus",
+            "-b:a",
+            bitrate,
+            str(dst),
+        ],
+        check=True,
+    )
     return dst.read_bytes()
 
 
@@ -119,8 +143,11 @@ def test_audio_message_roundtrip(real_client):
     noise = marked - x
     snr = 10 * np.log10(np.sum(x**2) / np.sum(noise**2))
     d = real_client.post("/watermark/audio/detect", content=r.content).json()
-    print("\naudio marcado:", json.dumps({k: d[k] for k in ("detected", "score", "message", "bit_confidence")}),
-          f"SNR {snr:.1f} dB")
+    print(
+        "\naudio marcado:",
+        json.dumps({k: d[k] for k in ("detected", "score", "message", "bit_confidence")}),
+        f"SNR {snr:.1f} dB",
+    )
     assert d["detected"] is True and d["score"] > 0.9
     assert d["message"] == 48879 and d["bit_confidence"] > 0.3  # medido: ~0.5 con el mensaje exacto
     assert snr > 20  # marca muy por debajo de la señal
@@ -245,6 +272,7 @@ def test_aa_weights_match_torch_interpolate():
 
     for n_in, n_out in [(1066, 256), (4000, 256), (256, 1066), (256, 3000), (100, 256), (256, 37)]:
         x = torch.rand(1, 1, n_in, 5)
-        ref = torch.nn.functional.interpolate(x, size=(n_out, 5), mode="bilinear", align_corners=False,
-                                              antialias=True)[0, 0].numpy()
+        ref = torch.nn.functional.interpolate(x, size=(n_out, 5), mode="bilinear", align_corners=False, antialias=True)[
+            0, 0
+        ].numpy()
         np.testing.assert_allclose(aa_weights(n_in, n_out) @ x[0, 0].numpy(), ref, atol=5e-5)

@@ -51,7 +51,9 @@ SILENCIO_S = 0.35
 UMBRAL_REVISION = 0.60
 UMBRAL_PROBABLE = 0.90
 P_MAX_VOZ = 0.85
-MAX_FALSOS_POR_100_DISTINTOS = 1.0  # restricción de diseño (la meta del reporte es <= 2 por 100 comparaciones)
+MAX_FALSOS_POR_100_DISTINTOS = (
+    1.0  # restricción de diseño (la meta del reporte es <= 2 por 100 comparaciones)
+)
 SEED = 2026
 COHORT_TOPK = 200  # igual que ML_SNORM_TOP_K del contenedor
 
@@ -66,8 +68,13 @@ class Audio:
     huella: Huella | None = None
 
 
-def _armar_audios(hablante: slr73.Hablante, nombres_canales: list[tuple[str, int]], rng: random.Random,
-                  usadas: set[Path], dur_objetivo: float = DUR_OBJETIVO_S) -> list[Audio]:
+def _armar_audios(
+    hablante: slr73.Hablante,
+    nombres_canales: list[tuple[str, int]],
+    rng: random.Random,
+    usadas: set[Path],
+    dur_objetivo: float = DUR_OBJETIVO_S,
+) -> list[Audio]:
     disponibles = [f for f in hablante.archivos if f not in usadas]
     rng.shuffle(disponibles)
     out: list[Audio] = []
@@ -123,7 +130,9 @@ def _centroide(hs: list[Huella]) -> np.ndarray:
 # --------------------------------------------------------------------------------------------
 
 
-def ajustar_logistica(s: np.ndarray, y: np.ndarray, prior: float = 0.5, iters: int = 100) -> tuple[float, float]:
+def ajustar_logistica(
+    s: np.ndarray, y: np.ndarray, prior: float = 0.5, iters: int = 100
+) -> tuple[float, float]:
     """Regresión logística ponderada de una variable por Newton. Devuelve (a, b) con p = σ(a(s − b))."""
     n1, n0 = max(int(y.sum()), 1), max(int((1 - y).sum()), 1)
     w = np.where(y == 1, prior / n1, (1 - prior) / n0)
@@ -228,17 +237,29 @@ def _seleccion(hs: dict[str, slr73.Hablante], part: dict[str, list[str]]):
     """Selección determinista de frases. Ninguna frase se repite entre audios."""
     rng = random.Random(SEED)
     usadas: set[Path] = set()
-    prueba = {h: _armar_audios(hs[h], [("a1", 1), ("a2", 1), ("b1", 2), ("b2", 2)], rng, usadas) for h in part["prueba"]}
+    prueba = {
+        h: _armar_audios(hs[h], [("a1", 1), ("a2", 1), ("b1", 2), ("b2", 2)], rng, usadas)
+        for h in part["prueba"]
+    }
     cohorte = {
-        h: _armar_audios(hs[h], [("c1", 1), ("c2", 1), ("c3", 1), ("c4", 2), ("c5", 2), ("c6", 2)], rng, usadas)
+        h: _armar_audios(
+            hs[h], [("c1", 1), ("c2", 1), ("c3", 1), ("c4", 2), ("c5", 2), ("c6", 2)], rng, usadas
+        )
         for h in part["cohorte"]
     }
-    cortas = {h: _armar_audios(hs[h], [("s1", 2), ("s2", 2)], rng, usadas, dur_objetivo=DUR_CORTA_S) for h in part["prueba"]}
+    cortas = {
+        h: _armar_audios(hs[h], [("s1", 2), ("s2", 2)], rng, usadas, dur_objetivo=DUR_CORTA_S)
+        for h in part["prueba"]
+    }
     return prueba, cohorte, cortas, usadas
 
 
-def _identificar(ids: list[str], inscritos: dict[str, np.ndarray], probes: list[tuple[str, str, np.ndarray]],
-                 cohort: np.ndarray) -> dict:
+def _identificar(
+    ids: list[str],
+    inscritos: dict[str, np.ndarray],
+    probes: list[tuple[str, str, np.ndarray]],
+    cohort: np.ndarray,
+) -> dict:
     E = np.stack([inscritos[h] for h in ids])
     top1 = top3 = top1_sn = top3_sn = 0
     detalle, tar, non, tar_sn, non_sn, tar_h, non_h = [], [], [], [], [], [], []
@@ -251,11 +272,16 @@ def _identificar(ids: list[str], inscritos: dict[str, np.ndarray], probes: list[
         top3 += rank <= 3
         top1_sn += rank_sn == 1
         top3_sn += rank_sn <= 3
-        detalle.append({
-            "hablante": h, "prueba": nombre, "rank_coseno": rank, "rank_snorm": rank_sn,
-            "coseno_correcto": round(float(scores[ids.index(h)]), 4),
-            "coseno_mejor_distinto": round(float(max(s for g, s in zip(ids, scores) if g != h)), 4),
-        })
+        detalle.append(
+            {
+                "hablante": h,
+                "prueba": nombre,
+                "rank_coseno": rank,
+                "rank_snorm": rank_sn,
+                "coseno_correcto": round(float(scores[ids.index(h)]), 4),
+                "coseno_mejor_distinto": round(float(max(s for g, s in zip(ids, scores) if g != h)), 4),
+            }
+        )
         for g, sc, z in zip(ids, scores, sns):
             if g == h:
                 tar.append(float(sc))
@@ -267,11 +293,21 @@ def _identificar(ids: list[str], inscritos: dict[str, np.ndarray], probes: list[
                 non_h.append(f"{h}|{g}")
     n = len(probes)
     return {
-        "resumen": {"pruebas": n, "inscritos": len(ids), "top1": top1 / n, "top3": top3 / n,
-                    "top1_snorm": top1_sn / n, "top3_snorm": top3_sn / n},
+        "resumen": {
+            "pruebas": n,
+            "inscritos": len(ids),
+            "top1": top1 / n,
+            "top3": top3 / n,
+            "top1_snorm": top1_sn / n,
+            "top3_snorm": top3_sn / n,
+        },
         "detalle": detalle,
-        "tar": np.array(tar), "non": np.array(non), "tar_sn": np.array(tar_sn), "non_sn": np.array(non_sn),
-        "tar_h": tar_h, "non_h": non_h,
+        "tar": np.array(tar),
+        "non": np.array(non),
+        "tar_sn": np.array(tar_sn),
+        "non_sn": np.array(non_sn),
+        "tar_h": tar_h,
+        "non_h": non_h,
     }
 
 
@@ -287,9 +323,17 @@ def proponer(tar: np.ndarray, non: np.ndarray) -> dict:
 
 
 def _dist(x: np.ndarray) -> dict:
-    return {"n": int(len(x)), "media": float(x.mean()), "std": float(x.std(ddof=1)), "min": float(x.min()),
-            "max": float(x.max()), "p01": float(np.quantile(x, 0.01)), "p05": float(np.quantile(x, 0.05)),
-            "p95": float(np.quantile(x, 0.95)), "p99": float(np.quantile(x, 0.99))}
+    return {
+        "n": int(len(x)),
+        "media": float(x.mean()),
+        "std": float(x.std(ddof=1)),
+        "min": float(x.min()),
+        "max": float(x.max()),
+        "p01": float(np.quantile(x, 0.01)),
+        "p05": float(np.quantile(x, 0.05)),
+        "p95": float(np.quantile(x, 0.95)),
+        "p99": float(np.quantile(x, 0.99)),
+    }
 
 
 def _render_y_embeber(audios: list[Audio], backend: Backend, seed0: int, etiqueta: str) -> None:
@@ -304,7 +348,9 @@ def _render_y_embeber(audios: list[Audio], backend: Backend, seed0: int, etiquet
             print(f"  {j + 1}/{len(audios)}")
 
 
-def escenarios_voz(backend: Backend, hs: dict[str, slr73.Hablante], part: dict[str, list[str]], usadas: set[Path]) -> dict:
+def escenarios_voz(
+    backend: Backend, hs: dict[str, slr73.Hablante], part: dict[str, list[str]], usadas: set[Path]
+) -> dict:
     """Huellas de los casos con voz de eval/data/escenarios.json (H01… = hablantes de prueba en orden)."""
     esc = json.loads((EVAL_DIR / "data" / "escenarios.json").read_text(encoding="utf-8"))
     orden = sorted(part["prueba"])
@@ -319,14 +365,19 @@ def escenarios_voz(backend: Backend, hs: dict[str, slr73.Hablante], part: dict[s
     _render_y_embeber(audios, backend, 5000, "escenarios")
     casos = {
         a.nombre: {
-            "hablante": a.hablante, "canal": a.canal,
+            "hablante": a.hablante,
+            "canal": a.canal,
             "segmentos": int(len(a.huella.segmentos)),  # type: ignore[union-attr]
             "duracion_s": a.huella.duracion_s,  # type: ignore[union-attr]
             "centroid": a.huella.centroid.tolist(),  # type: ignore[union-attr]
         }
         for a in audios
     }
-    out = {"backend": backend.nombre, "mapeo": {f"H{i + 1:02d}": h for i, h in enumerate(orden)}, "casos": casos}
+    out = {
+        "backend": backend.nombre,
+        "mapeo": {f"H{i + 1:02d}": h for i, h in enumerate(orden)},
+        "casos": casos,
+    }
     (RESULTS_DIR / "escenarios_voz.json").write_text(json.dumps(out), encoding="utf-8")
     return out
 
@@ -351,14 +402,20 @@ def run(backend_pref: str = "auto", out_json: Path | None = None) -> dict:
 
     ids = sorted(prueba)
     inscritos = {h: _centroide([prueba[h][0].huella, prueba[h][1].huella]) for h in ids}  # type: ignore[list-item]
-    principal = _identificar(ids, inscritos, [(h, a.nombre, a.huella.centroid) for h in ids for a in prueba[h][2:]], cohort_vecs)  # type: ignore[union-attr]
-    corta = _identificar(ids, inscritos, [(h, a.nombre, a.huella.centroid) for h in ids for a in cortas[h]], cohort_vecs)  # type: ignore[union-attr]
+    principal = _identificar(
+        ids, inscritos, [(h, a.nombre, a.huella.centroid) for h in ids for a in prueba[h][2:]], cohort_vecs
+    )  # type: ignore[union-attr]
+    corta = _identificar(
+        ids, inscritos, [(h, a.nombre, a.huella.centroid) for h in ids for a in cortas[h]], cohort_vecs
+    )  # type: ignore[union-attr]
     tar_a, non_a = principal["tar"], principal["non"]
 
     # Calibración: propuesta con todas las pruebas y validación cruzada por hablante (2 particiones)
     prop = proponer(tar_a, non_a)
     with np.errstate(over="ignore"):
-        a_ml, b_ml = ajustar_logistica(np.concatenate([tar_a, non_a]), np.concatenate([np.ones(len(tar_a)), np.zeros(len(non_a))]))
+        a_ml, b_ml = ajustar_logistica(
+            np.concatenate([tar_a, non_a]), np.concatenate([np.ones(len(tar_a)), np.zeros(len(non_a))])
+        )
     rng2 = random.Random(SEED + 1)
     mezcla = ids[:]
     rng2.shuffle(mezcla)
@@ -409,8 +466,10 @@ def run(backend_pref: str = "auto", out_json: Path | None = None) -> dict:
             "duracion_media_s": float(np.mean([a.huella.duracion_s for a in todos])),  # type: ignore[union-attr]
             "duracion_media_corta_s": float(np.mean([a.huella.duracion_s for a in cortos])),  # type: ignore[union-attr]
         },
-        "canales": {str(k): {"nombre": c.nombre, "filtros": c.filtros, "ruido": c.ruido_amplitud, "opus": c.bitrate}
-                    for k, c in CANALES.items()},
+        "canales": {
+            str(k): {"nombre": c.nombre, "filtros": c.filtros, "ruido": c.ruido_amplitud, "opus": c.bitrate}
+            for k, c in CANALES.items()
+        },
         "protocolo": (
             "Por hablante: inscripción = centroide de 2 notas de voz (~16 s) por el canal 1; pruebas = 2 notas por el "
             "canal 2, comparadas contra todos los inscritos. Condición corta: 2 notas de ~7 s por el canal 2."
@@ -439,7 +498,8 @@ def run(backend_pref: str = "auto", out_json: Path | None = None) -> dict:
             "propuesta": {"a": prop["a"], "b": prop["b"], "p_max": P_MAX_VOZ, "min_segmentos": 2},
             "detalle": prop,
             "regresion_logistica_referencia": {
-                "a": a_ml, "b": b_ml,
+                "a": a_ml,
+                "b": b_ml,
                 "nota": "Máxima verosimilitud con pesos balanceados. Con clases casi separables la pendiente crece sin límite; no se usa.",
             },
             "operacion": op,
@@ -455,15 +515,23 @@ def run(backend_pref: str = "auto", out_json: Path | None = None) -> dict:
             ),
             "por_100_comparaciones": op["falsos_por_100_comparaciones"],
             "por_100_pares_distintos": op["falsos_por_100_pares_distintos"],
-            "validacion_cruzada_por_100_comparaciones": float(np.mean([c["prueba"]["falsos_por_100_comparaciones"] for c in cv])),
+            "validacion_cruzada_por_100_comparaciones": float(
+                np.mean([c["prueba"]["falsos_por_100_comparaciones"] for c in cv])
+            ),
             "recall_umbral_revision": op["recall_umbral_revision"],
             "recall_validacion_cruzada": float(np.mean([c["prueba"]["recall_umbral_revision"] for c in cv])),
             "corta_por_100_comparaciones": op_corta["falsos_por_100_comparaciones"],
             "corta_recall_umbral_revision": op_corta["recall_umbral_revision"],
         },
-        "cohorte": {"archivo": "eval/cohort.npy", "vectores": int(cohort_vecs.shape[0]), "dim": int(cohort_vecs.shape[1]),
-                    "hablantes": part["cohorte"], "audios_por_hablante": 6, "topk_snorm": COHORT_TOPK,
-                    "backend": backend.nombre},
+        "cohorte": {
+            "archivo": "eval/cohort.npy",
+            "vectores": int(cohort_vecs.shape[0]),
+            "dim": int(cohort_vecs.shape[1]),
+            "hablantes": part["cohorte"],
+            "audios_por_hablante": 6,
+            "topk_snorm": COHORT_TOPK,
+            "backend": backend.nombre,
+        },
         "escenarios": {"casos_con_voz": len(esc["casos"]), "mapeo": esc["mapeo"]},
         "detalle_pruebas": principal["detalle"],
         "detalle_pruebas_cortas": corta["detalle"],
@@ -471,8 +539,16 @@ def run(backend_pref: str = "auto", out_json: Path | None = None) -> dict:
     }
     out = out_json or (RESULTS_DIR / "voz.json")
     out.write_text(json.dumps(res, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(json.dumps({k: res[k] for k in ("backend", "identificacion", "identificacion_corta", "falsos_vinculos")}, indent=2, ensure_ascii=False))
-    print(f"calibración propuesta: a={prop['a']:.2f} b={prop['b']:.4f} (gaussiana b={prop['b_gauss']:.4f}); resultados en {out}")
+    print(
+        json.dumps(
+            {k: res[k] for k in ("backend", "identificacion", "identificacion_corta", "falsos_vinculos")},
+            indent=2,
+            ensure_ascii=False,
+        )
+    )
+    print(
+        f"calibración propuesta: a={prop['a']:.2f} b={prop['b']:.4f} (gaussiana b={prop['b_gauss']:.4f}); resultados en {out}"
+    )
     return res
 
 

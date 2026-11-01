@@ -29,43 +29,44 @@ const desk = image
   ? await getImage({ src: image, widths: widths.filter((w) => w <= image.width), format: "webp", quality })
   : null;
 const mob = mobile
-  ? await getImage({ src: mobile, widths: [400, 600, mobile.width].filter((w) => w <= mobile.width), format: "webp", quality })
+  ? await getImage({
+      src: mobile,
+      widths: [400, 600, mobile.width].filter((w) => w <= mobile.width),
+      format: "webp",
+      quality,
+    })
   : null;
 ---
 
-{
-  image && desk && (
-    <figure class:list={["shot", className]}>
-      <div class="shot__frame">
-        <picture>
-          {mob && mobile && (
-            <source
-              media="(max-width: 719px)"
-              srcset={mob.srcSet.attribute}
-              sizes="92vw"
-              type="image/webp"
-              width={mobile.width}
-              height={mobile.height}
-            />
-          )}
-          <source srcset={desk.srcSet.attribute} sizes={sizes} type="image/webp" />
-          <img src={desk.src} alt={alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
-        </picture>
-        <slot />
-      </div>
-      {
-        mob && mobileCaption ? (
-          <figcaption>
-            <span class="shot__cap-desk">{caption}</span>
-            <span class="shot__cap-mob">{mobileCaption}</span>
-          </figcaption>
-        ) : (
-          <figcaption>{caption}</figcaption>
-        )
-      }
-    </figure>
-  )
-}
+{image && desk && (
+  <figure class:list={["shot", className]}>
+    <div class="shot__frame">
+      <picture>
+        {mob && mobile && (
+          <source
+            media="(max-width: 719px)"
+            srcset={mob.srcSet.attribute}
+            sizes="92vw"
+            type="image/webp"
+            width={mobile.width}
+            height={mobile.height}
+          />
+        )}
+        <source srcset={desk.srcSet.attribute} sizes={sizes} type="image/webp" />
+        <img src={desk.src} alt={alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
+      </picture>
+      <slot />
+    </div>
+    {mob && mobileCaption ? (
+      <figcaption>
+        <span class="shot__cap-desk">{caption}</span>
+        <span class="shot__cap-mob">{mobileCaption}</span>
+      </figcaption>
+    ) : (
+      <figcaption>{caption}</figcaption>
+    )}
+  </figure>
+)}
 
 <style>
   .shot {

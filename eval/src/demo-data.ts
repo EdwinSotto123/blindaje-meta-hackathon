@@ -38,7 +38,20 @@ export interface DemoFile {
 }
 
 const LIMA_MS = -5 * 3600 * 1000;
-const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const MESES = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
 
 /** Fecha (YYYY-MM-DD) de hace `dias` días en Lima, relativa a `ahora`. */
 function diaLima(dias: number, ahora: Date): { ymd: string; texto: string } {
@@ -48,7 +61,9 @@ function diaLima(dias: number, ahora: Date): { ymd: string; texto: string } {
 }
 
 /** Carga demo.json y resuelve las fechas relativas al momento actual (o a DEMO_TODAY=YYYY-MM-DD). */
-export function loadDemo(ahora = process.env.DEMO_TODAY ? new Date(`${process.env.DEMO_TODAY}T12:00:00-05:00`) : new Date()): DemoFile {
+export function loadDemo(
+  ahora = process.env.DEMO_TODAY ? new Date(`${process.env.DEMO_TODAY}T12:00:00-05:00`) : new Date(),
+): DemoFile {
   const raw = JSON.parse(readFileSync(resolve(DEMO_DIR, "demo.json"), "utf8")) as DemoFile;
   const resolver = (c: Omit<CasoDemo, "code">) => {
     for (const e of c.evidencia) e.captured_at = `${diaLima(e.dia, ahora).ymd}T${e.hora}:00-05:00`;
@@ -106,7 +121,11 @@ export interface PreparedCase {
  * Registra (o renueva) el dispositivo, crea el caso si no existe, sube la muestra de voz y la
  * evidencia (idempotente por SHA-256). No envía el caso.
  */
-export async function prepareCase(api: Api, name: string, c: Omit<CasoDemo, "code"> & { code?: string }): Promise<PreparedCase> {
+export async function prepareCase(
+  api: Api,
+  name: string,
+  c: Omit<CasoDemo, "code"> & { code?: string },
+): Promise<PreparedCase> {
   // x-demo-secret exime el registro del límite por IP (solo con DEMO_MODE=true en la API).
   const demoHeaders: Record<string, string> = hasDemoSecret() ? { "x-demo-secret": demoSecret() } : {};
   const { s, nuevo } = await deviceSession(api, name, c.invite, demoHeaders);
@@ -157,10 +176,16 @@ export async function prepareCase(api: Api, name: string, c: Omit<CasoDemo, "cod
       headers: { ...headers, authorization: `Bearer ${s.access_token}` },
       body: new Uint8Array(bytes),
     });
-    const data = (await res.json().catch(() => null)) as { label?: string; error?: { code: string; message: string } } | null;
-    if (!res.ok) throw new ApiHttpError(res.status, data?.error?.code ?? "http_error", data?.error?.message ?? "", data);
+    const data = (await res.json().catch(() => null)) as {
+      label?: string;
+      error?: { code: string; message: string };
+    } | null;
+    if (!res.ok)
+      throw new ApiHttpError(res.status, data?.error?.code ?? "http_error", data?.error?.message ?? "", data);
     subidas.push({ etiqueta: data?.label ?? "?", nueva: res.status === 201 });
-    console.log(`  ${data?.label}: ${ev.archivo ?? "mensaje de texto"} ${res.status === 201 ? "subido" : "ya estaba"} (SHA-256 ${headers["x-content-sha256"]!.slice(0, 12)}…)`);
+    console.log(
+      `  ${data?.label}: ${ev.archivo ?? "mensaje de texto"} ${res.status === 201 ? "subido" : "ya estaba"} (SHA-256 ${headers["x-content-sha256"]!.slice(0, 12)}…)`,
+    );
   }
   return { code: cs.code, case_id: cs.id, status: cs.status, session: s, creado, subidas, muestra_voz: muestra };
 }
@@ -173,8 +198,14 @@ export interface ProcessingResult {
 }
 
 /** Envía el caso ("Preparar mi denuncia") y espera a que deje de estar "procesando". */
-export async function submitAndWait(api: Api, p: PreparedCase, relato: string, maxSeconds: number): Promise<ProcessingResult> {
-  const sinCambios = !p.creado && p.subidas.every((x) => !x.nueva) && (p.status === "listo" || p.status === "procesando");
+export async function submitAndWait(
+  api: Api,
+  p: PreparedCase,
+  relato: string,
+  maxSeconds: number,
+): Promise<ProcessingResult> {
+  const sinCambios =
+    !p.creado && p.subidas.every((x) => !x.nueva) && (p.status === "listo" || p.status === "procesando");
   let r = { status: p.status };
   if (sinCambios) {
     console.log(`  submit ${p.code}: no hace falta (el caso ya está ${p.status} y no hay evidencia nueva)`);

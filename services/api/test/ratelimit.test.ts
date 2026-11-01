@@ -64,7 +64,10 @@ describe("rate limiting con Durable Object", () => {
     const ip = "198.51.100.9";
     const statuses: number[] = [];
     for (let i = 0; i < 11; i++) {
-      const res = await apiJson("/v1/auth/device/register", { json: { invite_code: "NO-EXISTE", public_key: {}, platform: "android" }, ip });
+      const res = await apiJson("/v1/auth/device/register", {
+        json: { invite_code: "NO-EXISTE", public_key: {}, platform: "android" },
+        ip,
+      });
       statuses.push(res.status);
     }
     expect(statuses.slice(0, 10).every((s) => s === 400)).toBe(true);
@@ -75,7 +78,9 @@ describe("rate limiting con Durable Object", () => {
     const { jwk } = await newDeviceKeys();
     const statuses: number[] = [];
     for (let i = 0; i < 11; i++) {
-      statuses.push((await apiJson("/v1/auth/device/register", { json: { public_key: jwk, platform: "android" }, ip })).status);
+      statuses.push(
+        (await apiJson("/v1/auth/device/register", { json: { public_key: jwk, platform: "android" }, ip })).status,
+      );
     }
     expect(statuses.slice(0, 10).every((s) => s === 201)).toBe(true);
     expect(statuses[10]).toBe(429);

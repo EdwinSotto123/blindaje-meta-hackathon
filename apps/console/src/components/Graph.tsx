@@ -105,7 +105,12 @@ export function GraphCanvas({
         <button type="button" className="btn btn-sm" onClick={() => zoom(0.8)} aria-label="Alejar">
           <Icon name="zoomOut" size={15} />
         </button>
-        <button type="button" className="btn btn-sm" onClick={() => cyRef.current?.fit(undefined, 48)} aria-label="Ajustar a la vista">
+        <button
+          type="button"
+          className="btn btn-sm"
+          onClick={() => cyRef.current?.fit(undefined, 48)}
+          aria-label="Ajustar a la vista"
+        >
           <Icon name="fit" size={15} />
         </button>
       </div>

@@ -8,6 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "typecheck": "astro check",
+    "lint": "eslint src astro.config.mjs",
     "deploy": "astro build && wrangler deploy"
   },
   "dependencies": {

@@ -22,7 +22,12 @@ export type MarcaCopia = z.infer<typeof MarcaCopia>;
  * - marcas_agotadas: no quedan marcas de audio a distancia suficiente de las demás;
  * - archivo_grande: el archivo supera el tamaño que se marca en línea.
  */
-export const MotivoSinMarca = z.enum(["servicio_no_disponible", "tipo_no_soportado", "marcas_agotadas", "archivo_grande"]);
+export const MotivoSinMarca = z.enum([
+  "servicio_no_disponible",
+  "tipo_no_soportado",
+  "marcas_agotadas",
+  "archivo_grande",
+]);
 export type MotivoSinMarca = z.infer<typeof MotivoSinMarca>;
 
 /** Distancia de Hamming mínima entre dos marcas de audio de 16 bits (corrige hasta 2 bits). */

@@ -23,44 +23,66 @@ const call = hs.lines[0];
   <div class="wrap">
     <div class="foot__help">
       <div class="foot__help-text">
-        <h2 id="ayuda-title" class="head">{hs.title}</h2>
-        <p class="foot__soft">{hs.note} {hs.station}</p>
+        <h2 id="ayuda-title" class="head">
+          {hs.title}
+        </h2>
+        <p class="foot__soft">
+          {hs.note} {hs.station}
+        </p>
       </div>
       <div class="foot__calls">
         <a class="foot__call foot__call--alarm" href="tel:105">
-          <span class="foot__disc" aria-hidden="true"><Icon name="phone" /></span>
+          <span class="foot__disc" aria-hidden="true">
+            <Icon name="phone" />
+          </span>
           <span>{call?.cta ?? pg.callLine}</span>
         </a>
-        <a class="foot__call" href="tel:1818">{pg.reportLine}</a>
+        <a class="foot__call" href="tel:1818">
+          {pg.reportLine}
+        </a>
       </div>
     </div>
 
     <div class="foot__base">
       <div class="foot__id">
-        <p class="foot__brand" translate="no" aria-label="Blindaje">blindaje</p>
+        <p class="foot__brand" translate="no" aria-label="Blindaje">
+          blindaje
+        </p>
         <p class="foot__soft small">{f.hackathon}</p>
       </div>
       <ul class="foot__links small" role="list">
-        <li><a href={REPO_URL} rel="noopener noreferrer">{f.repo}</a></li>
         <li>
-          <a href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>{d.nav.switchName}</a>
+          <a href={REPO_URL} rel="noopener noreferrer">
+            {f.repo}
+          </a>
         </li>
-        <li><a href="#preguntas">{d.lp.menu.faq}</a></li>
-        <li><a href="#contenido">{pg.top}</a></li>
+        <li>
+          <a href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>
+            {d.nav.switchName}
+          </a>
+        </li>
+        <li>
+          <a href="#preguntas">{d.lp.menu.faq}</a>
+        </li>
+        <li>
+          <a href="#contenido">{pg.top}</a>
+        </li>
       </ul>
       <p class="foot__soft small foot__notes">
         {f.fictitious} {f.shots} {f.license} <span class="foot__place">{pg.place}.</span>
       </p>
       <p class="foot__soft small foot__photos">
         {pg.photosLabel}:{" "}
-        {
-          pg.photos.map((ph, i) => (
-            <>
-              {i > 0 && "; "}
-              {ph.what}, <a href={ph.href} rel="noopener noreferrer">{ph.author}</a> ({ph.license})
-            </>
-          ))
-        }
+        {pg.photos.map((ph, i) => (
+          <>
+            {i > 0 && "; "}
+            {ph.what},{" "}
+            <a href={ph.href} rel="noopener noreferrer">
+              {ph.author}
+            </a>{" "}
+            ({ph.license})
+          </>
+        ))}
         . {pg.photosNote}.
       </p>
     </div>
@@ -201,8 +223,10 @@ const call = hs.lines[0];
     margin-right: 0.14em;
     vertical-align: -0.04em;
     background: var(--terracota);
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
   }
 
   .foot__photos {

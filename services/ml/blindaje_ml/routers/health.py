@@ -13,8 +13,21 @@ from .deps import ml
 
 router = APIRouter()
 
-_PACKAGES = ("fastapi", "numpy", "faiss-cpu", "networkx", "torch", "torchaudio", "speechbrain",
-             "transformers", "weasyprint", "pillow", "imagehash", "audioseal", "c2pa-python")
+_PACKAGES = (
+    "fastapi",
+    "numpy",
+    "faiss-cpu",
+    "networkx",
+    "torch",
+    "torchaudio",
+    "speechbrain",
+    "transformers",
+    "weasyprint",
+    "pillow",
+    "imagehash",
+    "audioseal",
+    "c2pa-python",
+)
 
 
 @lru_cache(maxsize=1)

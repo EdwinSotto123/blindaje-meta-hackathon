@@ -186,7 +186,12 @@ class LocalBackend(Backend):
             emb = model.encode_batch(x, lens).squeeze(1).cpu().numpy().astype(np.float32)
         segs = _norm(emb)
         centroid = _norm(segs.mean(axis=0))
-        return Huella(centroid=centroid, segmentos=segs, duracion_s=sum(c.size for c in chunks) / SR, modelo=self.modelo_id)
+        return Huella(
+            centroid=centroid,
+            segmentos=segs,
+            duracion_s=sum(c.size for c in chunks) / SR,
+            modelo=self.modelo_id,
+        )
 
 
 def voiced_ratio(wave: np.ndarray, frame_ms: int = 30) -> float:

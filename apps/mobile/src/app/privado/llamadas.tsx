@@ -68,7 +68,12 @@ export default function Llamadas() {
     setActivando(true);
     try {
       const ok = await activar();
-      setMsg(ok ? "Listo. Desde ahora anoto las llamadas de números que no tienes guardados." : "No se activó. Puedes intentarlo otra vez cuando quieras.", ok ? "info" : "error");
+      setMsg(
+        ok
+          ? "Listo. Desde ahora anoto las llamadas de números que no tienes guardados."
+          : "No se activó. Puedes intentarlo otra vez cuando quieras.",
+        ok ? "info" : "error",
+      );
     } catch (e) {
       setMsg(errorMessage(e), "error");
     } finally {
@@ -83,7 +88,9 @@ export default function Llamadas() {
     try {
       const ok = await activarBurbuja();
       setMsg(
-        ok ? "Listo. Verás el botón del cuaderno en las llamadas de números que no tienes guardados." : "No se dio el permiso, así que el botón no aparecerá.",
+        ok
+          ? "Listo. Verás el botón del cuaderno en las llamadas de números que no tienes guardados."
+          : "No se dio el permiso, así que el botón no aparecerá.",
         ok ? "info" : "error",
       );
     } catch (e) {
@@ -136,7 +143,9 @@ export default function Llamadas() {
       title="Llamadas"
       testID="llamadas"
       footer={
-        estado.disponible && !encendido ? <Button label="Activar" icon="phone" onPress={onActivar} loading={activando} testID="activar-llamadas" /> : undefined
+        estado.disponible && !encendido ? (
+          <Button label="Activar" icon="phone" onPress={onActivar} loading={activando} testID="activar-llamadas" />
+        ) : undefined
       }
     >
       {msg ? (
@@ -148,32 +157,44 @@ export default function Llamadas() {
       {!estado.disponible ? (
         <Card>
           <T variant="h2">Tu celular no permite anotar llamadas</T>
-          <T variant="secondary">Funciona desde Android 10. Igual puedes grabar tus llamadas con el teléfono de tu celular y guardarlas aquí.</T>
+          <T variant="secondary">
+            Funciona desde Android 10. Igual puedes grabar tus llamadas con el teléfono de tu celular y guardarlas aquí.
+          </T>
         </Card>
       ) : !encendido ? (
         <Card>
           <T variant="h2">Anota las llamadas de números que no conoces</T>
           <T>
-            Cuando te llame un número que no tienes guardado, Cuaderno anota la hora y el número. Después tú decides cuáles fueron extorsión: solo esas se suman
-            a tu denuncia.
+            Cuando te llame un número que no tienes guardado, Cuaderno anota la hora y el número. Después tú decides
+            cuáles fueron extorsión: solo esas se suman a tu denuncia.
           </T>
           {ajustes.activo && !estado.rol ? (
             <T variant="bodyBold" testID="rol-perdido">
-              Cuaderno ya no es tu app de identificación de llamadas, así que dejó de anotarlas. Actívalo otra vez si quieres.
+              Cuaderno ya no es tu app de identificación de llamadas, así que dejó de anotarlas. Actívalo otra vez si
+              quieres.
             </T>
           ) : null}
           <View style={{ gap: 8, marginTop: 4 }}>
             <T variant="bodyBold">Antes de activarlo</T>
-            <Punto>No graba la voz: Android no lo permite a ninguna app. Abajo te explicamos cómo grabar con tu celular.</Punto>
-            <Punto>Android te pedirá elegir a Cuaderno como app de identificación de llamadas. Ese nombre se verá en los ajustes del teléfono.</Punto>
-            <Punto>Las llamadas que no marques quedan cifradas solo en este celular y se borran solas a los 30 días.</Punto>
+            <Punto>
+              No graba la voz: Android no lo permite a ninguna app. Abajo te explicamos cómo grabar con tu celular.
+            </Punto>
+            <Punto>
+              Android te pedirá elegir a Cuaderno como app de identificación de llamadas. Ese nombre se verá en los
+              ajustes del teléfono.
+            </Punto>
+            <Punto>
+              Las llamadas que no marques quedan cifradas solo en este celular y se borran solas a los 30 días.
+            </Punto>
             <Punto>Nunca silencia ni rechaza una llamada si tú no lo eliges.</Punto>
           </View>
         </Card>
       ) : (
         <>
           <Chip
-            label={ajustes.modo === "marcados" ? "Anotando solo los números que marcaste" : "Anotando números desconocidos"}
+            label={
+              ajustes.modo === "marcados" ? "Anotando solo los números que marcaste" : "Anotando números desconocidos"
+            }
             icon="phone"
             color={colors.resaltadorVerde}
             testID="chip-llamadas"
@@ -212,16 +233,22 @@ export default function Llamadas() {
               {ajustes.burbuja && estado.burbuja.permitida ? (
                 <>
                   <T>
-                    Cuando te llame un número que no tienes guardado, verás el botón del cuaderno sobre la llamada. Tócalo para anotarla sin colgar. También
-                    te recuerda tocar Grabar en tu teléfono.
+                    Cuando te llame un número que no tienes guardado, verás el botón del cuaderno sobre la llamada.
+                    Tócalo para anotarla sin colgar. También te recuerda tocar Grabar en tu teléfono.
                   </T>
-                  <Button label="Quitar el botón" kind="secondary" compact onPress={() => cambiar({ burbuja: false })} testID="apagar-burbuja" />
+                  <Button
+                    label="Quitar el botón"
+                    kind="secondary"
+                    compact
+                    onPress={() => cambiar({ burbuja: false })}
+                    testID="apagar-burbuja"
+                  />
                 </>
               ) : (
                 <>
                   <T>
-                    Muestra el botón del cuaderno sobre la llamada cuando te llama un número que no tienes guardado. Con él la anotas sin colgar, y te
-                    recuerda tocar Grabar en tu teléfono para que quede la voz.
+                    Muestra el botón del cuaderno sobre la llamada cuando te llama un número que no tienes guardado. Con
+                    él la anotas sin colgar, y te recuerda tocar Grabar en tu teléfono para que quede la voz.
                   </T>
                   {ajustes.burbuja ? (
                     <T variant="bodyBold" testID="burbuja-sin-permiso">
@@ -229,8 +256,9 @@ export default function Llamadas() {
                     </T>
                   ) : null}
                   <T variant="small">
-                    Android te pedirá permitir que Cuaderno se muestre sobre otras apps; ese permiso se ve en los ajustes del teléfono. El botón no graba la
-                    voz y no aparece en las llamadas que silencias o rechazas.
+                    Android te pedirá permitir que Cuaderno se muestre sobre otras apps; ese permiso se ve en los
+                    ajustes del teléfono. El botón no graba la voz y no aparece en las llamadas que silencias o
+                    rechazas.
                   </T>
                   <Button
                     label={ajustes.burbuja ? "Dar el permiso otra vez" : "Mostrar el botón en las llamadas"}
@@ -279,7 +307,9 @@ export default function Llamadas() {
           <View style={{ gap: 8 }} testID="marcados">
             <T variant="h2">Números que marcaste</T>
             {ajustes.marcados.length === 0 ? (
-              <T variant="secondary">Todavía ninguno. Se marcan solos cuando guardas una llamada como extorsión, o puedes escribirlos aquí.</T>
+              <T variant="secondary">
+                Todavía ninguno. Se marcan solos cuando guardas una llamada como extorsión, o puedes escribirlos aquí.
+              </T>
             ) : (
               ajustes.marcados.map((n) => (
                 <View key={n} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -297,15 +327,31 @@ export default function Llamadas() {
                 </View>
               ))
             )}
-            <Field label="Marcar otro número" keyboardType="phone-pad" value={nuevo} onChangeText={setNuevo} placeholder="Ej.: 987 654 321" testID="nuevo-numero" />
-            <Button label="Marcar este número" kind="secondary" compact onPress={agregar} disabled={!nuevo.trim()} testID="marcar-numero" />
+            <Field
+              label="Marcar otro número"
+              keyboardType="phone-pad"
+              value={nuevo}
+              onChangeText={setNuevo}
+              placeholder="Ej.: 987 654 321"
+              testID="nuevo-numero"
+            />
+            <Button
+              label="Marcar este número"
+              kind="secondary"
+              compact
+              onPress={agregar}
+              disabled={!nuevo.trim()}
+              testID="marcar-numero"
+            />
           </View>
         </>
       )}
 
       <GuiaGrabar />
 
-      {encendido ? <Button label="Dejar de anotar llamadas" kind="ghost" compact onPress={apagar} testID="apagar-llamadas" /> : null}
+      {encendido ? (
+        <Button label="Dejar de anotar llamadas" kind="ghost" compact onPress={apagar} testID="apagar-llamadas" />
+      ) : null}
     </PrivateScreen>
   );
 }
@@ -361,7 +407,17 @@ function LlamadaItem({
   };
 
   return (
-    <View style={{ borderWidth: 2, borderColor: colors.tinta, borderRadius: 12, padding: 12, gap: 8, backgroundColor: colors.blanco }} testID={`llamada-${llamada.id}`}>
+    <View
+      style={{
+        borderWidth: 2,
+        borderColor: colors.tinta,
+        borderRadius: 12,
+        padding: 12,
+        gap: 8,
+        backgroundColor: colors.blanco,
+      }}
+      testID={`llamada-${llamada.id}`}
+    >
       <View style={{ gap: 2 }}>
         <T variant="bodyBold">{numero}</T>
         <T variant="small">{[shortDateTime(llamada.recibida), hecho].filter(Boolean).join(". ")}</T>
@@ -394,7 +450,14 @@ function LlamadaItem({
         </View>
       ) : (
         <View style={{ gap: 10 }}>
-          <Field label="¿Qué te dijeron? (opcional)" multiline value={comentario} onChangeText={setComentario} placeholder="Escribe lo que recuerdes" testID="comentario" />
+          <Field
+            label="¿Qué te dijeron? (opcional)"
+            multiline
+            value={comentario}
+            onChangeText={setComentario}
+            placeholder="Escribe lo que recuerdes"
+            testID="comentario"
+          />
           <Button
             label={grabacion ? `Grabación: ${grabacion.nombre}` : "Adjuntar la grabación"}
             kind="secondary"
@@ -417,16 +480,27 @@ function GuiaGrabar() {
     <Card>
       <T variant="h2">Para grabar la voz</T>
       <T variant="secondary">
-        Android no deja que ninguna app grabe llamadas, pero el teléfono de tu celular sí puede en muchas marcas. Los nombres cambian un poco según el modelo:
+        Android no deja que ninguna app grabe llamadas, pero el teléfono de tu celular sí puede en muchas marcas. Los
+        nombres cambian un poco según el modelo:
       </T>
       <View style={{ gap: 8 }}>
-        <Punto>Samsung: en Teléfono, toca los tres puntos, luego Ajustes y Grabar llamadas. Activa la grabación automática de los números no guardados.</Punto>
-        <Punto>Xiaomi, Redmi o POCO: en Teléfono, entra a Ajustes y Grabación de llamadas. Activa la grabación automática de números desconocidos.</Punto>
         <Punto>
-          Teléfono de Google (Pixel, Motorola y otros), si te aparece la opción: en Ajustes y Grabación de llamadas, elige grabar siempre los números que no están
-          en tus contactos. Este teléfono le avisa a la otra persona que la llamada se graba.
+          Samsung: en Teléfono, toca los tres puntos, luego Ajustes y Grabar llamadas. Activa la grabación automática de
+          los números no guardados.
         </Punto>
-        <Punto>Después, en la llamada que marques como extorsión, toca «Adjuntar la grabación». Guárdala tal como salió, sin cortarla.</Punto>
+        <Punto>
+          Xiaomi, Redmi o POCO: en Teléfono, entra a Ajustes y Grabación de llamadas. Activa la grabación automática de
+          números desconocidos.
+        </Punto>
+        <Punto>
+          Teléfono de Google (Pixel, Motorola y otros), si te aparece la opción: en Ajustes y Grabación de llamadas,
+          elige grabar siempre los números que no están en tus contactos. Este teléfono le avisa a la otra persona que
+          la llamada se graba.
+        </Punto>
+        <Punto>
+          Después, en la llamada que marques como extorsión, toca «Adjuntar la grabación». Guárdala tal como salió, sin
+          cortarla.
+        </Punto>
       </View>
     </Card>
   );

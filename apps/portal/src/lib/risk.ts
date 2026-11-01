@@ -37,5 +37,7 @@ export const PRIORIDAD_LABEL: Record<Prioridad, string> = {
 
 /** Agrupa por prioridad (alta, media, baja), conservando el orden original dentro de cada grupo. */
 export function byPriority<T extends { prioridad: Prioridad }>(items: T[]): { prioridad: Prioridad; items: T[] }[] {
-  return PRIORIDADES.map((prioridad) => ({ prioridad, items: items.filter((i) => i.prioridad === prioridad) })).filter((g) => g.items.length > 0);
+  return PRIORIDADES.map((prioridad) => ({ prioridad, items: items.filter((i) => i.prioridad === prioridad) })).filter(
+    (g) => g.items.length > 0,
+  );
 }

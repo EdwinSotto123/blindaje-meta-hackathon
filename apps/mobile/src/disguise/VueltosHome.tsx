@@ -79,5 +79,12 @@ export function VueltosHome() {
 }
 
 const st = StyleSheet.create({
-  line: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: colors.borde },
+  line: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borde,
+  },
 });

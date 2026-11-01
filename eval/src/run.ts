@@ -9,7 +9,14 @@ import { runFichaEval } from "./ficha-eval";
 import { runIdentifiersEval } from "./identifiers-eval";
 import { runMoEval } from "./mo-eval";
 import { costSummary } from "./meta";
-import { SCHEMA_VERSION, buildResumen, renderMarkdown, type ImagenesSection, type Report, type VozSection } from "./report";
+import {
+  SCHEMA_VERSION,
+  buildResumen,
+  renderMarkdown,
+  type ImagenesSection,
+  type Report,
+  type VozSection,
+} from "./report";
 
 /**
  * pnpm eval: corre toda la evaluación y escribe eval/report.json, eval/REPORT.md y
@@ -35,12 +42,16 @@ const PY_DIR = resolve(EVAL_DIR, "py");
 
 function py(mod: string, extra: string[] = []): boolean {
   console.log(`\n$ uv run python -I -m blindaje_eval.${mod} ${extra.join(" ")}`);
-  const r = spawnSync("uv", ["run", "--project", PY_DIR, "python", "-I", "-u", "-m", `blindaje_eval.${mod}`, ...extra], {
-    cwd: PY_DIR,
-    stdio: ["ignore", "inherit", "inherit"],
-    env: { ...process.env, PYTHONIOENCODING: "utf-8", HF_HUB_DISABLE_SYMLINKS_WARNING: "1" },
-    shell: process.platform === "win32",
-  });
+  const r = spawnSync(
+    "uv",
+    ["run", "--project", PY_DIR, "python", "-I", "-u", "-m", `blindaje_eval.${mod}`, ...extra],
+    {
+      cwd: PY_DIR,
+      stdio: ["ignore", "inherit", "inherit"],
+      env: { ...process.env, PYTHONIOENCODING: "utf-8", HF_HUB_DISABLE_SYMLINKS_WARNING: "1" },
+      shell: process.platform === "win32",
+    },
+  );
   return r.status === 0;
 }
 
@@ -59,11 +70,28 @@ function gitCommit(): string | null {
 
 function seccionVoz(): VozSection {
   const v = readResult<VozSection & { estado: string }>("voz.json");
-  if (!v) return { estado: "pendiente", motivo: "No hay resultados de voz: corre pnpm eval sin --sin-voz (descarga SLR73, ~1.9 GB)." };
+  if (!v)
+    return {
+      estado: "pendiente",
+      motivo: "No hay resultados de voz: corre pnpm eval sin --sin-voz (descarga SLR73, ~1.9 GB).",
+    };
   const { estado: _e, ...rest } = v;
-  const keep = ["backend", "modelo", "dataset", "canales", "protocolo", "identificacion", "identificacion_corta", "verificacion", "calibracion", "falsos_vinculos", "cohorte"] as const;
+  const keep = [
+    "backend",
+    "modelo",
+    "dataset",
+    "canales",
+    "protocolo",
+    "identificacion",
+    "identificacion_corta",
+    "verificacion",
+    "calibracion",
+    "falsos_vinculos",
+    "cohorte",
+  ] as const;
   const out: VozSection = { estado: "ok" };
-  for (const k of keep) (out as unknown as Record<string, unknown>)[k] = (rest as unknown as Record<string, unknown>)[k];
+  for (const k of keep)
+    (out as unknown as Record<string, unknown>)[k] = (rest as unknown as Record<string, unknown>)[k];
   return out;
 }
 
@@ -118,9 +146,12 @@ function calibracion(voz: VozSection, img: ImagenesSection): Calibration {
   const c: Calibration = structuredClone(DEFAULT_CALIBRATION);
   const fuentes: string[] = [];
   if (voz.estado === "ok") {
-    const p = (voz.calibracion as { propuesta: { a: number; b: number; p_max: number; min_segmentos: number } }).propuesta;
+    const p = (voz.calibracion as { propuesta: { a: number; b: number; p_max: number; min_segmentos: number } })
+      .propuesta;
     c.voz = { a: +p.a.toFixed(3), b: +p.b.toFixed(4), min_segmentos: p.min_segmentos, p_max: p.p_max };
-    fuentes.push(`voz: SLR73 ${String((voz.dataset as { hablantes_prueba: number }).hablantes_prueba)} hablantes, backend ${voz.backend}`);
+    fuentes.push(
+      `voz: SLR73 ${String((voz.dataset as { hablantes_prueba: number }).hablantes_prueba)} hablantes, backend ${voz.backend}`,
+    );
   }
   if (img.estado === "ok") {
     const d = img.distribuciones as { hamming_distintas: { min: number }; dino_distintas: { p95: number } };
@@ -145,7 +176,8 @@ async function main() {
 
   if (!flag("--sin-voz")) {
     if (!py("slr73", ["descargar"])) console.log("No se pudo preparar SLR73; la voz queda pendiente.");
-    else if (!py("voice_eval", ["--backend", backend])) console.log("La evaluación de voz falló; se usa el último resultado si existe.");
+    else if (!py("voice_eval", ["--backend", backend]))
+      console.log("La evaluación de voz falló; se usa el último resultado si existe.");
   }
   if (!flag("--sin-imagenes")) {
     if (!py("images", ["--backend", backend])) console.log("La evaluación de imágenes falló.");
@@ -157,7 +189,13 @@ async function main() {
   console.log("\nModus operandi (fichas de Muse Spark + /text/embed del contenedor)…");
   const mo = flag("--sin-mo")
     ? {
-        report: { estado: "pendiente" as const, motivo: "Se corrió con --sin-mo.", formula: "", pares: { mismo_guion: 0, distintos: 0 }, costo_usd_fichas_nuevas: 0 },
+        report: {
+          estado: "pendiente" as const,
+          motivo: "Se corrió con --sin-mo.",
+          formula: "",
+          pares: { mismo_guion: 0, distintos: 0 },
+          costo_usd_fichas_nuevas: 0,
+        },
         mo: null,
       }
     : await runMoEval(cal);
@@ -165,7 +203,10 @@ async function main() {
     cal = Calibration.parse({
       ...cal,
       mo: mo.mo,
-      source: cal.source.replace("modus operandi, identificador", "modus operandi: fichas de 32 guiones con e5-small del contenedor; identificador"),
+      source: cal.source.replace(
+        "modus operandi, identificador",
+        "modus operandi: fichas de 32 guiones con e5-small del contenedor; identificador",
+      ),
     });
   } else {
     console.log(`  MO pendiente: ${mo.report.motivo}`);
@@ -199,9 +240,25 @@ async function main() {
     imagenes,
     escenarios,
     modus_operandi: mo.report,
-    agentes: api?.agentes ?? { ...pendApi, salidas: 0, afirmaciones: 0, verificadas: 0, fidelidad: null, sin_cita: [], citas_inexistentes: [], por_agente: {}, validacion_de_la_api: { vinculador_valid_false: 0, perfiles_citation_check_false: 0 } },
+    agentes: api?.agentes ?? {
+      ...pendApi,
+      salidas: 0,
+      afirmaciones: 0,
+      verificadas: 0,
+      fidelidad: null,
+      sin_cita: [],
+      citas_inexistentes: [],
+      por_agente: {},
+      validacion_de_la_api: { vinculador_valid_false: 0, perfiles_citation_check_false: 0 },
+    },
     privacidad: {
-      estadisticas_menos_5: api?.estadisticas_menos_5 ?? { ...pendApi, perfiles_revisados: 0, perfiles_con_menos_de_5_casos: 0, estadisticas_con_menos_de_5: 0, detalle: [] },
+      estadisticas_menos_5: api?.estadisticas_menos_5 ?? {
+        ...pendApi,
+        perfiles_revisados: 0,
+        perfiles_con_menos_de_5_casos: 0,
+        estadisticas_con_menos_de_5: 0,
+        detalle: [],
+      },
       infiltrado: api?.infiltrado ?? { ...pendApi, pasa: null, chequeos: [] },
     },
     calibracion: cal,
@@ -218,10 +275,17 @@ async function main() {
 
   console.log("\nResumen:");
   for (const m of report.resumen) {
-    const val = m.valor === null ? "pendiente" : m.unidad === "proporcion" ? `${(100 * m.valor).toFixed(1)} %` : String(+m.valor.toFixed(3));
+    const val =
+      m.valor === null
+        ? "pendiente"
+        : m.unidad === "proporcion"
+          ? `${(100 * m.valor).toFixed(1)} %`
+          : String(+m.valor.toFixed(3));
     console.log(`  ${m.cumple === null ? "·" : m.cumple ? "ok" : "no"} ${m.nombre}: ${val} (meta ${m.meta.texto})`);
   }
-  console.log(`\neval/report.json, eval/REPORT.md y eval/calibration.json listos en ${Math.round((Date.now() - t0) / 1000)} s.`);
+  console.log(
+    `\neval/report.json, eval/REPORT.md y eval/calibration.json listos en ${Math.round((Date.now() - t0) / 1000)} s.`,
+  );
 }
 
 main().catch((e) => {

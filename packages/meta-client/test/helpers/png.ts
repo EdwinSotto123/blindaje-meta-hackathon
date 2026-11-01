@@ -28,7 +28,11 @@ function chunk(type: string, data: Uint8Array): Uint8Array {
   return out;
 }
 
-export function encodePng(width: number, height: number, rgb: (x: number, y: number) => [number, number, number]): Uint8Array {
+export function encodePng(
+  width: number,
+  height: number,
+  rgb: (x: number, y: number) => [number, number, number],
+): Uint8Array {
   const raw = new Uint8Array(height * (1 + width * 3));
   for (let y = 0; y < height; y++) {
     const row = y * (1 + width * 3);

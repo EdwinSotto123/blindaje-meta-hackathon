@@ -35,8 +35,10 @@ MODELS = Path(os.environ.get("ML_MODELS_DIR", _DEFAULT_MODELS))
 # En el repo: eval/demo/foto-A.jpg. En la imagen de test los tests viven en /src: se monta y se pasa
 # con ML_DEMO_PHOTO.
 _PARENTS = Path(__file__).resolve().parents
-FOTO_A = Path(os.environ.get("ML_DEMO_PHOTO") or (_PARENTS[3] / "eval" / "demo" / "foto-A.jpg"
-                                                  if len(_PARENTS) > 3 else "/no-existe"))
+FOTO_A = Path(
+    os.environ.get("ML_DEMO_PHOTO")
+    or (_PARENTS[3] / "eval" / "demo" / "foto-A.jpg" if len(_PARENTS) > 3 else "/no-existe")
+)
 SR = 16_000
 
 
@@ -112,8 +114,23 @@ def _watermark_audio(gen, x: np.ndarray) -> np.ndarray:
 def _opus(x: np.ndarray, tmp: Path, bitrate: str = "16k") -> bytes:
     src, dst = tmp / "wm.wav", tmp / "wm.ogg"
     src.write_bytes(to_wav(x))
-    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(src), "-c:a", "libopus",
-                    "-b:a", bitrate, str(dst)], check=True)
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-i",
+            str(src),
+            "-c:a",
+            "libopus",
+            "-b:a",
+            bitrate,
+            str(dst),
+        ],
+        check=True,
+    )
     return dst.read_bytes()
 
 
@@ -162,8 +179,9 @@ def _scene(w: int = 640, h: int = 480, seed: int = 0) -> Image.Image:
     """Escena con textura (la marca se esconde en zonas con detalle), sin fotos de terceros."""
     rng = np.random.default_rng(seed)
     yy, xx = np.mgrid[0:h, 0:w]
-    base = np.stack([120 + 60 * np.sin(xx / 37.0), 110 + 50 * np.cos(yy / 23.0), 90 + 40 * np.sin((xx + yy) / 51.0)],
-                    axis=-1)
+    base = np.stack(
+        [120 + 60 * np.sin(xx / 37.0), 110 + 50 * np.cos(yy / 23.0), 90 + 40 * np.sin((xx + yy) / 51.0)], axis=-1
+    )
     base += rng.normal(0, 18, base.shape)
     img = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2))
     d = ImageDraw.Draw(img)
@@ -213,8 +231,9 @@ def test_videoseal_clean_image_not_detected(real_client):
 
 
 def _ffmpeg(args: list[str], data: bytes | None = None) -> bytes:
-    return subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", *args], input=data,
-                          capture_output=True, check=True).stdout
+    return subprocess.run(
+        ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", *args], input=data, capture_output=True, check=True
+    ).stdout
 
 
 @pytest.mark.skipif(not HAS_FFMPEG, reason="ffmpeg no está instalado")
@@ -225,8 +244,21 @@ def test_videoseal_video_with_and_without_watermark(real_client, videoseal_full,
     import torch
 
     w, h, n = 640, 480, 16
-    raw = _ffmpeg(["-f", "lavfi", "-i", f"mandelbrot=size={w}x{h}:rate=24", "-frames:v", str(n),
-                   "-f", "rawvideo", "-pix_fmt", "rgb24", "-"])
+    raw = _ffmpeg(
+        [
+            "-f",
+            "lavfi",
+            "-i",
+            f"mandelbrot=size={w}x{h}:rate=24",
+            "-frames:v",
+            str(n),
+            "-f",
+            "rawvideo",
+            "-pix_fmt",
+            "rgb24",
+            "-",
+        ]
+    )
     clean = np.frombuffer(raw, np.uint8).reshape(n, h, w, 3)
     x = torch.from_numpy(clean.astype(np.float32) / 255.0).permute(0, 3, 1, 2)
     with torch.inference_mode():
@@ -235,8 +267,28 @@ def test_videoseal_video_with_and_without_watermark(real_client, videoseal_full,
 
     def encode(arr: np.ndarray, name: str) -> bytes:
         out = tmp_path / name
-        _ffmpeg(["-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{w}x{h}", "-r", "24", "-i", "-",
-                 "-c:v", "libx264", "-crf", "12", "-pix_fmt", "yuv420p", str(out)], arr.tobytes())
+        _ffmpeg(
+            [
+                "-f",
+                "rawvideo",
+                "-pix_fmt",
+                "rgb24",
+                "-s",
+                f"{w}x{h}",
+                "-r",
+                "24",
+                "-i",
+                "-",
+                "-c:v",
+                "libx264",
+                "-crf",
+                "12",
+                "-pix_fmt",
+                "yuv420p",
+                str(out),
+            ],
+            arr.tobytes(),
+        )
         return out.read_bytes()
 
     r = real_client.post("/authenticity/video?frames=8", content=encode(marked, "wm.mp4"))

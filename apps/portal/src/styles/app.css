@@ -459,8 +459,10 @@ mark {
   margin-right: 0.14em;
   vertical-align: -0.04em;
   background: var(--terracota);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 
 .brand-sub {

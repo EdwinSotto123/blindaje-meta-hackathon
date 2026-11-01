@@ -24,14 +24,20 @@ function fakeApi(overrides: Record<string, () => Response> = {}) {
   const calls: Call[] = [];
   const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input));
-    calls.push({ url, method: init?.method ?? "GET", auth: new Headers(init?.headers).get("authorization"), credentials: init?.credentials });
+    calls.push({
+      url,
+      method: init?.method ?? "GET",
+      auth: new Headers(init?.headers).get("authorization"),
+      credentials: init?.credentials,
+    });
     const override = overrides[url.pathname];
     if (override) return override();
     const zona = url.searchParams.get("zona") ?? "";
     const sector = url.searchParams.get("sector");
     if (url.pathname === "/v1/public/zones") return json(200, publicZones());
     if (url.pathname === "/v1/public/risk") return json(200, publicRisk(zona, sector));
-    if (url.pathname === "/v1/public/recommendations") return json(200, { recommendations: publicRecommendations(zona, sector) });
+    if (url.pathname === "/v1/public/recommendations")
+      return json(200, { recommendations: publicRecommendations(zona, sector) });
     if (url.pathname === "/v1/public/alerts") return json(200, publicAlerts(zona));
     return json(404, { error: { code: "not_found", message: "No existe." } });
   });
@@ -54,7 +60,9 @@ describe("HttpClient del portal público", () => {
   });
 
   it("convierte los errores en ApiRequestError", async () => {
-    const api = fakeApi({ "/v1/public/zones": () => json(429, { error: { code: "rate_limited", message: "Espera un minuto." } }) });
+    const api = fakeApi({
+      "/v1/public/zones": () => json(429, { error: { code: "rate_limited", message: "Espera un minuto." } }),
+    });
     const c = new HttpClient({ baseUrl: BASE, fetch: api.fetchImpl });
     const err = await c.json("GET", "/v1/public/zones").catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ApiRequestError);
@@ -106,7 +114,13 @@ describe("HttpPortalApi", () => {
     const zones = publicZones();
     const leakyZones = {
       ...zones,
-      celdas: zones.celdas.map((c) => (c.distrito === "brena" ? { ...c, casos: "5-9", modalidades: ["algo"] } : c.distrito === "ate" ? { ...c, casos: 16 } : c)),
+      celdas: zones.celdas.map((c) =>
+        c.distrito === "brena"
+          ? { ...c, casos: "5-9", modalidades: ["algo"] }
+          : c.distrito === "ate"
+            ? { ...c, casos: 16 }
+            : c,
+      ),
     };
     const api = fakeApi({ "/v1/public/risk": () => json(200, leaky), "/v1/public/zones": () => json(200, leakyZones) });
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -117,7 +131,13 @@ describe("HttpPortalApi", () => {
     expect(r.sectores_afectados).toEqual([{ sector: "bodega", casos: "10-19" }]);
     const map = await p.zones();
     // Brena es "sin_datos": aunque llegara un rango o una modalidad, no se dibuja nada.
-    expect(map.celdas.find((c) => c.distrito === "brena")).toEqual({ distrito: "brena", nivel: "sin_datos", casos: null, tendencia: null, modalidades: [] });
+    expect(map.celdas.find((c) => c.distrito === "brena")).toEqual({
+      distrito: "brena",
+      nivel: "sin_datos",
+      casos: null,
+      tendencia: null,
+      modalidades: [],
+    });
     expect(map.celdas.find((c) => c.distrito === "ate")!.casos).toBe("10-19");
     // La respuesta no cumplía el contrato: se avisa en la consola.
     expect(warn).toHaveBeenCalled();
@@ -125,7 +145,14 @@ describe("HttpPortalApi", () => {
   });
 
   it("el mapa siempre trae los 50 distritos y la nota de sesgo, aunque la respuesta venga incompleta", async () => {
-    const api = fakeApi({ "/v1/public/zones": () => json(200, { periodo_dias: 28, actualizado: "", celdas: [{ distrito: "Ate", nivel: "alto", casos: "10-19", tendencia: "sube", modalidades: [] }] }) });
+    const api = fakeApi({
+      "/v1/public/zones": () =>
+        json(200, {
+          periodo_dias: 28,
+          actualizado: "",
+          celdas: [{ distrito: "Ate", nivel: "alto", casos: "10-19", tendencia: "sube", modalidades: [] }],
+        }),
+    });
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const map = await new HttpPortalApi(BASE, api.fetchImpl).zones();
     expect(map.celdas).toHaveLength(50);
@@ -139,7 +166,9 @@ describe("HttpPortalApi", () => {
 
 describe("errorMessage", () => {
   it("no muestra el detalle técnico de un error del servidor", async () => {
-    const api = fakeApi({ "/v1/public/risk": () => json(500, { error: { code: "internal", message: "D1_ERROR: no such table cases" } }) });
+    const api = fakeApi({
+      "/v1/public/risk": () => json(500, { error: { code: "internal", message: "D1_ERROR: no such table cases" } }),
+    });
     const p = new HttpPortalApi(BASE, api.fetchImpl);
     const err = await p.risk({ zona: "ate" }).catch((e: unknown) => e);
     expect(errorMessage(err)).toBe("Algo falló de nuestro lado. Intenta otra vez en un momento.");

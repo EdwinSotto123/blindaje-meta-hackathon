@@ -10,7 +10,8 @@ export function ExpedientesView() {
   return (
     <>
       <PageHead title="Expedientes">
-        Expedientes de red en PDF para la autoridad, con su huella SHA-256. Al descargar, la consola recalcula la huella del archivo y la compara.
+        Expedientes de red en PDF para la autoridad, con su huella SHA-256. Al descargar, la consola recalcula la huella
+        del archivo y la compara.
       </PageHead>
       {nets.error ? <ErrorBox error={nets.error} onRetry={nets.reload} /> : null}
       {nets.loading && !nets.data ? <Loading /> : null}

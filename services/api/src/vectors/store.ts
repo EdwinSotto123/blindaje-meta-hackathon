@@ -125,9 +125,13 @@ export async function chromaUpsertCase(env: Env, caseId: string): Promise<boolea
   const client = getChromaClient(env);
   if (!client) return false;
   try {
-    const c = await env.DB.prepare("SELECT is_demo, indexed FROM cases WHERE id = ?").bind(caseId).first<{ is_demo: number; indexed: number }>();
+    const c = await env.DB.prepare("SELECT is_demo, indexed FROM cases WHERE id = ?")
+      .bind(caseId)
+      .first<{ is_demo: number; indexed: number }>();
     if (!c || c.indexed !== 1 || !chromaEligible(env, c)) return false;
-    const { results } = await env.DB.prepare("SELECT faiss_id, index_name, ref_type, model, vector_b64 FROM embeddings WHERE case_id = ?")
+    const { results } = await env.DB.prepare(
+      "SELECT faiss_id, index_name, ref_type, model, vector_b64 FROM embeddings WHERE case_id = ?",
+    )
       .bind(caseId)
       .all<EmbeddingRow>();
     if (!results.length) return false;
@@ -140,7 +144,10 @@ export async function chromaUpsertCase(env: Env, caseId: string): Promise<boolea
 }
 
 /** Borra vectores de Chroma (mejor esfuerzo: si falla, la búsqueda igual los filtra contra D1). */
-export async function chromaRemove(env: Env, vecs: Array<{ faiss_id: number; index_name: MlIndexName }>): Promise<boolean> {
+export async function chromaRemove(
+  env: Env,
+  vecs: Array<{ faiss_id: number; index_name: MlIndexName }>,
+): Promise<boolean> {
   const client = getChromaClient(env);
   if (!client || !vecs.length) return false;
   try {

@@ -165,7 +165,9 @@ export function budgetUsd(env: Env): number {
 }
 
 export async function budgetStatus(env: Env): Promise<BudgetStatus> {
-  const row = await env.DB.prepare("SELECT COALESCE(SUM(cost_usd), 0) AS total FROM api_costs").first<{ total: number }>();
+  const row = await env.DB.prepare("SELECT COALESCE(SUM(cost_usd), 0) AS total FROM api_costs").first<{
+    total: number;
+  }>();
   const total = row?.total ?? 0;
   const budget = budgetUsd(env);
   const pct = total / budget;
@@ -195,15 +197,16 @@ export async function budgetGuard(env: Env, ctx: BudgetGuardContext, opts: { rec
   const st = await budgetStatus(env);
   const blocked = st.all_blocked || (!ctx.essential && st.nonessential_blocked);
   if (!blocked) return;
-  if (opts.record !== false) await recordCost(env, {
-    model: ctx.model ?? "desconocido",
-    operation: ctx.operation ?? "desconocida",
-    cost_usd: 0,
-    essential: ctx.essential,
-    status: "blocked",
-    case_id: ctx.case_id ?? null,
-    cache_key: ctx.cache_key ?? null,
-  });
+  if (opts.record !== false)
+    await recordCost(env, {
+      model: ctx.model ?? "desconocido",
+      operation: ctx.operation ?? "desconocida",
+      cost_usd: 0,
+      essential: ctx.essential,
+      status: "blocked",
+      case_id: ctx.case_id ?? null,
+      cache_key: ctx.cache_key ?? null,
+    });
   throw new ApiError(
     "budget_exceeded",
     st.all_blocked
@@ -236,7 +239,13 @@ export async function cacheGet<T>(env: Env, key: string): Promise<T | null> {
 }
 
 export async function cachePut(env: Env, key: string, value: unknown): Promise<void> {
-  await putEncrypted(env.EVIDENCE, cacheR2Key(key), env.EVIDENCE_ENCRYPTION_KEY, utf8(JSON.stringify(value)), `cache:${key}`);
+  await putEncrypted(
+    env.EVIDENCE,
+    cacheR2Key(key),
+    env.EVIDENCE_ENCRYPTION_KEY,
+    utf8(JSON.stringify(value)),
+    `cache:${key}`,
+  );
 }
 
 /**
@@ -379,9 +388,9 @@ export async function costsSummary(env: Env): Promise<CostsResponse> {
       day: r.day,
       cost_usd: round6(r.cost_usd),
     })),
-    recent: (recent!.results as Array<{ ts: string; model: string; operation: string; cost_usd: number; status: string }>).map(
-      (r) => ({ ...r, cost_usd: round6(r.cost_usd) }),
-    ),
+    recent: (
+      recent!.results as Array<{ ts: string; model: string; operation: string; cost_usd: number; status: string }>
+    ).map((r) => ({ ...r, cost_usd: round6(r.cost_usd) })),
   };
 }
 

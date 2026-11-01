@@ -50,7 +50,9 @@ def _sha(p: Path) -> str:
 def _dur(p: Path) -> float:
     out = subprocess.run(
         ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(p)],
-        capture_output=True, text=True, check=True,
+        capture_output=True,
+        text=True,
+        check=True,
     )
     return float(out.stdout.strip())
 
@@ -86,7 +88,19 @@ def _cambiar_voz(src: Path, dst: Path, factor: float) -> None:
     sr = info.samplerate
     filtro = f"asetrate={int(sr * factor)},aresample={sr},atempo={1 / factor:.5f}"
     subprocess.run(
-        ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-i", str(src), "-af", filtro, str(dst)],
+        [
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-i",
+            str(src),
+            "-af",
+            filtro,
+            str(dst),
+        ],
         check=True,
     )
 
@@ -161,7 +175,9 @@ def verificar(nombres: list[str]) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--force", action="store_true")
-    ap.add_argument("--solo-verificar", action="store_true", help="Solo recalcula la verificación de voz del manifiesto")
+    ap.add_argument(
+        "--solo-verificar", action="store_true", help="Solo recalcula la verificación de voz del manifiesto"
+    )
     a = ap.parse_args()
     if a.solo_verificar:
         m = OUT_DIR / "manifest.json"

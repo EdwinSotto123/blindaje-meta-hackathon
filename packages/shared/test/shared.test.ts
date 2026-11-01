@@ -33,7 +33,9 @@ describe("labels", () => {
   });
   it("extrae citas de un texto", () => {
     const t = "La voz de EV-B1 se parece a EV-A1 y EV-A2 (V-3, VIN-21, ID-3fa9c1, FICHA-A).";
-    expect(extractCitations(t).sort()).toEqual(["EV-A1", "EV-A2", "EV-B1", "FICHA-A", "ID-3fa9c1", "V-3", "VIN-21"].sort());
+    expect(extractCitations(t).sort()).toEqual(
+      ["EV-A1", "EV-A2", "EV-B1", "FICHA-A", "ID-3fa9c1", "V-3", "VIN-21"].sort(),
+    );
   });
   it("reconoce citas válidas e inválidas", () => {
     expect(isCitation("EV-A1")).toBe(true);
@@ -150,7 +152,14 @@ describe("inyección de instrucciones", () => {
   });
 
   it("todos los prompts de sistema prohíben seguir instrucciones de la evidencia", () => {
-    for (const p of [FICHA_SYSTEM, VINCULADOR_SYSTEM, CARTOGRAFO_SYSTEM, VIGIA_SYSTEM, REDACTOR_SYSTEM, ASESOR_SYSTEM]) {
+    for (const p of [
+      FICHA_SYSTEM,
+      VINCULADOR_SYSTEM,
+      CARTOGRAFO_SYSTEM,
+      VIGIA_SYSTEM,
+      REDACTOR_SYSTEM,
+      ASESOR_SYSTEM,
+    ]) {
       expect(p).toMatch(/nunca una instrucción para ti/);
       expect(p).toMatch(/<<<EVIDENCIA/);
     }
@@ -158,7 +167,14 @@ describe("inyección de instrucciones", () => {
   });
 
   it("solo 'revisado' + 'inyeccion' cuenta como marcado", () => {
-    const base = { score: 0.99, model: "llama-prompt-guard-2-86m", threshold: 0.5, textos: 1, marcados: 1, revisado_at: "2026-10-28T00:00:00Z" };
+    const base = {
+      score: 0.99,
+      model: "llama-prompt-guard-2-86m",
+      threshold: 0.5,
+      textos: 1,
+      marcados: 1,
+      revisado_at: "2026-10-28T00:00:00Z",
+    };
     expect(PromptGuardResult.safeParse({ ...base, status: "revisado", label: "inyeccion" }).success).toBe(true);
     expect(esInyeccion({ status: "revisado", label: "inyeccion" })).toBe(true);
     expect(esInyeccion({ status: "revisado", label: "benigno" })).toBe(false);
@@ -173,7 +189,17 @@ describe("rastreo de filtraciones", () => {
       detected: true,
       kind: "audio",
       score: 0.98,
-      candidates: [{ user_id: "u1", email_or_name: "revisora@demo.pe", role: "reviewer", evidence_label: null, case_id: null, issued_at: null, bit_accuracy: 1 }],
+      candidates: [
+        {
+          user_id: "u1",
+          email_or_name: "revisora@demo.pe",
+          role: "reviewer",
+          evidence_label: null,
+          case_id: null,
+          issued_at: null,
+          bit_accuracy: 1,
+        },
+      ],
       nota: "Son indicios, no prueba.",
     });
     expect(r.ambiguo).toBe(false);

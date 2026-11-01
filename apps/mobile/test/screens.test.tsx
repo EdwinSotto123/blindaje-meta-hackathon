@@ -5,7 +5,14 @@
  */
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
-const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true, canDismiss: () => true, dismissAll: jest.fn() };
+const mockRouter = {
+  push: jest.fn(),
+  replace: jest.fn(),
+  back: jest.fn(),
+  canGoBack: () => true,
+  canDismiss: () => true,
+  dismissAll: jest.fn(),
+};
 let mockParams: Record<string, string> = {};
 /** Conexión del servidor simulado: en false, cada petición falla como sin internet. */
 let mockOnline = true;
@@ -26,7 +33,11 @@ jest.mock("@/services", () => {
   const { EvidenceQueue, MemoryBlobStore, MemoryQueueRepo } = require("@/sync/queue") as typeof import("@/sync/queue");
   const server = createMockServer({ processMs: 0, isOnline: () => mockOnline });
   let auth: import("@/api/client").AuthState | null = null;
-  const authStore = { get: async () => auth, set: async (a: typeof auth) => void (auth = a), clear: async () => void (auth = null) };
+  const authStore = {
+    get: async () => auth,
+    set: async (a: typeof auth) => void (auth = a),
+    clear: async () => void (auth = null),
+  };
   // Como en la app: sin sesión, la primera llamada registra el celular (sin código).
   const api = new BlindajeApi({
     baseUrl: "https://mock.local",
@@ -50,7 +61,13 @@ jest.mock("@/services", () => {
     key: async () => key,
     uploader: {
       upload: async (i, body) =>
-        api.uploadEvidence(await ensureCase(), body, { tipo: i.tipo, mime: i.mime, sha256: i.sha256, source: i.source, durationMs: i.duration_ms }),
+        api.uploadEvidence(await ensureCase(), body, {
+          tipo: i.tipo,
+          mime: i.mime,
+          sha256: i.sha256,
+          source: i.source,
+          durationMs: i.duration_ms,
+        }),
     },
   });
   return {
@@ -67,15 +84,27 @@ jest.mock("@/services", () => {
 });
 
 jest.mock("@/storage/db", () => {
-  const rows: { id: number; tipo: string; preview: string | null; duration_ms: number | null; created_at: number }[] = [];
+  const rows: { id: number; tipo: string; preview: string | null; duration_ms: number | null; created_at: number }[] =
+    [];
   const db = {
     getAllAsync: async () => [...rows],
-    runAsync: async (_sql: string, tipo: string, preview: string | null, duration_ms: number | null, created_at: number) => {
+    runAsync: async (
+      _sql: string,
+      tipo: string,
+      preview: string | null,
+      duration_ms: number | null,
+      created_at: number,
+    ) => {
       rows.push({ id: rows.length + 1, tipo, preview, duration_ms, created_at });
       return { changes: 1, lastInsertRowId: rows.length };
     },
   };
-  return { privateDb: async () => db, deletePrivateDb: async () => undefined, getMeta: async () => null, setMeta: async () => undefined };
+  return {
+    privateDb: async () => db,
+    deletePrivateDb: async () => undefined,
+    getMeta: async () => null,
+    setMeta: async () => undefined,
+  };
 });
 
 jest.mock("@/storage/queueStorage", () => ({ deleteQueueFiles: () => undefined }));
@@ -100,7 +129,14 @@ jest.mock("expo-file-system", () => ({
 
 jest.mock("expo-audio", () => ({
   RecordingPresets: { HIGH_QUALITY: {} },
-  useAudioRecorder: () => ({ isRecording: false, uri: null, getStatus: () => ({ durationMillis: 0 }), stop: async () => undefined, prepareToRecordAsync: async () => undefined, record: () => undefined }),
+  useAudioRecorder: () => ({
+    isRecording: false,
+    uri: null,
+    getStatus: () => ({ durationMillis: 0 }),
+    stop: async () => undefined,
+    prepareToRecordAsync: async () => undefined,
+    record: () => undefined,
+  }),
   useAudioRecorderState: () => ({ isRecording: false, durationMillis: 0, metering: -60 }),
   requestRecordingPermissionsAsync: async () => ({ granted: true }),
   getRecordingPermissionsAsync: async () => ({ granted: true }),
@@ -112,7 +148,10 @@ jest.mock("expo-camera", () => ({
   useCameraPermissions: () => [{ granted: true }, async () => ({ granted: true })],
 }));
 jest.mock("expo-image-picker", () => ({ launchImageLibraryAsync: async () => ({ canceled: true, assets: [] }) }));
-jest.mock("expo-clipboard", () => ({ getStringAsync: async () => "Si no yapeas S/ 2,000 en 48 horas (ficticio)", setStringAsync: async () => undefined }));
+jest.mock("expo-clipboard", () => ({
+  getStringAsync: async () => "Si no yapeas S/ 2,000 en 48 horas (ficticio)",
+  setStringAsync: async () => undefined,
+}));
 jest.mock("expo-sharing", () => ({ shareAsync: async () => undefined }));
 
 import Ajustes from "@/app/privado/ajustes";
@@ -165,7 +204,12 @@ describe("Pantallas privadas (modo real)", () => {
   beforeEach(() => unlock("real"));
 
   it("Notas privadas: chip honesto, acciones, Salir rápido y lo que encontramos", async () => {
-    await saveBytes(utf8("Si no yapeas S/ 2,000 en 48 horas, somos de Los X. (ficticio)"), { tipo: "texto", mime: "text/plain", source: "pegado", preview: "Si no yapeas" });
+    await saveBytes(utf8("Si no yapeas S/ 2,000 en 48 horas, somos de Los X. (ficticio)"), {
+      tipo: "texto",
+      mime: "text/plain",
+      source: "pegado",
+      preview: "Si no yapeas",
+    });
     await act(async () => {
       await new Promise((r) => setTimeout(r, 50));
     });
@@ -173,7 +217,8 @@ describe("Pantallas privadas (modo real)", () => {
     await render(<NotasPrivadas />);
     expect(screen.getByText("Notas privadas")).toBeTruthy();
     expect(screen.getByLabelText("Salir rápido")).toBeTruthy();
-    for (const a of ["Grabar", "Foto", "Pegar mensaje", "Preparar mi denuncia", "Avisos del proveedor"]) expect(screen.getAllByText(a).length).toBeGreaterThan(0);
+    for (const a of ["Grabar", "Foto", "Pegar mensaje", "Preparar mi denuncia", "Avisos del proveedor"])
+      expect(screen.getAllByText(a).length).toBeGreaterThan(0);
     await waitFor(() => expect(screen.getByText("Pide pago por Yape")).toBeTruthy());
     expect(screen.getByText("Guardado cifrado, fuera de este celular")).toBeTruthy();
     expect(screen.getByText("Mensaje de texto")).toBeTruthy();
@@ -214,7 +259,13 @@ describe("Pantallas privadas (modo real)", () => {
   });
 
   it("Recibido: archivos compartidos retenidos hasta aceptarlos", async () => {
-    await saveBytes(utf8("audio compartido ficticio"), { tipo: "audio", mime: "audio/ogg", source: "compartido", hold: true, durationMs: 18000 });
+    await saveBytes(utf8("audio compartido ficticio"), {
+      tipo: "audio",
+      mime: "audio/ogg",
+      source: "compartido",
+      hold: true,
+      durationMs: 18000,
+    });
     await render(<Recibido />);
     await waitFor(() => expect(screen.getByText("Guardar en mis notas")).toBeTruthy());
     expect(screen.getByText("Audio de 0:18")).toBeTruthy();
@@ -294,7 +345,9 @@ describe("Pantallas privadas (modo real)", () => {
     expect(screen.getByText(/^Revisada por nuestro equipo el /)).toBeTruthy();
     // Ordenadas por prioridad: alta, media, baja.
     const titulos = screen
-      .getAllByText(/^(Guarda todo sin responder|Acuerda con tu personal que nadie negocia ni paga|Cuéntale a alguien de confianza|Reconoce el guion|Cuida lo que publicas)$/)
+      .getAllByText(
+        /^(Guarda todo sin responder|Acuerda con tu personal que nadie negocia ni paga|Cuéntale a alguien de confianza|Reconoce el guion|Cuida lo que publicas)$/,
+      )
       .map((t) => t.props.children);
     expect(titulos).toEqual([
       "Guarda todo sin responder",
@@ -305,7 +358,9 @@ describe("Pantallas privadas (modo real)", () => {
     ]);
     expect(screen.getByText("Si te pasa")).toBeTruthy();
     expect(screen.getByText("— No respondas, no pagues y no negocies.")).toBeTruthy();
-    expect(screen.getByText("Más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa.")).toBeTruthy();
+    expect(
+      screen.getByText("Más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa."),
+    ).toBeTruthy();
     // El riesgo va en palabras y en texto secundario, nunca como alarma roja.
     const riesgo = screen.getByText("Riesgo en tu zona: medio");
     expect(StyleSheet.flatten(riesgo.props.style).color).toBe(colors.lapiz);
@@ -363,7 +418,15 @@ describe("Pantallas privadas (modo real)", () => {
 
   it("Ajustes: disfraz, entradas, PIN, distrito, consentimiento y borrado", async () => {
     await render(<Ajustes />);
-    for (const t of ["Cómo se ve la app", "Cómo entras aquí", "Cambiar PIN", "Tu distrito", "Tu consentimiento", "Borrar todo de este celular", "Borrar mi caso de la nube"]) {
+    for (const t of [
+      "Cómo se ve la app",
+      "Cómo entras aquí",
+      "Cambiar PIN",
+      "Tu distrito",
+      "Tu consentimiento",
+      "Borrar todo de este celular",
+      "Borrar mi caso de la nube",
+    ]) {
       expect(screen.getAllByText(t).length).toBeGreaterThan(0);
     }
     // Solo el seudónimo: ninguna organización ni gremio.
@@ -396,7 +459,11 @@ describe("Pantallas privadas (modo real)", () => {
     await forgetCase();
     const create = jest.spyOn(api, "createCase");
     try {
-      await saveBytes(utf8("Mensaje ficticio para el caso nuevo"), { tipo: "texto", mime: "text/plain", source: "pegado" });
+      await saveBytes(utf8("Mensaje ficticio para el caso nuevo"), {
+        tipo: "texto",
+        mime: "text/plain",
+        source: "pegado",
+      });
       await waitFor(async () => expect(await currentCaseId()).toBeTruthy());
       expect(create).toHaveBeenCalledWith({ consent_mode: "solo_denuncia", sector: "bodega", zona: "ate" });
       expect(server.debug.cases.get((await currentCaseId())!)?.zona).toBe("ate");
@@ -471,7 +538,9 @@ describe("Onboarding", () => {
 
   it("el consentimiento dice quién puede escuchar partes de los audios", async () => {
     await render(<Consentimiento />);
-    expect(screen.getByText(/una persona autorizada revisa los casos y puede escuchar partes de tus audios/)).toBeTruthy();
+    expect(
+      screen.getByText(/una persona autorizada revisa los casos y puede escuchar partes de tus audios/),
+    ).toBeTruthy();
     expect(screen.queryByText(/Nadie ve tus audios/)).toBeNull();
   });
 
@@ -523,7 +592,12 @@ describe("Onboarding", () => {
       // Termina la configuración. Lo guardado espera conexión: la cola lo deja pendiente.
       configStore.set({ onboarded: true });
       await forgetCase();
-      await queue.add({ bytes: utf8("Nota ficticia sin conexión"), tipo: "texto", mime: "text/plain", source: "pegado" });
+      await queue.add({
+        bytes: utf8("Nota ficticia sin conexión"),
+        tipo: "texto",
+        mime: "text/plain",
+        source: "pegado",
+      });
       expect((await queue.flush()).pending).toBeGreaterThan(0);
       expect(await authStore.get()).toBeNull();
     } finally {

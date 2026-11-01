@@ -43,7 +43,13 @@ export function ListaHome() {
 
   return (
     <Paper testID="disfraz-lista">
-      <Pressable onPressIn={hold.onPressIn} onPressOut={hold.onPressOut} accessibilityRole="header" accessibilityLabel={c.lista.titleHint} testID="titulo">
+      <Pressable
+        onPressIn={hold.onPressIn}
+        onPressOut={hold.onPressOut}
+        accessibilityRole="header"
+        accessibilityLabel={c.lista.titleHint}
+        testID="titulo"
+      >
         <T variant="title">{c.lista.title}</T>
         <T variant="small">
           {c.lista.subtitulo}, {longDate()}
@@ -51,12 +57,32 @@ export function ListaHome() {
       </Pressable>
 
       <View style={{ gap: 10 }}>
-        <Field label={c.lista.producto} placeholder={c.lista.productoPlaceholder} value={nombre} onChangeText={setNombre} hand returnKeyType="next" />
+        <Field
+          label={c.lista.producto}
+          placeholder={c.lista.productoPlaceholder}
+          value={nombre}
+          onChangeText={setNombre}
+          hand
+          returnKeyType="next"
+        />
         <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-end" }}>
           <View style={{ flex: 1 }}>
-            <Field label={c.lista.precio} placeholder="0.00" keyboardType="decimal-pad" value={precio} onChangeText={setPrecio} />
+            <Field
+              label={c.lista.precio}
+              placeholder="0.00"
+              keyboardType="decimal-pad"
+              value={precio}
+              onChangeText={setPrecio}
+            />
           </View>
-          <Button label={c.lista.agregar} icon="plus" onPress={agregar} compact style={{ minHeight: 52 }} testID="agregar" />
+          <Button
+            label={c.lista.agregar}
+            icon="plus"
+            onPress={agregar}
+            compact
+            style={{ minHeight: 52 }}
+            testID="agregar"
+          />
         </View>
       </View>
 
@@ -77,7 +103,9 @@ export function ListaHome() {
                 accessibilityHint={i.hecho ? c.lista.desmarcar : c.lista.marcar}
                 style={s.check}
               >
-                <View style={[s.box, i.hecho ? s.boxOn : null]}>{i.hecho ? <Icon name="check" size={18} color={colors.blanco} /> : null}</View>
+                <View style={[s.box, i.hecho ? s.boxOn : null]}>
+                  {i.hecho ? <Icon name="check" size={18} color={colors.blanco} /> : null}
+                </View>
                 <T variant="hand" style={[{ flexShrink: 1 }, i.hecho ? s.tachado : null]}>
                   {i.nombre}
                 </T>
@@ -120,10 +148,32 @@ export function ListaHome() {
 }
 
 const s = StyleSheet.create({
-  line: { minHeight: 52, flexDirection: "row", alignItems: "center", gap: 8, borderBottomWidth: 1, borderBottomColor: colors.borde },
+  line: {
+    minHeight: 52,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borde,
+  },
   check: { flex: 1, minHeight: 48, flexDirection: "row", alignItems: "center", gap: 10 },
-  box: { width: 26, height: 26, borderRadius: 6, borderWidth: 2, borderColor: colors.tinta, alignItems: "center", justifyContent: "center" },
+  box: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: colors.tinta,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   boxOn: { backgroundColor: colors.tinta },
   tachado: { textDecorationLine: "line-through", color: colors.lapiz },
-  totalRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 12, borderRadius: radius.boton, backgroundColor: colors.cuadriculaSuave },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: radius.boton,
+    backgroundColor: colors.cuadriculaSuave,
+  },
 });

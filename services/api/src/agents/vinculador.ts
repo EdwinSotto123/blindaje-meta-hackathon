@@ -41,7 +41,14 @@ interface CaseInfo {
   code: string;
   is_demo: number;
   ficha: FichaStored | null;
-  evidence: Array<{ id: string; label: string; tipo: string; autenticidad: NivelAutenticidad | null; pg_label: string | null; pg_score: number | null }>;
+  evidence: Array<{
+    id: string;
+    label: string;
+    tipo: string;
+    autenticidad: NivelAutenticidad | null;
+    pg_label: string | null;
+    pg_score: number | null;
+  }>;
 }
 
 async function loadCase(env: Env, caseId: string): Promise<CaseInfo | null> {
@@ -59,7 +66,13 @@ async function loadCase(env: Env, caseId: string): Promise<CaseInfo | null> {
   )
     .bind(caseId)
     .all<CaseInfo["evidence"][number]>();
-  return { id: c.id, code: c.code, is_demo: c.is_demo, ficha: parseJsonColumn<FichaStored>(c.ficha_json), evidence: results };
+  return {
+    id: c.id,
+    code: c.code,
+    is_demo: c.is_demo,
+    ficha: parseJsonColumn<FichaStored>(c.ficha_json),
+    evidence: results,
+  };
 }
 
 const NIVEL_TEXTO: Record<NivelAutenticidad, string> = {
@@ -89,7 +102,9 @@ const pct = (p: number) => p.toFixed(2);
 export function describeSignals(s: Signals): string[] {
   const out: string[] = [];
   if (s.identificador) {
-    const ids = s.identificador.compartidos.map((c) => `${c.ref} (${c.tipo}, termina en ${c.ultimos_3}; evidencia ${c.evidencia.join(", ") || "sin etiqueta"})`);
+    const ids = s.identificador.compartidos.map(
+      (c) => `${c.ref} (${c.tipo}, termina en ${c.ultimos_3}; evidencia ${c.evidencia.join(", ") || "sin etiqueta"})`,
+    );
     out.push(`- Identificador idéntico (HMAC): p=${pct(s.identificador.p)}. Compartidos: ${ids.join("; ")}.`);
   }
   if (s.voz) {
@@ -135,7 +150,9 @@ async function voiceFragments(env: Env, signals: Signals): Promise<string[]> {
   const cache = new Map<string, TranscripcionContent | null>();
   for (const s of segs) {
     if (!cache.has(s.evidence_id)) {
-      const row = await env.DB.prepare("SELECT content_json FROM derivatives WHERE evidence_id = ? AND tipo = 'transcripcion' LIMIT 1")
+      const row = await env.DB.prepare(
+        "SELECT content_json FROM derivatives WHERE evidence_id = ? AND tipo = 'transcripcion' LIMIT 1",
+      )
         .bind(s.evidence_id)
         .first<{ content_json: string | null }>();
       cache.set(s.evidence_id, parseJsonColumn<TranscripcionContent>(row?.content_json));
@@ -145,7 +162,9 @@ async function voiceFragments(env: Env, signals: Signals): Promise<string[]> {
       .map((t) => t.text.trim())
       .join(" ")
       .trim();
-    out.push(`[${s.evidencia} · ${s.huella} · ${mmss(s.start_ms)}–${mmss(s.end_ms)}] ${text ? `«${text}»` : "(sin texto en ese tramo)"}`);
+    out.push(
+      `[${s.evidencia} · ${s.huella} · ${mmss(s.start_ms)}–${mmss(s.end_ms)}] ${text ? `«${text}»` : "(sin texto en ese tramo)"}`,
+    );
   }
   return out;
 }
@@ -165,10 +184,19 @@ export interface VinculadorMaterial {
 }
 
 /** Arma el mensaje del Vinculador y el conjunto de etiquetas que puede citar. */
-export async function vinculadorMaterial(env: Env, pair: CandidatePair, cal: Calibration): Promise<VinculadorMaterial | null> {
+export async function vinculadorMaterial(
+  env: Env,
+  pair: CandidatePair,
+  cal: Calibration,
+): Promise<VinculadorMaterial | null> {
   const [a, b] = await Promise.all([loadCase(env, pair.case_id), loadCase(env, pair.other_case_id)]);
   if (!a || !b) return null;
-  const known = new Set<string>([fichaLabel(a.code), fichaLabel(b.code), ...a.evidence.map((e) => e.label), ...b.evidence.map((e) => e.label)]);
+  const known = new Set<string>([
+    fichaLabel(a.code),
+    fichaLabel(b.code),
+    ...a.evidence.map((e) => e.label),
+    ...b.evidence.map((e) => e.label),
+  ]);
   for (const f of [a.ficha, b.ficha]) for (const i of f?.identificadores ?? []) known.add(i.ref);
   const s = pair.signals;
   for (const h of s.voz?.huellas ?? []) known.add(h);
@@ -176,7 +204,9 @@ export async function vinculadorMaterial(env: Env, pair: CandidatePair, cal: Cal
   for (const r of s.imagen?.recortes ?? []) known.add(r);
 
   const fragments = await voiceFragments(env, s);
-  const fragmentosMarcados = [...flagged(a), ...flagged(b)].filter((m) => fragments.some((f) => f.startsWith(`[${m.label} `)));
+  const fragmentosMarcados = [...flagged(a), ...flagged(b)].filter((m) =>
+    fragments.some((f) => f.startsWith(`[${m.label} `)),
+  );
   const authenticity = describeAuthenticity([a, b]);
   const demo = a.is_demo === 1 || b.is_demo === 1;
   const input = [
@@ -218,7 +248,11 @@ export interface VinculadorResult {
   run_id: string;
 }
 
-export async function runVinculador(env: Env, pair: CandidatePair, calibration: Calibration = DEFAULT_CALIBRATION): Promise<VinculadorResult | null> {
+export async function runVinculador(
+  env: Env,
+  pair: CandidatePair,
+  calibration: Calibration = DEFAULT_CALIBRATION,
+): Promise<VinculadorResult | null> {
   const material = await vinculadorMaterial(env, pair, calibration);
   if (!material) return null;
   const meta = metaClientFor(env, { case_id: pair.case_id });
@@ -231,24 +265,31 @@ export async function runVinculador(env: Env, pair: CandidatePair, calibration: 
     attempt: async (feedback) => {
       const text = feedback ? `${material.input}\n\n${feedback}` : material.input;
       const cacheKey = await costCacheKey(await sha256Hex(text), "vinculador", `${VINCULADOR_MODEL}:${EFFORT}`);
-      const r = await withCostCache(env, { cache_key: cacheKey, model: VINCULADOR_MODEL, operation: "vinculador", case_id: pair.case_id }, async () => {
-        const p = await meta.responses.parse(
-          {
-            model: VINCULADOR_MODEL,
-            instructions: VINCULADOR_SYSTEM,
-            input: [{ role: "user", content: text }],
-            schema: VinculadorOutput,
-            schemaName: "vinculador",
-            reasoningEffort: EFFORT,
-            store: false,
-          },
-          { operation: "vinculador", context: { case_id: pair.case_id, cache_key: cacheKey } },
-        );
-        return { output: p.output, cost_usd: p.costUsd };
-      });
+      const r = await withCostCache(
+        env,
+        { cache_key: cacheKey, model: VINCULADOR_MODEL, operation: "vinculador", case_id: pair.case_id },
+        async () => {
+          const p = await meta.responses.parse(
+            {
+              model: VINCULADOR_MODEL,
+              instructions: VINCULADOR_SYSTEM,
+              input: [{ role: "user", content: text }],
+              schema: VinculadorOutput,
+              schemaName: "vinculador",
+              reasoningEffort: EFFORT,
+              store: false,
+            },
+            { operation: "vinculador", context: { case_id: pair.case_id, cache_key: cacheKey } },
+          );
+          return { output: p.output, cost_usd: p.costUsd };
+        },
+      );
       return { output: r.output, cost_usd: r.cost_usd, tool_calls: 0 };
     },
   });
-  const inRange = Number.isFinite(run.output.puntaje_ajustado) && run.output.puntaje_ajustado >= 0 && run.output.puntaje_ajustado <= 1;
+  const inRange =
+    Number.isFinite(run.output.puntaje_ajustado) &&
+    run.output.puntaje_ajustado >= 0 &&
+    run.output.puntaje_ajustado <= 1;
   return { output: run.output, valid: run.status === "ok" && inRange, run_id: run.run_id };
 }

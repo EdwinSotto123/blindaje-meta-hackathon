@@ -33,11 +33,23 @@ describe("runAgent", () => {
         jsonResponse(
           responseBody(
             "resp_1",
-            [reasoning(), message("Consulto la red.", "commentary"), functionCall("c1", "obtener_red", { red: "R-1" }), functionCall("c2", "contar", { n: 3 })],
+            [
+              reasoning(),
+              message("Consulto la red.", "commentary"),
+              functionCall("c1", "obtener_red", { red: "R-1" }),
+              functionCall("c2", "contar", { n: 3 }),
+            ],
             { input: 500, output: 80, reasoning: 40 },
           ),
         ),
-      () => jsonResponse(responseBody("resp_2", [reasoning(), message('{"red":"R-1","casos":3}')], { input: 700, output: 30, cached: 500 })),
+      () =>
+        jsonResponse(
+          responseBody("resp_2", [reasoning(), message('{"red":"R-1","casos":3}')], {
+            input: 700,
+            output: 30,
+            cached: 500,
+          }),
+        ),
     );
     const log: string[] = [];
     const events: UsageEvent[] = [];
@@ -64,18 +76,38 @@ describe("runAgent", () => {
       ["contar", true, 1],
     ]);
     expect(result.trace[1]?.output).toBe("3");
-    expect(result.usage).toMatchObject({ input_tokens: 1200, output_tokens: 110, cached_tokens: 500, reasoning_tokens: 40, calls: 2 });
+    expect(result.usage).toMatchObject({
+      input_tokens: 1200,
+      output_tokens: 110,
+      cached_tokens: 500,
+      reasoning_tokens: 40,
+      calls: 2,
+    });
     expect(result.usage.cost_usd).toBeCloseTo((500 * 1.25 + 80 * 4.25 + 200 * 1.25 + 500 * 0.15 + 30 * 4.25) / 1e6, 10);
 
     const [first, second] = fetch.calls.map((call) => call.json!);
-    expect(first).toMatchObject({ store: true, instructions: "Eres el Cartógrafo", tool_choice: "auto", reasoning: { effort: "low" } });
+    expect(first).toMatchObject({
+      store: true,
+      instructions: "Eres el Cartógrafo",
+      tool_choice: "auto",
+      reasoning: { effort: "low" },
+    });
     expect(first!.previous_response_id).toBeUndefined();
     expect((first!.tools as Array<{ name: string }>).map((t) => t.name)).toEqual(["obtener_red", "contar"]);
     expect(first!.text).toMatchObject({ format: { type: "json_schema", name: "perfil_red", strict: true } });
-    expect(second).toMatchObject({ store: true, previous_response_id: "resp_1", instructions: "Eres el Cartógrafo", reasoning: { effort: "low" } });
+    expect(second).toMatchObject({
+      store: true,
+      previous_response_id: "resp_1",
+      instructions: "Eres el Cartógrafo",
+      reasoning: { effort: "low" },
+    });
     expect(second!.tools).toBeDefined();
     expect(second!.input).toEqual([
-      { type: "function_call_output", call_id: "c1", output: JSON.stringify({ red: "R-1", casos: ["C-1", "C-2", "C-3"] }) },
+      {
+        type: "function_call_output",
+        call_id: "c1",
+        output: JSON.stringify({ red: "R-1", casos: ["C-1", "C-2", "C-3"] }),
+      },
       { type: "function_call_output", call_id: "c2", output: "3" },
     ]);
     expect(events.map((e) => e.operation)).toEqual(["cartografo", "cartografo"]);
@@ -112,13 +144,20 @@ describe("runAgent", () => {
       () => jsonResponse(responseBody("resp_2", [message("listo")])),
     );
     const c = new MetaClient({ apiKey: "k", fetch });
-    const result = await c.runAgent({ model: "muse-spark-1.3", instructions: "i", input: "x", tools: [...tools(), failing] });
+    const result = await c.runAgent({
+      model: "muse-spark-1.3",
+      instructions: "i",
+      input: "x",
+      tools: [...tools(), failing],
+    });
     expect(result.trace.map((t) => t.ok)).toEqual([false, false, false, false]);
     expect(result.trace[0]?.error).toMatch(/Argumentos inválidos/);
     expect(result.trace[1]?.error).toMatch(/desconocida/);
     expect(result.trace[2]?.error).toMatch(/JSON/);
     expect(result.trace[3]?.error).toBe("D1 no responde");
-    const outputs = (fetch.calls[1]!.json!.input as Array<{ output: string }>).map((o) => JSON.parse(o.output) as { error: string });
+    const outputs = (fetch.calls[1]!.json!.input as Array<{ output: string }>).map(
+      (o) => JSON.parse(o.output) as { error: string },
+    );
     expect(outputs.every((o) => typeof o.error === "string")).toBe(true);
   });
 
@@ -147,7 +186,14 @@ describe("runAgent", () => {
       () => jsonResponse(responseBody("resp_2", [message('{"red":"R-9","casos":1}')])),
     );
     const c = new MetaClient({ apiKey: "k", fetch });
-    const result = await c.runAgent({ model: "muse-spark-1.3", instructions: "i", input: "x", tools: tools(), maxTurns: 2, finalSchema: Final });
+    const result = await c.runAgent({
+      model: "muse-spark-1.3",
+      instructions: "i",
+      input: "x",
+      tools: tools(),
+      maxTurns: 2,
+      finalSchema: Final,
+    });
     expect(result.output).toEqual({ red: "R-9", casos: 1 });
     const last = fetch.calls[1]!.json!;
     expect(last.tools).toBeUndefined();
@@ -163,7 +209,13 @@ describe("runAgent", () => {
       () => jsonResponse(responseBody("resp_2", [message('{"red":"R-1","casos":2}')])),
     );
     const c = new MetaClient({ apiKey: "k", fetch });
-    const result = await c.runAgent({ model: "muse-spark-1.3", instructions: "i", input: "x", tools: tools(), finalSchema: Final });
+    const result = await c.runAgent({
+      model: "muse-spark-1.3",
+      instructions: "i",
+      input: "x",
+      tools: tools(),
+      finalSchema: Final,
+    });
     expect(result.output).toEqual({ red: "R-1", casos: 2 });
     expect(fetch.calls[1]!.json!.previous_response_id).toBe("resp_1");
     expect(fetch.calls[1]!.json!.tools).toBeUndefined();
@@ -184,7 +236,14 @@ describe("runAgent", () => {
       () => jsonResponse(responseBody("resp_1", [functionCall("a", "contar", { n: 1 })])),
       () =>
         jsonResponse(
-          { error: { message: "Previous response with id 'resp_1' not found.", type: "invalid_request_error", param: "previous_response_id", code: null } },
+          {
+            error: {
+              message: "Previous response with id 'resp_1' not found.",
+              type: "invalid_request_error",
+              param: "previous_response_id",
+              code: null,
+            },
+          },
           400,
         ),
       () => jsonResponse(responseBody("resp_2", [message("fin")])),
@@ -197,9 +256,18 @@ describe("runAgent", () => {
 
   it("si el encadenamiento sigue fallando, continúa sin estado reenviando la historia", async () => {
     const chainError = () =>
-      jsonResponse({ error: { message: "Invalid input", type: "invalid_request_error", param: null, code: null } }, 400);
+      jsonResponse(
+        { error: { message: "Invalid input", type: "invalid_request_error", param: null, code: null } },
+        400,
+      );
     const fetch = mockFetch(
-      () => jsonResponse(responseBody("resp_1", [{ ...reasoning(), encrypted_content: "enc-1" }, functionCall("a", "contar", { n: 1 })])),
+      () =>
+        jsonResponse(
+          responseBody("resp_1", [
+            { ...reasoning(), encrypted_content: "enc-1" },
+            functionCall("a", "contar", { n: 1 }),
+          ]),
+        ),
       chainError,
       () => jsonResponse(responseBody("resp_2", [reasoning(), functionCall("b", "contar", { n: 2 })])),
       () => jsonResponse(responseBody("resp_3", [message("fin")])),
@@ -225,7 +293,14 @@ describe("runAgent", () => {
 
   it("rechaza web_search como nombre de herramienta", async () => {
     const c = new MetaClient({ apiKey: "k", fetch: mockFetch(() => jsonResponse({})) });
-    const bad = defineTool({ name: "web_search", description: "x", parameters: z.object({}).strict(), handler: () => "" });
-    await expect(c.runAgent({ model: "muse-spark-1.3", instructions: "i", input: "x", tools: [bad] })).rejects.toThrow(/búsqueda web/);
+    const bad = defineTool({
+      name: "web_search",
+      description: "x",
+      parameters: z.object({}).strict(),
+      handler: () => "",
+    });
+    await expect(c.runAgent({ model: "muse-spark-1.3", instructions: "i", input: "x", tools: [bad] })).rejects.toThrow(
+      /búsqueda web/,
+    );
   });
 });

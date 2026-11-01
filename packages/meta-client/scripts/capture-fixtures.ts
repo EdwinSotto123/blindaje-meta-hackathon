@@ -39,7 +39,9 @@ async function captureSam(name: string, metadata: Record<string, string>) {
     }),
   });
   const text = await res.text();
-  console.log(`SAM ${name}: HTTP ${res.status}, content-type=${res.headers.get("content-type")}, x-request-id=${res.headers.get("x-request-id")}, ${text.length} bytes`);
+  console.log(
+    `SAM ${name}: HTTP ${res.status}, content-type=${res.headers.get("content-type")}, x-request-id=${res.headers.get("x-request-id")}, ${text.length} bytes`,
+  );
   writeFileSync(join(fixturesDir, `sam-${name}.sse`), text);
 }
 
@@ -65,7 +67,9 @@ async function captureTranscribe() {
     body: multipart.body,
   });
   const text = await res.text();
-  console.log(`Transcribe: HTTP ${res.status}, content-type=${res.headers.get("content-type")}, x-request-id=${res.headers.get("x-request-id")}`);
+  console.log(
+    `Transcribe: HTTP ${res.status}, content-type=${res.headers.get("content-type")}, x-request-id=${res.headers.get("x-request-id")}`,
+  );
   writeFileSync(join(fixturesDir, "transcribe-diarization.json"), text);
 }
 
@@ -82,8 +86,27 @@ async function captureVideo(source: "still" | "moving", concept: string) {
   const input =
     source === "still"
       ? ["-loop", "1", "-framerate", "10", "-t", "2", "-i", png]
-      : ["-f", "lavfi", "-i", "color=white:s=256x192:d=2:r=10", "-vf", "drawbox=x='10+t*60':y=60:w=64:h=64:color=red:t=fill"];
-  execFileSync("ffmpeg", ["-loglevel", "error", "-y", ...input, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", mp4]);
+      : [
+          "-f",
+          "lavfi",
+          "-i",
+          "color=white:s=256x192:d=2:r=10",
+          "-vf",
+          "drawbox=x='10+t*60':y=60:w=64:h=64:color=red:t=fill",
+        ];
+  execFileSync("ffmpeg", [
+    "-loglevel",
+    "error",
+    "-y",
+    ...input,
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    mp4,
+  ]);
   const multipart = buildMultipart([
     { name: "purpose", value: "user_data" },
     { name: "expires_after[anchor]", value: "created_at" },
@@ -103,7 +126,16 @@ async function captureVideo(source: "still" | "moving", concept: string) {
       headers: { ...auth, "Content-Type": "application/json", Accept: "text/event-stream" },
       body: JSON.stringify({
         model: "sam-3.1",
-        input: [{ type: "message", role: "user", content: [{ type: "input_text", text: concept }, { type: "input_video", file_id: file.id }] }],
+        input: [
+          {
+            type: "message",
+            role: "user",
+            content: [
+              { type: "input_text", text: concept },
+              { type: "input_video", file_id: file.id },
+            ],
+          },
+        ],
         stream: true,
         store: false,
         metadata: { mask_encoding: "one_bit" },

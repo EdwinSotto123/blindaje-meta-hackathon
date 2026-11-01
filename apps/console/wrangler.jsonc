@@ -14,7 +14,7 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     // Solo /v1/* pasa por el Worker; el resto lo sirve Static Assets directo.
-    "run_worker_first": ["/v1/*"]
+    "run_worker_first": ["/v1/*"],
   },
-  "services": [{ "binding": "API", "service": "blindaje-api" }]
+  "services": [{ "binding": "API", "service": "blindaje-api" }],
 }

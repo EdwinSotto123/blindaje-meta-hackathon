@@ -80,9 +80,7 @@ export const Expediente = z
   .object({
     red: z.string(),
     resumen: z.string(),
-    cronologia: z.array(
-      z.object({ fecha: z.string(), texto: z.string(), evidencia: z.array(z.string()) }).strict(),
-    ),
+    cronologia: z.array(z.object({ fecha: z.string(), texto: z.string(), evidencia: z.array(z.string()) }).strict()),
     vinculos: z.array(z.object({ vinculo: z.string(), texto: z.string(), evidencia: z.array(z.string()) }).strict()),
     hechos: z.array(Afirmacion),
     hipotesis: z.array(Hipotesis),

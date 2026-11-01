@@ -58,7 +58,17 @@ export default function Pegar() {
     <PrivateScreen
       title="Pegar mensaje"
       testID="pegar"
-      footer={saved ? undefined : <Button label="Guardar mensaje" onPress={guardar} loading={busy} disabled={!texto.trim()} testID="guardar-mensaje" />}
+      footer={
+        saved ? undefined : (
+          <Button
+            label="Guardar mensaje"
+            onPress={guardar}
+            loading={busy}
+            disabled={!texto.trim()}
+            testID="guardar-mensaje"
+          />
+        )
+      }
     >
       {saved ? (
         <View style={{ gap: 12 }}>
@@ -68,8 +78,22 @@ export default function Pegar() {
       ) : (
         <>
           <T variant="secondary">Copia el mensaje en WhatsApp o en tus SMS y pégalo aquí, tal cual llegó.</T>
-          <Button label="Pegar lo que copiaste" kind="secondary" icon="clipboard" compact onPress={pegar} testID="pegar-portapapeles" />
-          <Field label="Mensaje" multiline value={texto} onChangeText={setTexto} placeholder="Escribe o pega el mensaje" testID="mensaje" />
+          <Button
+            label="Pegar lo que copiaste"
+            kind="secondary"
+            icon="clipboard"
+            compact
+            onPress={pegar}
+            testID="pegar-portapapeles"
+          />
+          <Field
+            label="Mensaje"
+            multiline
+            value={texto}
+            onChangeText={setTexto}
+            placeholder="Escribe o pega el mensaje"
+            testID="mensaje"
+          />
           <View style={{ gap: 6 }}>
             <T variant="h2">¿Cuándo te llegó?</T>
             <Segmented<Cuando>

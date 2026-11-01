@@ -14,7 +14,13 @@ import type { QueueItem, QueueSource } from "@/sync/queue";
  * Datos de las notas privadas EN MEMORIA. El reporte del servidor (transcripciones, hallazgos)
  * no se guarda en el celular: se pide al desbloquear y se olvida al bloquear.
  */
-export type DecoyItem = { id: number; tipo: EvidenceType; preview: string | null; duration_ms: number | null; created_at: number };
+export type DecoyItem = {
+  id: number;
+  tipo: EvidenceType;
+  preview: string | null;
+  duration_ms: number | null;
+  created_at: number;
+};
 
 type PrivateState = {
   report: VictimReport | null;
@@ -210,7 +216,13 @@ export async function loadDecoy(): Promise<void> {
 
 async function addDecoy(tipo: EvidenceType, preview: string | null, durationMs: number | null): Promise<void> {
   const db = await privateDb();
-  await db.runAsync("INSERT INTO senuelo (tipo, preview, duration_ms, created_at) VALUES (?, ?, ?, ?)", tipo, preview, durationMs, Date.now());
+  await db.runAsync(
+    "INSERT INTO senuelo (tipo, preview, duration_ms, created_at) VALUES (?, ?, ?, ?)",
+    tipo,
+    preview,
+    durationMs,
+    Date.now(),
+  );
   await loadDecoy();
 }
 

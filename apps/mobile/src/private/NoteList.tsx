@@ -31,7 +31,9 @@ export function NoteListItem({ row, onPress }: { row: NoteRow; onPress?: () => v
       <View style={{ flex: 1, minWidth: 0 }}>
         <T variant="bodyBold">{row.title}</T>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-          {row.state !== "nube" || row.subtitle === "Guardado en la nube" ? <Icon name={STATE_ICON[row.state]} size={14} color={colors.lapiz} /> : null}
+          {row.state !== "nube" || row.subtitle === "Guardado en la nube" ? (
+            <Icon name={STATE_ICON[row.state]} size={14} color={colors.lapiz} />
+          ) : null}
           <T variant="small" numberOfLines={2} style={{ flexShrink: 1 }}>
             {row.subtitle}
           </T>
@@ -45,7 +47,15 @@ export function NoteListItem({ row, onPress }: { row: NoteRow; onPress?: () => v
 }
 
 const s = StyleSheet.create({
-  item: { minHeight: 64, flexDirection: "row", alignItems: "center", gap: 12, borderBottomWidth: 1, borderBottomColor: colors.borde, paddingVertical: 6 },
+  item: {
+    minHeight: 64,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borde,
+    paddingVertical: 6,
+  },
   icon: {
     width: 40,
     height: 40,

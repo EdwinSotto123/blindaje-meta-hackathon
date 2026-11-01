@@ -18,10 +18,9 @@ describe("estimateCost", () => {
     expect(estimateCost("muse-spark-1.3", { output_tokens: 1000, reasoning_tokens: 800 })).toBeCloseTo(0.00425, 8);
   });
   it("Wonder: 4/20 y caché 0.20", () => {
-    expect(estimateCost("muse-wonder-1.0", { input_tokens: 1_000_000, output_tokens: 1_000_000, cached_tokens: 1_000_000 })).toBeCloseTo(
-      20.2,
-      8,
-    );
+    expect(
+      estimateCost("muse-wonder-1.0", { input_tokens: 1_000_000, output_tokens: 1_000_000, cached_tokens: 1_000_000 }),
+    ).toBeCloseTo(20.2, 8);
   });
   it("SAM: 2.50 por 1,000 imágenes y 0.20 por 1,000 frames con mínimo 50 por video", () => {
     expect(estimateCost("sam-3.1", { images: 1 })).toBeCloseTo(0.0025, 8);

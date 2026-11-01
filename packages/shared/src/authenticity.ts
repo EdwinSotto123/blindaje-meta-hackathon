@@ -59,9 +59,7 @@ export const SenalesTecnicas = z.object({
       fields: z.record(z.string(), z.string()),
     })
     .nullable(),
-  synthetic_speech: z
-    .object({ detector: z.string(), score: z.number(), available: z.boolean() })
-    .nullable(),
+  synthetic_speech: z.object({ detector: z.string(), score: z.number(), available: z.boolean() }).nullable(),
 });
 export type SenalesTecnicas = z.infer<typeof SenalesTecnicas>;
 

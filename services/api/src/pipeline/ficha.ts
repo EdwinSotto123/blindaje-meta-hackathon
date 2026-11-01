@@ -29,7 +29,13 @@ import { embeddingStatement } from "./store";
 import { normalizeIdentifierStrict, sanitizeFichaText } from "./privacy";
 import { ensureScreened } from "./promptguard";
 import { readEvidenceText } from "./text";
-import type { CaseIdentifiersPlain, FramesContent, LecturaContent, SegmentacionContent, TranscripcionContent } from "./types";
+import type {
+  CaseIdentifiersPlain,
+  FramesContent,
+  LecturaContent,
+  SegmentacionContent,
+  TranscripcionContent,
+} from "./types";
 
 /**
  * Ficha del caso (sección 7.3) e identificadores cifrados (7.5).
@@ -93,7 +99,12 @@ export function buildFichaInput(caso: string, demo: boolean, piezas: PiezaFicha[
     const head = `[${p.label}] ${TIPO_PIEZA[p.tipo]}${meta.length ? ` (${meta.join(", ")})` : ""}:`;
     return `${head}\n${delimitarEvidencia(p.label, p.contenido, { marcada: p.marcada, score: p.score ?? null })}`;
   });
-  return [`Caso ${caso}.${demo ? " Contenido ficticio de demostración." : ""}`, `Evidencia (${piezas.length} piezas):`, "", bloques.join("\n\n")].join("\n");
+  return [
+    `Caso ${caso}.${demo ? " Contenido ficticio de demostración." : ""}`,
+    `Evidencia (${piezas.length} piezas):`,
+    "",
+    bloques.join("\n\n"),
+  ].join("\n");
 }
 
 interface DerivativeRow {
@@ -128,7 +139,8 @@ export async function collectPieces(env: Env, caseId: string): Promise<CasePiece
   ]);
   const evidence = evRes!.results as unknown as EvidenceRow[];
   const ders = derRes!.results as unknown as DerivativeRow[];
-  const of = <T>(evId: string, tipo: string) => parseJsonColumn<T>(ders.find((d) => d.evidence_id === evId && d.tipo === tipo)?.content_json);
+  const of = <T>(evId: string, tipo: string) =>
+    parseJsonColumn<T>(ders.find((d) => d.evidence_id === evId && d.tipo === tipo)?.content_json);
 
   const piezas: PiezaFicha[] = [];
   const placas: CasePieces["placas"] = [];
@@ -138,18 +150,37 @@ export async function collectPieces(env: Env, caseId: string): Promise<CasePiece
     const recibido = limaIso(e.captured_at ?? e.received_utc);
     if (e.tipo === "audio") {
       const tr = of<TranscripcionContent>(e.id, "transcripcion");
-      for (const t of tr?.turns ?? []) if (t.es_victima) for (const d of digitRuns(t.text)) victimNumbers.add(d.slice(-9));
+      for (const t of tr?.turns ?? [])
+        if (t.es_victima) for (const d of digitRuns(t.text)) victimNumbers.add(d.slice(-9));
       const lines = (tr?.turns ?? [])
         .filter((t) => !t.es_victima && t.text.trim())
         .map((t) => `Hablante ${t.speaker ?? "?"}: ${t.text.trim()}`);
-      if (lines.length) piezas.push({ label: e.label, tipo: "audio", recibido, origen: null, contenido: lines.join("\n"), evidence_id: e.id });
+      if (lines.length)
+        piezas.push({
+          label: e.label,
+          tipo: "audio",
+          recibido,
+          origen: null,
+          contenido: lines.join("\n"),
+          evidence_id: e.id,
+        });
     } else if (e.tipo === "texto") {
       const text = await readEvidenceText(env, e);
-      if (text?.trim()) piezas.push({ label: e.label, tipo: e.source === "relato" ? "relato" : "texto", recibido, origen: null, contenido: text, evidence_id: e.id });
+      if (text?.trim())
+        piezas.push({
+          label: e.label,
+          tipo: e.source === "relato" ? "relato" : "texto",
+          recibido,
+          origen: null,
+          contenido: text,
+          evidence_id: e.id,
+        });
     } else {
       const lines: string[] = [];
       const seg = of<SegmentacionContent>(e.id, "segmentacion");
-      const objetos = [...new Set((seg?.objetos ?? []).map((o) => o.concepto).filter((c) => c !== "rostro" && c !== "niño"))];
+      const objetos = [
+        ...new Set((seg?.objetos ?? []).map((o) => o.concepto).filter((c) => c !== "rostro" && c !== "niño")),
+      ];
       if (objetos.length) lines.push(`Objetos detectados: ${objetos.join(", ")}.`);
       const frames = of<FramesContent>(e.id, "frames");
       if (frames?.placa) lines.push("Se ve una placa de vehículo.");
@@ -159,14 +190,26 @@ export async function collectPieces(env: Env, caseId: string): Promise<CasePiece
         lines.push(`Placa de vehículo: ${p}.`);
         placas.push({ valor: p, label: e.label });
       }
-      if (lines.length) piezas.push({ label: e.label, tipo: "imagen", recibido, origen: null, contenido: lines.join("\n"), evidence_id: e.id });
+      if (lines.length)
+        piezas.push({
+          label: e.label,
+          tipo: "imagen",
+          recibido,
+          origen: null,
+          contenido: lines.join("\n"),
+          evidence_id: e.id,
+        });
     }
   }
   return { piezas, evidence, labels, placas, victimNumbers };
 }
 
 /** Marca las piezas que Llama Prompt Guard 2 señaló (revisa antes, en un lote, lo que faltaba). */
-export async function annotatePieces(env: Env, caseId: string, pieces: Pick<CasePieces, "piezas" | "evidence">): Promise<PiezaFicha[]> {
+export async function annotatePieces(
+  env: Env,
+  caseId: string,
+  pieces: Pick<CasePieces, "piezas" | "evidence">,
+): Promise<PiezaFicha[]> {
   const ids = new Set(pieces.piezas.map((p) => p.evidence_id).filter(Boolean));
   const guard = await ensureScreened(
     env,
@@ -199,7 +242,10 @@ interface ResolvedIdentifier {
 }
 
 /** Normaliza (estricto), aplica HMAC y une duplicados (mismo HMAC y rol). */
-export async function resolveIdentifiers(env: Env, ids: Array<Pick<IdentificadorExtraido, "tipo" | "valor" | "rol" | "evidencia">>): Promise<ResolvedIdentifier[]> {
+export async function resolveIdentifiers(
+  env: Env,
+  ids: Array<Pick<IdentificadorExtraido, "tipo" | "valor" | "rol" | "evidencia">>,
+): Promise<ResolvedIdentifier[]> {
   const key = await allianceKey(env);
   const out: ResolvedIdentifier[] = [];
   for (const i of ids) {
@@ -211,7 +257,14 @@ export async function resolveIdentifiers(env: Env, ids: Array<Pick<Identificador
       dup.evidencia = [...new Set([...dup.evidencia, ...i.evidencia])];
       continue;
     }
-    out.push({ tipo: i.tipo, rol: i.rol, valor: i.valor.trim(), normalizado, hmac, evidencia: [...new Set(i.evidencia)] });
+    out.push({
+      tipo: i.tipo,
+      rol: i.rol,
+      valor: i.valor.trim(),
+      normalizado,
+      hmac,
+      evidencia: [...new Set(i.evidencia)],
+    });
   }
   return out;
 }
@@ -232,7 +285,9 @@ interface CaseRowLite {
  * y el vector del `resumen_mo` en `embeddings` (`texto`). Los HMAC van en el paso `identificadores`.
  */
 export async function buildFicha(env: Env, caseId: string): Promise<FichaStored | null> {
-  const c = await env.DB.prepare("SELECT id, code, sector, zona_cuadricula, is_demo, consent_mode, indexed FROM cases WHERE id = ?")
+  const c = await env.DB.prepare(
+    "SELECT id, code, sector, zona_cuadricula, is_demo, consent_mode, indexed FROM cases WHERE id = ?",
+  )
     .bind(caseId)
     .first<CaseRowLite>();
   if (!c) return null;
@@ -251,22 +306,30 @@ export async function buildFicha(env: Env, caseId: string): Promise<FichaStored 
     known: labels,
     attempt: async (feedback) => {
       const text = feedback ? `${input}\n\n${feedback}` : input;
-      const cacheKey = await costCacheKey(await sha256Hex(text), "ficha", `${FICHA_MODEL}:${FICHA_EFFORT}:${PROMPT_VERSION}`);
-      const r = await withCostCache(env, { cache_key: cacheKey, model: FICHA_MODEL, operation: "ficha", case_id: caseId }, async () => {
-        const p = await meta.responses.parse(
-          {
-            model: FICHA_MODEL,
-            instructions: FICHA_SYSTEM,
-            input: [{ role: "user", content: text }],
-            schema: FichaExtraction,
-            schemaName: "ficha",
-            reasoningEffort: FICHA_EFFORT,
-            store: false,
-          },
-          { operation: "ficha", context: { case_id: caseId, cache_key: cacheKey } },
-        );
-        return { output: p.output, cost_usd: p.costUsd };
-      });
+      const cacheKey = await costCacheKey(
+        await sha256Hex(text),
+        "ficha",
+        `${FICHA_MODEL}:${FICHA_EFFORT}:${PROMPT_VERSION}`,
+      );
+      const r = await withCostCache(
+        env,
+        { cache_key: cacheKey, model: FICHA_MODEL, operation: "ficha", case_id: caseId },
+        async () => {
+          const p = await meta.responses.parse(
+            {
+              model: FICHA_MODEL,
+              instructions: FICHA_SYSTEM,
+              input: [{ role: "user", content: text }],
+              schema: FichaExtraction,
+              schemaName: "ficha",
+              reasoningEffort: FICHA_EFFORT,
+              store: false,
+            },
+            { operation: "ficha", context: { case_id: caseId, cache_key: cacheKey } },
+          );
+          return { output: p.output, cost_usd: p.costUsd };
+        },
+      );
       return { output: r.output, cost_usd: r.cost_usd, tool_calls: 0 };
     },
   });
@@ -275,10 +338,19 @@ export async function buildFicha(env: Env, caseId: string): Promise<FichaStored 
   const extracted = [
     ...clean.identificadores,
     ...placas
-      .filter((p) => !clean.identificadores.some((i) => i.tipo === "placa" && normalizeIdentifierStrict("placa", i.valor) === normalizeIdentifierStrict("placa", p.valor)))
+      .filter(
+        (p) =>
+          !clean.identificadores.some(
+            (i) =>
+              i.tipo === "placa" &&
+              normalizeIdentifierStrict("placa", i.valor) === normalizeIdentifierStrict("placa", p.valor),
+          ),
+      )
       .map((p) => ({ tipo: "placa" as const, valor: p.valor, rol: "vehiculo" as const, evidencia: [p.label] })),
   ];
-  const resolved = (await resolveIdentifiers(env, extracted)).filter((r) => !victimNumbers.has(r.normalizado.replace(/\D/g, "").slice(-9)));
+  const resolved = (await resolveIdentifiers(env, extracted)).filter(
+    (r) => !victimNumbers.has(r.normalizado.replace(/\D/g, "").slice(-9)),
+  );
   const refs: IdentificadorRef[] = resolved.map((r) => ({
     ref: identifierLabel(r.hmac),
     tipo: r.tipo,
@@ -291,10 +363,18 @@ export async function buildFicha(env: Env, caseId: string): Promise<FichaStored 
   const stored = FichaStored.parse({ ...rest, sector, caso: c.code, zona: c.zona_cuadricula, identificadores: refs });
 
   const plain: CaseIdentifiersPlain = {
-    identificadores: resolved.map((r) => ({ tipo: r.tipo, valor: r.valor, normalizado: r.normalizado, rol: r.rol, evidencia: r.evidencia })),
+    identificadores: resolved.map((r) => ({
+      tipo: r.tipo,
+      valor: r.valor,
+      normalizado: r.normalizado,
+      rol: r.rol,
+      evidencia: r.evidencia,
+    })),
   };
   const enc = await sealString(env.EVIDENCE_ENCRYPTION_KEY, JSON.stringify(plain), identifiersAad(caseId));
-  await env.DB.prepare("UPDATE cases SET identifiers_enc = ?, primer_contacto = COALESCE(primer_contacto, ?), updated_at = ? WHERE id = ?")
+  await env.DB.prepare(
+    "UPDATE cases SET identifiers_enc = ?, primer_contacto = COALESCE(primer_contacto, ?), updated_at = ? WHERE id = ?",
+  )
     .bind(enc, stored.primer_contacto, nowIso(), caseId)
     .run();
   await ensureTextEmbedding(env, caseId, stored.resumen_mo, { force: true });
@@ -312,16 +392,25 @@ export async function buildFicha(env: Env, caseId: string): Promise<FichaStored 
  * Vector del `resumen_mo` (ML `/text/embed`, kind passage) en `embeddings` (`texto`). Mejor
  * esfuerzo: sin contenedor, el caso sigue sin la señal de texto y se reintenta al indexar.
  */
-export async function ensureTextEmbedding(env: Env, caseId: string, resumen: string | null, opts: { force?: boolean } = {}): Promise<boolean> {
+export async function ensureTextEmbedding(
+  env: Env,
+  caseId: string,
+  resumen: string | null,
+  opts: { force?: boolean } = {},
+): Promise<boolean> {
   const ml = tryGetMlClient(env);
   if (!ml) return false;
-  const prev = await env.DB.prepare("SELECT faiss_id FROM embeddings WHERE case_id = ? AND index_name = 'texto' AND ref_type = 'ficha'")
+  const prev = await env.DB.prepare(
+    "SELECT faiss_id FROM embeddings WHERE case_id = ? AND index_name = 'texto' AND ref_type = 'ficha'",
+  )
     .bind(caseId)
     .all<{ faiss_id: number }>();
   if (prev.results.length && !opts.force) return true;
   let text = resumen;
   if (text == null) {
-    const row = await env.DB.prepare("SELECT ficha_json FROM cases WHERE id = ?").bind(caseId).first<{ ficha_json: string | null }>();
+    const row = await env.DB.prepare("SELECT ficha_json FROM cases WHERE id = ?")
+      .bind(caseId)
+      .first<{ ficha_json: string | null }>();
     text = parseJsonColumn<FichaStored>(row?.ficha_json)?.resumen_mo ?? null;
   }
   if (!text?.trim()) return false;
@@ -332,8 +421,18 @@ export async function ensureTextEmbedding(env: Env, caseId: string, resumen: str
     const faissId = await nextCounter(env, "faiss");
     const oldIds = prev.results.map((r) => r.faiss_id);
     await env.DB.batch([
-      env.DB.prepare("DELETE FROM embeddings WHERE case_id = ? AND index_name = 'texto' AND ref_type = 'ficha'").bind(caseId),
-      embeddingStatement(env, { faiss_id: faissId, index_name: "texto", case_id: caseId, ref_type: "ficha", ref_id: caseId, vector, model }),
+      env.DB.prepare("DELETE FROM embeddings WHERE case_id = ? AND index_name = 'texto' AND ref_type = 'ficha'").bind(
+        caseId,
+      ),
+      embeddingStatement(env, {
+        faiss_id: faissId,
+        index_name: "texto",
+        case_id: caseId,
+        ref_type: "ficha",
+        ref_id: caseId,
+        vector,
+        model,
+      }),
     ]);
     if (oldIds.length) await ml.indexRemove("texto", oldIds).catch(() => undefined);
     return true;
@@ -354,7 +453,9 @@ export async function storeIdentifiers(env: Env, caseId: string): Promise<{ coun
   if (!c) return { count: 0, stub: false };
   let plain: CaseIdentifiersPlain = { identificadores: [] };
   if (c.identifiers_enc) {
-    plain = JSON.parse(await openString(env.EVIDENCE_ENCRYPTION_KEY, c.identifiers_enc, identifiersAad(caseId))) as CaseIdentifiersPlain;
+    plain = JSON.parse(
+      await openString(env.EVIDENCE_ENCRYPTION_KEY, c.identifiers_enc, identifiersAad(caseId)),
+    ) as CaseIdentifiersPlain;
   }
   const resolved = await resolveIdentifiers(
     env,
@@ -370,13 +471,9 @@ export async function storeIdentifiers(env: Env, caseId: string): Promise<{ coun
   await env.DB.batch([
     env.DB.prepare("DELETE FROM case_identifiers WHERE case_id = ?").bind(caseId),
     ...resolved.flatMap((r) => [
-      env.DB.prepare("INSERT OR IGNORE INTO identifiers (hmac, ref, tipo, ultimos_3, first_seen) VALUES (?, ?, ?, ?, ?)").bind(
-        r.hmac,
-        identifierLabel(r.hmac),
-        r.tipo,
-        lastThree(r.normalizado),
-        now,
-      ),
+      env.DB.prepare(
+        "INSERT OR IGNORE INTO identifiers (hmac, ref, tipo, ultimos_3, first_seen) VALUES (?, ?, ?, ?, ?)",
+      ).bind(r.hmac, identifierLabel(r.hmac), r.tipo, lastThree(r.normalizado), now),
       env.DB.prepare(
         "INSERT OR REPLACE INTO case_identifiers (case_id, hmac, rol, evidence_json, indexed, created_at) VALUES (?, ?, ?, ?, ?, ?)",
       ).bind(caseId, r.hmac, r.rol, JSON.stringify(r.evidencia), indexed, now),

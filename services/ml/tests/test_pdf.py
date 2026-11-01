@@ -54,15 +54,21 @@ DENUNCIA = {
         "canal_pago": "yape",
         "grupo_que_dice_ser": "Los X",
         "frases_firma": ["habla con el jefe", "no llames a la policía"],
-        "identificadores": [{"tipo": "telefono", "valor": "+51 900 000 488", "rol": "contacto",
-                             "evidencia": ["EV-A1"]}],
+        "identificadores": [
+            {"tipo": "telefono", "valor": "+51 900 000 488", "rol": "contacto", "evidencia": ["EV-A1"]}
+        ],
         "escalamiento": [{"fecha": "2026-10-06", "tipo": "foto del local con bala", "evidencia": ["EV-A3"]}],
     },
     "cronologia": [{"fecha": "2026-10-03T19:40:00-05:00", "texto": "Primer audio", "evidencia": ["EV-A1"]}],
-    "evidencia": [{"label": "EV-A1", "tipo": "audio", "size_bytes": 48213, "sha256": SHA,
-                   "received_utc": "2026-10-04T00:41:00Z"}],
-    "transcripciones": [{"evidencia": "EV-A1", "turnos": [
-        {"speaker": "B", "start_ms": 1500, "end_ms": 4000, "texto": "Habla con el jefe <b>ya</b>."}]}],
+    "evidencia": [
+        {"label": "EV-A1", "tipo": "audio", "size_bytes": 48213, "sha256": SHA, "received_utc": "2026-10-04T00:41:00Z"}
+    ],
+    "transcripciones": [
+        {
+            "evidencia": "EV-A1",
+            "turnos": [{"speaker": "B", "start_ms": 1500, "end_ms": 4000, "texto": "Habla con el jefe <b>ya</b>."}],
+        }
+    ],
 }
 
 EXPEDIENTE = {
@@ -70,27 +76,58 @@ EXPEDIENTE = {
     "aprobado": False,
     "red": "R-014",
     "resumen": "Siete casos conectados por una misma huella de voz.",
-    "perfil": {"casos": 7, "periodo": "2026-09-02 a 2026-10-20", "sectores": [{"sector": "bodega", "casos": 4}],
-               "territorio": [{"zona": "Lima Este - E12", "casos": 5}], "modus_operandi": "Audio y Yape"},
+    "perfil": {
+        "casos": 7,
+        "periodo": "2026-09-02 a 2026-10-20",
+        "sectores": [{"sector": "bodega", "casos": 4}],
+        "territorio": [{"zona": "Lima Este - E12", "casos": 5}],
+        "modus_operandi": "Audio y Yape",
+    },
     "cronologia": [{"fecha": "2026-09-02", "texto": "Caso A", "evidencia": ["EV-A1"]}],
-    "vinculos": [{"vinculo": "VIN-21", "texto": "Misma voz en A y B", "evidencia": ["V-3", "EV-A1"],
-                  "puntaje": 0.91, "casos": ["A", "B"]}],
+    "vinculos": [
+        {
+            "vinculo": "VIN-21",
+            "texto": "Misma voz en A y B",
+            "evidencia": ["V-3", "EV-A1"],
+            "puntaje": 0.91,
+            "casos": ["A", "B"],
+        }
+    ],
     "hechos": [{"texto": "La huella V-3 aparece en 6 de 7 casos", "evidencia": ["V-3", "VIN-21"]}],
-    "hipotesis": [{"texto": "V-3 corresponde a quien hace las llamadas", "confianza": "alta",
-                   "evidencia": ["V-3"]}],
+    "hipotesis": [{"texto": "V-3 corresponde a quien hace las llamadas", "confianza": "alta", "evidencia": ["V-3"]}],
     "brechas": ["Faltan los audios originales del caso R-014-5"],
-    "evidencia": [{"label": "EV-A1", "caso": "A", "tipo": "audio", "sha256": SHA,
-                   "received_utc": "2026-10-04T00:41:00Z"}],
-    "custodia": [{"seq": 1, "ts": "2026-10-04T00:41:00Z", "actor_type": "victim", "action": "evidence.upload",
-                  "target_id": "EV-A1", "prev_hash": "0" * 64, "hash": "b" * 64}],
+    "evidencia": [
+        {"label": "EV-A1", "caso": "A", "tipo": "audio", "sha256": SHA, "received_utc": "2026-10-04T00:41:00Z"}
+    ],
+    "custodia": [
+        {
+            "seq": 1,
+            "ts": "2026-10-04T00:41:00Z",
+            "actor_type": "victim",
+            "action": "evidence.upload",
+            "target_id": "EV-A1",
+            "prev_hash": "0" * 64,
+            "hash": "b" * 64,
+        }
+    ],
 }
 
 
 def test_denuncia_html_has_required_content():
     html = pdf.render_html("denuncia", DENUNCIA)
-    for needle in ("Línea 1818", "Si estás en peligro ahora, llama al 105", SHA, "Datos ficticios",
-                   "Cronología", "Transcripciones", "S/ 2,000", "03/10/2026 19:40", "EV-A1", "Teléfono",
-                   "Yape"):
+    for needle in (
+        "Línea 1818",
+        "Si estás en peligro ahora, llama al 105",
+        SHA,
+        "Datos ficticios",
+        "Cronología",
+        "Transcripciones",
+        "S/ 2,000",
+        "03/10/2026 19:40",
+        "EV-A1",
+        "Teléfono",
+        "Yape",
+    ):
         assert needle in html, needle
     # Autoescape: el texto de la transcripción no inyecta HTML.
     assert "<b>ya</b>" not in html and "&lt;b&gt;ya&lt;/b&gt;" in html
@@ -98,14 +135,24 @@ def test_denuncia_html_has_required_content():
 
 def test_expediente_html_draft_and_sections():
     html = pdf.render_html("expediente", EXPEDIENTE)
-    for needle in ("Borrador para revisión", "Hechos", "Hipótesis", "Cadena de custodia", "VIN-21", "Alta",
-                   "b" * 64, "0" * 64, SHA, "Datos ficticios", "0.91"):
+    for needle in (
+        "Borrador para revisión",
+        "Hechos",
+        "Hipótesis",
+        "Cadena de custodia",
+        "VIN-21",
+        "Alta",
+        "b" * 64,
+        "0" * 64,
+        SHA,
+        "Datos ficticios",
+        "0.91",
+    ):
         assert needle in html, needle
 
 
 def test_expediente_approved_has_no_draft_banner():
-    html = pdf.render_html("expediente", {**EXPEDIENTE, "aprobado": True, "demo": False,
-                                          "aprobado_por": "Analista 1"})
+    html = pdf.render_html("expediente", {**EXPEDIENTE, "aprobado": True, "demo": False, "aprobado_por": "Analista 1"})
     assert "Borrador para revisión" not in html
     assert "Datos ficticios" not in html
     assert "Analista 1" in html
@@ -120,25 +167,52 @@ AUTENTICIDAD = {
     "titulo": "Autenticidad de la evidencia",
     "nota": "Son indicios, no prueba.",
     "items": [
-        {"label": "EV-A3", "caso": "A", "tipo": "imagen", "nivel": "indicios_fuertes",
-         "nivel_texto": "Indicios fuertes", "tecnicas": ["Marca de agua (Video Seal): no detectada (0.47)"],
-         "senales": ["Análisis visual (fuerte): rótulos con texto erróneo"],
-         "explicacion": "La imagen <b>podría</b> estar generada con IA.", "limitaciones": "Sin C2PA ni metadatos.",
-         "modelo": "muse-spark-1.3", "analizado_utc": "2026-10-28T10:50:00Z"},
-        {"label": "EV-C2", "caso": "C", "tipo": "audio", "nivel": None, "nivel_texto": "No analizado",
-         "tecnicas": [], "senales": [], "explicacion": None, "limitaciones": None, "modelo": None,
-         "analizado_utc": None},
+        {
+            "label": "EV-A3",
+            "caso": "A",
+            "tipo": "imagen",
+            "nivel": "indicios_fuertes",
+            "nivel_texto": "Indicios fuertes",
+            "tecnicas": ["Marca de agua (Video Seal): no detectada (0.47)"],
+            "senales": ["Análisis visual (fuerte): rótulos con texto erróneo"],
+            "explicacion": "La imagen <b>podría</b> estar generada con IA.",
+            "limitaciones": "Sin C2PA ni metadatos.",
+            "modelo": "muse-spark-1.3",
+            "analizado_utc": "2026-10-28T10:50:00Z",
+        },
+        {
+            "label": "EV-C2",
+            "caso": "C",
+            "tipo": "audio",
+            "nivel": None,
+            "nivel_texto": "No analizado",
+            "tecnicas": [],
+            "senales": [],
+            "explicacion": None,
+            "limitaciones": None,
+            "modelo": None,
+            "analizado_utc": None,
+        },
     ],
 }
 
 
 def test_expediente_authenticity_section():
     html = pdf.render_html("expediente", {**EXPEDIENTE, "autenticidad": AUTENTICIDAD})
-    for needle in ("Autenticidad de la evidencia", "Son indicios, no prueba.",
-                   "La ausencia de marca de agua no prueba que el archivo sea real.", "EV-A3", "Imagen",
-                   "Indicios fuertes", "Marca de agua (Video Seal): no detectada (0.47)",
-                   "Análisis visual (fuerte): rótulos con texto erróneo", "Limitaciones: Sin C2PA ni metadatos.",
-                   "muse-spark-1.3", "EV-C2", "No analizado"):
+    for needle in (
+        "Autenticidad de la evidencia",
+        "Son indicios, no prueba.",
+        "La ausencia de marca de agua no prueba que el archivo sea real.",
+        "EV-A3",
+        "Imagen",
+        "Indicios fuertes",
+        "Marca de agua (Video Seal): no detectada (0.47)",
+        "Análisis visual (fuerte): rótulos con texto erróneo",
+        "Limitaciones: Sin C2PA ni metadatos.",
+        "muse-spark-1.3",
+        "EV-C2",
+        "No analizado",
+    ):
         assert needle in html, needle
     assert "<b>podría</b>" not in html  # autoescape
     # La sección va antes de la lista de evidencia.
@@ -198,19 +272,39 @@ VICTIM_REPORT = {
     "status": "listo",
     "consent_mode": "solo_denuncia",
     "hallazgos": ["Encontramos 2 números de contacto", "Un audio pide pago por Yape"],
-    "ficha": {"sector": "bodega", "zona": "Lima Este", "primer_contacto": None, "amenaza": "Dañar el local",
-              "monto_soles": 500, "plazo": "24 horas", "canal_pago": "yape", "grupo_que_dice_ser": None,
-              "frases_firma": [], "identificadores": [{"tipo": "telefono", "valor": "+51 911 111 222"}],
-              "resumen": "Exigen 500 soles por Yape en 24 horas."},
+    "ficha": {
+        "sector": "bodega",
+        "zona": "Lima Este",
+        "primer_contacto": None,
+        "amenaza": "Dañar el local",
+        "monto_soles": 500,
+        "plazo": "24 horas",
+        "canal_pago": "yape",
+        "grupo_que_dice_ser": None,
+        "frases_firma": [],
+        "identificadores": [{"tipo": "telefono", "valor": "+51 911 111 222"}],
+        "resumen": "Exigen 500 soles por Yape en 24 horas.",
+    },
     "cronologia": [],
-    "evidencia": [{"id": "e1", "label": "EV-K7Q2-1", "tipo": "audio", "mime": "audio/ogg", "size_bytes": 1000,
-                   "sha256": SHA, "received_utc": "2026-10-28T12:00:00Z", "captured_at": None, "duration_ms": 9000,
-                   "status": "procesado", "nota": "Voz de la víctima excluida de la huella",
-                   "transcripcion": [
-                       {"speaker": "A", "start_ms": 0, "end_ms": 3000, "text": "Aló, ¿quién habla?",
-                        "es_victima": True},
-                       {"speaker": "B", "start_ms": 3000, "end_ms": 9000, "text": "Paga hoy o ya sabes.",
-                        "es_victima": False}]}],
+    "evidencia": [
+        {
+            "id": "e1",
+            "label": "EV-K7Q2-1",
+            "tipo": "audio",
+            "mime": "audio/ogg",
+            "size_bytes": 1000,
+            "sha256": SHA,
+            "received_utc": "2026-10-28T12:00:00Z",
+            "captured_at": None,
+            "duration_ms": 9000,
+            "status": "procesado",
+            "nota": "Voz de la víctima excluida de la huella",
+            "transcripcion": [
+                {"speaker": "A", "start_ms": 0, "end_ms": 3000, "text": "Aló, ¿quién habla?", "es_victima": True},
+                {"speaker": "B", "start_ms": 3000, "end_ms": 9000, "text": "Paga hoy o ya sabes.", "es_victima": False},
+            ],
+        }
+    ],
     "updated_at": "2026-10-28T12:00:00Z",
     "seudonimo": "Bodega 14",
     "generado_utc": "2026-10-28T12:05:00Z",
@@ -221,7 +315,17 @@ VICTIM_REPORT = {
 
 def test_denuncia_accepts_victim_report_shape():
     html = pdf.render_html("denuncia", VICTIM_REPORT)
-    for needle in ("Caso K7Q2", "Exigen 500 soles por Yape en 24 horas.", "Encontramos 2 números de contacto",
-                   "Denunciante:", "Voz B:", "Paga hoy o ya sabes.", "Datos ficticios", "Línea 1818",
-                   "Si estás en peligro ahora, llama al 105", "Voz de la víctima excluida", "28/10/2026 07:05"):
+    for needle in (
+        "Caso K7Q2",
+        "Exigen 500 soles por Yape en 24 horas.",
+        "Encontramos 2 números de contacto",
+        "Denunciante:",
+        "Voz B:",
+        "Paga hoy o ya sabes.",
+        "Datos ficticios",
+        "Línea 1818",
+        "Si estás en peligro ahora, llama al 105",
+        "Voz de la víctima excluida",
+        "28/10/2026 07:05",
+    ):
         assert needle in html, needle

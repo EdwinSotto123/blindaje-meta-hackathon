@@ -72,7 +72,12 @@ export function buildCells(data: ConsoleZones): ZoneCell[] {
     const f = byId.get(district.id);
     const visible = !!f && f.sobre_umbral && canShowTerritorialStats(f.casos, f.victimas);
     if (!f || !visible) return { district, row: null, level: 0, trend: null };
-    return { district, row: f, level: LEVEL[countBand(f.casos, f.victimas) ?? ""] ?? 1, trend: trendOf(f.casos, f.casos_previos) };
+    return {
+      district,
+      row: f,
+      level: LEVEL[countBand(f.casos, f.victimas) ?? ""] ?? 1,
+      trend: trendOf(f.casos, f.casos_previos),
+    };
   });
 }
 
@@ -98,7 +103,12 @@ export function cellLabel(c: ZoneCell, dias: number): string {
 
 /** El cuadro vecino en la dirección de la flecha (prefiere seguir en la misma fila o columna). */
 export function neighbor(from: District, key: string): District | null {
-  const dirs: Record<string, [number, number]> = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] };
+  const dirs: Record<string, [number, number]> = {
+    ArrowRight: [1, 0],
+    ArrowLeft: [-1, 0],
+    ArrowDown: [0, 1],
+    ArrowUp: [0, -1],
+  };
   const d = dirs[key];
   if (!d) return null;
   let best: District | null = null;
@@ -129,7 +139,10 @@ export function ZonesView() {
   const dias = parsePeriod(params.get("dias"));
   const zones = useAsync(() => api.zones(dias), `zones:${dias}`);
   const canNetworks = can(user.role, "networks.view");
-  const nets = useAsync(() => (canNetworks ? api.listNetworks() : Promise.resolve([] as NetworkSummary[])), `zones:networks:${canNetworks}`);
+  const nets = useAsync(
+    () => (canNetworks ? api.listNetworks() : Promise.resolve([] as NetworkSummary[])),
+    `zones:networks:${canNetworks}`,
+  );
 
   const cells = zones.data ? buildCells(zones.data) : [];
   const top = tableOrder(cells).find((c) => c.row);
@@ -160,7 +173,8 @@ export function ZonesView() {
         </div>
         {zones.data ? (
           <span className="small muted">
-            Últimos {zones.data.periodo_dias} días frente a los {zones.data.periodo_dias} anteriores. Actualizado el {fmtDateTime(zones.data.actualizado)}
+            Últimos {zones.data.periodo_dias} días frente a los {zones.data.periodo_dias} anteriores. Actualizado el{" "}
+            {fmtDateTime(zones.data.actualizado)}
           </span>
         ) : null}
         {api.mode === "mock" ? <span className="chip chip-pink">Cifras ficticias</span> : null}
@@ -193,8 +207,8 @@ export function ZoneNotes() {
         <span className="zone-note-tag">Umbral</span> {THRESHOLD_NOTE}
       </p>
       <p>
-        <span className="zone-note-tag">Sin totales</span> No mostramos el total de la ciudad: con un total y las cifras por distrito, una resta revelaría
-        lo que el umbral oculta.
+        <span className="zone-note-tag">Sin totales</span> No mostramos el total de la ciudad: con un total y las cifras
+        por distrito, una resta revelaría lo que el umbral oculta.
       </p>
     </aside>
   );
@@ -240,7 +254,8 @@ export function ZonesBody({
         <span className="muted">Los demás no llegan al umbral o no tienen casos.</span>
         {data.sin_distrito > 0 ? (
           <span className="muted">
-            {casesWord(data.sin_distrito)} del periodo no {data.sin_distrito === 1 ? "tiene" : "tienen"} un distrito de la lista y no entran en la grilla.
+            {casesWord(data.sin_distrito)} del periodo no {data.sin_distrito === 1 ? "tiene" : "tienen"} un distrito de
+            la lista y no entran en la grilla.
           </span>
         ) : null}
       </p>
@@ -250,7 +265,12 @@ export function ZonesBody({
             <h2 id="zonas-grilla">Grilla de distritos</h2>
             <span className="small muted">Norte arriba. La posición de cada cuadro es aproximada.</span>
           </div>
-          <ZoneGrid cells={cells} dias={data.periodo_dias} selectedId={current?.district.id ?? null} onSelect={select} />
+          <ZoneGrid
+            cells={cells}
+            dias={data.periodo_dias}
+            selectedId={current?.district.id ?? null}
+            onSelect={select}
+          />
           <ZoneLegend />
         </section>
         <ZoneDetail cell={current} dias={data.periodo_dias} networks={networks} canNetworks={canNetworks} />
@@ -305,14 +325,18 @@ export function ZoneGrid({
       </p>
       <div ref={mapRef} className="zone-map" role="region" aria-label="Grilla de distritos (se desplaza a los lados)">
         <p id="zonas-ayuda" className="sr-only">
-          Cada botón es un distrito. Usa las flechas para moverte entre distritos; el detalle se muestra al lado. Hay una tabla con los mismos datos más abajo.
+          Cada botón es un distrito. Usa las flechas para moverte entre distritos; el detalle se muestra al lado. Hay
+          una tabla con los mismos datos más abajo.
         </p>
         <div
           className="zone-grid"
           role="group"
           aria-label={`Distritos de Lima y el Callao, últimos ${dias} días`}
           aria-describedby="zonas-ayuda"
-          style={{ gridTemplateColumns: `repeat(${DISTRICT_GRID.cols}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${DISTRICT_GRID.rows}, auto)` }}
+          style={{
+            gridTemplateColumns: `repeat(${DISTRICT_GRID.cols}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${DISTRICT_GRID.rows}, auto)`,
+          }}
         >
           {cells.map((c) => {
             const id = c.district.id;
@@ -426,12 +450,17 @@ export function ZoneDetail({
             <dt>Víctimas distintas</dt>
             <dd>{fmtInt(row.victimas)}</dd>
             <dt>Periodo anterior</dt>
-            <dd>{row.casos_previos >= MIN_CASES_FOR_STATS ? casesWord(row.casos_previos) : `menos de ${MIN_CASES_FOR_STATS} casos`}</dd>
+            <dd>
+              {row.casos_previos >= MIN_CASES_FOR_STATS
+                ? casesWord(row.casos_previos)
+                : `menos de ${MIN_CASES_FOR_STATS} casos`}
+            </dd>
             <dt>Tendencia</dt>
             <dd>
               {trend ? (
                 <span className="zone-trend-text" data-trend={trend}>
-                  <span aria-hidden="true">{TREND_MARK[trend]}</span> {trend === "estable" ? "Estable" : trend === "sube" ? "Sube" : "Baja"}
+                  <span aria-hidden="true">{TREND_MARK[trend]}</span>{" "}
+                  {trend === "estable" ? "Estable" : trend === "sube" ? "Sube" : "Baja"}
                 </span>
               ) : (
                 "—"
@@ -476,8 +505,8 @@ export function ZoneDetail({
         <div className="zone-empty">
           <p className="strong">Sin datos suficientes</p>
           <p className="small">
-            Con menos de {MIN_CASES_FOR_STATS} casos de {MIN_VICTIMS_FOR_STATS} víctimas distintas en {dias} días, o sin casos, no se muestran cifras, redes
-            ni modalidades del distrito.
+            Con menos de {MIN_CASES_FOR_STATS} casos de {MIN_VICTIMS_FOR_STATS} víctimas distintas en {dias} días, o sin
+            casos, no se muestran cifras, redes ni modalidades del distrito.
           </p>
         </div>
       )}
@@ -487,12 +516,21 @@ export function ZoneDetail({
 }
 
 /** Alternativa accesible a la grilla: los mismos datos, en tabla. */
-export function ZoneTable({ cells, dias, networks = [] }: { cells: ZoneCell[]; dias: number; networks?: NetworkSummary[] }) {
+export function ZoneTable({
+  cells,
+  dias,
+  networks = [],
+}: {
+  cells: ZoneCell[];
+  dias: number;
+  networks?: NetworkSummary[];
+}) {
   const rows = tableOrder(cells);
   return (
     <details className="panel zone-table">
       <summary>
-        <span className="strong">Ver como tabla</span> <span className="small muted">({rows.length} distritos, los mismos datos de la grilla)</span>
+        <span className="strong">Ver como tabla</span>{" "}
+        <span className="small muted">({rows.length} distritos, los mismos datos de la grilla)</span>
       </summary>
       <div className="table-wrap" tabIndex={0} role="region" aria-label="Tabla de distritos (se desplaza a los lados)">
         <table className="table">
@@ -526,7 +564,9 @@ export function ZoneTable({ cells, dias, networks = [] }: { cells: ZoneCell[]; d
                     <td className="num">{fmtInt(c.row.casos)}</td>
                     <td className="num">{fmtInt(c.row.victimas)}</td>
                     <td className="nowrap">{c.trend ? `${TREND_MARK[c.trend]} ${TREND_WORD[c.trend]}` : "—"}</td>
-                    <td>{c.row.redes.length ? c.row.redes.map((r) => resolveNetwork(r, networks).label).join(", ") : "—"}</td>
+                    <td>
+                      {c.row.redes.length ? c.row.redes.map((r) => resolveNetwork(r, networks).label).join(", ") : "—"}
+                    </td>
                     <td>{c.row.modalidades.length ? c.row.modalidades.join("; ") : "—"}</td>
                   </>
                 ) : (

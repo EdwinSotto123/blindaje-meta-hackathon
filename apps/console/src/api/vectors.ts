@@ -27,11 +27,16 @@ export class HttpVectorsApi implements VectorsApi {
   }
 
   trace(caseId: string): Promise<VectorTrace> {
-    return this.client.json<VectorTrace>("POST", "/v1/console/vectores/consulta", { body: { case_id: caseId }, validate: S.VectorTrace });
+    return this.client.json<VectorTrace>("POST", "/v1/console/vectores/consulta", {
+      body: { case_id: caseId },
+      validate: S.VectorTrace,
+    });
   }
 
   sync(): Promise<VectorSyncResult> {
-    return this.client.json<VectorSyncResult>("POST", "/v1/console/vectores/sincronizar", { validate: S.VectorSyncResult });
+    return this.client.json<VectorSyncResult>("POST", "/v1/console/vectores/sincronizar", {
+      validate: S.VectorSyncResult,
+    });
   }
 }
 

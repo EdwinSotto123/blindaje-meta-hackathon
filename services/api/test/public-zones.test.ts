@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
 import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
-import { CENTRAL_ORG_ID, type ConsoleZones, type PublicRiskOverview, type PublicZoneMap, type RiskOverview } from "@blindaje/shared";
+import {
+  CENTRAL_ORG_ID,
+  type ConsoleZones,
+  type PublicRiskOverview,
+  type PublicZoneMap,
+  type RiskOverview,
+} from "@blindaje/shared";
 import { app } from "../src/app";
 import { newId, nowIso } from "../src/lib/ids";
 import { hashPassword } from "../src/lib/password";
@@ -39,14 +45,25 @@ async function seedDistrict(
       }),
     );
   }
-  if (opts.demo) for (const c of cases) await env.DB.prepare("UPDATE cases SET is_demo = 1 WHERE id = ?").bind(c.id).run();
+  if (opts.demo)
+    for (const c of cases) await env.DB.prepare("UPDATE cases SET is_demo = 1 WHERE id = ?").bind(c.id).run();
   return cases;
 }
 
-async function insertAlert(o: { org?: string; zona: string; titulo: string; modalidad?: string; status?: "aprobada" | "borrador"; patternKey?: string; cuerpo?: string }) {
+async function insertAlert(o: {
+  org?: string;
+  zona: string;
+  titulo: string;
+  modalidad?: string;
+  status?: "aprobada" | "borrador";
+  patternKey?: string;
+  cuerpo?: string;
+}) {
   const id = newId();
   const status = o.status ?? "aprobada";
-  await env.DB.prepare("INSERT INTO alerts (id, org_id, pattern_key, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
+  await env.DB.prepare(
+    "INSERT INTO alerts (id, org_id, pattern_key, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  )
     .bind(
       id,
       o.org ?? CENTRAL_ORG_ID,
@@ -80,7 +97,12 @@ describe("mapa público por distrito", () => {
     await insertAlert({ zona: "Punta Negra", titulo: "punta negra", modalidad: "Cobros por llamadas (ficticio)" });
     await insertAlert({ zona: "Punta Negra", titulo: "borrador", modalidad: "En borrador", status: "borrador" });
     await insertAlert({ zona: "Punta Negra", titulo: "demo", modalidad: "Del demo", patternKey: "demo:ficticio" });
-    await insertAlert({ org: await seedOrgRow(), zona: "Punta Negra", titulo: "otra org", modalidad: "De otra organización" });
+    await insertAlert({
+      org: await seedOrgRow(),
+      zona: "Punta Negra",
+      titulo: "otra org",
+      modalidad: "De otra organización",
+    });
     await insertAlert({ zona: "San Bartolo", titulo: "bajo umbral", modalidad: "Bajo el umbral" });
 
     const res = await api("/v1/public/zones");
@@ -97,8 +119,15 @@ describe("mapa público por distrito", () => {
     expect(pn.nivel).not.toBe("sin_datos");
     // Un distrito bajo el umbral (por casos o por víctimas) no se distingue de uno sin casos.
     const vacio = cell(map, "santa-maria-del-mar");
-    expect(vacio).toEqual({ distrito: "santa-maria-del-mar", nivel: "sin_datos", casos: null, tendencia: null, modalidades: [] });
-    for (const id of ["san-bartolo", "pucusana", "punta-hermosa"]) expect({ ...cell(map, id), distrito: "x" }, id).toEqual({ ...vacio, distrito: "x" });
+    expect(vacio).toEqual({
+      distrito: "santa-maria-del-mar",
+      nivel: "sin_datos",
+      casos: null,
+      tendencia: null,
+      modalidades: [],
+    });
+    for (const id of ["san-bartolo", "pucusana", "punta-hermosa"])
+      expect({ ...cell(map, id), distrito: "x" }, id).toEqual({ ...vacio, distrito: "x" });
     // Nada de cifras exactas ni de un cubo "otras zonas" (la zona inventada no aparece en ningún lado).
     expect(JSON.stringify(map.celdas)).not.toMatch(/"\w+":\d/);
     expect(JSON.stringify(map)).not.toMatch(/otras zonas|Zona Inventada|total/i);
@@ -111,7 +140,9 @@ describe("mapa público por distrito", () => {
     // Donde DEMO_MODE no es "true", ?demo=1 se ignora: siempre los casos reales.
     const ctx = createExecutionContext();
     const prod = await app.fetch(
-      new Request("https://api.blindaje.test/v1/public/zones?demo=1", { headers: { "cf-connecting-ip": "192.0.2.80" } }),
+      new Request("https://api.blindaje.test/v1/public/zones?demo=1", {
+        headers: { "cf-connecting-ip": "192.0.2.80" },
+      }),
       { ...env, DEMO_MODE: "false" },
       ctx,
     );
@@ -180,7 +211,9 @@ describe("panorama público por distrito", () => {
     )
       .bind(newId(), orgId, email, await hashPassword("Clave-negocio-ficticia"), nowIso())
       .run();
-    const login = await apiJson<{ access_token: string }>("/v1/auth/business/login", { json: { email, password: "Clave-negocio-ficticia" } });
+    const login = await apiJson<{ access_token: string }>("/v1/auth/business/login", {
+      json: { email, password: "Clave-negocio-ficticia" },
+    });
     const legacy = await apiJson<RiskOverview>("/v1/business/risk", { token: login.body.access_token });
     expect(legacy.status).toBe(200);
     const total = legacy.body.casos_periodo!;
@@ -197,7 +230,13 @@ describe("panorama público por distrito", () => {
     await insertAlert({ zona: "Pachacámac", titulo: "pachacamac", modalidad: "Una modalidad aprobada (ficticio)" });
     const risk = await apiJson<PublicRiskOverview>("/v1/public/risk?zona=pachacamac");
     expect(risk.status).toBe(200);
-    expect(risk.body).toMatchObject({ nivel_riesgo: "sin_datos", casos_periodo: null, sectores_afectados: [], modalidades_activas: [], escalamiento: null });
+    expect(risk.body).toMatchObject({
+      nivel_riesgo: "sin_datos",
+      casos_periodo: null,
+      sectores_afectados: [],
+      modalidades_activas: [],
+      escalamiento: null,
+    });
     expect(risk.body.tendencia.every((t) => t.casos === null)).toBe(true);
     expect(risk.body.aviso_umbral).toContain("Aún no hay suficientes casos");
     // La alerta aprobada sigue en su propio endpoint.
@@ -209,7 +248,11 @@ describe("panorama público por distrito", () => {
 describe("alertas y consejos públicos", () => {
   it("solo lo aprobado por el equipo central, del mundo pedido, sin citas internas, números ni datos de organización", async () => {
     const otra = await seedOrgRow();
-    await insertAlert({ zona: "Barranco", titulo: "barranco", cuerpo: "Piden pagos al 987 654 321 (FICHA-ABCD, VIN-3). No pagues ni negocies." });
+    await insertAlert({
+      zona: "Barranco",
+      titulo: "barranco",
+      cuerpo: "Piden pagos al 987 654 321 (FICHA-ABCD, VIN-3). No pagues ni negocies.",
+    });
     await insertAlert({ zona: "Barranco", titulo: "barranco borrador", status: "borrador" });
     await insertAlert({ org: otra, zona: "Barranco", titulo: "barranco otra org" });
     await insertAlert({ zona: "Barranco", titulo: "barranco demo", patternKey: "demo:ficticio" });
@@ -220,7 +263,15 @@ describe("alertas y consejos públicos", () => {
     expect(res.headers.get("cache-control")).toBe("public, max-age=60");
     const body = (await res.json()) as { alerts: Array<Record<string, unknown>>; nota_sesgo: string; demo: boolean };
     expect(body.alerts.map((a) => a.titulo)).toEqual(["barranco"]);
-    expect(Object.keys(body.alerts[0]!).sort()).toEqual(["approved_at", "cuerpo", "distrito", "id", "que_hacer", "titulo", "zona"]);
+    expect(Object.keys(body.alerts[0]!).sort()).toEqual([
+      "approved_at",
+      "cuerpo",
+      "distrito",
+      "id",
+      "que_hacer",
+      "titulo",
+      "zona",
+    ]);
     expect(body.alerts[0]).toMatchObject({ zona: "Barranco", distrito: "barranco" });
     expect(body.nota_sesgo).toMatch(/se denuncia más/);
     expect(body.demo).toBe(false);
@@ -231,7 +282,9 @@ describe("alertas y consejos públicos", () => {
     const todas = await apiJson<{ alerts: Array<{ titulo: string }> }>("/v1/public/alerts");
     expect(todas.body.alerts.map((a) => a.titulo)).toEqual(expect.arrayContaining(["barranco", "surquillo"]));
     expect(todas.body.alerts.map((a) => a.titulo)).not.toEqual(expect.arrayContaining(["barranco otra org"]));
-    const demo = await apiJson<{ alerts: Array<{ titulo: string }>; demo: boolean }>("/v1/public/alerts?zona=Barranco&demo=1");
+    const demo = await apiJson<{ alerts: Array<{ titulo: string }>; demo: boolean }>(
+      "/v1/public/alerts?zona=Barranco&demo=1",
+    );
     expect(demo.body).toMatchObject({ demo: true, alerts: [expect.objectContaining({ titulo: "barranco demo" })] });
     expect((await api("/v1/public/alerts?zona=Lima%20Norte")).status).toBe(400);
 
@@ -252,8 +305,20 @@ describe("alertas y consejos públicos", () => {
             zona: "Barranco",
             nivel_riesgo: "medio",
             resumen: "Resumen ficticio (FICHA-ABCD).",
-            modalidades: [{ descripcion: "Cobros por mensajes", senales_de_alerta: ["habla con el jefe"], evidencia: ["FICHA-ABCD", "VIN-3"] }],
-            recomendaciones: [{ titulo: "No pagues ni negocies", detalle: "Guarda la evidencia y denuncia en la Línea 1818.", prioridad: "alta" }],
+            modalidades: [
+              {
+                descripcion: "Cobros por mensajes",
+                senales_de_alerta: ["habla con el jefe"],
+                evidencia: ["FICHA-ABCD", "VIN-3"],
+              },
+            ],
+            recomendaciones: [
+              {
+                titulo: "No pagues ni negocies",
+                detalle: "Guarda la evidencia y denuncia en la Línea 1818.",
+                prioridad: "alta",
+              },
+            ],
             que_hacer_si_te_pasa: ["Denuncia en la Línea 1818"],
             advertencias: ["Más casos puede significar que ahí se denuncia más."],
           }),
@@ -272,17 +337,23 @@ describe("alertas y consejos públicos", () => {
     await rec({ sector: "bodega", org: otra, approvedAt: "2026-10-24T10:00:00.000Z" });
     const demoRec = await rec({ sector: "bodega", demo: 1, approvedAt: "2026-10-25T10:00:00.000Z" });
 
-    const recs = await apiJson<{ recommendations: Array<{ id: string; distrito: string }>; nota_sesgo: string; demo: boolean }>(
-      "/v1/public/recommendations?zona=barranco&sector=bodega",
-    );
+    const recs = await apiJson<{
+      recommendations: Array<{ id: string; distrito: string }>;
+      nota_sesgo: string;
+      demo: boolean;
+    }>("/v1/public/recommendations?zona=barranco&sector=bodega");
     expect(recs.status).toBe(200);
     expect(recs.body.recommendations.map((r) => r.id)).toEqual([bodega, todos]);
     expect(recs.body.recommendations[0]!.distrito).toBe("barranco");
     expect(recs.body.nota_sesgo).toMatch(/se denuncia más/);
     expect(JSON.stringify(recs.body)).not.toMatch(/FICHA-|VIN-|org_id|"evidencia"/);
-    const sinRubro = await apiJson<{ recommendations: Array<{ id: string }> }>("/v1/public/recommendations?zona=barranco");
+    const sinRubro = await apiJson<{ recommendations: Array<{ id: string }> }>(
+      "/v1/public/recommendations?zona=barranco",
+    );
     expect(sinRubro.body.recommendations.map((r) => r.id).sort()).toEqual([bodega, todos, moto].sort());
-    const recsDemo = await apiJson<{ recommendations: Array<{ id: string }> }>("/v1/public/recommendations?zona=barranco&demo=1");
+    const recsDemo = await apiJson<{ recommendations: Array<{ id: string }> }>(
+      "/v1/public/recommendations?zona=barranco&demo=1",
+    );
     expect(recsDemo.body.recommendations.map((r) => r.id)).toEqual([demoRec]);
     expect((await api("/v1/public/recommendations?zona=barranco&sector=narcotrafico")).status).toBe(400);
   });
@@ -310,7 +381,11 @@ describe("vista de zonas de la consola", () => {
     await insertLink(mag[0]!.id, mag[1]!.id, "confirmado", 0.95);
     await insertLink(lince[0]!.id, lince[1]!.id, "confirmado", 0.95);
     await recomputeNetworks(env);
-    const netMag = (await env.DB.prepare("SELECT n.num FROM networks n JOIN network_cases nc ON nc.network_id = n.id WHERE nc.case_id = ?").bind(mag[0]!.id).first<{ num: number }>())!.num;
+    const netMag = (await env.DB.prepare(
+      "SELECT n.num FROM networks n JOIN network_cases nc ON nc.network_id = n.id WHERE nc.case_id = ?",
+    )
+      .bind(mag[0]!.id)
+      .first<{ num: number }>())!.num;
 
     const analyst = await loginAs("analyst", await seedOrgRow());
     const res = await apiJson<ConsoleZones>("/v1/console/zones", { token: analyst.token });
@@ -326,7 +401,15 @@ describe("vista de zonas de la consola", () => {
     expect((await api("/v1/console/zones?dias=90", { token: analyst.token })).status).toBe(200);
     expect(m.modalidades.length).toBeGreaterThan(0);
     // Bajo el umbral: las cifras, pero ni redes ni modalidades.
-    expect(fila("lince")).toEqual({ distrito: "lince", casos: 3, victimas: 2, casos_previos: 0, redes: [], modalidades: [], sobre_umbral: false });
+    expect(fila("lince")).toEqual({
+      distrito: "lince",
+      casos: 3,
+      victimas: 2,
+      casos_previos: 0,
+      redes: [],
+      modalidades: [],
+      sobre_umbral: false,
+    });
 
     const largo = await apiJson<ConsoleZones>("/v1/console/zones?dias=60", { token: analyst.token });
     expect(largo.body.periodo_dias).toBe(60);

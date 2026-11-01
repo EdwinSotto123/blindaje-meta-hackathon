@@ -50,5 +50,4 @@ def image_redact(body: RedactRequest) -> Response:
     w, h = img.size
     boxes = [b for r in body.regions if (b := imaging.resolve_box(r.model_dump(), w, h)) is not None]
     out = imaging.pixelate(img, boxes)
-    return Response(imaging.to_jpeg(out, quality=90), media_type="image/jpeg",
-                    headers={"x-regions": str(len(boxes))})
+    return Response(imaging.to_jpeg(out, quality=90), media_type="image/jpeg", headers={"x-regions": str(len(boxes))})

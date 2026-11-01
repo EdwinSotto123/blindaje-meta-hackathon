@@ -20,7 +20,11 @@ describe("networkToElements", () => {
       expect(NODE_TYPE_ORDER).toContain(el.data.type);
       expect(el.classes).toBe(el.data.type);
     }
-    expect(nodesOf(els).filter((e) => e.data.type === "caso").map((e) => e.data.label)).toEqual(["Caso A", "Caso B", "Caso C"]);
+    expect(
+      nodesOf(els)
+        .filter((e) => e.data.type === "caso")
+        .map((e) => e.data.label),
+    ).toEqual(["Caso A", "Caso B", "Caso C"]);
   });
 
   it("los identificadores muestran solo los últimos 3 caracteres", () => {
@@ -75,7 +79,9 @@ describe("networkToElements", () => {
 describe("nodeDisplayLabel", () => {
   it("usa el identificador citable si no hay últimos 3", () => {
     expect(nodeDisplayLabel({ id: "x", type: "identificador", label: "ID-abc123" })).toBe("ID-abc123");
-    expect(nodeDisplayLabel({ id: "x", type: "identificador", label: "ID-abc123", data: { ultimos_3: "007" } })).toBe("…007");
+    expect(nodeDisplayLabel({ id: "x", type: "identificador", label: "ID-abc123", data: { ultimos_3: "007" } })).toBe(
+      "…007",
+    );
     expect(nodeDisplayLabel({ id: "x", type: "caso", label: "A" })).toBe("Caso A");
     expect(nodeDisplayLabel({ id: "x", type: "frase", label: "habla con el jefe" })).toBe("“habla con el jefe”");
   });

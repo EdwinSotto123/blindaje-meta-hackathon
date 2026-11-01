@@ -133,5 +133,6 @@ export async function getMeta(key: string): Promise<string | null> {
 export async function setMeta(key: string, value: string | null): Promise<void> {
   const db = await privateDb();
   if (value === null) await db.runAsync("DELETE FROM meta WHERE k = ?", key);
-  else await db.runAsync("INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v", key, value);
+  else
+    await db.runAsync("INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v", key, value);
 }

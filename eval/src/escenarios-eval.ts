@@ -1,6 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { combineSignals, importAllianceKey, logistic, statusForScore, type Calibration, type FichaExtraction } from "@blindaje/shared";
+import {
+  combineSignals,
+  importAllianceKey,
+  logistic,
+  statusForScore,
+  type Calibration,
+  type FichaExtraction,
+} from "@blindaje/shared";
 import { commonPhrases, moProbability, sameGroup } from "../../services/api/src/linking/signals";
 import { RESULTS_DIR } from "./env";
 import { loadEscenarios, pairKey } from "./data";
@@ -52,9 +59,15 @@ export interface EscenariosReport {
   precision: number | null;
   recall: number | null;
   falsos_por_100_comparaciones: number;
-  por_escenario: Record<string, { tipo: string; esperados: number; verdaderos: number; falsos: number; faltantes: number }>;
+  por_escenario: Record<
+    string,
+    { tipo: string; esperados: number; verdaderos: number; falsos: number; faltantes: number }
+  >;
   /** Estados de los pares propuestos: probable (arriba en la cola) o por_revisar. */
-  propuestos_por_estado: { probable: { esperados: number; falsos: number }; por_revisar: { esperados: number; falsos: number } };
+  propuestos_por_estado: {
+    probable: { esperados: number; falsos: number };
+    por_revisar: { esperados: number; falsos: number };
+  };
   pares: EscenarioPar[];
 }
 
@@ -83,7 +96,12 @@ export async function runEscenariosEval(cal: Calibration): Promise<EscenariosRep
   const voz = loadJson<{ casos: Record<string, VozCaso> }>("escenarios_voz.json");
   const img = loadJson<{ imagenes: Record<string, ImagenFeat> }>("imagenes.json");
   const mo = loadJson<{ guiones: Record<string, { ficha: FichaExtraction; vector: number[] }> }>("mo.json");
-  const medidas = ["identificador", ...(voz ? ["voz"] : []), ...(img ? ["imagen"] : []), ...(mo ? ["modus_operandi"] : [])];
+  const medidas = [
+    "identificador",
+    ...(voz ? ["voz"] : []),
+    ...(img ? ["imagen"] : []),
+    ...(mo ? ["modus_operandi"] : []),
+  ];
   const esperados = new Set(esc.pares_vinculados.map((p) => pairKey(p.a, p.b)));
   const casoEsc = new Map<string, string>();
   for (const e of esc.escenarios) for (const c of e.casos) casoEsc.set(c, e.id);
@@ -96,7 +114,15 @@ export async function runEscenariosEval(cal: Calibration): Promise<EscenariosRep
       const B = casos[j]!;
       const k = pairKey(A.id, B.id);
       const senales: Record<string, number> = {};
-      const par: EscenarioPar = { a: A.id, b: B.id, esperado: esperados.has(k), propuesto: false, estado: "", score: 0, senales };
+      const par: EscenarioPar = {
+        a: A.id,
+        b: B.id,
+        esperado: esperados.has(k),
+        propuesto: false,
+        estado: "",
+        score: 0,
+        senales,
+      };
       if (idPares.has(k)) senales.identificador = cal.identificador.p;
       const va = voz?.casos[A.id];
       const vb = voz?.casos[B.id];
@@ -162,8 +188,14 @@ export async function runEscenariosEval(cal: Calibration): Promise<EscenariosRep
     };
   }
   const porEstado = {
-    probable: { esperados: out.filter((p) => p.esperado && p.estado === "probable").length, falsos: out.filter((p) => !p.esperado && p.estado === "probable").length },
-    por_revisar: { esperados: out.filter((p) => p.esperado && p.estado === "por_revisar").length, falsos: out.filter((p) => !p.esperado && p.estado === "por_revisar").length },
+    probable: {
+      esperados: out.filter((p) => p.esperado && p.estado === "probable").length,
+      falsos: out.filter((p) => !p.esperado && p.estado === "probable").length,
+    },
+    por_revisar: {
+      esperados: out.filter((p) => p.esperado && p.estado === "por_revisar").length,
+      falsos: out.filter((p) => !p.esperado && p.estado === "por_revisar").length,
+    },
   };
   const faltan = [
     !voz && "voz (corre la evaluación de voz)",
@@ -185,6 +217,8 @@ export async function runEscenariosEval(cal: Calibration): Promise<EscenariosRep
     por_escenario: porEsc,
     propuestos_por_estado: porEstado,
     // Solo los pares interesantes: esperados, propuestos o con alguna señal
-    pares: out.filter((p) => p.esperado || p.propuesto || Object.keys(p.senales).length > 0 || (p.coseno_voz ?? 0) > 0.4),
+    pares: out.filter(
+      (p) => p.esperado || p.propuesto || Object.keys(p.senales).length > 0 || (p.coseno_voz ?? 0) > 0.4,
+    ),
   };
 }

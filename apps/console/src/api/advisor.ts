@@ -44,33 +44,47 @@ function listOf(key: string, schema: Validator): Validator {
 
 /** Quita los campos vacíos: la API trata "sin zona" distinto de una zona en blanco. */
 function compact<T extends object>(obj: T): Partial<T> {
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => typeof v !== "string" || v.trim() !== "")) as Partial<T>;
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => typeof v !== "string" || v.trim() !== ""),
+  ) as Partial<T>;
 }
 
 export class HttpAdvisorApi implements AdvisorApi {
   constructor(private readonly client: HttpClient) {}
 
   async listRecommendations(status?: RecommendationStatus): Promise<ConsoleRecommendationView[]> {
-    const res = await this.client.json<{ recommendations: ConsoleRecommendationView[] }>("GET", "/v1/console/recommendations", {
-      query: { status },
-      validate: listOf("recommendations", S.ConsoleRecommendationView),
-    });
+    const res = await this.client.json<{ recommendations: ConsoleRecommendationView[] }>(
+      "GET",
+      "/v1/console/recommendations",
+      {
+        query: { status },
+        validate: listOf("recommendations", S.ConsoleRecommendationView),
+      },
+    );
     return res.recommendations;
   }
 
   async runAsesor(req: AsesorRunInput): Promise<ConsoleRecommendationView[]> {
-    const res = await this.client.json<{ recommendations: ConsoleRecommendationView[] }>("POST", "/v1/console/asesor/run", {
-      body: compact(req),
-      validate: listOf("recommendations", S.ConsoleRecommendationView),
-    });
+    const res = await this.client.json<{ recommendations: ConsoleRecommendationView[] }>(
+      "POST",
+      "/v1/console/asesor/run",
+      {
+        body: compact(req),
+        validate: listOf("recommendations", S.ConsoleRecommendationView),
+      },
+    );
     return res.recommendations;
   }
 
   decideRecommendation(id: string, decision: "aprobar" | "rechazar"): Promise<ConsoleRecommendationView> {
-    return this.client.json<ConsoleRecommendationView>("POST", `/v1/console/recommendations/${encodeURIComponent(id)}/decision`, {
-      body: { decision },
-      validate: S.ConsoleRecommendationView,
-    });
+    return this.client.json<ConsoleRecommendationView>(
+      "POST",
+      `/v1/console/recommendations/${encodeURIComponent(id)}/decision`,
+      {
+        body: { decision },
+        validate: S.ConsoleRecommendationView,
+      },
+    );
   }
 }
 

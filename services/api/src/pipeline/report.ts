@@ -3,7 +3,13 @@ import type { Env } from "../env";
 import { parseJsonColumn } from "../lib/db";
 import { nowIso } from "../lib/ids";
 import { readEvidenceText } from "./text";
-import type { FramesContent, LecturaContent, RedactadaContent, SegmentacionContent, TranscripcionContent } from "./types";
+import type {
+  FramesContent,
+  LecturaContent,
+  RedactadaContent,
+  SegmentacionContent,
+  TranscripcionContent,
+} from "./types";
 
 /**
  * Complementos del reporte de la víctima (todo de SU caso, nada de otros):
@@ -26,12 +32,15 @@ function liveFindings(report: VictimReport, ders: DerivativeRow[]): string[] {
   for (const d of ders) {
     const l = label.get(d.evidence_id);
     if (!l) continue;
-    if (d.tipo === "transcripcion" && parseJsonColumn<TranscripcionContent>(d.content_json)?.turns.some((t) => t.es_victima)) {
+    if (
+      d.tipo === "transcripcion" &&
+      parseJsonColumn<TranscripcionContent>(d.content_json)?.turns.some((t) => t.es_victima)
+    ) {
       out.push(`En ${l} separamos tu voz de la de quien te habla`);
     } else if (d.tipo === "segmentacion") {
-      const objs = [...new Set((parseJsonColumn<SegmentacionContent>(d.content_json)?.objetos ?? []).map((o) => o.concepto))].filter(
-        (c) => c !== "rostro" && c !== "niño",
-      );
+      const objs = [
+        ...new Set((parseJsonColumn<SegmentacionContent>(d.content_json)?.objetos ?? []).map((o) => o.concepto)),
+      ].filter((c) => c !== "rostro" && c !== "niño");
       if (objs.length) out.push(`En ${l} encontramos: ${objs.join(", ")}`);
     } else if (d.tipo === "redactada" && (parseJsonColumn<RedactadaContent>(d.content_json)?.regiones ?? 0) > 0) {
       out.push(`En ${l} tapamos rostros antes de compartir`);
@@ -48,10 +57,14 @@ function liveFindings(report: VictimReport, ders: DerivativeRow[]): string[] {
 
 export async function enrichVictimReport(env: Env, report: VictimReport): Promise<VictimReport> {
   const [{ results: ders }, { results: texts }] = await Promise.all([
-    env.DB.prepare("SELECT evidence_id, tipo, content_json FROM derivatives WHERE case_id = ? AND tipo IN ('transcripcion','segmentacion','redactada','lectura','frames')")
+    env.DB.prepare(
+      "SELECT evidence_id, tipo, content_json FROM derivatives WHERE case_id = ? AND tipo IN ('transcripcion','segmentacion','redactada','lectura','frames')",
+    )
       .bind(report.case_id)
       .all<DerivativeRow>(),
-    env.DB.prepare("SELECT id, r2_key FROM evidence WHERE case_id = ? AND tipo = 'texto'").bind(report.case_id).all<{ id: string; r2_key: string }>(),
+    env.DB.prepare("SELECT id, r2_key FROM evidence WHERE case_id = ? AND tipo = 'texto'")
+      .bind(report.case_id)
+      .all<{ id: string; r2_key: string }>(),
   ]);
   const evidencia = await Promise.all(
     report.evidencia.map(async (e) => {
@@ -71,7 +84,9 @@ export async function denunciaPdfData(
   report: VictimReport,
   extra: { seudonimo: string; demo: boolean },
 ): Promise<Record<string, unknown>> {
-  const relatoRow = await env.DB.prepare("SELECT id FROM evidence WHERE case_id = ? AND tipo = 'texto' AND source = 'relato' ORDER BY seq DESC LIMIT 1")
+  const relatoRow = await env.DB.prepare(
+    "SELECT id FROM evidence WHERE case_id = ? AND tipo = 'texto' AND source = 'relato' ORDER BY seq DESC LIMIT 1",
+  )
     .bind(report.case_id)
     .first<{ id: string }>();
   const relato = relatoRow ? report.evidencia.find((e) => e.id === relatoRow.id) : undefined;

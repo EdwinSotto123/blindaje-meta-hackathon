@@ -48,5 +48,8 @@ export function capitalizar(s: string): string {
 export function consejosDe(report: VictimReport | null | undefined): string[] {
   const c = (report as (VictimReport & { consejos?: unknown }) | null | undefined)?.consejos;
   if (!Array.isArray(c)) return [];
-  return c.filter((x): x is string => typeof x === "string").map((x) => x.trim()).filter((x) => x.length > 0);
+  return c
+    .filter((x): x is string => typeof x === "string")
+    .map((x) => x.trim())
+    .filter((x) => x.length > 0);
 }

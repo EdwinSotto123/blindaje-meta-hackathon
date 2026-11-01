@@ -18,8 +18,7 @@ _logger = logging.getLogger("blindaje_ml")
 class _JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
-            "ts": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created))
-            + f".{int(record.msecs):03d}Z",
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)) + f".{int(record.msecs):03d}Z",
             "level": record.levelname.lower(),
             "event": record.getMessage(),
         }

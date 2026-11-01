@@ -46,7 +46,8 @@ export interface WavInfo {
   dataBytes: number;
 }
 
-const ascii = (b: Uint8Array, offset: number, length: number) => String.fromCharCode(...b.subarray(offset, offset + length));
+const ascii = (b: Uint8Array, offset: number, length: number) =>
+  String.fromCharCode(...b.subarray(offset, offset + length));
 
 /** Lee el encabezado RIFF/WAVE. Devuelve null si no es un WAV. */
 export function readWavInfo(input: BinaryInput): WavInfo | null {
@@ -88,7 +89,12 @@ export function assertTranscribableWav(input: BinaryInput): WavInfo {
   }
   const info = readWavInfo(b);
   if (!info) throw new MetaGuardError("invalid_input", "El audio no es un WAV RIFF válido");
-  if (info.audioFormat !== 1 || info.bitsPerSample !== 16 || info.channels !== 1 || ![16000, 24000].includes(info.sampleRate)) {
+  if (
+    info.audioFormat !== 1 ||
+    info.bitsPerSample !== 16 ||
+    info.channels !== 1 ||
+    ![16000, 24000].includes(info.sampleRate)
+  ) {
     throw new MetaGuardError(
       "invalid_input",
       `WAV no soportado (${info.channels} canal(es), ${info.bitsPerSample} bits, ${info.sampleRate} Hz, formato ${info.audioFormat}); ` +
@@ -96,7 +102,10 @@ export function assertTranscribableWav(input: BinaryInput): WavInfo {
     );
   }
   if (info.durationMs > TRANSCRIBE_MAX_MS) {
-    throw new MetaGuardError("invalid_input", `El audio dura ${Math.round(info.durationMs / 1000)} s; el máximo es 10 minutos`);
+    throw new MetaGuardError(
+      "invalid_input",
+      `El audio dura ${Math.round(info.durationMs / 1000)} s; el máximo es 10 minutos`,
+    );
   }
   return info;
 }

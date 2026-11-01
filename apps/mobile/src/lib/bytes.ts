@@ -57,7 +57,7 @@ export function utf8(s: string): Uint8Array {
 
 export function fromUtf8(b: Uint8Array): string {
   let s = "";
-  for (let i = 0; i < b.length; ) {
+  for (let i = 0; i < b.length;) {
     const c = b[i]!;
     let cp: number;
     if (c < 0x80) {

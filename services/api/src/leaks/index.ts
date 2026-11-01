@@ -92,7 +92,9 @@ export async function insertTagIfFar(env: Env, userId: string, tag: number): Pro
  */
 export async function ensureUserTag(env: Env, userId: string, random?: () => number): Promise<number> {
   for (let attempt = 0; attempt < 6; attempt++) {
-    const mine = await env.DB.prepare("SELECT audio_tag FROM user_leak_tags WHERE user_id = ?").bind(userId).first<{ audio_tag: number }>();
+    const mine = await env.DB.prepare("SELECT audio_tag FROM user_leak_tags WHERE user_id = ?")
+      .bind(userId)
+      .first<{ audio_tag: number }>();
     if (mine) return mine.audio_tag;
     const { results } = await env.DB.prepare("SELECT audio_tag FROM user_leak_tags").all<{ audio_tag: number }>();
     const tag = pickTag(
@@ -175,7 +177,16 @@ export async function markCopy(env: Env, input: MarkCopyInput): Promise<MarkedCo
   const unmarked = (motivo: MotivoSinMarca, error: string | null = null): MarkedCopy => ({
     body: input.body,
     contentType: input.contentType,
-    outcome: { marca: "no_aplicada", motivo, kind, issue_id: null, cache: null, model: null, ms: Date.now() - started, error },
+    outcome: {
+      marca: "no_aplicada",
+      motivo,
+      kind,
+      issue_id: null,
+      cache: null,
+      model: null,
+      ms: Date.now() - started,
+      error,
+    },
   });
   if (!kind) return unmarked("tipo_no_soportado");
   if (input.body.byteLength > MAX_MARK_BYTES) return unmarked("archivo_grande");
@@ -190,12 +201,26 @@ export async function markCopy(env: Env, input: MarkCopyInput): Promise<MarkedCo
       .bind(input.ev.id, input.userId, input.variant, kind)
       .first<IssueLookup>();
     if (prev?.r2_key) {
-      const cached = await getDecrypted(env.EVIDENCE, prev.r2_key, env.EVIDENCE_ENCRYPTION_KEY, markedAad(prev.id)).catch(() => null);
+      const cached = await getDecrypted(
+        env.EVIDENCE,
+        prev.r2_key,
+        env.EVIDENCE_ENCRYPTION_KEY,
+        markedAad(prev.id),
+      ).catch(() => null);
       if (cached) {
         return {
           body: cached,
           contentType: contentTypeOut,
-          outcome: { marca: "aplicada", motivo: null, kind, issue_id: prev.id, cache: "hit", model: prev.model, ms: Date.now() - started, error: null },
+          outcome: {
+            marca: "aplicada",
+            motivo: null,
+            kind,
+            issue_id: prev.id,
+            cache: "hit",
+            model: prev.model,
+            ms: Date.now() - started,
+            error: null,
+          },
         };
       }
     }
@@ -227,7 +252,8 @@ export async function markCopy(env: Env, input: MarkCopyInput): Promise<MarkedCo
       if (res.nbits && res.nbits !== imageNbits) imageNbits = res.nbits;
       const informed = res.message?.trim().toLowerCase();
       message = informed && /^[0-9a-f]+$/.test(informed) ? informed : hex;
-      if (message.length * 4 !== nbits) log("warn", "watermark_nbits_mismatch", { sent_bits: wanted, nbits, message_bits: message.length * 4 });
+      if (message.length * 4 !== nbits)
+        log("warn", "watermark_nbits_mismatch", { sent_bits: wanted, nbits, message_bits: message.length * 4 });
     }
     if (!res.bytes.byteLength) throw new Error("copia_vacia");
 
@@ -236,7 +262,10 @@ export async function markCopy(env: Env, input: MarkCopyInput): Promise<MarkedCo
     const r2Key = markedR2Key(input.ev.case_id, issueId);
     let stored = true;
     try {
-      await putEncrypted(env.EVIDENCE, r2Key, env.EVIDENCE_ENCRYPTION_KEY, res.bytes, markedAad(issueId), { issue_id: issueId, kind });
+      await putEncrypted(env.EVIDENCE, r2Key, env.EVIDENCE_ENCRYPTION_KEY, res.bytes, markedAad(issueId), {
+        issue_id: issueId,
+        kind,
+      });
     } catch (err) {
       stored = false;
       log("warn", "watermark_cache_put_failed", { issue_id: issueId, ...errorFields(err) });
@@ -245,18 +274,46 @@ export async function markCopy(env: Env, input: MarkCopyInput): Promise<MarkedCo
       `INSERT INTO watermark_issues (id, evidence_id, user_id, kind, message, nbits, variant, model, r2_key, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-      .bind(issueId, input.ev.id, input.userId, kind, message, nbits, input.variant, res.model, stored ? r2Key : null, nowIso())
+      .bind(
+        issueId,
+        input.ev.id,
+        input.userId,
+        kind,
+        message,
+        nbits,
+        input.variant,
+        res.model,
+        stored ? r2Key : null,
+        nowIso(),
+      )
       .run();
     return {
       body: res.bytes,
       contentType: kind === "audio" ? res.content_type || contentTypeOut : contentTypeOut,
-      outcome: { marca: "aplicada", motivo: null, kind, issue_id: issueId, cache: "miss", model: res.model, ms: Date.now() - started, error: null },
+      outcome: {
+        marca: "aplicada",
+        motivo: null,
+        kind,
+        issue_id: issueId,
+        cache: "miss",
+        model: res.model,
+        ms: Date.now() - started,
+        error: null,
+      },
     };
   } catch (err) {
-    log("warn", "watermark_failed_open", { evidence_id: input.ev.id, kind, ms: Date.now() - started, ...errorFields(err) });
+    log("warn", "watermark_failed_open", {
+      evidence_id: input.ev.id,
+      kind,
+      ms: Date.now() - started,
+      ...errorFields(err),
+    });
     // El contenedor rechazó el cuerpo por tamaño (413): no es una caída del servicio.
     const status = err instanceof ApiError ? (err.details as { status?: unknown } | undefined)?.status : undefined;
-    return unmarked(status === 413 ? "archivo_grande" : "servicio_no_disponible", err instanceof Error ? err.name.slice(0, 60) : "error");
+    return unmarked(
+      status === 413 ? "archivo_grande" : "servicio_no_disponible",
+      err instanceof Error ? err.name.slice(0, 60) : "error",
+    );
   }
 }
 
@@ -274,11 +331,16 @@ const ascii = (s: string) => [...s].map((c) => c.charCodeAt(0));
  * Tipo de la copia subida: `kind` explícito, si no el content-type, si no los primeros bytes.
  * Videos: 400 (todavía no se marcan).
  */
-export function detectLeakKind(declared: string | null | undefined, contentType: string | null | undefined, bytes: ArrayBuffer): LeakTraceKind {
+export function detectLeakKind(
+  declared: string | null | undefined,
+  contentType: string | null | undefined,
+  bytes: ArrayBuffer,
+): LeakTraceKind {
   if (declared === "audio" || declared === "imagen") return declared;
   if (declared) throw new ApiError("bad_request", "kind debe ser audio o imagen");
   const ct = (contentType ?? "").split(";")[0]!.trim().toLowerCase();
-  if (ct.startsWith("video/")) throw new ApiError("bad_request", "Los videos todavía no llevan marca: solo se rastrean audios e imágenes.");
+  if (ct.startsWith("video/"))
+    throw new ApiError("bad_request", "Los videos todavía no llevan marca: solo se rastrean audios e imágenes.");
   if (ct.startsWith("audio/")) return "audio";
   if (ct.startsWith("image/")) return "imagen";
   const u8 = new Uint8Array(bytes.slice(0, 16));
@@ -287,12 +349,16 @@ export function detectLeakKind(declared: string | null | undefined, contentType:
   if (isRiff && startsWith(u8, ascii("WEBP"), 8)) return "imagen";
   if (startsWith(u8, ascii("OggS")) || startsWith(u8, ascii("fLaC")) || startsWith(u8, ascii("ID3"))) return "audio";
   if (u8[0] === 0xff && ((u8[1] ?? 0) & 0xe0) === 0xe0 && u8[1] !== 0xd8) return "audio";
-  if (startsWith(u8, [0xff, 0xd8, 0xff]) || startsWith(u8, [0x89, 0x50, 0x4e, 0x47]) || startsWith(u8, ascii("GIF8"))) return "imagen";
+  if (startsWith(u8, [0xff, 0xd8, 0xff]) || startsWith(u8, [0x89, 0x50, 0x4e, 0x47]) || startsWith(u8, ascii("GIF8")))
+    return "imagen";
   if (startsWith(u8, ascii("ftyp"), 4)) {
     const brand = String.fromCharCode(...u8.slice(8, 12));
     if (/^(M4A |M4B )$/.test(brand)) return "audio";
     if (/^(heic|heix|mif1|avif)$/.test(brand)) return "imagen";
-    throw new ApiError("bad_request", "Parece un video: solo se rastrean audios e imágenes. Si es un audio, indica kind=audio.");
+    throw new ApiError(
+      "bad_request",
+      "Parece un video: solo se rastrean audios e imágenes. Si es un audio, indica kind=audio.",
+    );
   }
   throw new ApiError("bad_request", "No reconocemos el tipo de archivo. Indica kind=audio o kind=imagen.");
 }
@@ -303,8 +369,16 @@ interface UserInfo {
   role: ConsoleRole | null;
 }
 
-function candidateBase(u: UserInfo, userId: string): Pick<LeakTraceCandidate, "user_id" | "email_or_name" | "display_name" | "role"> {
-  return { user_id: userId, email_or_name: u.email ?? u.display_name ?? userId, display_name: u.display_name, role: u.role };
+function candidateBase(
+  u: UserInfo,
+  userId: string,
+): Pick<LeakTraceCandidate, "user_id" | "email_or_name" | "display_name" | "role"> {
+  return {
+    user_id: userId,
+    email_or_name: u.email ?? u.display_name ?? userId,
+    display_name: u.display_name,
+    role: u.role,
+  };
 }
 
 export interface TraceOutcome {
@@ -340,9 +414,19 @@ export async function traceLeak(env: Env, bytes: ArrayBuffer, kind: LeakTraceKin
       nota = `Se detectó una marca de AudioSeal, pero no coincide con ninguna cuenta (más de ${LEAK_AUDIO_MAX_HAMMING} bits de diferencia): puede venir de otro sistema o estar dañada.`;
     else if (ambiguo)
       nota = `Más de una cuenta podría explicar esta marca${m!.otras_posibles ? " si los bits dudosos se leen de otra forma" : ""}: no atribuyas la filtración sin más evidencia.`;
-    else nota = "La marca de audio identifica la cuenta, no el archivo ni la hora: revisa en la auditoría qué audios escuchó esa cuenta.";
+    else
+      nota =
+        "La marca de audio identifica la cuenta, no el archivo ni la hora: revisa en la auditoría qué audios escuchó esa cuenta.";
     return {
-      result: { detected: det.detected, kind, score: det.score, candidates, ambiguo, nota: `${nota} ${NOTA_RASTREO}`, model: det.model },
+      result: {
+        detected: det.detected,
+        kind,
+        score: det.score,
+        candidates,
+        ambiguo,
+        nota: `${nota} ${NOTA_RASTREO}`,
+        model: det.model,
+      },
       audit: {
         kind,
         detected: det.detected,
@@ -362,7 +446,17 @@ export async function traceLeak(env: Env, bytes: ArrayBuffer, kind: LeakTraceKin
      WHERE w.kind = 'imagen' AND w.nbits = ? ORDER BY w.created_at DESC LIMIT ?`,
   )
     .bind(det.bits.length, MAX_IMAGE_ISSUES)
-    .all<{ id: string; user_id: string; evidence_id: string; message: string; created_at: string; evidence_label: string | null; case_id: string | null } & UserInfo>();
+    .all<
+      {
+        id: string;
+        user_id: string;
+        evidence_id: string;
+        message: string;
+        created_at: string;
+        evidence_label: string | null;
+        case_id: string | null;
+      } & UserInfo
+    >();
   // Con 256 bits el azar no llega a 85 %: se compara aunque el detector no pase su umbral.
   const m = matchImage(det.bits, results);
   const candidates: LeakTraceCandidate[] = m.matches.map((x) => ({
@@ -383,7 +477,15 @@ export async function traceLeak(env: Env, bytes: ArrayBuffer, kind: LeakTraceKin
     nota = "La marca coincide con una entrega de la consola: cuenta, evidencia y hora de la copia.";
   }
   return {
-    result: { detected: det.detected, kind, score: det.score, candidates, ambiguo: m.ambiguo, nota: `${nota} ${NOTA_RASTREO}`, model: det.model },
+    result: {
+      detected: det.detected,
+      kind,
+      score: det.score,
+      candidates,
+      ambiguo: m.ambiguo,
+      nota: `${nota} ${NOTA_RASTREO}`,
+      model: det.model,
+    },
     audit: {
       kind,
       detected: det.detected,

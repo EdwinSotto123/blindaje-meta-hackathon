@@ -21,7 +21,12 @@ import {
 } from "./responses";
 import { parseSamOutput, type SamFrame, type SamObject } from "./sam";
 import { readResponsesEvents } from "./sse";
-import { assertTranscribableWav, normalizeTranscription, type TranscribeOptions, type TranscriptionResult } from "./transcribe";
+import {
+  assertTranscribableWav,
+  normalizeTranscription,
+  type TranscribeOptions,
+  type TranscriptionResult,
+} from "./transcribe";
 
 export interface ResponsesParseParams<S extends z.ZodType> extends Omit<ResponsesCreateParams, "text"> {
   schema: S;
@@ -149,10 +154,16 @@ export class MetaClient {
         if (tool.type === "function" && typeof tool.name === "string") assertToolName(tool.name);
       }
       if ((params as { stream?: unknown }).stream) {
-        throw new MetaGuardError("invalid_input", "responses.create no admite stream; usa segmentImage/segmentVideo para SAM");
+        throw new MetaGuardError(
+          "invalid_input",
+          "responses.create no admite stream; usa segmentImage/segmentVideo para SAM",
+        );
       }
       return this.core.metered(params.model, "responses", call, async () => {
-        const { value, requestId } = await this.core.json<MetaResponse>({ method: "POST", path: "/responses", json: params }, call);
+        const { value, requestId } = await this.core.json<MetaResponse>(
+          { method: "POST", path: "/responses", json: params },
+          call,
+        );
         return { value, units: tokenUnits(extractUsage(value)), requestId, responseId: value.id };
       });
     },
@@ -161,7 +172,10 @@ export class MetaClient {
      * Salida estructurada: convierte el esquema Zod a `text.format` json_schema strict, parsea
      * `output_text` y lo valida con Zod. Por defecto `store: false` (la evidencia no queda guardada).
      */
-    parse: async <S extends z.ZodType>(params: ResponsesParseParams<S>, call: CallOptions = {}): Promise<ParsedResponse<z.output<S>>> => {
+    parse: async <S extends z.ZodType>(
+      params: ResponsesParseParams<S>,
+      call: CallOptions = {},
+    ): Promise<ParsedResponse<z.output<S>>> => {
       const { schema, schemaName, strict, reasoningEffort, ...rest } = params;
       const request: ResponsesCreateParams = {
         store: false,
@@ -172,7 +186,8 @@ export class MetaClient {
       const response = await this.responses.create(request, call);
       assertCompleted(response);
       const refusal = getRefusal(response);
-      if (refusal) throw new MetaOutputError("failed", `El modelo rechazó la solicitud: ${refusal}`, { responseId: response.id });
+      if (refusal)
+        throw new MetaOutputError("failed", `El modelo rechazó la solicitud: ${refusal}`, { responseId: response.id });
       const output = parseStructuredText(getOutputText(response), schema, response.id);
       const usage = extractUsage(response);
       return { output, response, usage, costUsd: estimateCost(response.model || params.model, usage) };
@@ -188,7 +203,11 @@ export class MetaClient {
   }
 
   /** Muse Voice Transcribe por archivo (WAV mono PCM16 de 16 o 24 kHz). */
-  async transcribe(audio: BinaryInput | Blob, options: TranscribeOptions = {}, call: CallOptions = {}): Promise<TranscriptionResult> {
+  async transcribe(
+    audio: BinaryInput | Blob,
+    options: TranscribeOptions = {},
+    call: CallOptions = {},
+  ): Promise<TranscriptionResult> {
     const bytes = audio instanceof Blob ? new Uint8Array(await audio.arrayBuffer()) : toUint8Array(audio);
     const wav = assertTranscribableWav(bytes);
     const model = options.model ?? MODELS.transcribe;
@@ -206,7 +225,13 @@ export class MetaClient {
     const query = options.sessionId ? `?sessionId=${encodeURIComponent(options.sessionId)}` : "";
     return this.core.metered(model, "transcribe", call, async () => {
       const { value, requestId } = await this.core.send(
-        { method: "POST", path: `/asr/transcribe${query}`, body: multipart.body, contentType: multipart.contentType, accept: "application/json" },
+        {
+          method: "POST",
+          path: `/asr/transcribe${query}`,
+          body: multipart.body,
+          contentType: multipart.contentType,
+          accept: "application/json",
+        },
         { timeoutMs: 300_000, ...call },
         async (res) => normalizeTranscription(await res.json(), { keepEmptyTurns: options.keepEmptyTurns ?? false }),
       );
@@ -221,7 +246,14 @@ export class MetaClient {
     const model = params.model ?? MODELS.sam;
     const imagePart = buildImagePart(params);
     return this.core.metered(model, "sam_image", call, async () => {
-      const { value, requestId } = await this.#samStream(model, concept, imagePart, params.includeConfidence, params.maskEncoding, call);
+      const { value, requestId } = await this.#samStream(
+        model,
+        concept,
+        imagePart,
+        params.includeConfidence,
+        params.maskEncoding,
+        call,
+      );
       const parsed = parseSamOutput(value.text);
       const objects = parsed.frames.find((f) => f.frame === 0)?.objects ?? parsed.frames[0]?.objects ?? [];
       const first = objects[0];
@@ -263,7 +295,8 @@ export class MetaClient {
         { timeoutMs: 600_000, ...call },
       );
       const parsed = parseSamOutput(value.text);
-      const reported = typeof value.usage?.video_frames_processed === "number" ? value.usage.video_frames_processed : null;
+      const reported =
+        typeof value.usage?.video_frames_processed === "number" ? value.usage.video_frames_processed : null;
       const lastFrame = parsed.frames.at(-1)?.frame ?? -1;
       return {
         value: {
@@ -300,22 +333,35 @@ export class MetaClient {
       store: false,
       ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
     };
-    return this.core.send({ method: "POST", path: "/responses", json: body, accept: "text/event-stream" }, call, async (res, requestId) => {
-      if (!res.body) throw new MetaApiError({ status: res.status, message: "respuesta SSE sin cuerpo", requestId });
-      return collectSamStream(res.body, requestId);
-    });
+    return this.core.send(
+      { method: "POST", path: "/responses", json: body, accept: "text/event-stream" },
+      call,
+      async (res, requestId) => {
+        if (!res.body) throw new MetaApiError({ status: res.status, message: "respuesta SSE sin cuerpo", requestId });
+        return collectSamStream(res.body, requestId);
+      },
+    );
   }
 
   readonly files = {
     /** `POST /v1/files` (purpose=user_data por defecto). La subida es síncrona: 200 = listo. */
-    upload: async (data: BinaryInput | Blob, options: UploadFileOptions, call: CallOptions = {}): Promise<FileObject> => {
+    upload: async (
+      data: BinaryInput | Blob,
+      options: UploadFileOptions,
+      call: CallOptions = {},
+    ): Promise<FileObject> => {
       const bytes = data instanceof Blob ? new Uint8Array(await data.arrayBuffer()) : toUint8Array(data);
       const parts: Parameters<typeof buildMultipart>[0] = [{ name: "purpose", value: options.purpose ?? "user_data" }];
       if (options.expiresAfterSeconds !== undefined) {
         parts.push({ name: "expires_after[anchor]", value: "created_at" });
         parts.push({ name: "expires_after[seconds]", value: String(options.expiresAfterSeconds) });
       }
-      parts.push({ name: "file", value: bytes, filename: options.filename, contentType: options.mimeType ?? guessMime(options.filename) });
+      parts.push({
+        name: "file",
+        value: bytes,
+        filename: options.filename,
+        contentType: options.mimeType ?? guessMime(options.filename),
+      });
       const multipart = buildMultipart(parts);
       const { value } = await this.core.json<FileObject>(
         { method: "POST", path: "/files", body: multipart.body, contentType: multipart.contentType },
@@ -325,7 +371,10 @@ export class MetaClient {
     },
 
     /** `DELETE /v1/files/{id}`. */
-    delete: async (fileId: string, call: CallOptions = {}): Promise<{ id: string; object: string; deleted: boolean }> => {
+    delete: async (
+      fileId: string,
+      call: CallOptions = {},
+    ): Promise<{ id: string; object: string; deleted: boolean }> => {
       const { value } = await this.core.json<{ id: string; object: string; deleted: boolean }>(
         { method: "DELETE", path: `/files/${encodeURIComponent(fileId)}` },
         call,
@@ -353,10 +402,12 @@ export class MetaClient {
         ...(params.reasoningStrength ? { reasoning_strength: params.reasoningStrength } : {}),
       };
       return this.core.metered(model, "image", call, async () => {
-        const { value, requestId } = await this.core.json<{ created?: number; data?: Array<{ b64_json?: string }>; output_format?: string; usage?: Record<string, unknown> }>(
-          { method: "POST", path: "/images/generations", json: body },
-          { timeoutMs: 180_000, ...call },
-        );
+        const { value, requestId } = await this.core.json<{
+          created?: number;
+          data?: Array<{ b64_json?: string }>;
+          output_format?: string;
+          usage?: Record<string, unknown>;
+        }>({ method: "POST", path: "/images/generations", json: body }, { timeoutMs: 180_000, ...call });
         const format = value.output_format ?? outputFormat;
         const images = (value.data ?? [])
           .filter((d): d is { b64_json: string } => typeof d.b64_json === "string")
@@ -435,7 +486,10 @@ export interface SamStreamResult {
  * `output_text.done` como texto definitivo, y exige un evento terminal. Sin coincidencias, el
  * stream completa con texto vacío (resultado válido, no error).
  */
-export async function collectSamStream(body: ReadableStream<Uint8Array>, requestId: string | null): Promise<SamStreamResult> {
+export async function collectSamStream(
+  body: ReadableStream<Uint8Array>,
+  requestId: string | null,
+): Promise<SamStreamResult> {
   const lanes = new Map<string, string>();
   const laneKey = (e: Record<string, unknown>) => `${String(e.output_index ?? 0)}:${String(e.content_index ?? 0)}`;
   let responseId: string | null = null;
@@ -463,10 +517,14 @@ export async function collectSamStream(body: ReadableStream<Uint8Array>, request
         });
       }
       case "response.incomplete":
-        throw new MetaOutputError("incomplete", `La segmentación quedó incompleta (${response?.incomplete_details?.reason ?? "sin motivo"})`, {
-          responseId,
-          rawText: [...lanes.values()].join(""),
-        });
+        throw new MetaOutputError(
+          "incomplete",
+          `La segmentación quedó incompleta (${response?.incomplete_details?.reason ?? "sin motivo"})`,
+          {
+            responseId,
+            rawText: [...lanes.values()].join(""),
+          },
+        );
       case "response.completed":
         final = response;
         break;
@@ -474,7 +532,13 @@ export async function collectSamStream(body: ReadableStream<Uint8Array>, request
   }
   if (!final) {
     // El stream se cortó sin evento terminal: se trata como error transitorio del servidor.
-    throw new MetaApiError({ status: 200, inStream: true, code: "server_error", message: "el stream terminó sin response.completed", requestId });
+    throw new MetaApiError({
+      status: 200,
+      inStream: true,
+      code: "server_error",
+      message: "el stream terminó sin response.completed",
+      requestId,
+    });
   }
   const keys = [...lanes.keys()].sort();
   let text = keys.map((k) => lanes.get(k) ?? "").join("\n");

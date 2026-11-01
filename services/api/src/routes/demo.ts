@@ -119,15 +119,59 @@ interface DemoZone {
 
 export const DEMO_ZONES: readonly DemoZone[] = [
   // Sobre el umbral. San Juan de Lurigancho también tiene los casos de la historia (A, C, D, E, F y G).
-  { distrito: "san-juan-de-lurigancho", casos: 9, victimas: 7, previos: 4, sectores: ["bodega", "mototaxi", "mercado"], amenazas: ["dano_local"], escalamiento: 1 },
-  { distrito: "villa-el-salvador", casos: 23, victimas: 16, previos: 12, sectores: ["bodega", "bodega", "mototaxi", "transporte"], amenazas: ["dano_local", "dano_fisico"], escalamiento: 2 },
-  { distrito: "ate", casos: 12, victimas: 8, previos: 11, sectores: ["mototaxi", "transporte", "bodega"], amenazas: ["dano_vehiculo"] },
+  {
+    distrito: "san-juan-de-lurigancho",
+    casos: 9,
+    victimas: 7,
+    previos: 4,
+    sectores: ["bodega", "mototaxi", "mercado"],
+    amenazas: ["dano_local"],
+    escalamiento: 1,
+  },
+  {
+    distrito: "villa-el-salvador",
+    casos: 23,
+    victimas: 16,
+    previos: 12,
+    sectores: ["bodega", "bodega", "mototaxi", "transporte"],
+    amenazas: ["dano_local", "dano_fisico"],
+    escalamiento: 2,
+  },
+  {
+    distrito: "ate",
+    casos: 12,
+    victimas: 8,
+    previos: 11,
+    sectores: ["mototaxi", "transporte", "bodega"],
+    amenazas: ["dano_vehiculo"],
+  },
   { distrito: "comas", casos: 7, victimas: 5, previos: 12, sectores: ["mercado", "bodega"], amenazas: ["dano_local"] },
-  { distrito: "lima", casos: 5, victimas: 3, previos: 0, sectores: ["mercado", "restaurante"], amenazas: ["difusion_informacion"] },
+  {
+    distrito: "lima",
+    casos: 5,
+    victimas: 3,
+    previos: 0,
+    sectores: ["mercado", "restaurante"],
+    amenazas: ["difusion_informacion"],
+  },
   // Sin modalidad que pase el umbral ni intimidación: nivel bajo.
-  { distrito: "la-victoria", casos: 6, victimas: 4, previos: 5, sectores: ["mercado", "restaurante", "construccion"], amenazas: ["dano_local", "dano_familia", "dano_fisico", "difusion_informacion", "otro"] },
+  {
+    distrito: "la-victoria",
+    casos: 6,
+    victimas: 4,
+    previos: 5,
+    sectores: ["mercado", "restaurante", "construccion"],
+    amenazas: ["dano_local", "dano_familia", "dano_fisico", "difusion_informacion", "otro"],
+  },
   // Bajo el umbral: en el mapa se ven igual que un distrito sin casos.
-  { distrito: "san-martin-de-porres", casos: 4, victimas: 4, previos: 3, sectores: ["bodega"], amenazas: ["dano_local"] },
+  {
+    distrito: "san-martin-de-porres",
+    casos: 4,
+    victimas: 4,
+    previos: 3,
+    sectores: ["bodega"],
+    amenazas: ["dano_local"],
+  },
   { distrito: "los-olivos", casos: 6, victimas: 2, previos: 0, sectores: ["restaurante"], amenazas: ["dano_local"] },
   { distrito: "callao", casos: 3, victimas: 3, previos: 2, sectores: ["transporte"], amenazas: ["dano_vehiculo"] },
   { distrito: "puente-piedra", casos: 2, victimas: 2, previos: 0, sectores: ["mototaxi"], amenazas: ["dano_vehiculo"] },
@@ -205,7 +249,15 @@ function aggregateStatements(env: AppEnv["Bindings"], now: number): D1PreparedSt
           identificadores: [],
           grupo_que_dice_ser: null,
           frases_firma: [],
-          escalamiento: escala ? [{ fecha: limaIso(t + 4 * DAY_MS).slice(0, 10), tipo: "Visita intimidatoria al local (ficticio)", evidencia: [] }] : [],
+          escalamiento: escala
+            ? [
+                {
+                  fecha: limaIso(t + 4 * DAY_MS).slice(0, 10),
+                  tipo: "Visita intimidatoria al local (ficticio)",
+                  evidencia: [],
+                },
+              ]
+            : [],
           resumen_mo: "Caso agregado ficticio del demo: solo cuenta para el mapa por distrito (sin evidencia).",
           fuentes: [],
         };
@@ -214,7 +266,20 @@ function aggregateStatements(env: AppEnv["Bindings"], now: number): D1PreparedSt
             `INSERT INTO cases (id, code, org_id, device_id, seudonimo_victima, sector, zona_cuadricula, primer_contacto, estado, consent_mode,
                ficha_json, indexed, is_demo, created_at, updated_at, submitted_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'listo', 'comunitario', ?, 0, 1, ?, ?, ?)`,
-          ).bind(newId(), code, CENTRAL_ORG_ID, dev.id, dev.pse, sector, z.distrito, ficha.primer_contacto, JSON.stringify(ficha), created, created, created),
+          ).bind(
+            newId(),
+            code,
+            CENTRAL_ORG_ID,
+            dev.id,
+            dev.pse,
+            sector,
+            z.distrito,
+            ficha.primer_contacto,
+            JSON.stringify(ficha),
+            created,
+            created,
+            created,
+          ),
         );
       }
     }
@@ -241,7 +306,8 @@ async function chunkedBatch(env: AppEnv["Bindings"], stmts: D1PreparedStatement[
 const DEMO_ACTOR: Actor = { actor_type: "system", actor_id: "demo" };
 
 demoRoutes.use("*", async (c, next) => {
-  if (c.env.DEMO_MODE !== "true") throw new ApiError("demo_disabled", "El modo demo no está habilitado en este entorno");
+  if (c.env.DEMO_MODE !== "true")
+    throw new ApiError("demo_disabled", "El modo demo no está habilitado en este entorno");
   const secret = c.req.header("x-demo-secret") ?? "";
   if (!c.env.DEMO_SECRET || !timingSafeEqualStr(secret, c.env.DEMO_SECRET)) {
     throw new ApiError("unauthorized", "Secreto de demo inválido");
@@ -254,28 +320,25 @@ demoRoutes.post("/seed", async (c) => {
   const now = nowIso();
   // La organización central la crea la migración 0004; el seed la asegura por si falta.
   await env.DB.batch([
-    env.DB.prepare("INSERT OR IGNORE INTO organizations (id, name, kind, district, is_demo, created_at) VALUES (?, ?, ?, NULL, 0, ?)").bind(
-      CENTRAL_ORG.id,
-      CENTRAL_ORG.name,
-      CENTRAL_ORG.kind,
-      now,
-    ),
-    env.DB.prepare("INSERT OR IGNORE INTO organizations (id, name, kind, district, is_demo, created_at) VALUES (?, ?, ?, ?, 1, ?)").bind(
-      DEMO_ORG.id,
-      DEMO_ORG.name,
-      DEMO_ORG.kind,
-      DEMO_ORG.district,
-      now,
-    ),
+    env.DB.prepare(
+      "INSERT OR IGNORE INTO organizations (id, name, kind, district, is_demo, created_at) VALUES (?, ?, ?, NULL, 0, ?)",
+    ).bind(CENTRAL_ORG.id, CENTRAL_ORG.name, CENTRAL_ORG.kind, now),
+    env.DB.prepare(
+      "INSERT OR IGNORE INTO organizations (id, name, kind, district, is_demo, created_at) VALUES (?, ?, ?, ?, 1, ?)",
+    ).bind(DEMO_ORG.id, DEMO_ORG.name, DEMO_ORG.kind, DEMO_ORG.district, now),
   ]);
   const createdUsers: string[] = [];
   for (const u of DEMO_USERS) {
     const password = demoUserPassword(env, u);
     if (!password) continue;
-    const exists = await env.DB.prepare("SELECT id FROM users WHERE id = ? OR email = ?").bind(u.id, u.email).first<{ id: string }>();
+    const exists = await env.DB.prepare("SELECT id FROM users WHERE id = ? OR email = ?")
+      .bind(u.id, u.email)
+      .first<{ id: string }>();
     if (exists) {
       // Un seed anterior al rediseño los dejó en la organización demo: pasan al equipo central.
-      await env.DB.prepare("UPDATE users SET org_id = ?, display_name = ? WHERE id = ? AND is_demo = 1").bind(CENTRAL_ORG_ID, u.display_name, exists.id).run();
+      await env.DB.prepare("UPDATE users SET org_id = ?, display_name = ? WHERE id = ? AND is_demo = 1")
+        .bind(CENTRAL_ORG_ID, u.display_name, exists.id)
+        .run();
       continue;
     }
     await env.DB.prepare(
@@ -285,13 +348,24 @@ demoRoutes.post("/seed", async (c) => {
       .run();
     createdUsers.push(u.id);
   }
-  const bizExists = await env.DB.prepare("SELECT id FROM business_accounts WHERE id = ? OR email = ?").bind(DEMO_BUSINESS.id, DEMO_BUSINESS.email).first();
+  const bizExists = await env.DB.prepare("SELECT id FROM business_accounts WHERE id = ? OR email = ?")
+    .bind(DEMO_BUSINESS.id, DEMO_BUSINESS.email)
+    .first();
   if (!bizExists) {
     await env.DB.prepare(
       `INSERT INTO business_accounts (id, org_id, email, password_hash, business_name, sector, zona, disabled, is_demo, created_by, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, 0, 1, 'demo', ?)`,
     )
-      .bind(DEMO_BUSINESS.id, DEMO_ORG.id, DEMO_BUSINESS.email, await hashPassword(DEMO_BUSINESS.password), DEMO_BUSINESS.business_name, DEMO_BUSINESS.sector, DEMO_BUSINESS.zona, now)
+      .bind(
+        DEMO_BUSINESS.id,
+        DEMO_ORG.id,
+        DEMO_BUSINESS.email,
+        await hashPassword(DEMO_BUSINESS.password),
+        DEMO_BUSINESS.business_name,
+        DEMO_BUSINESS.sector,
+        DEMO_BUSINESS.zona,
+        now,
+      )
       .run();
   }
   for (const inv of DEMO_INVITES) {
@@ -311,7 +385,11 @@ demoRoutes.post("/seed", async (c) => {
     action: "demo.seed",
     target_type: "organization",
     target_id: DEMO_ORG.id,
-    details: { users_created: createdUsers.length, business_created: bizExists ? 0 : 1, aggregate_cases: demoAggregateCount() },
+    details: {
+      users_created: createdUsers.length,
+      business_created: bizExists ? 0 : 1,
+      aggregate_cases: demoAggregateCount(),
+    },
   });
   return c.json(
     {
@@ -320,9 +398,20 @@ demoRoutes.post("/seed", async (c) => {
       users: DEMO_USERS.map((u) => ({ id: u.id, email: u.email, display_name: u.display_name, role: u.role })),
       invites: DEMO_INVITES.map((i) => i.code),
       business_accounts: [
-        { id: DEMO_BUSINESS.id, email: DEMO_BUSINESS.email, business_name: DEMO_BUSINESS.business_name, sector: DEMO_BUSINESS.sector, zona: DEMO_BUSINESS.zona },
+        {
+          id: DEMO_BUSINESS.id,
+          email: DEMO_BUSINESS.email,
+          business_name: DEMO_BUSINESS.business_name,
+          sector: DEMO_BUSINESS.sector,
+          zona: DEMO_BUSINESS.zona,
+        },
       ],
-      zonas: { casos_agregados: demoAggregateCount(), sobre_umbral: sobre, bajo_umbral: bajo, consulta: "GET /v1/public/zones?demo=1" },
+      zonas: {
+        casos_agregados: demoAggregateCount(),
+        sobre_umbral: sobre,
+        bajo_umbral: bajo,
+        consulta: "GET /v1/public/zones?demo=1",
+      },
       passwords: "Ver services/api/README.md (sección Demo)",
       ficticio: true,
     },
@@ -341,7 +430,9 @@ demoRoutes.post("/reset", async (c) => {
   // Los casos agregados se borran en bloque (no tienen evidencia, vínculos ni índices); los demás,
   // uno por uno con todo lo suyo.
   const aggregates = await deleteAggregates(env);
-  const { results: cases } = await env.DB.prepare(`SELECT * FROM cases WHERE is_demo = 1 OR org_id IN (${demoOrgs})`).all<CaseRow>();
+  const { results: cases } = await env.DB.prepare(
+    `SELECT * FROM cases WHERE is_demo = 1 OR org_id IN (${demoOrgs})`,
+  ).all<CaseRow>();
   for (const cs of cases) await deleteCaseFully(env, cs, DEMO_ACTOR, { recompute: false });
   await recomputeNetworks(env);
 
@@ -353,9 +444,12 @@ demoRoutes.post("/reset", async (c) => {
   ).all<{ image_r2_key: string }>();
   if (alertImages.length) await env.EVIDENCE.delete(alertImages.map((a) => a.image_r2_key));
 
-  const demoUsers = "SELECT id FROM users WHERE is_demo = 1 OR org_id IN (SELECT id FROM organizations WHERE is_demo = 1)";
-  const demoDevices = "SELECT id FROM devices WHERE is_demo = 1 OR org_id IN (SELECT id FROM organizations WHERE is_demo = 1)";
-  const demoBusiness = "SELECT id FROM business_accounts WHERE is_demo = 1 OR org_id IN (SELECT id FROM organizations WHERE is_demo = 1)";
+  const demoUsers =
+    "SELECT id FROM users WHERE is_demo = 1 OR org_id IN (SELECT id FROM organizations WHERE is_demo = 1)";
+  const demoDevices =
+    "SELECT id FROM devices WHERE is_demo = 1 OR org_id IN (SELECT id FROM organizations WHERE is_demo = 1)";
+  const demoBusiness =
+    "SELECT id FROM business_accounts WHERE is_demo = 1 OR org_id IN (SELECT id FROM organizations WHERE is_demo = 1)";
   await env.DB.batch([
     env.DB.prepare(`DELETE FROM alerts WHERE id IN (${demoAlerts})`),
     env.DB.prepare(`UPDATE links SET reviewer_id = NULL WHERE reviewer_id IN (${demoUsers})`),
@@ -375,14 +469,20 @@ demoRoutes.post("/reset", async (c) => {
     env.DB.prepare(`DELETE FROM invites WHERE org_id IN (${demoOrgs})`),
     env.DB.prepare(`DELETE FROM organizations WHERE is_demo = 1`),
     env.DB.prepare("DELETE FROM agent_runs WHERE target_type = 'case' AND target_id NOT IN (SELECT id FROM cases)"),
-    env.DB.prepare("DELETE FROM agent_runs WHERE target_type = 'network' AND target_id NOT IN (SELECT id FROM networks)"),
-    env.DB.prepare("DELETE FROM agent_runs WHERE target_type = 'organization' AND target_id NOT IN (SELECT id FROM organizations)"),
+    env.DB.prepare(
+      "DELETE FROM agent_runs WHERE target_type = 'network' AND target_id NOT IN (SELECT id FROM networks)",
+    ),
+    env.DB.prepare(
+      "DELETE FROM agent_runs WHERE target_type = 'organization' AND target_id NOT IN (SELECT id FROM organizations)",
+    ),
     // Las etiquetas vuelven a empezar después de lo que quede (VIN-1, R-001… si no queda nada).
     env.DB.prepare("UPDATE counters SET value = COALESCE((SELECT MAX(num) FROM links), 0) WHERE name = 'link'"),
     env.DB.prepare("UPDATE counters SET value = COALESCE((SELECT MAX(num) FROM voice_prints), 0) WHERE name = 'voice'"),
     env.DB.prepare("UPDATE counters SET value = COALESCE((SELECT MAX(num) FROM image_crops), 0) WHERE name = 'image'"),
     env.DB.prepare("UPDATE counters SET value = COALESCE((SELECT MAX(num) FROM networks), 0) WHERE name = 'network'"),
-    env.DB.prepare("UPDATE counters SET value = COALESCE((SELECT MAX(num) FROM hypotheses), 0) WHERE name = 'hypothesis'"),
+    env.DB.prepare(
+      "UPDATE counters SET value = COALESCE((SELECT MAX(num) FROM hypotheses), 0) WHERE name = 'hypothesis'",
+    ),
   ]);
   const summary = {
     cases: cases.length + aggregates,

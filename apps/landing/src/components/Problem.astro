@@ -19,42 +19,41 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
 <section class="section" id="problema" aria-labelledby="problema-title">
   <div class="wrap">
     <div class="sec-head" data-reveal>
-      <h2 id="problema-title" class="head">{first} {second}</h2>
+      <h2 id="problema-title" class="head">
+        {first} {second}
+      </h2>
       <p class="lead soft">{p.lead}</p>
     </div>
 
     <ul class="figs" role="list" data-reveal>
-      {
-        p.figures.slice(0, 3).map((f) => (
-          <li class="fig">
-            <span class="fig__value num">{f.value}</span>
-            <p class="fig__text">{f.text}</p>
-            <a class="fig__src small" href={f.source.url} rel="noopener noreferrer" target="_blank">
-              {p.sourcePrefix} {f.source.name}
-              <Icon name="external" />
-              <span class="sr-only">{newTab}</span>
-            </a>
-          </li>
-        ))
-      }
+      {p.figures.slice(0, 3).map((f) => (
+        <li class="fig">
+          <span class="fig__value num">{f.value}</span>
+          <p class="fig__text">{f.text}</p>
+          <a class="fig__src small" href={f.source.url} rel="noopener noreferrer" target="_blank">
+            {p.sourcePrefix} {f.source.name}
+            <Icon name="external" />
+            <span class="sr-only">{newTab}</span>
+          </a>
+        </li>
+      ))}
     </ul>
 
     <div class="gaps" data-reveal>
       <h3 class="gaps__title">{d.lp.problem.gapsTitle}</h3>
       <ul class="gaps__list" role="list">
-        {
-          p.gaps.map((g) => (
-            <li>
-              <p class="gaps__name">{g.title}</p>
-              <p class="soft">{g.text}</p>
-            </li>
-          ))
-        }
+        {p.gaps.map((g) => (
+          <li>
+            <p class="gaps__name">{g.title}</p>
+            <p class="soft">{g.text}</p>
+          </li>
+        ))}
       </ul>
       <p class="gaps__note small soft">
         {p.gapTitle}{" "}
         <a href={p.gapSource.url} rel="noopener noreferrer" target="_blank">
-          {p.sourcePrefix} {p.gapSource.name}<span class="sr-only">{newTab}</span>
+          {p.sourcePrefix} {p.gapSource.name}
+          <span class="sr-only">{newTab}</span>
         </a>
       </p>
     </div>

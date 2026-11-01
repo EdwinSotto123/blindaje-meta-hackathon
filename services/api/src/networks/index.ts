@@ -84,7 +84,9 @@ export async function recomputeNetworks(env: Env): Promise<RecomputeResult> {
     env.DB.prepare("SELECT case_a, case_b FROM links WHERE status = 'confirmado'"),
     env.DB.prepare("SELECT network_id, case_id FROM network_cases"),
   ]);
-  const edges = (linksRes!.results as Array<{ case_a: string; case_b: string }>).map((l) => [l.case_a, l.case_b] as [string, string]);
+  const edges = (linksRes!.results as Array<{ case_a: string; case_b: string }>).map(
+    (l) => [l.case_a, l.case_b] as [string, string],
+  );
   const components = connectedComponents(edges);
 
   const existing = new Map<string, Set<string>>();
@@ -126,25 +128,27 @@ export async function recomputeNetworks(env: Env): Promise<RecomputeResult> {
       const same = prev.size === comp.length && comp.every((c) => prev.has(c));
       if (same) continue;
       stmts.push(env.DB.prepare("DELETE FROM network_cases WHERE network_id = ?").bind(netId));
-      for (const c of comp) stmts.push(env.DB.prepare("INSERT INTO network_cases (network_id, case_id) VALUES (?, ?)").bind(netId, c));
+      for (const c of comp)
+        stmts.push(env.DB.prepare("INSERT INTO network_cases (network_id, case_id) VALUES (?, ?)").bind(netId, c));
       stmts.push(
-        env.DB.prepare("UPDATE networks SET n_casos = ?, community_key = ?, updated_at = ? WHERE id = ?").bind(comp.length, key, now, netId),
+        env.DB.prepare("UPDATE networks SET n_casos = ?, community_key = ?, updated_at = ? WHERE id = ?").bind(
+          comp.length,
+          key,
+          now,
+          netId,
+        ),
       );
       result.updated.push(netId);
     } else {
       const id = newId();
       const num = await nextCounter(env, "network");
       stmts.push(
-        env.DB.prepare("INSERT INTO networks (id, num, n_casos, community_key, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)").bind(
-          id,
-          num,
-          comp.length,
-          key,
-          now,
-          now,
-        ),
+        env.DB.prepare(
+          "INSERT INTO networks (id, num, n_casos, community_key, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ).bind(id, num, comp.length, key, now, now),
       );
-      for (const c of comp) stmts.push(env.DB.prepare("INSERT INTO network_cases (network_id, case_id) VALUES (?, ?)").bind(id, c));
+      for (const c of comp)
+        stmts.push(env.DB.prepare("INSERT INTO network_cases (network_id, case_id) VALUES (?, ?)").bind(id, c));
       result.created.push(id);
     }
   }

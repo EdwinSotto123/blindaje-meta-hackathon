@@ -29,7 +29,15 @@ export type CitationResolver = (ref: string) => Promise<CitationTarget | undefin
 const Ctx = createContext<CitationCtx | null>(null);
 
 /** Hace clicables las citas de sus hijos y abre el detalle en un panel lateral. */
-export function CitationProvider({ index, resolve, children }: { index: CitationIndex; resolve?: CitationResolver; children: ReactNode }) {
+export function CitationProvider({
+  index,
+  resolve,
+  children,
+}: {
+  index: CitationIndex;
+  resolve?: CitationResolver;
+  children: ReactNode;
+}) {
   const [stack, setStack] = useState<string[]>([]);
   const open = useCallback((ref: string) => setStack((s) => (s[s.length - 1] === ref ? s : [...s, ref])), []);
   const value = useMemo(() => ({ index, open }), [index, open]);
@@ -78,14 +86,26 @@ export function CitedText({ text, missing }: { text: string; missing?: string[] 
   return (
     <>
       {segments.map((s, i) =>
-        s.type === "text" ? <span key={i}>{s.text}</span> : <CiteChip key={i} refId={s.ref} missing={missing?.includes(s.ref)} />,
+        s.type === "text" ? (
+          <span key={i}>{s.text}</span>
+        ) : (
+          <CiteChip key={i} refId={s.ref} missing={missing?.includes(s.ref)} />
+        ),
       )}
     </>
   );
 }
 
 /** Lista de citas (campo `evidencia` de una afirmación). */
-export function CiteList({ refs, missing, label = "Evidencia" }: { refs: string[]; missing?: string[]; label?: string }) {
+export function CiteList({
+  refs,
+  missing,
+  label = "Evidencia",
+}: {
+  refs: string[];
+  missing?: string[];
+  label?: string;
+}) {
   if (refs.length === 0) {
     return <span className="chip chip-danger">Sin cita</span>;
   }
@@ -188,17 +208,42 @@ function titleFor(ref: string, t: CitationTarget | undefined): string {
   }
 }
 
-function ResolvedDetail({ refId, resolve, onNavigate }: { refId: string; resolve: CitationResolver; onNavigate: () => void }) {
+function ResolvedDetail({
+  refId,
+  resolve,
+  onNavigate,
+}: {
+  refId: string;
+  resolve: CitationResolver;
+  onNavigate: () => void;
+}) {
   const res = useAsync(() => resolve(refId), `cita:${refId}`);
   if (res.loading) return <Loading label="Buscando la evidencia citada…" />;
   if (res.error) return <ErrorBox error={res.error} onRetry={res.reload} />;
   return <TargetDetail refId={refId} target={res.data} onNavigate={onNavigate} />;
 }
 
-const TIPO_EVIDENCIA: Record<string, string> = { audio: "Audio", imagen: "Imagen", video: "Video", texto: "Mensaje de texto" };
-const ROL_LABEL: Record<string, string> = { contacto: "Número de contacto", cobro: "Cuenta de cobro", vehiculo: "Vehículo" };
+const TIPO_EVIDENCIA: Record<string, string> = {
+  audio: "Audio",
+  imagen: "Imagen",
+  video: "Video",
+  texto: "Mensaje de texto",
+};
+const ROL_LABEL: Record<string, string> = {
+  contacto: "Número de contacto",
+  cobro: "Cuenta de cobro",
+  vehiculo: "Vehículo",
+};
 
-function TargetDetail({ refId, target, onNavigate }: { refId: string; target: CitationTarget | undefined; onNavigate: () => void }) {
+function TargetDetail({
+  refId,
+  target,
+  onNavigate,
+}: {
+  refId: string;
+  target: CitationTarget | undefined;
+  onNavigate: () => void;
+}) {
   if (!target) {
     return (
       <div className="stack-sm">
@@ -206,7 +251,8 @@ function TargetDetail({ refId, target, onNavigate }: { refId: string; target: Ci
           La cita <code>{refId}</code> no tiene detalle en esta vista.
         </p>
         <p className="muted small">
-          Puede pertenecer a un caso que no está cargado aquí o no existir. El validador de citas de la API marca como inválidas las citas inexistentes.
+          Puede pertenecer a un caso que no está cargado aquí o no existir. El validador de citas de la API marca como
+          inválidas las citas inexistentes.
         </p>
       </div>
     );
@@ -254,10 +300,16 @@ function TargetDetail({ refId, target, onNavigate }: { refId: string; target: Ci
             <AudioClip key={`${f.evidence_id}-${f.start_ms}`} fragment={f} />
           ))}
           {full ? <AudioClip fragment={full} /> : null}
-          {target.tipo === "imagen" || target.tipo === "video" ? <EvidenceImage evidenceId={target.evidenceId} label={target.ref} /> : null}
-          {target.tipo === "texto" ? <p className="muted small">El texto del mensaje está resumido en la ficha del caso.</p> : null}
+          {target.tipo === "imagen" || target.tipo === "video" ? (
+            <EvidenceImage evidenceId={target.evidenceId} label={target.ref} />
+          ) : null}
+          {target.tipo === "texto" ? (
+            <p className="muted small">El texto del mensaje está resumido en la ficha del caso.</p>
+          ) : null}
           <PromptGuardPanel result={target.promptGuard} />
-          {target.tipo !== "texto" && target.autenticidad !== undefined ? <AuthenticityPanel result={target.autenticidad} tipo={target.tipo} /> : null}
+          {target.tipo !== "texto" && target.autenticidad !== undefined ? (
+            <AuthenticityPanel result={target.autenticidad} tipo={target.tipo} />
+          ) : null}
         </div>
       );
     }
@@ -282,7 +334,10 @@ function TargetDetail({ refId, target, onNavigate }: { refId: string; target: Ci
             <dt>Amenaza</dt>
             <dd>{f.amenaza ?? "—"}</dd>
             <dt>Monto</dt>
-            <dd>{f.monto_soles != null ? `S/ ${f.monto_soles.toLocaleString("es-PE")}` : "—"}{f.periodicidad && f.periodicidad !== "unico" ? ` (${f.periodicidad})` : ""}</dd>
+            <dd>
+              {f.monto_soles != null ? `S/ ${f.monto_soles.toLocaleString("es-PE")}` : "—"}
+              {f.periodicidad && f.periodicidad !== "unico" ? ` (${f.periodicidad})` : ""}
+            </dd>
             <dt>Plazo</dt>
             <dd>{f.plazo ?? "—"}</dd>
             <dt>Canal de pago</dt>
@@ -361,14 +416,18 @@ function TargetDetail({ refId, target, onNavigate }: { refId: string; target: Ci
             <AudioClip key={`${f.evidence_id}-${f.start_ms}`} fragment={f} />
           ))}
           <p className="small muted">
-            Una huella de voz es un vector calculado con un modelo abierto; no identifica a una persona y nunca vincula casos por sí sola.
+            Una huella de voz es un vector calculado con un modelo abierto; no identifica a una persona y nunca vincula
+            casos por sí sola.
           </p>
         </div>
       );
     case "identificador":
       return (
         <div className="stack">
-          <p style={{ fontSize: "1.6rem", fontWeight: 700 }} aria-label={`Termina en ${target.ultimos_3 ?? "dato no disponible"}`}>
+          <p
+            style={{ fontSize: "1.6rem", fontWeight: 700 }}
+            aria-label={`Termina en ${target.ultimos_3 ?? "dato no disponible"}`}
+          >
             {target.ultimos_3 ? `…${target.ultimos_3}` : target.ref}
           </p>
           <dl className="dl">
@@ -394,7 +453,8 @@ function TargetDetail({ refId, target, onNavigate }: { refId: string; target: Ci
             </div>
           ) : null}
           <p className="small muted">
-            El valor está cifrado con HMAC-SHA256 y la clave de Blindaje. La consola solo muestra los últimos 3 caracteres.
+            El valor está cifrado con HMAC-SHA256 y la clave de Blindaje. La consola solo muestra los últimos 3
+            caracteres.
           </p>
         </div>
       );

@@ -62,7 +62,9 @@ export class HttpClient {
 
   /** Convierte una ruta relativa (`/v1/...`) o una URL de la API en URL absoluta. */
   resolve(pathOrUrl: string, query?: RequestOptions["query"]): URL {
-    const url = /^https?:\/\//i.test(pathOrUrl) ? new URL(pathOrUrl) : new URL(this.baseUrl + (pathOrUrl.startsWith("/") ? "" : "/") + pathOrUrl);
+    const url = /^https?:\/\//i.test(pathOrUrl)
+      ? new URL(pathOrUrl)
+      : new URL(this.baseUrl + (pathOrUrl.startsWith("/") ? "" : "/") + pathOrUrl);
     if (url.origin !== this.origin) {
       throw new ApiRequestError(0, "bad_request", "La URL no pertenece a la API configurada.");
     }
@@ -90,7 +92,10 @@ export class HttpClient {
     if (opts.validate) {
       const check = opts.validate.safeParse(data);
       if (!check.success) {
-        console.warn(`[contrato] ${method} ${path}: la respuesta no cumple el esquema de @blindaje/shared`, check.error);
+        console.warn(
+          `[contrato] ${method} ${path}: la respuesta no cumple el esquema de @blindaje/shared`,
+          check.error,
+        );
       }
     }
     return data as T;

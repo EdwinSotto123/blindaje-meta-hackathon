@@ -35,7 +35,10 @@ export async function api(path: string, init: ApiInit = {}): Promise<Response> {
   return SELF.fetch(`${BASE}${path}`, { method: init.method ?? (body ? "POST" : "GET"), headers, body });
 }
 
-export async function apiJson<T = Record<string, unknown>>(path: string, init: ApiInit = {}): Promise<{ status: number; body: T }> {
+export async function apiJson<T = Record<string, unknown>>(
+  path: string,
+  init: ApiInit = {},
+): Promise<{ status: number; body: T }> {
   const res = await api(path, init);
   const text = await res.text();
   return { status: res.status, body: (text ? JSON.parse(text) : null) as T };
@@ -71,8 +74,14 @@ export interface TestDevice {
   raw: Record<string, unknown>;
 }
 
-export async function newDeviceKeys(): Promise<{ keys: CryptoKeyPair; jwk: { kty: "EC"; crv: "P-256"; x: string; y: string } }> {
-  const keys = (await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"])) as CryptoKeyPair;
+export async function newDeviceKeys(): Promise<{
+  keys: CryptoKeyPair;
+  jwk: { kty: "EC"; crv: "P-256"; x: string; y: string };
+}> {
+  const keys = (await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, [
+    "sign",
+    "verify",
+  ])) as CryptoKeyPair;
   const jwk = (await crypto.subtle.exportKey("jwk", keys.publicKey)) as JsonWebKey;
   return { keys, jwk: { kty: "EC", crv: "P-256", x: jwk.x!, y: jwk.y! } };
 }
@@ -89,18 +98,35 @@ export async function registerDevice(invite?: string): Promise<TestDevice> {
 }
 
 export async function signRefresh(privateKey: CryptoKey, deviceId: string, timestamp: number): Promise<string> {
-  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, privateKey, utf8(`refresh:${deviceId}:${timestamp}`));
+  const sig = await crypto.subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    privateKey,
+    utf8(`refresh:${deviceId}:${timestamp}`),
+  );
   return bytesToB64Url(new Uint8Array(sig));
 }
 
-export async function createUser(role: "reviewer" | "analyst" | "admin", orgId: string, opts: { disabled?: boolean } = {}) {
+export async function createUser(
+  role: "reviewer" | "analyst" | "admin",
+  orgId: string,
+  opts: { disabled?: boolean } = {},
+) {
   const id = newId();
   const email = `${role}-${id.slice(0, 8)}@prueba.blindaje.test`;
   const password = `Clave-de-prueba-${id.slice(0, 6)}`;
   await env.DB.prepare(
     "INSERT INTO users (id, org_id, email, display_name, password_hash, role, disabled, is_demo, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)",
   )
-    .bind(id, orgId, email, `Persona ${role} (ficticia)`, await hashPassword(password), role, opts.disabled ? 1 : 0, nowIso())
+    .bind(
+      id,
+      orgId,
+      email,
+      `Persona ${role} (ficticia)`,
+      await hashPassword(password),
+      role,
+      opts.disabled ? 1 : 0,
+      nowIso(),
+    )
     .run();
   return { id, email, password };
 }
@@ -115,7 +141,11 @@ export async function loginAs(role: "reviewer" | "analyst" | "admin", orgId: str
 }
 
 /** Crea un caso como la app. La zona es un distrito (por defecto San Juan de Lurigancho). */
-export async function createCase(token: string, consent: "solo_denuncia" | "comunitario" = "solo_denuncia", opts: { zona?: string; sector?: string } = {}) {
+export async function createCase(
+  token: string,
+  consent: "solo_denuncia" | "comunitario" = "solo_denuncia",
+  opts: { zona?: string; sector?: string } = {},
+) {
   const res = await apiJson<{ id: string; code: string }>("/v1/cases", {
     token,
     json: { sector: opts.sector ?? "bodega", zona: opts.zona ?? "san-juan-de-lurigancho", consent_mode: consent },
@@ -151,7 +181,9 @@ export async function upload(
 export async function insertLink(caseX: string, caseY: string, status = "probable", score = 0.93) {
   const [a, b] = caseX < caseY ? [caseX, caseY] : [caseY, caseX];
   const id = newId();
-  const num = (await env.DB.prepare("UPDATE counters SET value = value + 1 WHERE name = 'link' RETURNING value").first<{ value: number }>())!.value;
+  const num = (await env.DB.prepare("UPDATE counters SET value = value + 1 WHERE name = 'link' RETURNING value").first<{
+    value: number;
+  }>())!.value;
   await env.DB.prepare(
     `INSERT INTO links (id, num, case_a, case_b, score, score_raw, signals_json, calibration_version, status, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, 'v0', ?, ?, ?)`,
@@ -163,7 +195,12 @@ export async function insertLink(caseX: string, caseY: string, status = "probabl
       b,
       score,
       score,
-      JSON.stringify({ identificador: { p: 0.95, compartidos: [{ ref: "ID-abc123", tipo: "cuenta_yape", ultimos_3: "488", evidencia: [] }] } }),
+      JSON.stringify({
+        identificador: {
+          p: 0.95,
+          compartidos: [{ ref: "ID-abc123", tipo: "cuenta_yape", ultimos_3: "488", evidencia: [] }],
+        },
+      }),
       status,
       nowIso(),
       nowIso(),

@@ -1,7 +1,16 @@
 import { act, renderHook } from "@testing-library/react-native";
 
 import { HOLD_MS, holdReached, isSecretAmount, useHoldToOpen } from "@/disguise/secret";
-import { calculate, focus, initialVuelto, PinThrottle, pinCandidate, press, type Key, type VueltoState } from "@/disguise/vuelto";
+import {
+  calculate,
+  focus,
+  initialVuelto,
+  PinThrottle,
+  pinCandidate,
+  press,
+  type Key,
+  type VueltoState,
+} from "@/disguise/vuelto";
 import { parseSoles, soles } from "@/lib/format";
 import { DEFAULT_SECRET_CENTS } from "@/state/config";
 

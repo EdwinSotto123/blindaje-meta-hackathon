@@ -20,10 +20,19 @@ async function main() {
   await api.request("/v1/health");
 
   const { agentes, estadisticas } = await runAgentes(api);
-  console.log(`Agentes: ${agentes.estado}${agentes.motivo ? ` (${agentes.motivo})` : ""}, ${agentes.verificadas}/${agentes.afirmaciones} afirmaciones verificadas en ${agentes.salidas} salidas.`);
-  console.log(`Estadísticas con menos de 5 casos: ${estadisticas.estado}, ${estadisticas.estadisticas_con_menos_de_5} en ${estadisticas.perfiles_revisados} perfiles.`);
+  console.log(
+    `Agentes: ${agentes.estado}${agentes.motivo ? ` (${agentes.motivo})` : ""}, ${agentes.verificadas}/${agentes.afirmaciones} afirmaciones verificadas en ${agentes.salidas} salidas.`,
+  );
+  console.log(
+    `Estadísticas con menos de 5 casos: ${estadisticas.estado}, ${estadisticas.estadisticas_con_menos_de_5} en ${estadisticas.perfiles_revisados} perfiles.`,
+  );
 
-  const fecha = new Date().toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Lima" });
+  const fecha = new Date().toLocaleDateString("es-PE", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "America/Lima",
+  });
   const { resumen: _resumen, ...base } = prev;
   const next: Omit<Report, "resumen"> = {
     ...base,

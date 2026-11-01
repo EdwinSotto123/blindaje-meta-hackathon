@@ -30,9 +30,7 @@ class Settings:
     )
     threads: int = field(default_factory=lambda: int(os.environ.get("ML_THREADS", "0")) or _cpu_quota())
     preload: tuple[str, ...] = field(
-        default_factory=lambda: tuple(
-            p.strip() for p in os.environ.get("ML_PRELOAD", "").split(",") if p.strip()
-        )
+        default_factory=lambda: tuple(p.strip() for p in os.environ.get("ML_PRELOAD", "").split(",") if p.strip())
     )
     ffmpeg: str = field(default_factory=lambda: os.environ.get("ML_FFMPEG", "ffmpeg"))
     ffprobe: str = field(default_factory=lambda: os.environ.get("ML_FFPROBE", "ffprobe"))

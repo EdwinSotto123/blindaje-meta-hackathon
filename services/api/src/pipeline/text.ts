@@ -14,15 +14,17 @@ import type { TextoContent } from "./types";
 const MAX_CHARS = 20_000;
 
 export function normalizePlainText(raw: string): string {
-  return raw
-    .normalize("NFC")
-    .replace(/\r\n?/g, "\n")
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim()
-    .slice(0, MAX_CHARS);
+  return (
+    raw
+      .normalize("NFC")
+      .replace(/\r\n?/g, "\n")
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+      .slice(0, MAX_CHARS)
+  );
 }
 
 export async function processText(ctx: EvidenceCtx): Promise<void> {
@@ -39,7 +41,9 @@ export async function processText(ctx: EvidenceCtx): Promise<void> {
 
 /** Texto plano de una evidencia de tipo texto: el derivado si existe, si no el original. */
 export async function readEvidenceText(env: Env, ev: Pick<EvidenceRow, "id" | "r2_key">): Promise<string | null> {
-  const der = await env.DB.prepare("SELECT id, r2_key FROM derivatives WHERE evidence_id = ? AND tipo = 'texto' LIMIT 1")
+  const der = await env.DB.prepare(
+    "SELECT id, r2_key FROM derivatives WHERE evidence_id = ? AND tipo = 'texto' LIMIT 1",
+  )
     .bind(ev.id)
     .first<{ id: string; r2_key: string | null }>();
   const bytes = der ? await readDerivativePlain(env, der).catch(() => null) : null;

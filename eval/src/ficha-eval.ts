@@ -1,7 +1,14 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { FICHA_SYSTEM, FichaExtraction, PROMPT_VERSION, identifierGroup, normalizeIdentifier, type IdentifierType } from "@blindaje/shared";
+import {
+  FICHA_SYSTEM,
+  FichaExtraction,
+  PROMPT_VERSION,
+  identifierGroup,
+  normalizeIdentifier,
+  type IdentifierType,
+} from "@blindaje/shared";
 import { zodTextFormat } from "@blindaje/meta-client";
 import { CACHE_DIR } from "./env";
 import { loadGuiones, type Etiqueta, type Guion } from "./data";
@@ -172,7 +179,12 @@ export function scoreFicha(etq: Etiqueta, out: FichaExtraction) {
     const ef = etq.escalamiento.map((e) => e.fecha ?? "").sort();
     const of = out.escalamiento.map((e) => e.fecha ?? "").sort();
     const ok = ef.length === of.length && ef.every((f, i) => f === "" || f === of[i]);
-    set("escalamiento", ok, etq.escalamiento, out.escalamiento.map((e) => ({ fecha: e.fecha, tipo: e.tipo })));
+    set(
+      "escalamiento",
+      ok,
+      etq.escalamiento,
+      out.escalamiento.map((e) => ({ fecha: e.fecha, tipo: e.tipo })),
+    );
   }
   {
     const e = new Set(etq.fuentes);
@@ -228,7 +240,10 @@ export async function extractFicha(g: Pick<Guion, "id" | "evidencia">): Promise<
 }
 
 /** Ficha de cualquier conjunto de piezas etiquetadas (guiones o casos del demo), con caché. */
-export async function extractFichaPiezas(id: string, piezas: PiezaEvidencia[]): Promise<{ data: CachedFicha; cache: boolean }> {
+export async function extractFichaPiezas(
+  id: string,
+  piezas: PiezaEvidencia[],
+): Promise<{ data: CachedFicha; cache: boolean }> {
   const g = { id, evidencia: piezas };
   mkdirSync(FICHA_CACHE, { recursive: true });
   const input = buildFichaInput(g.id, g.evidencia);
@@ -309,7 +324,9 @@ export async function runFichaEval(opts: { all?: boolean; dryRun?: boolean } = {
     try {
       const { data, cache } = await extractFicha(g);
       const s = scoreFicha(g.etiqueta, data.output);
-      process.stdout.write(`  ficha ${g.id}${cache ? " (caché)" : ""}: ${Object.values(s.campos).filter((c) => c.ok).length}/${CAMPOS.length}\n`);
+      process.stdout.write(
+        `  ficha ${g.id}${cache ? " (caché)" : ""}: ${Object.values(s.campos).filter((c) => c.ok).length}/${CAMPOS.length}\n`,
+      );
       return {
         guion: g.id,
         cache,
@@ -329,7 +346,9 @@ export async function runFichaEval(opts: { all?: boolean; dryRun?: boolean } = {
         cache: false,
         cost_usd: 0,
         latency_ms: null,
-        campos: Object.fromEntries(CAMPOS.map((c) => [c, { ok: false, esperado: null, obtenido: null }])) as FichaCaseResult["campos"],
+        campos: Object.fromEntries(
+          CAMPOS.map((c) => [c, { ok: false, esperado: null, obtenido: null }]),
+        ) as FichaCaseResult["campos"],
         frases_recall: 0,
         identificadores: { esperados: 0, obtenidos: 0, correctos: 0, tipo_exacto: false },
         privacidad_ok: true,

@@ -26,25 +26,25 @@
     // Chroma Cloud (base vectorial de los casos ficticios del demo). CHROMA_API_KEY y CHROMA_TENANT
     // van con `wrangler secret put`; sin ellos el motor usa FAISS en el contenedor ML.
     "CHROMA_DATABASE": "blindaje",
-    "ALLOWED_ORIGINS": "http://localhost:4321,http://localhost:5173,http://localhost:8787"
+    "ALLOWED_ORIGINS": "http://localhost:4321,http://localhost:5173,http://localhost:8787",
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "blindaje",
       "database_id": "253e61d1-07c0-46bd-870d-eb98446fddb3",
-      "migrations_dir": "../../infra/migrations"
-    }
+      "migrations_dir": "../../infra/migrations",
+    },
   ],
   "r2_buckets": [
     { "binding": "EVIDENCE", "bucket_name": "blindaje-evidencia" },
-    { "binding": "INDICES", "bucket_name": "blindaje-indices" }
+    { "binding": "INDICES", "bucket_name": "blindaje-indices" },
   ],
   "kv_namespaces": [{ "binding": "CONFIG", "id": "9ea4bcfdfe9d40c5b8722a8af0d9a3c1" }],
   "queues": {
     "producers": [
       { "binding": "INGESTA", "queue": "blindaje-ingesta" },
-      { "binding": "VINCULACION", "queue": "blindaje-vinculacion" }
+      { "binding": "VINCULACION", "queue": "blindaje-vinculacion" },
     ],
     "consumers": [
       {
@@ -52,36 +52,36 @@
         "max_batch_size": 4,
         "max_batch_timeout": 2,
         "max_retries": 5,
-        "dead_letter_queue": "blindaje-dlq"
+        "dead_letter_queue": "blindaje-dlq",
       },
       {
         "queue": "blindaje-vinculacion",
         "max_batch_size": 4,
         "max_batch_timeout": 5,
         "max_retries": 5,
-        "dead_letter_queue": "blindaje-dlq"
-      }
-    ]
+        "dead_letter_queue": "blindaje-dlq",
+      },
+    ],
   },
   "durable_objects": {
     "bindings": [
       { "name": "RATE_LIMITER", "class_name": "RateLimiter" },
       { "name": "AUDIT_CHAIN", "class_name": "AuditChain" },
-      { "name": "ML", "class_name": "MlContainer" }
-    ]
+      { "name": "ML", "class_name": "MlContainer" },
+    ],
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["RateLimiter", "AuditChain"] },
-    { "tag": "v2", "new_sqlite_classes": ["MlContainer"] }
+    { "tag": "v2", "new_sqlite_classes": ["MlContainer"] },
   ],
   // Contenedor de ML (services/ml). El Worker usa una sola instancia con nombre (ml-0) porque los
   // índices FAISS viven en memoria y se reconstruyen desde D1 al despertar. max_instances 3 deja
   // instancias preaprovisionadas de reserva: con 1, si esa instancia no arranca, Cloudflare responde
   // "no container instance that can be provided". standard-2 = 1 vCPU, 6 GiB (pico medido: 2 GiB).
   "containers": [
-    { "class_name": "MlContainer", "image": "../ml/Dockerfile", "max_instances": 3, "instance_type": "standard-2" }
+    { "class_name": "MlContainer", "image": "../ml/Dockerfile", "max_instances": 3, "instance_type": "standard-2" },
   ],
   "workflows": [{ "name": "procesar-caso", "binding": "PROCESAR_CASO", "class_name": "ProcesarCaso" }],
   // 13:00 UTC = 08:00 en Lima (diario) y cada 6 horas: ambos llaman a runVigia.
-  "triggers": { "crons": ["0 13 * * *", "30 */6 * * *"] }
+  "triggers": { "crons": ["0 13 * * *", "30 */6 * * *"] },
 }

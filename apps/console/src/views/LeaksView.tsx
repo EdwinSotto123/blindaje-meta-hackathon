@@ -48,8 +48,8 @@ export function LeaksView() {
   return (
     <>
       <PageHead title="Rastrear filtración">
-        Cada audio o imagen que sale de la consola lleva una marca invisible con la cuenta que lo pidió. Si encuentras una copia afuera (reenviada por
-        WhatsApp, publicada en redes), súbela aquí para ver desde qué cuenta salió.
+        Cada audio o imagen que sale de la consola lleva una marca invisible con la cuenta que lo pidió. Si encuentras
+        una copia afuera (reenviada por WhatsApp, publicada en redes), súbela aquí para ver desde qué cuenta salió.
       </PageHead>
 
       <section className="panel stack" aria-labelledby="rastreo-form">
@@ -91,7 +91,8 @@ export function LeaksView() {
             </button>
           </Acciones>
           <p className="small muted">
-            <Icon name="lock" size={13} /> El archivo no se guarda: solo su huella SHA-256 y el resultado quedan en la auditoría, con tu cuenta.
+            <Icon name="lock" size={13} /> El archivo no se guarda: solo su huella SHA-256 y el resultado quedan en la
+            auditoría, con tu cuenta.
           </p>
         </form>
       </section>
@@ -111,7 +112,9 @@ export function LeakResult({ name, result }: { name: string; result: LeakTraceRe
   return (
     <section className="panel leak-result" aria-labelledby="rastreo-resultado">
       <div className="panel-head">
-        <h2 id="rastreo-resultado">{found ? (result.ambiguo ? "Indicios de origen (ambiguos)" : "Indicios de origen") : "Sin coincidencias"}</h2>
+        <h2 id="rastreo-resultado">
+          {found ? (result.ambiguo ? "Indicios de origen (ambiguos)" : "Indicios de origen") : "Sin coincidencias"}
+        </h2>
         <span className="small muted">
           {name}, {what}. Marca {result.detected ? "detectada" : "no detectada"} (puntaje {result.score.toFixed(2)}
           {result.model ? `, ${result.model}` : ""})
@@ -143,7 +146,11 @@ export function LeakResult({ name, result }: { name: string; result: LeakTraceRe
                 ) : (
                   <>
                     <dt>Último audio marcado</dt>
-                    <dd>{c.issued_at ? `${fmtDateTime(c.issued_at)} (hora de Lima)` : "Esta cuenta no recibió audios marcados"}</dd>
+                    <dd>
+                      {c.issued_at
+                        ? `${fmtDateTime(c.issued_at)} (hora de Lima)`
+                        : "Esta cuenta no recibió audios marcados"}
+                    </dd>
                   </>
                 )}
               </dl>
@@ -151,20 +158,26 @@ export function LeakResult({ name, result }: { name: string; result: LeakTraceRe
           ))}
         </ul>
       ) : (
-        <p>{result.detected ? "Hay una marca, pero no coincide con ninguna copia que haya salido de la consola." : "No encontramos una marca de Blindaje en este archivo."}</p>
+        <p>
+          {result.detected
+            ? "Hay una marca, pero no coincide con ninguna copia que haya salido de la consola."
+            : "No encontramos una marca de Blindaje en este archivo."}
+        </p>
       )}
 
       {result.ambiguo ? (
         <Notice kind="warn">
           <span>
-            <strong>Más de una cuenta podría explicar esta marca.</strong> No atribuyas la filtración a nadie con este resultado.
+            <strong>Más de una cuenta podría explicar esta marca.</strong> No atribuyas la filtración a nadie con este
+            resultado.
           </span>
         </Notice>
       ) : null}
 
       <p className="small">{result.nota}</p>
       <p className="small muted">
-        Antes de actuar, revisa en la auditoría los accesos de esa cuenta y habla con su organización. Este resultado no basta para señalar a nadie.
+        Antes de actuar, revisa en la auditoría los accesos de esa cuenta y habla con su organización. Este resultado no
+        basta para señalar a nadie.
       </p>
     </section>
   );

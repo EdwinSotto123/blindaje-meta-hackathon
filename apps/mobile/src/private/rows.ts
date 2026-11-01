@@ -23,7 +23,8 @@ export type NoteRow = {
 export function titleFor(tipo: EvidenceType, durationMs: number | null, source?: string | null): string {
   switch (tipo) {
     case "audio":
-      if (source === "llamada") return durationMs ? `Grabación de llamada de ${duration(durationMs)}` : "Grabación de llamada";
+      if (source === "llamada")
+        return durationMs ? `Grabación de llamada de ${duration(durationMs)}` : "Grabación de llamada";
       return durationMs ? `Audio de ${duration(durationMs)}` : "Audio";
     case "video":
       return durationMs ? `Video de ${duration(durationMs)}` : "Video";
@@ -55,7 +56,8 @@ export function buildRows(report: VictimReport | null, queue: QueueItem[], now =
     const done = e.status === "procesado";
     let subtitle = done ? STATE_LABEL.nube : STATE_LABEL.procesando;
     if (done) {
-      if (e.tipo === "audio" || e.tipo === "video") subtitle = e.transcripcion?.length ? "Transcrito" : STATE_LABEL.nube;
+      if (e.tipo === "audio" || e.tipo === "video")
+        subtitle = e.transcripcion?.length ? "Transcrito" : STATE_LABEL.nube;
       if (e.tipo === "texto" && e.transcripcion?.[0]?.text) subtitle = quote(e.transcripcion[0].text);
       if (e.tipo === "imagen" && e.nota) subtitle = e.nota;
     }
@@ -76,13 +78,22 @@ export function buildRows(report: VictimReport | null, queue: QueueItem[], now =
     if (q.status === "retenido") continue;
     if (q.evidence_id && serverIds.has(q.evidence_id)) continue;
     const state: RowState =
-      q.status === "subido" ? "procesando" : q.status === "subiendo" ? "subiendo" : q.status === "error" ? "error" : "pendiente";
+      q.status === "subido"
+        ? "procesando"
+        : q.status === "subiendo"
+          ? "subiendo"
+          : q.status === "error"
+            ? "error"
+            : "pendiente";
     const at = q.captured_at ?? new Date(q.created_at).toISOString();
     rows.push({
       key: `q:${q.id}`,
       tipo: q.tipo,
       title: titleFor(q.tipo, q.duration_ms, q.source),
-      subtitle: q.tipo === "texto" && q.preview && state === "pendiente" ? `${quote(q.preview, 30)}, ${STATE_LABEL.pendiente.toLowerCase()}` : STATE_LABEL[state],
+      subtitle:
+        q.tipo === "texto" && q.preview && state === "pendiente"
+          ? `${quote(q.preview, 30)}, ${STATE_LABEL.pendiente.toLowerCase()}`
+          : STATE_LABEL[state],
       when: shortDateTime(at, now),
       state,
       evidenceId: q.evidence_id,
@@ -97,8 +108,11 @@ export function buildRows(report: VictimReport | null, queue: QueueItem[], now =
 export type Safety = { kind: "nube" | "esperando" | "subiendo" | "vacio"; pending: number };
 
 export function overallSafety(queue: QueueItem[], online: boolean, hasServerItems: boolean): Safety {
-  const pending = queue.filter((q) => q.status === "pendiente" || q.status === "subiendo" || q.status === "error").length;
-  if (pending > 0) return { kind: online && queue.some((q) => q.status === "subiendo") ? "subiendo" : "esperando", pending };
+  const pending = queue.filter(
+    (q) => q.status === "pendiente" || q.status === "subiendo" || q.status === "error",
+  ).length;
+  if (pending > 0)
+    return { kind: online && queue.some((q) => q.status === "subiendo") ? "subiendo" : "esperando", pending };
   if (hasServerItems || queue.some((q) => q.status === "subido")) return { kind: "nube", pending: 0 };
   return { kind: "vacio", pending: 0 };
 }

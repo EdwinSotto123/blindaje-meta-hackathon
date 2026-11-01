@@ -31,7 +31,11 @@ export { buildFicha, ensureTextEmbedding, storeIdentifiers } from "./ficha";
  *   la evidencia.
  */
 
-export async function processEvidence(env: Env, evidenceId: string, opts: { takeover?: boolean } = {}): Promise<EvidenceProcessResult> {
+export async function processEvidence(
+  env: Env,
+  evidenceId: string,
+  opts: { takeover?: boolean } = {},
+): Promise<EvidenceProcessResult> {
   const ev = await env.DB.prepare("SELECT * FROM evidence WHERE id = ?").bind(evidenceId).first<EvidenceRow>();
   if (!ev) return { status: "skipped", reason: "no_existe" };
   if (ev.status === "procesado") return { status: "processed" };
@@ -43,11 +47,15 @@ export async function processEvidence(env: Env, evidenceId: string, opts: { take
   const ml = ev.tipo === "texto" ? null : tryGetMlClient(env);
   if (ev.tipo !== "texto" && !ml) return { status: "skipped", reason: "ml_no_configurado" };
 
-  const lease = await env.DB.prepare("UPDATE evidence SET status = 'procesando', error = NULL WHERE id = ? AND status IN ('recibido', 'error')")
+  const lease = await env.DB.prepare(
+    "UPDATE evidence SET status = 'procesando', error = NULL WHERE id = ? AND status IN ('recibido', 'error')",
+  )
     .bind(evidenceId)
     .run();
   if (!lease.meta.changes) {
-    const now = await env.DB.prepare("SELECT status FROM evidence WHERE id = ?").bind(evidenceId).first<{ status: string }>();
+    const now = await env.DB.prepare("SELECT status FROM evidence WHERE id = ?")
+      .bind(evidenceId)
+      .first<{ status: string }>();
     if (!now) return { status: "skipped", reason: "no_existe" };
     if (now.status === "procesado") return { status: "processed" };
     if (!opts.takeover) return { status: "skipped", reason: "en_proceso" };
@@ -80,7 +88,9 @@ export async function processEvidence(env: Env, evidenceId: string, opts: { take
     return { status: "processed" };
   } catch (err) {
     log("warn", "evidence_failed", { evidence_id: evidenceId, tipo: ev.tipo, ...errorFields(err) });
-    await env.DB.prepare("UPDATE evidence SET status = 'error', error = ? WHERE id = ?").bind(errorCode(err), evidenceId).run();
+    await env.DB.prepare("UPDATE evidence SET status = 'error', error = ? WHERE id = ?")
+      .bind(errorCode(err), evidenceId)
+      .run();
     throw err;
   }
 }

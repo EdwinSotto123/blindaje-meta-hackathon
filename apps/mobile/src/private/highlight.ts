@@ -21,7 +21,10 @@ function escapeRe(s: string): string {
 
 export function highlight(text: string, extraTerms: string[] = []): Segment[] {
   const ranges: [number, number][] = [];
-  const pats = [...PATTERNS, ...extraTerms.filter((t) => t.trim().length >= 3).map((t) => new RegExp(escapeRe(t.trim()), "gi"))];
+  const pats = [
+    ...PATTERNS,
+    ...extraTerms.filter((t) => t.trim().length >= 3).map((t) => new RegExp(escapeRe(t.trim()), "gi")),
+  ];
   for (const re of pats) {
     re.lastIndex = 0;
     for (const m of text.matchAll(re)) {

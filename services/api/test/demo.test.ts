@@ -4,7 +4,14 @@ import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test"
 import { app } from "../src/app";
 import { CENTRAL_ORG_ID, type PublicZoneMap } from "@blindaje/shared";
 import { newId, nowIso } from "../src/lib/ids";
-import { DEMO_INVITES, DEMO_ORG, DEMO_USERS, DEMO_ZONES, demoAggregateCount, demoUserPassword } from "../src/routes/demo";
+import {
+  DEMO_INVITES,
+  DEMO_ORG,
+  DEMO_USERS,
+  DEMO_ZONES,
+  demoAggregateCount,
+  demoUserPassword,
+} from "../src/routes/demo";
 import type { Env } from "../src/env";
 import { api, apiJson, registerDevice, upload } from "./helpers";
 
@@ -17,7 +24,10 @@ describe("modo demo", () => {
     expect((await api("/v1/demo/seed", { method: "POST", headers: { "x-demo-secret": "otro" } })).status).toBe(401);
     const ctx = createExecutionContext();
     const res = await app.fetch(
-      new Request("https://api.blindaje.test/v1/demo/seed", { method: "POST", headers: { ...secret, "cf-connecting-ip": "192.0.2.50" } }),
+      new Request("https://api.blindaje.test/v1/demo/seed", {
+        method: "POST",
+        headers: { ...secret, "cf-connecting-ip": "192.0.2.50" },
+      }),
       { ...env, DEMO_MODE: "false" },
       ctx,
     );
@@ -27,26 +37,39 @@ describe("modo demo", () => {
   });
 
   it("seed crea el equipo central, el canal de invitaciones y casos por distrito; reset borra todo lo is_demo", async () => {
-    const seed = await apiJson<{ org: { id: string; name: string }; central: { id: string }; invites: string[]; zonas: { sobre_umbral: string[]; bajo_umbral: string[] } }>(
-      "/v1/demo/seed",
-      { method: "POST", headers: secret },
-    );
+    const seed = await apiJson<{
+      org: { id: string; name: string };
+      central: { id: string };
+      invites: string[];
+      zonas: { sobre_umbral: string[]; bajo_umbral: string[] };
+    }>("/v1/demo/seed", { method: "POST", headers: secret });
     expect(seed.status).toBe(201);
     expect(seed.body.org.name).toContain("datos ficticios");
     expect(seed.body.central.id).toBe(CENTRAL_ORG_ID);
     expect(seed.body.invites).toEqual(DEMO_INVITES.map((i) => i.code));
     // Idempotente (los casos agregados se reemplazan, no se duplican).
     expect((await apiJson("/v1/demo/seed", { method: "POST", headers: secret })).status).toBe(201);
-    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM users WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(4);
-    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM cases WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(demoAggregateCount());
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM users WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(
+      4,
+    );
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM cases WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(
+      demoAggregateCount(),
+    );
 
     // El equipo es de la organización central, con los mismos correos del README.
     for (const u of DEMO_USERS) {
-      const login = await apiJson<{ user: { role: string; display_name: string; org: { id: string } } }>("/v1/auth/console/login", {
-        json: { email: u.email, password: pwd(u) },
-      });
+      const login = await apiJson<{ user: { role: string; display_name: string; org: { id: string } } }>(
+        "/v1/auth/console/login",
+        {
+          json: { email: u.email, password: pwd(u) },
+        },
+      );
       expect(login.status, u.email).toBe(200);
-      expect(login.body.user).toMatchObject({ role: u.role, display_name: u.display_name, org: { id: CENTRAL_ORG_ID } });
+      expect(login.body.user).toMatchObject({
+        role: u.role,
+        display_name: u.display_name,
+        org: { id: CENTRAL_ORG_ID },
+      });
     }
     expect(DEMO_USERS[0].display_name).toBe("Revisora Demo");
     // Las cuentas que deciden no tienen contraseña en el código: las que estuvieron publicadas ya no entran.
@@ -65,7 +88,8 @@ describe("modo demo", () => {
     expect(seed.body.zonas.sobre_umbral.length).toBeGreaterThanOrEqual(5);
     expect(seed.body.zonas.bajo_umbral.length).toBeGreaterThanOrEqual(3);
     for (const id of seed.body.zonas.sobre_umbral) expect(cell(demoMap.body, id).casos, id).not.toBeNull();
-    for (const id of seed.body.zonas.bajo_umbral) expect(cell(demoMap.body, id), id).toMatchObject({ nivel: "sin_datos", casos: null });
+    for (const id of seed.body.zonas.bajo_umbral)
+      expect(cell(demoMap.body, id), id).toMatchObject({ nivel: "sin_datos", casos: null });
     expect(cell(demoMap.body, "villa-el-salvador")).toMatchObject({ casos: "20-49", nivel: "alto", tendencia: "sube" });
     expect(cell(demoMap.body, "comas")).toMatchObject({ casos: "5-9", tendencia: "baja" });
     expect(cell(demoMap.body, "la-victoria")).toMatchObject({ casos: "5-9", nivel: "bajo", tendencia: "estable" });
@@ -91,36 +115,67 @@ describe("modo demo", () => {
     expect(created.body.code).toBe("A");
     const ev = await upload(victim.access_token, created.body.id, new TextEncoder().encode("audio A1 ficticio"));
     expect(((await ev.json()) as { label: string }).label).toBe("EV-A1");
-    const dup = await apiJson("/v1/cases", { token: victim.access_token, json: {}, headers: { "x-demo-case-code": "A" } });
+    const dup = await apiJson("/v1/cases", {
+      token: victim.access_token,
+      json: {},
+      headers: { "x-demo-case-code": "A" },
+    });
     expect(dup.status).toBe(409);
 
     // Alertas: la del Vigía con casos del demo se borra; una real de la organización central, no.
     const demoAlert = newId();
     const realAlert = newId();
-    const draft = JSON.stringify({ titulo: "t", cuerpo: "c", zona: "Ate", modalidad: "m", que_hacer: [], evidencia: [] });
+    const draft = JSON.stringify({
+      titulo: "t",
+      cuerpo: "c",
+      zona: "Ate",
+      modalidad: "m",
+      que_hacer: [],
+      evidencia: [],
+    });
     await env.DB.batch([
-      env.DB.prepare("INSERT INTO alerts (id, org_id, pattern_key, draft_json, status, created_at) VALUES (?, ?, 'demo:patron', ?, 'borrador', ?)").bind(demoAlert, CENTRAL_ORG_ID, draft, nowIso()),
-      env.DB.prepare("INSERT INTO alerts (id, org_id, pattern_key, draft_json, status, created_at) VALUES (?, ?, 'patron-real', ?, 'borrador', ?)").bind(realAlert, CENTRAL_ORG_ID, draft, nowIso()),
+      env.DB.prepare(
+        "INSERT INTO alerts (id, org_id, pattern_key, draft_json, status, created_at) VALUES (?, ?, 'demo:patron', ?, 'borrador', ?)",
+      ).bind(demoAlert, CENTRAL_ORG_ID, draft, nowIso()),
+      env.DB.prepare(
+        "INSERT INTO alerts (id, org_id, pattern_key, draft_json, status, created_at) VALUES (?, ?, 'patron-real', ?, 'borrador', ?)",
+      ).bind(realAlert, CENTRAL_ORG_ID, draft, nowIso()),
     ]);
 
-    const reset = await apiJson<{ ok: boolean; deleted: { cases: number; aggregate_cases: number; users: number; devices: number } }>("/v1/demo/reset", {
+    const reset = await apiJson<{
+      ok: boolean;
+      deleted: { cases: number; aggregate_cases: number; users: number; devices: number };
+    }>("/v1/demo/reset", {
       method: "POST",
       headers: secret,
     });
     expect(reset.status).toBe(200);
     const aggregateDevices = DEMO_ZONES.reduce((n, z) => n + z.victimas, 0);
-    expect(reset.body.deleted).toMatchObject({ cases: 1 + demoAggregateCount(), aggregate_cases: demoAggregateCount(), users: 4, devices: 1 + aggregateDevices });
-    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM cases WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(0);
-    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM devices WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(0);
+    expect(reset.body.deleted).toMatchObject({
+      cases: 1 + demoAggregateCount(),
+      aggregate_cases: demoAggregateCount(),
+      users: 4,
+      devices: 1 + aggregateDevices,
+    });
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM cases WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(
+      0,
+    );
+    expect(
+      (await env.DB.prepare("SELECT COUNT(*) AS n FROM devices WHERE is_demo = 1").first<{ n: number }>())!.n,
+    ).toBe(0);
     expect(await env.DB.prepare("SELECT 1 FROM alerts WHERE id = ?").bind(demoAlert).first()).toBeNull();
     expect(await env.DB.prepare("SELECT 1 FROM alerts WHERE id = ?").bind(realAlert).first()).not.toBeNull();
-    expect(await env.DB.prepare("SELECT 1 FROM organizations WHERE id = ?").bind(CENTRAL_ORG_ID).first()).not.toBeNull();
+    expect(
+      await env.DB.prepare("SELECT 1 FROM organizations WHERE id = ?").bind(CENTRAL_ORG_ID).first(),
+    ).not.toBeNull();
     const afterMap = await apiJson<PublicZoneMap>("/v1/public/zones?demo=1");
     expect(afterMap.body.celdas.every((c) => c.nivel === "sin_datos")).toBe(true);
     expect(await env.DB.prepare("SELECT 1 FROM organizations WHERE id = ?").bind(DEMO_ORG.id).first()).toBeNull();
     expect(await env.DB.prepare("SELECT 1 FROM cases WHERE id = ?").bind(created.body.id).first()).toBeNull();
     expect((await env.EVIDENCE.list({ prefix: `cases/${created.body.id}/` })).objects).toHaveLength(0);
-    const login = await apiJson("/v1/auth/console/login", { json: { email: DEMO_USERS[0].email, password: pwd(DEMO_USERS[0]) } });
+    const login = await apiJson("/v1/auth/console/login", {
+      json: { email: DEMO_USERS[0].email, password: pwd(DEMO_USERS[0]) },
+    });
     expect(login.status).toBe(401);
     // El código de demo solo funciona con dispositivos demo.
   });
@@ -129,15 +184,25 @@ describe("modo demo", () => {
     expect((await apiJson("/v1/demo/seed", { method: "POST", headers: secret })).status).toBe(201);
     const jurado = DEMO_USERS.find((u) => u.email === "jurado@demo.blindaje.test")!;
     expect(jurado.password).toBe("Jurado-Demo-2026");
-    const login = await apiJson<{ access_token: string; user: { role: string; solo_lectura?: boolean } }>("/v1/auth/console/login", {
-      json: { email: jurado.email, password: jurado.password },
-    });
+    const login = await apiJson<{ access_token: string; user: { role: string; solo_lectura?: boolean } }>(
+      "/v1/auth/console/login",
+      {
+        json: { email: jurado.email, password: jurado.password },
+      },
+    );
     expect(login.status).toBe(200);
     expect(login.body.user).toMatchObject({ role: "admin", solo_lectura: true });
     const token = login.body.access_token;
 
     // Lee como la administración.
-    for (const path of ["/v1/console/me", "/v1/console/links?status=todos", "/v1/console/alerts", "/v1/console/monitoreo", "/v1/console/users", "/v1/console/audit"]) {
+    for (const path of [
+      "/v1/console/me",
+      "/v1/console/links?status=todos",
+      "/v1/console/alerts",
+      "/v1/console/monitoreo",
+      "/v1/console/users",
+      "/v1/console/audit",
+    ]) {
       expect((await api(path, { token })).status, path).toBe(200);
     }
     expect((await apiJson<{ solo_lectura?: boolean }>("/v1/console/me", { token })).body.solo_lectura).toBe(true);
@@ -149,7 +214,10 @@ describe("modo demo", () => {
       ["/v1/console/recommendations/cualquiera/decision", { decision: "aprobar" }],
       ["/v1/console/vigia/run", {}],
       ["/v1/console/asesor/run", {}],
-      ["/v1/console/users", { email: "x@y.pe", display_name: "X", role: "admin", org_id: CENTRAL_ORG_ID, password: "Una-clave-larga-123" }],
+      [
+        "/v1/console/users",
+        { email: "x@y.pe", display_name: "X", role: "admin", org_id: CENTRAL_ORG_ID, password: "Una-clave-larga-123" },
+      ],
       ["/v1/console/invites", {}],
       ["/v1/console/vectores/sincronizar", {}],
     ];
@@ -159,7 +227,9 @@ describe("modo demo", () => {
       expect(res.body.error.message).toContain("solo lectura");
     }
     // La consulta del motor vectorial es una lectura: pasa el filtro (aquí no hay Chroma, así que no es 200).
-    expect((await api("/v1/console/vectores/consulta", { token, json: { case_id: "cualquiera" } })).status).not.toBe(403);
+    expect((await api("/v1/console/vectores/consulta", { token, json: { case_id: "cualquiera" } })).status).not.toBe(
+      403,
+    );
 
     // Las otras cuentas del equipo no tienen la marca.
     const admin = await apiJson<{ user: { solo_lectura?: boolean } }>("/v1/auth/console/login", {
@@ -173,7 +243,11 @@ describe("modo demo", () => {
     const { seedOrg } = await import("./helpers");
     const { invite } = await seedOrg();
     const d = await registerDevice(invite);
-    const created = await apiJson<{ code: string }>("/v1/cases", { token: d.access_token, json: {}, headers: { "x-demo-case-code": "Z" } });
+    const created = await apiJson<{ code: string }>("/v1/cases", {
+      token: d.access_token,
+      json: {},
+      headers: { "x-demo-case-code": "Z" },
+    });
     expect(created.status).toBe(201);
     expect(created.body.code).toMatch(/^[A-Z0-9]{4}$/);
   });

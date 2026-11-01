@@ -76,17 +76,46 @@ def _lista(value: Any) -> list:
 
 # Etiquetas legibles para los valores de los enums de packages/shared (enums.ts y ficha.ts).
 _ETIQUETAS = {
-    "telefono": "Teléfono", "cuenta_yape": "Cuenta Yape", "cuenta_plin": "Cuenta Plin",
-    "cuenta_bancaria": "Cuenta bancaria", "placa": "Placa", "contacto": "Contacto", "cobro": "Cobro",
-    "vehiculo": "Vehículo", "yape": "Yape", "plin": "Plin", "transferencia": "Transferencia",
-    "efectivo": "Efectivo", "otro": "Otro", "bodega": "Bodega", "mototaxi": "Mototaxi",
-    "transporte": "Transporte", "mercado": "Mercado", "restaurante": "Restaurante",
-    "construccion": "Construcción", "unico": "Pago único", "diario": "Diario", "semanal": "Semanal",
-    "mensual": "Mensual", "dano_local": "Daño al local", "dano_fisico": "Daño físico",
-    "dano_familia": "Daño a la familia", "dano_vehiculo": "Daño al vehículo",
-    "difusion_informacion": "Difusión de información", "audio": "Audio", "imagen": "Imagen",
-    "video": "Video", "texto": "Texto", "victim": "Víctima", "reviewer": "Revisor", "analyst": "Analista",
-    "admin": "Administración", "system": "Sistema", "baja": "Baja", "media": "Media", "alta": "Alta",
+    "telefono": "Teléfono",
+    "cuenta_yape": "Cuenta Yape",
+    "cuenta_plin": "Cuenta Plin",
+    "cuenta_bancaria": "Cuenta bancaria",
+    "placa": "Placa",
+    "contacto": "Contacto",
+    "cobro": "Cobro",
+    "vehiculo": "Vehículo",
+    "yape": "Yape",
+    "plin": "Plin",
+    "transferencia": "Transferencia",
+    "efectivo": "Efectivo",
+    "otro": "Otro",
+    "bodega": "Bodega",
+    "mototaxi": "Mototaxi",
+    "transporte": "Transporte",
+    "mercado": "Mercado",
+    "restaurante": "Restaurante",
+    "construccion": "Construcción",
+    "unico": "Pago único",
+    "diario": "Diario",
+    "semanal": "Semanal",
+    "mensual": "Mensual",
+    "dano_local": "Daño al local",
+    "dano_fisico": "Daño físico",
+    "dano_familia": "Daño a la familia",
+    "dano_vehiculo": "Daño al vehículo",
+    "difusion_informacion": "Difusión de información",
+    "audio": "Audio",
+    "imagen": "Imagen",
+    "video": "Video",
+    "texto": "Texto",
+    "victim": "Víctima",
+    "reviewer": "Revisor",
+    "analyst": "Analista",
+    "admin": "Administración",
+    "system": "Sistema",
+    "baja": "Baja",
+    "media": "Media",
+    "alta": "Alta",
 }
 
 
@@ -111,8 +140,9 @@ def _env() -> Environment:
         trim_blocks=True,
         lstrip_blocks=True,
     )
-    env.filters.update(fecha=_fecha, mmss=_mmss, tamano=_tamano, soles=_soles, lista=_lista, css=_css,
-                       etiqueta=_etiqueta)
+    env.filters.update(
+        fecha=_fecha, mmss=_mmss, tamano=_tamano, soles=_soles, lista=_lista, css=_css, etiqueta=_etiqueta
+    )
     return env
 
 
@@ -147,14 +177,20 @@ def normalize_denuncia(data: dict[str, Any]) -> dict[str, Any]:
         for ev in d.get("evidencia") or []:
             turns = ev.get("transcripcion") if isinstance(ev, dict) else None
             if turns:
-                trans.append({
-                    "evidencia": ev.get("label"),
-                    "turnos": [
-                        {"speaker": _speaker_label(t), "start_ms": t.get("start_ms"),
-                         "texto": t.get("texto") or t.get("text")}
-                        for t in turns if isinstance(t, dict)
-                    ],
-                })
+                trans.append(
+                    {
+                        "evidencia": ev.get("label"),
+                        "turnos": [
+                            {
+                                "speaker": _speaker_label(t),
+                                "start_ms": t.get("start_ms"),
+                                "texto": t.get("texto") or t.get("text"),
+                            }
+                            for t in turns
+                            if isinstance(t, dict)
+                        ],
+                    }
+                )
         d["transcripciones"] = trans
     return d
 
@@ -166,8 +202,10 @@ def render_html(template: str, data: dict[str, Any]) -> str:
         data = normalize_denuncia(data)
     now = dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
     demo = bool(data.get("demo") or data.get("datos_ficticios"))
-    return _env().get_template(f"{template}.html").render(
-        d=data, demo=demo, fonts=font_faces(), generado=data.get("generado_utc") or now
+    return (
+        _env()
+        .get_template(f"{template}.html")
+        .render(d=data, demo=demo, fonts=font_faces(), generado=data.get("generado_utc") or now)
     )
 
 

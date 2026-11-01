@@ -47,4 +47,3 @@ export function DisguisePicker({ value, onChange }: { value: DisguiseKind; onCha
     </View>
   );
 }
-

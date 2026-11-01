@@ -42,7 +42,13 @@ export function isAggregateBucket(name: string): boolean {
   return /agregad|^\s*(otros|varios)\s+rubros/i.test(name);
 }
 
-const EMPTY_CELL = (distrito: string): PublicZoneCell => ({ distrito, nivel: "sin_datos", casos: null, tendencia: null, modalidades: [] });
+const EMPTY_CELL = (distrito: string): PublicZoneCell => ({
+  distrito,
+  nivel: "sin_datos",
+  casos: null,
+  tendencia: null,
+  modalidades: [],
+});
 
 /** Una celda del mapa: bajo el umbral no queda nada que la distinga de un distrito sin casos. */
 export function sanitizeCell(raw: unknown, distrito: string): PublicZoneCell {
@@ -50,7 +56,9 @@ export function sanitizeCell(raw: unknown, distrito: string): PublicZoneCell {
   const nivel = asNivel(r.nivel);
   const casos = asBand(r.casos);
   if (nivel === "sin_datos" || casos === null) return EMPTY_CELL(distrito);
-  const tendencia = (TENDENCIAS as readonly unknown[]).includes(r.tendencia) ? (r.tendencia as PublicZoneCell["tendencia"]) : null;
+  const tendencia = (TENDENCIAS as readonly unknown[]).includes(r.tendencia)
+    ? (r.tendencia as PublicZoneCell["tendencia"])
+    : null;
   return { distrito, nivel, casos, tendencia, modalidades: asTextList(r.modalidades, 3).map((m) => m.slice(0, 80)) };
 }
 
@@ -83,7 +91,10 @@ export function sanitizeRisk(raw: unknown): PublicRiskOverview {
   if (nivel === "sin_datos") casos = null;
   const below = nivel === "sin_datos";
   const tendencia = Array.isArray(r.tendencia)
-    ? (r.tendencia as Record<string, unknown>[]).map((t) => ({ semana: asText(t?.semana), casos: below ? null : asBand(t?.casos) }))
+    ? (r.tendencia as Record<string, unknown>[]).map((t) => ({
+        semana: asText(t?.semana),
+        casos: below ? null : asBand(t?.casos),
+      }))
     : [];
   const sectores = Array.isArray(r.sectores_afectados) ? (r.sectores_afectados as Record<string, unknown>[]) : [];
   const modalidades = Array.isArray(r.modalidades_activas) ? (r.modalidades_activas as Record<string, unknown>[]) : [];
@@ -132,7 +143,10 @@ export function sameDistrict(zona: unknown, distrito: string): boolean {
 /** Solo los avisos aprobados de este distrito, del más nuevo al más viejo. */
 export function sanitizeAlerts(raw: unknown[], distrito: string): VictimAlert[] {
   return raw
-    .filter((a): a is Record<string, unknown> => typeof a === "object" && a !== null && sameDistrict((a as Record<string, unknown>).zona, distrito))
+    .filter(
+      (a): a is Record<string, unknown> =>
+        typeof a === "object" && a !== null && sameDistrict((a as Record<string, unknown>).zona, distrito),
+    )
     .map((a) => ({
       id: asText(a.id),
       titulo: asText(a.titulo),

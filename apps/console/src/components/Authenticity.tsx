@@ -5,10 +5,20 @@ import { fmtDateTime } from "../lib/format";
 import { Icon } from "./Icons";
 
 /** Indicador corto del nivel (en la tarjeta del caso y en las listas). */
-export function AuthenticityBadge({ nivel, compact = false }: { nivel: NivelAutenticidad | null | undefined; compact?: boolean }) {
+export function AuthenticityBadge({
+  nivel,
+  compact = false,
+}: {
+  nivel: NivelAutenticidad | null | undefined;
+  compact?: boolean;
+}) {
   if (nivel === undefined) return null;
   if (nivel === null) {
-    return <span className={`chip chip-auth${compact ? " chip-auth-sm" : ""}`} data-tone="none">Sin analizar</span>;
+    return (
+      <span className={`chip chip-auth${compact ? " chip-auth-sm" : ""}`} data-tone="none">
+        Sin analizar
+      </span>
+    );
   }
   const meta = NIVEL_META[nivel];
   const strong = meta.tone === "fuerte" || meta.tone === "confirmado";
@@ -37,12 +47,15 @@ export function AuthenticityPanel({ result, tipo }: { result: ResultadoAutentici
       </div>
       {!result ? (
         <p className="small">
-          {tipo === "texto" ? "Los mensajes de texto no se analizan." : "Todavía no se analizó, o el análisis no estuvo disponible cuando llegó la evidencia."}
+          {tipo === "texto"
+            ? "Los mensajes de texto no se analizan."
+            : "Todavía no se analizó, o el análisis no estuvo disponible cuando llegó la evidencia."}
         </p>
       ) : (
         <>
           <p>{NIVEL_META[result.nivel].sentence}</p>
-          {result.tipo === "audio" && (result.nivel === "indicios_fuertes" || result.nivel === "generado_ia_confirmado") ? (
+          {result.tipo === "audio" &&
+          (result.nivel === "indicios_fuertes" || result.nivel === "generado_ia_confirmado") ? (
             <p className="small">
               <strong>Al vincular, la voz de este audio pesa la mitad:</strong> una voz sintética podría imitar a otra.
             </p>

@@ -71,7 +71,10 @@ const PERMITIDO_SOLO_LECTURA = new Set(["/v1/console/vectores/consulta"]);
 consoleRoutes.use("*", async (c, next) => {
   const lectura = c.req.method === "GET" || c.req.method === "HEAD";
   if (!lectura && getAuth(c).sub === DEMO_READONLY_USER_ID && !PERMITIDO_SOLO_LECTURA.has(c.req.path)) {
-    throw new ApiError("forbidden", "Cuenta de solo lectura: puedes ver todo, pero no aprobar, editar ni correr agentes.");
+    throw new ApiError(
+      "forbidden",
+      "Cuenta de solo lectura: puedes ver todo, pero no aprobar, editar ni correr agentes.",
+    );
   }
   await next();
 });
@@ -90,7 +93,9 @@ const adminOnly = requireRole("admin");
 async function consoleIsDemo(c: AppContext, override?: string): Promise<boolean> {
   if (c.env.DEMO_MODE === "true" && override !== undefined) return override === "1" || override === "true";
   const auth = getAuth(c);
-  const u = await c.env.DB.prepare("SELECT is_demo FROM users WHERE id = ?").bind(auth.sub).first<{ is_demo: number }>();
+  const u = await c.env.DB.prepare("SELECT is_demo FROM users WHERE id = ?")
+    .bind(auth.sub)
+    .first<{ is_demo: number }>();
   return u?.is_demo === 1;
 }
 
@@ -136,7 +141,13 @@ consoleRoutes.get("/links/:id", centralTeam, async (c) => {
   const auth = getAuth(c);
   const row = await getLinkRow(c.env, c.req.param("id"));
   const view = await buildLinkView(c.env, row);
-  await audit(c.env, { ...actorOf(auth), action: "link.view", target_type: "link", target_id: row.id, details: { label: view.label } });
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "link.view",
+    target_type: "link",
+    target_id: row.id,
+    details: { label: view.label },
+  });
   return c.json(view);
 });
 
@@ -146,13 +157,17 @@ consoleRoutes.post("/links/:id/decision", centralTeam, async (c) => {
   const row = await getLinkRow(c.env, c.req.param("id"));
   const status = body.decision === "confirmar" ? "confirmado" : "descartado";
   if (status === "confirmado") {
-    const ok = await c.env.DB.prepare("SELECT COUNT(*) AS n FROM cases WHERE id IN (?, ?) AND indexed = 1 AND consent_mode = 'comunitario'")
+    const ok = await c.env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM cases WHERE id IN (?, ?) AND indexed = 1 AND consent_mode = 'comunitario'",
+    )
       .bind(row.case_a, row.case_b)
       .first<{ n: number }>();
     if ((ok?.n ?? 0) < 2) throw new ApiError("conflict", "Uno de los casos ya no tiene consentimiento comunitario");
   }
   const now = nowIso();
-  await c.env.DB.prepare("UPDATE links SET status = ?, reviewer_id = ?, reviewed_at = ?, review_note = ?, updated_at = ? WHERE id = ?")
+  await c.env.DB.prepare(
+    "UPDATE links SET status = ?, reviewer_id = ?, reviewed_at = ?, review_note = ?, updated_at = ? WHERE id = ?",
+  )
     .bind(status, auth.sub, now, body.note ?? null, now, row.id)
     .run();
   if (status === "confirmado" || row.status === "confirmado") await recomputeNetworks(c.env);
@@ -191,10 +206,16 @@ consoleRoutes.get("/evidence/:id/media", centralTeam, async (c) => {
   const hasRange = q.start_ms !== undefined && q.end_ms !== undefined;
 
   if (ev.tipo === "audio" && hasRange) {
-    const wavDer = await c.env.DB.prepare("SELECT id, r2_key FROM derivatives WHERE evidence_id = ? AND tipo = 'wav' LIMIT 1")
+    const wavDer = await c.env.DB.prepare(
+      "SELECT id, r2_key FROM derivatives WHERE evidence_id = ? AND tipo = 'wav' LIMIT 1",
+    )
       .bind(ev.id)
       .first<{ id: string; r2_key: string | null }>();
-    const wav = wavDer ? await readDerivativePlain(c.env, wavDer) : ev.mime.includes("wav") ? await readEvidencePlain(c.env, ev) : null;
+    const wav = wavDer
+      ? await readDerivativePlain(c.env, wavDer)
+      : ev.mime.includes("wav")
+        ? await readEvidencePlain(c.env, ev)
+        : null;
     const trimmed = wav ? trimWav(wav, q.start_ms!, q.end_ms!) : null;
     if (trimmed) {
       body = trimmed;
@@ -203,7 +224,9 @@ consoleRoutes.get("/evidence/:id/media", centralTeam, async (c) => {
     }
   }
   if (!body && ev.tipo === "imagen") {
-    const red = await c.env.DB.prepare("SELECT id, r2_key FROM derivatives WHERE evidence_id = ? AND tipo = 'redactada' LIMIT 1")
+    const red = await c.env.DB.prepare(
+      "SELECT id, r2_key FROM derivatives WHERE evidence_id = ? AND tipo = 'redactada' LIMIT 1",
+    )
       .bind(ev.id)
       .first<{ id: string; r2_key: string | null }>();
     if (red) {
@@ -283,7 +306,13 @@ consoleRoutes.get("/cases/:id", centralTeam, async (c) => {
   const auth = getAuth(c);
   const cs = await getConsoleCase(c.env, c.req.param("id"));
   const [side, transcripciones] = await Promise.all([buildCaseSide(c.env, cs.id, cs), caseTranscripts(c.env, cs.id)]);
-  await audit(c.env, { ...actorOf(auth), action: "case.view", target_type: "case", target_id: cs.id, details: { code: cs.code } });
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "case.view",
+    target_type: "case",
+    target_id: cs.id,
+    details: { code: cs.code },
+  });
   return c.json({ ...side, transcripciones });
 });
 
@@ -298,25 +327,44 @@ consoleRoutes.get("/networks", analystOrAdmin, async (c) => {
 consoleRoutes.get("/networks/:id", analystOrAdmin, async (c) => {
   const auth = getAuth(c);
   const view = await buildNetworkView(c.env, c.req.param("id"));
-  await audit(c.env, { ...actorOf(auth), action: "network.view", target_type: "network", target_id: view.id, details: { label: view.label } });
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "network.view",
+    target_type: "network",
+    target_id: view.id,
+    details: { label: view.label },
+  });
   return c.json(view);
 });
 
 consoleRoutes.post("/networks/:id/cartografo", analystOrAdmin, rateLimit("agents"), async (c) => {
   const auth = getAuth(c);
-  const body = await readJson(c, z.object({ model: z.enum(["muse-spark-1.3", "muse-wonder-1.0"]).default("muse-spark-1.3") }));
-  const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?").bind(c.req.param("id")).first<{ id: string }>();
+  const body = await readJson(
+    c,
+    z.object({ model: z.enum(["muse-spark-1.3", "muse-wonder-1.0"]).default("muse-spark-1.3") }),
+  );
+  const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<{ id: string }>();
   if (!net) throw notFound("Red");
   if (body.model === "muse-wonder-1.0") {
     await budgetGuard(c.env, { essential: false, model: body.model, operation: "cartografo" });
   }
-  await audit(c.env, { ...actorOf(auth), action: "agent.cartografo.run", target_type: "network", target_id: net.id, details: { model: body.model } });
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "agent.cartografo.run",
+    target_type: "network",
+    target_id: net.id,
+    details: { model: body.model },
+  });
   const profile = await runCartografo(c.env, net.id, { model: body.model, actor: actorOf(auth) });
   return c.json(profile);
 });
 
 consoleRoutes.get("/networks/:id/profiles", analystOrAdmin, async (c) => {
-  const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?").bind(c.req.param("id")).first<{ id: string }>();
+  const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<{ id: string }>();
   if (!net) throw notFound("Red");
   return c.json({ profiles: await listProfiles(c.env, net.id) });
 });
@@ -362,7 +410,8 @@ consoleRoutes.post("/profiles/:id/decision", analystOrAdmin, async (c) => {
     .bind(c.req.param("id"))
     .first<{ id: string; network_id: string; status: string }>();
   if (!p) throw notFound("Perfil");
-  if (p.status === "invalido") throw new ApiError("conflict", "El perfil no pasó el validador de citas: vuelve a correr el Cartógrafo");
+  if (p.status === "invalido")
+    throw new ApiError("conflict", "El perfil no pasó el validador de citas: vuelve a correr el Cartógrafo");
   const status = body.decision === "aprobar" ? "aprobado" : "rechazado";
   await c.env.DB.prepare("UPDATE network_profiles SET status = ?, reviewer_id = ?, reviewed_at = ? WHERE id = ?")
     .bind(status, auth.sub, nowIso(), p.id)
@@ -401,8 +450,19 @@ consoleRoutes.post("/vigia/run", analystOrAdmin, rateLimit("agents"), async (c) 
     }
   }
   const body = VigiaRunBody.parse(raw);
-  await audit(c.env, { ...actorOf(auth), action: "agent.vigia.run", target_type: null, target_id: null, details: { trigger: "manual", ...body } });
-  const alerts = await runVigia(c.env, { trigger: "manual", actor: actorOf(auth), lookbackDays: body.lookback_days, image: body.image });
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "agent.vigia.run",
+    target_type: null,
+    target_id: null,
+    details: { trigger: "manual", ...body },
+  });
+  const alerts = await runVigia(c.env, {
+    trigger: "manual",
+    actor: actorOf(auth),
+    lookbackDays: body.lookback_days,
+    image: body.image,
+  });
   return c.json({ alerts });
 });
 
@@ -443,15 +503,23 @@ consoleRoutes.post("/alerts/:id/decision", centralTeam, async (c) => {
   const body = await readJson(c, AlertDecisionRequest);
   const a = await getAlert(c, c.req.param("id"));
   const draft = JSON.parse(a.draft_json) as AlertaBorrador;
-  const edited: AlertaBorrador = { ...draft, ...(body.titulo ? { titulo: body.titulo } : {}), ...(body.cuerpo ? { cuerpo: body.cuerpo } : {}) };
+  const edited: AlertaBorrador = {
+    ...draft,
+    ...(body.titulo ? { titulo: body.titulo } : {}),
+    ...(body.cuerpo ? { cuerpo: body.cuerpo } : {}),
+  };
   const now = nowIso();
   if (body.decision === "aprobar") {
     assertNoFullNumbers(`${edited.titulo} ${edited.cuerpo}`);
-    await c.env.DB.prepare("UPDATE alerts SET status = 'aprobada', draft_json = ?, approved_by = ?, approved_at = ? WHERE id = ?")
+    await c.env.DB.prepare(
+      "UPDATE alerts SET status = 'aprobada', draft_json = ?, approved_by = ?, approved_at = ? WHERE id = ?",
+    )
       .bind(JSON.stringify(edited), auth.sub, now, a.id)
       .run();
   } else {
-    await c.env.DB.prepare("UPDATE alerts SET status = 'rechazada', draft_json = ? WHERE id = ?").bind(JSON.stringify(edited), a.id).run();
+    await c.env.DB.prepare("UPDATE alerts SET status = 'rechazada', draft_json = ? WHERE id = ?")
+      .bind(JSON.stringify(edited), a.id)
+      .run();
   }
   await audit(c.env, {
     ...actorOf(auth),
@@ -468,7 +536,9 @@ consoleRoutes.get("/alerts/:id/image", centralTeam, async (c) => {
   if (!a.image_r2_key) throw notFound("Imagen");
   const obj = await c.env.EVIDENCE.get(a.image_r2_key);
   if (!obj) throw notFound("Imagen");
-  return new Response(obj.body, { headers: { "content-type": obj.httpMetadata?.contentType ?? "image/png", "cache-control": "no-store" } });
+  return new Response(obj.body, {
+    headers: { "content-type": obj.httpMetadata?.contentType ?? "image/png", "cache-control": "no-store" },
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -534,18 +604,35 @@ consoleRoutes.post("/recommendations/:id/decision", centralTeam, async (c) => {
     }
     // Última barrera antes de que llegue al portal público, a los negocios y a las víctimas.
     const c_ = view.contenido;
-    const textos = [c_.resumen, ...c_.recomendaciones.flatMap((x) => [x.titulo, x.detalle]), ...c_.que_hacer_si_te_pasa, ...c_.advertencias];
+    const textos = [
+      c_.resumen,
+      ...c_.recomendaciones.flatMap((x) => [x.titulo, x.detalle]),
+      ...c_.que_hacer_si_te_pasa,
+      ...c_.advertencias,
+    ];
     if (textos.some((t) => hasLongDigits(t) || /ID-/.test(t))) {
-      throw new ApiError("bad_request", "La recomendación no puede incluir números de teléfono, cuentas ni identificadores");
+      throw new ApiError(
+        "bad_request",
+        "La recomendación no puede incluir números de teléfono, cuentas ni identificadores",
+      );
     }
     if (textos.some((t) => isUnsafeAdvice(t))) {
-      throw new ApiError("bad_request", "La recomendación no puede aconsejar pagar, negociar ni actuar contra personas");
+      throw new ApiError(
+        "bad_request",
+        "La recomendación no puede aconsejar pagar, negociar ni actuar contra personas",
+      );
     }
-    await c.env.DB.prepare("UPDATE business_recommendations SET status = 'aprobada', approved_by = ?, approved_at = ? WHERE id = ?")
+    await c.env.DB.prepare(
+      "UPDATE business_recommendations SET status = 'aprobada', approved_by = ?, approved_at = ? WHERE id = ?",
+    )
       .bind(auth.sub, now, r.id)
       .run();
   } else {
-    await c.env.DB.prepare("UPDATE business_recommendations SET status = 'rechazada', approved_by = NULL, approved_at = NULL WHERE id = ?").bind(r.id).run();
+    await c.env.DB.prepare(
+      "UPDATE business_recommendations SET status = 'rechazada', approved_by = NULL, approved_at = NULL WHERE id = ?",
+    )
+      .bind(r.id)
+      .run();
   }
   await audit(c.env, {
     ...actorOf(auth),
@@ -561,7 +648,9 @@ consoleRoutes.post("/business-accounts", requireRole("admin", "reviewer"), async
   const auth = getAuth(c);
   const body = await readJson(c, CreateBusinessAccountRequest);
   const orgId = body.org_id ?? auth.org;
-  const org = await c.env.DB.prepare("SELECT id, is_demo FROM organizations WHERE id = ?").bind(orgId).first<{ id: string; is_demo: number }>();
+  const org = await c.env.DB.prepare("SELECT id, is_demo FROM organizations WHERE id = ?")
+    .bind(orgId)
+    .first<{ id: string; is_demo: number }>();
   if (!org) throw notFound("Organización");
   const id = newId();
   try {
@@ -583,10 +672,17 @@ consoleRoutes.post("/business-accounts", requireRole("admin", "reviewer"), async
       )
       .run();
   } catch (err) {
-    if (err instanceof Error && /UNIQUE/i.test(err.message)) throw new ApiError("conflict", "Ya existe una cuenta de negocio con ese correo");
+    if (err instanceof Error && /UNIQUE/i.test(err.message))
+      throw new ApiError("conflict", "Ya existe una cuenta de negocio con ese correo");
     throw err;
   }
-  await audit(c.env, { ...actorOf(auth), action: "business_account.create", target_type: "business_account", target_id: id, details: { org_id: org.id } });
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "business_account.create",
+    target_type: "business_account",
+    target_id: id,
+    details: { org_id: org.id },
+  });
   return c.json(businessMeView((await getBusinessById(c.env, id))!), 201);
 });
 
@@ -615,7 +711,9 @@ consoleRoutes.get("/zones", centralTeam, async (c) => {
 
 consoleRoutes.post("/networks/:id/expediente", analystOrAdmin, rateLimit("agents"), async (c) => {
   const auth = getAuth(c);
-  const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?").bind(c.req.param("id")).first<{ id: string }>();
+  const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<{ id: string }>();
   if (!net) throw notFound("Red");
   await audit(c.env, { ...actorOf(auth), action: "agent.redactor.run", target_type: "network", target_id: net.id });
   const { expediente_id } = await runRedactor(c.env, net.id, { actor: actorOf(auth) });
@@ -625,23 +723,31 @@ consoleRoutes.post("/networks/:id/expediente", analystOrAdmin, rateLimit("agents
 });
 
 consoleRoutes.get("/networks/:id/expedientes", analystOrAdmin, async (c) => {
-  const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?").bind(c.req.param("id")).first<{ id: string }>();
+  const net = await c.env.DB.prepare("SELECT id FROM networks WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<{ id: string }>();
   if (!net) throw notFound("Red");
-  const { results } = await c.env.DB.prepare("SELECT * FROM expedientes WHERE network_id = ? ORDER BY created_at DESC LIMIT 50")
+  const { results } = await c.env.DB.prepare(
+    "SELECT * FROM expedientes WHERE network_id = ? ORDER BY created_at DESC LIMIT 50",
+  )
     .bind(net.id)
     .all<ExpedienteRow>();
   return c.json({ expedientes: results.map(expedienteView) });
 });
 
 consoleRoutes.get("/expedientes/:id", analystOrAdmin, async (c) => {
-  const e = await c.env.DB.prepare("SELECT * FROM expedientes WHERE id = ?").bind(c.req.param("id")).first<ExpedienteRow>();
+  const e = await c.env.DB.prepare("SELECT * FROM expedientes WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<ExpedienteRow>();
   if (!e) throw notFound("Expediente");
   return c.json(expedienteView(e));
 });
 
 consoleRoutes.get("/expedientes/:id/pdf", analystOrAdmin, async (c) => {
   const auth = getAuth(c);
-  const e = await c.env.DB.prepare("SELECT * FROM expedientes WHERE id = ?").bind(c.req.param("id")).first<ExpedienteRow>();
+  const e = await c.env.DB.prepare("SELECT * FROM expedientes WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<ExpedienteRow>();
   if (!e || e.status !== "listo" || !e.r2_key) throw notFound("Expediente");
   const pdf = await getDecrypted(c.env.EVIDENCE, e.r2_key, c.env.EVIDENCE_ENCRYPTION_KEY, e.id);
   if (!pdf) throw notFound("Expediente");
@@ -706,7 +812,12 @@ consoleRoutes.post("/vectores/consulta", adminOnly, rateLimit("vectores"), async
     action: "vectors.query",
     target_type: "case",
     target_id: case_id,
-    details: { code: trace.caso, provider: trace.proveedor, queries: trace.consultas.length, candidates: trace.candidatos.length },
+    details: {
+      code: trace.caso,
+      provider: trace.proveedor,
+      queries: trace.consultas.length,
+      candidates: trace.candidatos.length,
+    },
   });
   return c.json(VectorTrace.parse(trace));
 });
@@ -757,7 +868,16 @@ consoleRoutes.get("/orgs", adminOnly, async (c) => {
        (SELECT COUNT(*) FROM devices d WHERE d.org_id = o.id) AS devices,
        (SELECT COUNT(*) FROM users u WHERE u.org_id = o.id) AS users
      FROM organizations o ORDER BY o.created_at ASC`,
-  ).all<{ id: string; name: string; kind: string; district: string | null; is_demo: number; created_at: string; devices: number; users: number }>();
+  ).all<{
+    id: string;
+    name: string;
+    kind: string;
+    district: string | null;
+    is_demo: number;
+    created_at: string;
+    devices: number;
+    users: number;
+  }>();
   return c.json({ orgs: results.map((o) => ({ ...o, is_demo: o.is_demo === 1 })) });
 });
 
@@ -772,11 +892,22 @@ consoleRoutes.post("/orgs", adminOnly, async (c) => {
   const body = await readJson(c, CreateOrg);
   const id = newId();
   const now = nowIso();
-  await c.env.DB.prepare("INSERT INTO organizations (id, name, kind, district, is_demo, created_at) VALUES (?, ?, ?, ?, 0, ?)")
+  await c.env.DB.prepare(
+    "INSERT INTO organizations (id, name, kind, district, is_demo, created_at) VALUES (?, ?, ?, ?, 0, ?)",
+  )
     .bind(id, body.name, body.kind, body.district ?? null, now)
     .run();
-  await audit(c.env, { ...actorOf(auth), action: "org.create", target_type: "organization", target_id: id, details: { kind: body.kind } });
-  return c.json({ id, name: body.name, kind: body.kind, district: body.district ?? null, is_demo: false, created_at: now }, 201);
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "org.create",
+    target_type: "organization",
+    target_id: id,
+    details: { kind: body.kind },
+  });
+  return c.json(
+    { id, name: body.name, kind: body.kind, district: body.district ?? null, is_demo: false, created_at: now },
+    201,
+  );
 });
 
 const CreateInvites = z.object({
@@ -841,13 +972,28 @@ consoleRoutes.post("/users", adminOnly, async (c) => {
     await c.env.DB.prepare(
       "INSERT INTO users (id, org_id, email, display_name, password_hash, role, disabled, is_demo, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)",
     )
-      .bind(id, body.org_id, body.email.trim().toLowerCase(), body.display_name, await hashPassword(body.password), body.role, nowIso())
+      .bind(
+        id,
+        body.org_id,
+        body.email.trim().toLowerCase(),
+        body.display_name,
+        await hashPassword(body.password),
+        body.role,
+        nowIso(),
+      )
       .run();
   } catch (err) {
-    if (err instanceof Error && /UNIQUE/i.test(err.message)) throw new ApiError("conflict", "Ya existe un usuario con ese correo");
+    if (err instanceof Error && /UNIQUE/i.test(err.message))
+      throw new ApiError("conflict", "Ya existe un usuario con ese correo");
     throw err;
   }
-  await audit(c.env, { ...actorOf(auth), action: "user.create", target_type: "user", target_id: id, details: { role: body.role, org_id: body.org_id } });
+  await audit(c.env, {
+    ...actorOf(auth),
+    action: "user.create",
+    target_type: "user",
+    target_id: id,
+    details: { role: body.role, org_id: body.org_id },
+  });
   const user = await getUserById(c.env, id);
   return c.json(consoleUserView(user!), 201);
 });

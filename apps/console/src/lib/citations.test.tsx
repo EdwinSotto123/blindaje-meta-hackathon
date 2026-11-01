@@ -86,7 +86,9 @@ describe("render de citas", () => {
         </p>
       </CitationProvider>,
     );
-    expect(html).toContain('<button type="button" class="cite" data-kind="evidencia" aria-label="Abrir evidencia EV-B1"');
+    expect(html).toContain(
+      '<button type="button" class="cite" data-kind="evidencia" aria-label="Abrir evidencia EV-B1"',
+    );
     expect(html).toContain('aria-label="Abrir teléfono terminado en 131"');
     const text = visibleText(html);
     expect(text).toContain("Tel. …131");

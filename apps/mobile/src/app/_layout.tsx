@@ -1,4 +1,7 @@
-import { AtkinsonHyperlegible_400Regular, AtkinsonHyperlegible_700Bold } from "@expo-google-fonts/atkinson-hyperlegible";
+import {
+  AtkinsonHyperlegible_400Regular,
+  AtkinsonHyperlegible_700Bold,
+} from "@expo-google-fonts/atkinson-hyperlegible";
 import { Kalam_400Regular, Kalam_700Bold } from "@expo-google-fonts/kalam";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";

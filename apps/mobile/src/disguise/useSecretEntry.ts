@@ -11,7 +11,10 @@ export function useSecretEntry() {
 
   const openPad = useCallback(
     (ventaCents?: number) => {
-      router.push({ pathname: "/calculadora", params: ventaCents != null ? { e: "1", venta: String(ventaCents) } : { e: "1" } });
+      router.push({
+        pathname: "/calculadora",
+        params: ventaCents != null ? { e: "1", venta: String(ventaCents) } : { e: "1" },
+      });
     },
     [router],
   );

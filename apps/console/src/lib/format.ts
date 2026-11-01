@@ -118,7 +118,9 @@ export function fmtPeriod(periodo: string | null | undefined): string {
   if (!m) return periodo;
   const [, from, to] = m as unknown as [string, string, string];
   const sameYear = from.slice(0, 4) === to.slice(0, 4);
-  return sameYear ? `${fmtShortDate(from)} a ${fmtShortDate(to)} de ${to.slice(0, 4)}` : `${fmtDate(from)} a ${fmtDate(to)}`;
+  return sameYear
+    ? `${fmtShortDate(from)} a ${fmtShortDate(to)} de ${to.slice(0, 4)}`
+    : `${fmtDate(from)} a ${fmtDate(to)}`;
 }
 
 /**

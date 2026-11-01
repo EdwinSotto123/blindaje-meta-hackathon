@@ -29,7 +29,8 @@ describe("copia marcada para quien la abre", () => {
     expect(copyMarkText("aplicada", null)).toEqual({
       label: "Copia marcada para ti",
       tone: "marcada",
-      detail: "Este archivo lleva una marca invisible con tu identidad. Si se filtra, se puede saber desde qué cuenta salió.",
+      detail:
+        "Este archivo lleva una marca invisible con tu identidad. Si se filtra, se puede saber desde qué cuenta salió.",
     });
     const down = copyMarkText("no_aplicada", "servicio_no_disponible")!;
     expect(down.label).toBe("Copia sin marca");
@@ -40,11 +41,17 @@ describe("copia marcada para quien la abre", () => {
   });
 
   it("se ve antes de abrir y después, con su estado", () => {
-    expect(text(renderToStaticMarkup(<CopyMark state={{ status: "idle" }} />))).toMatch(/Cada copia que abres lleva una marca invisible con tu identidad/);
-    const marked = text(renderToStaticMarkup(<CopyMark state={{ status: "ready", marca: "aplicada", motivo: null }} />));
+    expect(text(renderToStaticMarkup(<CopyMark state={{ status: "idle" }} />))).toMatch(
+      /Cada copia que abres lleva una marca invisible con tu identidad/,
+    );
+    const marked = text(
+      renderToStaticMarkup(<CopyMark state={{ status: "ready", marca: "aplicada", motivo: null }} />),
+    );
     expect(marked).toContain("Copia marcada para ti");
     expect(marked).toContain("Si se filtra, se puede saber desde qué cuenta salió.");
-    const unmarked = renderToStaticMarkup(<CopyMark state={{ status: "ready", marca: "no_aplicada", motivo: "servicio_no_disponible" }} />);
+    const unmarked = renderToStaticMarkup(
+      <CopyMark state={{ status: "ready", marca: "no_aplicada", motivo: "servicio_no_disponible" }} />,
+    );
     expect(unmarked).toContain('data-tone="sin_marca"');
     expect(text(unmarked)).toContain("Copia sin marca");
   });
@@ -66,7 +73,9 @@ describe("rastrear filtración", () => {
     expect(can("reviewer", "leaks.trace")).toBe(false);
     const file = new Blob([new Uint8Array([1, 2, 3])], { type: "audio/wav" });
     for (const role of ["reviewer", "analyst"] as const) {
-      await expect(new MockLeaksApi({ id: user(role).id, role }, { latency: 0 }).trace(file)).rejects.toMatchObject({ status: 403 });
+      await expect(new MockLeaksApi({ id: user(role).id, role }, { latency: 0 }).trace(file)).rejects.toMatchObject({
+        status: 403,
+      });
     }
   });
 
@@ -79,16 +88,27 @@ describe("rastrear filtración", () => {
     const r1 = await admin.trace(audio.blob);
     expect(S.LeakTraceResult.safeParse(r1).success).toBe(true);
     expect(r1).toMatchObject({ detected: true, kind: "audio", ambiguo: false });
-    expect(r1.candidates[0]).toMatchObject({ user_id: user("reviewer").id, role: "reviewer", evidence_label: null, case_id: null });
+    expect(r1.candidates[0]).toMatchObject({
+      user_id: user("reviewer").id,
+      role: "reviewer",
+      evidence_label: null,
+      case_id: null,
+    });
 
     const image = await analyst.fetchMedia("/v1/console/evidence/ev-a4/media");
     const r2 = await admin.trace(image.blob);
-    expect(r2.candidates[0]).toMatchObject({ user_id: user("analyst").id, evidence_label: "EV-A4", case_id: CASES.A!.id });
+    expect(r2.candidates[0]).toMatchObject({
+      user_id: user("analyst").id,
+      evidence_label: "EV-A4",
+      case_id: CASES.A!.id,
+    });
 
     const clean = await admin.trace(new Blob([new Uint8Array([0xff, 0xd8, 0xff, 0x00])], { type: "image/jpeg" }));
     expect(clean).toMatchObject({ detected: false, kind: "imagen", candidates: [] });
     expect(clean.nota).toMatch(/no prueba/);
-    await expect(admin.trace(new Blob([new Uint8Array([1])], { type: "video/mp4" }))).rejects.toMatchObject({ status: 400 });
+    await expect(admin.trace(new Blob([new Uint8Array([1])], { type: "video/mp4" }))).rejects.toMatchObject({
+      status: 400,
+    });
   });
 
   it("con la API real sube el archivo crudo, con su tipo y el token", async () => {
@@ -97,20 +117,49 @@ describe("rastrear filtración", () => {
       detected: true,
       kind: "imagen",
       score: 0.91,
-      candidates: [{ user_id: "u1", email_or_name: "a@b.pe", display_name: "A", role: "analyst", evidence_label: "EV-A4", case_id: "c1", issued_at: "2026-10-28T10:00:00Z", bit_accuracy: 0.93 }],
+      candidates: [
+        {
+          user_id: "u1",
+          email_or_name: "a@b.pe",
+          display_name: "A",
+          role: "analyst",
+          evidence_label: "EV-A4",
+          case_id: "c1",
+          issued_at: "2026-10-28T10:00:00Z",
+          bit_accuracy: 0.93,
+        },
+      ],
       ambiguo: false,
       nota: "Son indicios, no prueba.",
       model: "videoseal",
     };
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const h = new Headers(init?.headers);
-      calls.push({ url: String(input), method: init?.method ?? "GET", type: h.get("content-type"), auth: h.get("authorization"), size: (init?.body as Blob).size });
+      calls.push({
+        url: String(input),
+        method: init?.method ?? "GET",
+        type: h.get("content-type"),
+        auth: h.get("authorization"),
+        size: (init?.body as Blob).size,
+      });
       return new Response(JSON.stringify(result), { status: 200, headers: { "content-type": "application/json" } });
     });
-    const client = new HttpClient({ baseUrl: BASE, store: new MemoryTokenStore({ accessToken: "t", refreshToken: "r", expiresAt: Date.now() + 600_000 }), fetch: fetchImpl });
+    const client = new HttpClient({
+      baseUrl: BASE,
+      store: new MemoryTokenStore({ accessToken: "t", refreshToken: "r", expiresAt: Date.now() + 600_000 }),
+      fetch: fetchImpl,
+    });
     const out = await new HttpLeaksApi(client).trace(new Blob([new Uint8Array(10)], { type: "image/jpeg" }), "imagen");
     expect(out.candidates[0]!.evidence_label).toBe("EV-A4");
-    expect(calls).toEqual([{ url: `${BASE}/v1/console/leaks/trace?kind=imagen`, method: "POST", type: "image/jpeg", auth: "Bearer t", size: 10 }]);
+    expect(calls).toEqual([
+      {
+        url: `${BASE}/v1/console/leaks/trace?kind=imagen`,
+        method: "POST",
+        type: "image/jpeg",
+        auth: "Bearer t",
+        size: 10,
+      },
+    ]);
   });
 
   it("muestra indicios, no culpables: ambigüedad, nota y advertencia", () => {
@@ -118,7 +167,18 @@ describe("rastrear filtración", () => {
       detected: true,
       kind: "audio",
       score: 0.97,
-      candidates: [{ user_id: "u1", email_or_name: "revisora@demo.blindaje.pe", display_name: "Revisora Demo", role: "reviewer", evidence_label: null, case_id: null, issued_at: null, bit_accuracy: 0.875 }],
+      candidates: [
+        {
+          user_id: "u1",
+          email_or_name: "revisora@demo.blindaje.pe",
+          display_name: "Revisora Demo",
+          role: "reviewer",
+          evidence_label: null,
+          case_id: null,
+          issued_at: null,
+          bit_accuracy: 0.875,
+        },
+      ],
       ambiguo: false,
       nota: `La marca de audio identifica la cuenta. ${S.NOTA_RASTREO}`,
     };
@@ -132,7 +192,11 @@ describe("rastrear filtración", () => {
     expect(ok).not.toMatch(/culpable|responsable de la filtración/i);
     const amb = text(renderToStaticMarkup(<LeakResult name="x.wav" result={{ ...base, ambiguo: true }} />));
     expect(amb).toContain("Más de una cuenta podría explicar esta marca");
-    const none = text(renderToStaticMarkup(<LeakResult name="x.jpg" result={{ ...base, kind: "imagen", detected: false, candidates: [] }} />));
+    const none = text(
+      renderToStaticMarkup(
+        <LeakResult name="x.jpg" result={{ ...base, kind: "imagen", detected: false, candidates: [] }} />,
+      ),
+    );
     expect(none).toContain("No encontramos una marca de Blindaje");
   });
 });
@@ -148,7 +212,9 @@ describe("posible inyección de instrucciones (Prompt Guard)", () => {
   });
 
   it("el indicador sale solo si está marcada, con su puntaje; el panel explica que sigue siendo evidencia", () => {
-    expect(text(renderToStaticMarkup(<PromptGuardBadge result={PROMPT_GUARD["EV-C1"]} />))).toBe("Posible inyección de instrucciones (0.98)");
+    expect(text(renderToStaticMarkup(<PromptGuardBadge result={PROMPT_GUARD["EV-C1"]} />))).toBe(
+      "Posible inyección de instrucciones (0.98)",
+    );
     expect(renderToStaticMarkup(<PromptGuardBadge result={PROMPT_GUARD["EV-A3"]} />)).toBe("");
     expect(renderToStaticMarkup(<PromptGuardBadge result={PROMPT_GUARD["EV-D1"]} />)).toBe("");
     const panel = text(renderToStaticMarkup(<PromptGuardPanel result={PROMPT_GUARD["EV-C1"]} />));

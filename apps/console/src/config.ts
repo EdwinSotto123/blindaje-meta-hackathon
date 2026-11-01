@@ -13,7 +13,11 @@ const env = import.meta.env;
 const RAW_API_URL = (env.VITE_API_URL ?? "").trim();
 
 export const API_URL: string =
-  RAW_API_URL === "self" ? (typeof window === "undefined" ? "" : window.location.origin) : RAW_API_URL.replace(/\/+$/, "");
+  RAW_API_URL === "self"
+    ? typeof window === "undefined"
+      ? ""
+      : window.location.origin
+    : RAW_API_URL.replace(/\/+$/, "");
 
 export const MOCK: boolean = env.VITE_MOCK === "1" || env.MODE === "mock" || RAW_API_URL === "";
 

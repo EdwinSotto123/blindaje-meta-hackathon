@@ -95,23 +95,49 @@ export default function Voz() {
           <Button label="Continuar" onPress={() => router.push("/bienvenida/consentimiento")} testID="continuar" />
         ) : (
           <>
-            <Button label={phase === "rec" ? `Grabando… ${duration(st.durationMillis)}` : "Grabar 10 segundos"} icon="mic" onPress={grabar} disabled={phase === "rec" || phase === "sending"} loading={phase === "sending"} testID="grabar-muestra" />
-            <Button label="Saltar por ahora" kind="ghost" compact onPress={() => router.push("/bienvenida/consentimiento")} testID="saltar" />
+            <Button
+              label={phase === "rec" ? `Grabando… ${duration(st.durationMillis)}` : "Grabar 10 segundos"}
+              icon="mic"
+              onPress={grabar}
+              disabled={phase === "rec" || phase === "sending"}
+              loading={phase === "sending"}
+              testID="grabar-muestra"
+            />
+            <Button
+              label="Saltar por ahora"
+              kind="ghost"
+              compact
+              onPress={() => router.push("/bienvenida/consentimiento")}
+              testID="saltar"
+            />
           </>
         )
       }
     >
-      <T variant="body">Así el sistema reconoce tu voz y no la confunde con la de quien te amenaza, por ejemplo cuando grabas una llamada.</T>
+      <T variant="body">
+        Así el sistema reconoce tu voz y no la confunde con la de quien te amenaza, por ejemplo cuando grabas una
+        llamada.
+      </T>
       <Card>
         <T variant="small">Lee en voz alta:</T>
-        <T variant="hand">“Hola, esta es mi voz. Hoy es un día tranquilo en la tienda. Vendo pan, leche y gaseosa a mis vecinos.”</T>
+        <T variant="hand">
+          “Hola, esta es mi voz. Hoy es un día tranquilo en la tienda. Vendo pan, leche y gaseosa a mis vecinos.”
+        </T>
       </Card>
       {phase === "rec" ? (
         <View style={{ height: 8, borderRadius: 4, backgroundColor: colors.borde, overflow: "hidden" }}>
-          <View style={{ width: `${Math.min(100, (st.durationMillis / SAMPLE_MS) * 100)}%`, height: 8, backgroundColor: colors.tinta }} />
+          <View
+            style={{
+              width: `${Math.min(100, (st.durationMillis / SAMPLE_MS) * 100)}%`,
+              height: 8,
+              backgroundColor: colors.tinta,
+            }}
+          />
         </View>
       ) : null}
-      {phase === "done" ? <Chip label="Listo. La grabación se borró de este celular" icon="check" color={colors.resaltadorVerde} /> : null}
+      {phase === "done" ? (
+        <Chip label="Listo. La grabación se borró de este celular" icon="check" color={colors.resaltadorVerde} />
+      ) : null}
       <T variant="small">Solo se guarda una huella cifrada de tu voz, no la grabación.</T>
       <Notice>{msg}</Notice>
     </Step>

@@ -17,11 +17,27 @@ import { findCandidates, indexCase } from "../src/linking";
 import { SYNTHETIC_VOICE_FACTOR, syntheticVoiceAdjust } from "../src/linking/signals";
 import { parseSenalesTecnicas, setMlClientForTests } from "../src/ml/client";
 import { loadNetworkData } from "../src/networks/graph";
-import { AUTENTICIDAD_MODEL_AUDIO, AUTENTICIDAD_MODEL_VISUAL, nivelFinal, sanitizeTecnicas, SIN_SENALES_TECNICAS } from "../src/pipeline/authenticity";
+import {
+  AUTENTICIDAD_MODEL_AUDIO,
+  AUTENTICIDAD_MODEL_VISUAL,
+  nivelFinal,
+  sanitizeTecnicas,
+  SIN_SENALES_TECNICAS,
+} from "../src/pipeline/authenticity";
 import { processCaseLinking } from "../src/pipeline/queues";
 import { processEvidence } from "../src/pipeline/steps";
 import { seedNetwork } from "./agents-helpers";
-import { emptyMetaLog, fakeAudio, fakeImage, FakeMl, fakeMetaFetch, insertEvidence, metaNoSimulada, senalesLimpias, type FakeMetaConfig } from "./fakes";
+import {
+  emptyMetaLog,
+  fakeAudio,
+  fakeImage,
+  FakeMl,
+  fakeMetaFetch,
+  insertEvidence,
+  metaNoSimulada,
+  senalesLimpias,
+  type FakeMetaConfig,
+} from "./fakes";
 import { api, apiJson, createCase, loginAs, registerDevice, seedOrg } from "./helpers";
 
 const turno = (text: string) => [{ speaker: "A", startMs: 0, endMs: 12_000, transcript: text }];
@@ -32,7 +48,8 @@ const VOZ_SINTETICA: AnalisisForense = {
     { fuente: "analisis_audio", descripcion: "Voz demasiado uniforme, sin respiración entre frases", peso: "fuerte" },
     { fuente: "analisis_audio", descripcion: "Ruido de fondo que se corta en seco", peso: "debil" },
   ],
-  explicacion: "La voz podría ser sintética: la entonación es plana y no hay respiración audible (EXPLICACION-SECRETA).",
+  explicacion:
+    "La voz podría ser sintética: la entonación es plana y no hay respiración audible (EXPLICACION-SECRETA).",
   limitaciones: "No se puede afirmar que sea una voz generada con IA sin marca de agua.",
 };
 
@@ -62,8 +79,16 @@ const cfg: FakeMetaConfig = {
     N1: {
       nivel: "sin_senales",
       senales: [
-        { fuente: "analisis_audio", descripcion: "Marca de agua AudioSeal no se pudo revisar - no concluyente", peso: "debil" },
-        { fuente: "analisis_audio", descripcion: "No se observan alteraciones perceptibles compatibles con síntesis", peso: "debil" },
+        {
+          fuente: "analisis_audio",
+          descripcion: "Marca de agua AudioSeal no se pudo revisar - no concluyente",
+          peso: "debil",
+        },
+        {
+          fuente: "analisis_audio",
+          descripcion: "No se observan alteraciones perceptibles compatibles con síntesis",
+          peso: "debil",
+        },
         { fuente: "analisis_audio", descripcion: "Respiración audible entre frases", peso: "debil" },
       ],
       explicacion: "Voz natural.",
@@ -88,7 +113,9 @@ afterAll(() => {
 });
 
 async function autenticidad(evidenceId: string): Promise<ResultadoAutenticidad | null> {
-  const row = await env.DB.prepare("SELECT content_json FROM derivatives WHERE evidence_id = ? AND tipo = 'autenticidad'")
+  const row = await env.DB.prepare(
+    "SELECT content_json FROM derivatives WHERE evidence_id = ? AND tipo = 'autenticidad'",
+  )
     .bind(evidenceId)
     .first<{ content_json: string }>();
   return row ? (JSON.parse(row.content_json) as ResultadoAutenticidad) : null;
@@ -100,11 +127,22 @@ async function newCase(consent: "comunitario" | "solo_denuncia" = "comunitario")
 }
 
 describe("reglas del nivel final", () => {
-  const forense = (nivel: AnalisisForense["nivel"]): AnalisisForense => ({ nivel, senales: [], explicacion: "x", limitaciones: "y" });
+  const forense = (nivel: AnalisisForense["nivel"]): AnalisisForense => ({
+    nivel,
+    senales: [],
+    explicacion: "x",
+    limitaciones: "y",
+  });
 
   it("solo la marca de agua o C2PA confirman; el modelo nunca", () => {
-    const marca: SenalesTecnicas = { ...SIN_SENALES_TECNICAS, watermark: { detector: "audioseal", detected: true, score: 0.97 } };
-    const c2pa: SenalesTecnicas = { ...SIN_SENALES_TECNICAS, c2pa: { present: true, ai_generated: true, generator: "Muse Image", claims: [] } };
+    const marca: SenalesTecnicas = {
+      ...SIN_SENALES_TECNICAS,
+      watermark: { detector: "audioseal", detected: true, score: 0.97 },
+    };
+    const c2pa: SenalesTecnicas = {
+      ...SIN_SENALES_TECNICAS,
+      c2pa: { present: true, ai_generated: true, generator: "Muse Image", claims: [] },
+    };
     expect(nivelFinal(marca, null)).toBe("generado_ia_confirmado");
     expect(nivelFinal(marca, forense("sin_senales"))).toBe("generado_ia_confirmado");
     expect(nivelFinal(c2pa, null)).toBe("generado_ia_confirmado");
@@ -116,12 +154,30 @@ describe("reglas del nivel final", () => {
   it("los metadatos y el detector de voz ponen un piso, sin confirmar", () => {
     const iptc: SenalesTecnicas = {
       ...SIN_SENALES_TECNICAS,
-      metadata: { present: true, software: "x", digital_source_type: "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia", suspicious: [], fields: {} },
+      metadata: {
+        present: true,
+        software: "x",
+        digital_source_type: "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+        suspicious: [],
+        fields: {},
+      },
     };
     expect(nivelFinal(iptc, forense("sin_senales"))).toBe("indicios_fuertes");
-    const editada: SenalesTecnicas = { ...SIN_SENALES_TECNICAS, metadata: { present: true, software: "Editor", digital_source_type: null, suspicious: ["editada con software"], fields: {} } };
+    const editada: SenalesTecnicas = {
+      ...SIN_SENALES_TECNICAS,
+      metadata: {
+        present: true,
+        software: "Editor",
+        digital_source_type: null,
+        suspicious: ["editada con software"],
+        fields: {},
+      },
+    };
     expect(nivelFinal(editada, forense("sin_senales"))).toBe("indicios_debiles");
-    const sintetica: SenalesTecnicas = { ...SIN_SENALES_TECNICAS, synthetic_speech: { detector: "d", score: 0.9, available: true } };
+    const sintetica: SenalesTecnicas = {
+      ...SIN_SENALES_TECNICAS,
+      synthetic_speech: { detector: "d", score: 0.9, available: true },
+    };
     expect(nivelFinal(sintetica, null)).toBe("indicios_fuertes");
   });
 
@@ -133,15 +189,30 @@ describe("reglas del nivel final", () => {
         software: "Camera",
         digital_source_type: null,
         suspicious: [],
-        fields: { GPSLatitude: "-12.04", GPSLongitude: "-77.03", Make: "Fabricante", BodySerialNumber: "123", Artist: "Fulano", DateTimeOriginal: "2026:10:01" },
+        fields: {
+          GPSLatitude: "-12.04",
+          GPSLongitude: "-77.03",
+          Make: "Fabricante",
+          BodySerialNumber: "123",
+          Artist: "Fulano",
+          DateTimeOriginal: "2026:10:01",
+        },
       },
     });
     expect(Object.keys(t.metadata!.fields).sort()).toEqual(["DateTimeOriginal", "Make"]);
   });
 
   it("una respuesta del ML sin alguna clave cuenta como no revisada", () => {
-    const t = parseSenalesTecnicas({ watermark: { detector: "videoseal", detected: false, score: 0.1, frames_checked: 12 }, extra: 1 });
-    expect(t).toEqual({ watermark: { detector: "videoseal", detected: false, score: 0.1, frames_checked: 12 }, c2pa: null, metadata: null, synthetic_speech: null });
+    const t = parseSenalesTecnicas({
+      watermark: { detector: "videoseal", detected: false, score: 0.1, frames_checked: 12 },
+      extra: 1,
+    });
+    expect(t).toEqual({
+      watermark: { detector: "videoseal", detected: false, score: 0.1, frames_checked: 12 },
+      c2pa: null,
+      metadata: null,
+      synthetic_speech: null,
+    });
     expect(() => parseSenalesTecnicas({ watermark: { detected: "sí" } })).toThrow();
   });
 
@@ -149,7 +220,11 @@ describe("reglas del nivel final", () => {
     expect(syntheticVoiceAdjust(0.8, ["EV-A1", "EV-B1"], new Set())).toEqual({ p: 0.8 });
     const adj = syntheticVoiceAdjust(0.8, ["EV-A1", "EV-B1"], new Set(["EV-B1", "EV-A1"]));
     expect(adj.p).toBeCloseTo(0.4, 6);
-    expect(adj.voz_sintetica).toEqual({ evidencia: ["EV-A1", "EV-B1"], factor: SYNTHETIC_VOICE_FACTOR, p_sin_ajuste: 0.8 });
+    expect(adj.voz_sintetica).toEqual({
+      evidencia: ["EV-A1", "EV-B1"],
+      factor: SYNTHETIC_VOICE_FACTOR,
+      p_sin_ajuste: 0.8,
+    });
   });
 });
 
@@ -161,7 +236,12 @@ describe("paso autenticidad del pipeline", () => {
     expect(await processEvidence(env, ev.id)).toEqual({ status: "processed" });
 
     const r = await autenticidad(ev.id);
-    expect(r).toMatchObject({ evidence_label: ev.label, tipo: "audio", nivel: "generado_ia_confirmado", model: AUTENTICIDAD_MODEL_AUDIO });
+    expect(r).toMatchObject({
+      evidence_label: ev.label,
+      tipo: "audio",
+      nivel: "generado_ia_confirmado",
+      model: AUTENTICIDAD_MODEL_AUDIO,
+    });
     expect(r!.tecnicas.watermark).toEqual({ detector: "audioseal", detected: true, score: 0.98 });
     expect(r!.forense?.nivel).toBe("sin_senales");
 
@@ -172,7 +252,11 @@ describe("paso autenticidad del pipeline", () => {
     expect(call.max_output_tokens).toBeGreaterThanOrEqual(4000);
     expect(call.text).toContain("Marca de agua de IA (audioseal): DETECTADA");
     expect(call.text).toContain('puedes usar "generado_ia_confirmado"');
-    const cost = await env.DB.prepare("SELECT model, status, case_id FROM api_costs WHERE operation = 'autenticidad' AND case_id = ?").bind(c.id).first();
+    const cost = await env.DB.prepare(
+      "SELECT model, status, case_id FROM api_costs WHERE operation = 'autenticidad' AND case_id = ?",
+    )
+      .bind(c.id)
+      .first();
     expect(cost).toMatchObject({ model: "muse-spark-1.2", status: "ok", case_id: c.id });
   });
 
@@ -181,7 +265,12 @@ describe("paso autenticidad del pipeline", () => {
     const ev = await insertEvidence(c, 1, "imagen", fakeImage("limpia1"), { mime: "image/jpeg" });
     expect(await processEvidence(env, ev.id)).toEqual({ status: "processed" });
     const r = await autenticidad(ev.id);
-    expect(r).toMatchObject({ tipo: "imagen", nivel: "sin_senales", model: AUTENTICIDAD_MODEL_VISUAL, tecnicas: senalesLimpias("image") });
+    expect(r).toMatchObject({
+      tipo: "imagen",
+      nivel: "sin_senales",
+      model: AUTENTICIDAD_MODEL_VISUAL,
+      tecnicas: senalesLimpias("image"),
+    });
     expect(r!.forense).toMatchObject({ nivel: "sin_senales", senales: [] });
     const call = log.autenticidad.find((x) => x.marker === "limpia1")!;
     expect(call.model).toBe("muse-spark-1.3");
@@ -207,9 +296,15 @@ describe("paso autenticidad del pipeline", () => {
       const r = await autenticidad(ev.id);
       expect(r!.tecnicas).toEqual(SIN_SENALES_TECNICAS);
       expect(r!.forense).not.toBeNull();
-      expect(log.autenticidad.find((x) => x.marker === "sinml1")!.text).toContain("Marca de agua de IA (marca de agua): no se pudo revisar.");
+      expect(log.autenticidad.find((x) => x.marker === "sinml1")!.text).toContain(
+        "Marca de agua de IA (marca de agua): no se pudo revisar.",
+      );
       // El resto del procesamiento siguió igual.
-      const segs = await env.DB.prepare("SELECT COUNT(*) AS n FROM derivatives WHERE evidence_id = ? AND tipo = 'segmentacion'").bind(ev.id).first<{ n: number }>();
+      const segs = await env.DB.prepare(
+        "SELECT COUNT(*) AS n FROM derivatives WHERE evidence_id = ? AND tipo = 'segmentacion'",
+      )
+        .bind(ev.id)
+        .first<{ n: number }>();
       expect(segs!.n).toBe(1);
     } finally {
       ml.authenticityFails = false;
@@ -222,10 +317,16 @@ describe("paso autenticidad del pipeline", () => {
     try {
       const ev = await insertEvidence(c, 1, "audio", fakeAudio("F1", { A: "persona1" }));
       expect(await processEvidence(env, ev.id)).toEqual({ status: "processed" });
-      const row = await env.DB.prepare("SELECT status FROM evidence WHERE id = ?").bind(ev.id).first<{ status: string }>();
+      const row = await env.DB.prepare("SELECT status FROM evidence WHERE id = ?")
+        .bind(ev.id)
+        .first<{ status: string }>();
       expect(row!.status).toBe("procesado");
       expect(await autenticidad(ev.id)).toBeNull();
-      const tr = await env.DB.prepare("SELECT COUNT(*) AS n FROM derivatives WHERE evidence_id = ? AND tipo = 'transcripcion'").bind(ev.id).first<{ n: number }>();
+      const tr = await env.DB.prepare(
+        "SELECT COUNT(*) AS n FROM derivatives WHERE evidence_id = ? AND tipo = 'transcripcion'",
+      )
+        .bind(ev.id)
+        .first<{ n: number }>();
       expect(tr!.n).toBe(1);
 
       const report = await apiJson<VictimReport>(`/v1/cases/${c.id}/report`, { token: c.device.access_token });
@@ -260,7 +361,13 @@ describe("víctima y consola", () => {
   it("la víctima solo ve el texto corto, nunca las señales técnicas ni el análisis", async () => {
     const c = await newCase();
     ml.authenticity.V1 = {
-      metadata: { present: true, software: "SoftwareSecreto", digital_source_type: null, suspicious: ["sin datos de grabación"], fields: { Encoder: "x" } },
+      metadata: {
+        present: true,
+        software: "SoftwareSecreto",
+        digital_source_type: null,
+        suspicious: ["sin datos de grabación"],
+        fields: { Encoder: "x" },
+      },
     };
     const ev = await insertEvidence(c, 1, "audio", fakeAudio("V1", { A: "persona4" }));
     await processEvidence(env, ev.id);
@@ -271,7 +378,19 @@ describe("víctima y consola", () => {
     const text = await res.text();
     const report = JSON.parse(text) as VictimReport;
     expect(report.evidencia[0]!.autenticidad).toBe(textoAutenticidadVictima("indicios_fuertes"));
-    for (const secret of ["tecnicas", "forense", "watermark", "c2pa", "synthetic_speech", "explicacion", "limitaciones", "EXPLICACION-SECRETA", "SoftwareSecreto", "audioseal", "indicios_fuertes"]) {
+    for (const secret of [
+      "tecnicas",
+      "forense",
+      "watermark",
+      "c2pa",
+      "synthetic_speech",
+      "explicacion",
+      "limitaciones",
+      "EXPLICACION-SECRETA",
+      "SoftwareSecreto",
+      "audioseal",
+      "indicios_fuertes",
+    ]) {
       expect(text.includes(secret), secret).toBe(false);
     }
     for (const k of VICTIM_FORBIDDEN_KEYS) expect(text.includes(`"${k}"`), k).toBe(false);
@@ -287,7 +406,11 @@ describe("víctima y consola", () => {
     const res = await apiJson<CaseSide>(`/v1/console/cases/${c.id}`, { token: analyst.token });
     expect(res.status).toBe(200);
     const [img, msg] = res.body.evidencia;
-    expect(img!.autenticidad).toMatchObject({ nivel: "sin_senales", tipo: "imagen", forense: { nivel: "sin_senales" } });
+    expect(img!.autenticidad).toMatchObject({
+      nivel: "sin_senales",
+      tipo: "imagen",
+      forense: { nivel: "sin_senales" },
+    });
     expect(msg!.autenticidad).toBeUndefined();
   });
 });
@@ -338,7 +461,9 @@ describe("vinculación con voz sintética", () => {
     // Y el vínculo que se guarda conserva la marca para la consola.
     await processCaseLinking(env, cases.sintetico!.id);
     const [a, b] = [cases.sintetico!.id, cases.limpio!.id].sort();
-    const link = await env.DB.prepare("SELECT signals_json FROM links WHERE case_a = ? AND case_b = ?").bind(a, b).first<{ signals_json: string }>();
+    const link = await env.DB.prepare("SELECT signals_json FROM links WHERE case_a = ? AND case_b = ?")
+      .bind(a, b)
+      .first<{ signals_json: string }>();
     if (link) expect(JSON.parse(link.signals_json).voz.voz_sintetica.evidencia).toEqual([cases.sintetico!.audio]);
   });
 });
@@ -352,11 +477,18 @@ describe("expediente", () => {
       tipo: "imagen",
       nivel: "indicios_fuertes",
       tecnicas: { ...SIN_SENALES_TECNICAS, c2pa: { present: false, ai_generated: null, generator: null, claims: [] } },
-      forense: { nivel: "indicios_fuertes", senales: [{ fuente: "analisis_visual", descripcion: "Sombra incoherente", peso: "fuerte" }], explicacion: "Podría estar generada.", limitaciones: "Sin marca no se confirma." },
+      forense: {
+        nivel: "indicios_fuertes",
+        senales: [{ fuente: "analisis_visual", descripcion: "Sombra incoherente", peso: "fuerte" }],
+        explicacion: "Podría estar generada.",
+        limitaciones: "Sin marca no se confirma.",
+      },
       model: "muse-spark-1.3",
       analizado_at: "2026-10-28T10:00:00Z",
     };
-    await env.DB.prepare("INSERT INTO derivatives (id, evidence_id, case_id, tipo, content_json, r2_key, created_at) VALUES (?, ?, ?, 'autenticidad', ?, NULL, ?)")
+    await env.DB.prepare(
+      "INSERT INTO derivatives (id, evidence_id, case_id, tipo, content_json, r2_key, created_at) VALUES (?, ?, ?, 'autenticidad', ?, NULL, ?)",
+    )
       .bind(crypto.randomUUID(), img.id, net.cases[0]!.id, JSON.stringify(result), "2026-10-28T10:00:00Z")
       .run();
     const sec = await autenticidadExpediente(env, await loadNetworkData(env, net.networkId));
@@ -364,7 +496,12 @@ describe("expediente", () => {
     expect(sec.nota).toContain("La ausencia de marca de agua no prueba que sea real");
     expect(sec.items).toHaveLength(4);
     const item = sec.items.find((i) => i.label === img.label)!;
-    expect(item).toMatchObject({ nivel: "indicios_fuertes", nivel_texto: "Indicios fuertes", explicacion: "Podría estar generada.", limitaciones: "Sin marca no se confirma." });
+    expect(item).toMatchObject({
+      nivel: "indicios_fuertes",
+      nivel_texto: "Indicios fuertes",
+      explicacion: "Podría estar generada.",
+      limitaciones: "Sin marca no se confirma.",
+    });
     expect(item.senales).toEqual(["Análisis visual (Muse Spark) (fuerte): Sombra incoherente"]);
     expect(item.tecnicas).toEqual(["C2PA: no trae"]);
     expect(sec.items.filter((i) => i.nivel === null).every((i) => i.nivel_texto === "No analizado")).toBe(true);

@@ -87,14 +87,20 @@ export type VictimReportConConsejos = z.infer<typeof VictimReportConConsejos>;
  * La respuesta del registro todavía trae `org`, pero el API la va a quitar: se acepta que falte. La
  * app no la usa.
  */
-const RegisterResponse = DeviceRegisterResponse.extend({ org: z.object({ id: z.string(), name: z.string() }).nullish() });
+const RegisterResponse = DeviceRegisterResponse.extend({
+  org: z.object({ id: z.string(), name: z.string() }).nullish(),
+});
 
 /**
  * Pedido para crear un caso con lo que eligió la persona. La zona va solo como id de distrito
  * (DISTRICTS); el texto libre de versiones anteriores se traduce a su distrito o no se manda, porque
  * podría traer una dirección.
  */
-export function caseRequestFrom(cfg: { consent: ConsentMode; sector: Sector | null; zona: string | null }): Partial<CreateCaseRequest> {
+export function caseRequestFrom(cfg: {
+  consent: ConsentMode;
+  sector: Sector | null;
+  zona: string | null;
+}): Partial<CreateCaseRequest> {
   const distrito = districtOfZone(cfg.zona);
   return {
     consent_mode: cfg.consent,
@@ -128,9 +134,16 @@ export class BlindajeApi {
     return this.o.now ? this.o.now() : Date.now();
   }
 
-  private async send(path: string, init: { method: "GET" | "POST" | "PUT" | "DELETE"; headers?: Record<string, string>; body?: string | Uint8Array }): Promise<HttpResponse> {
+  private async send(
+    path: string,
+    init: { method: "GET" | "POST" | "PUT" | "DELETE"; headers?: Record<string, string>; body?: string | Uint8Array },
+  ): Promise<HttpResponse> {
     try {
-      return await this.o.fetcher(`${this.o.baseUrl}/v1${path}`, { method: init.method, headers: init.headers ?? {}, body: init.body });
+      return await this.o.fetcher(`${this.o.baseUrl}/v1${path}`, {
+        method: init.method,
+        headers: init.headers ?? {},
+        body: init.body,
+      });
     } catch (e) {
       throw new NetworkError(e instanceof Error ? e.message : "Sin conexión");
     }
@@ -187,9 +200,15 @@ export class BlindajeApi {
     return this.refreshing;
   }
 
-  private async authed(path: string, init: { method: "GET" | "POST" | "PUT" | "DELETE"; headers?: Record<string, string>; body?: string | Uint8Array }): Promise<HttpResponse> {
+  private async authed(
+    path: string,
+    init: { method: "GET" | "POST" | "PUT" | "DELETE"; headers?: Record<string, string>; body?: string | Uint8Array },
+  ): Promise<HttpResponse> {
     let a = await this.token();
-    let res = await this.send(path, { ...init, headers: { ...init.headers, authorization: `Bearer ${a.access_token}` } });
+    let res = await this.send(path, {
+      ...init,
+      headers: { ...init.headers, authorization: `Bearer ${a.access_token}` },
+    });
     if (res.status === 401) {
       a = await this.refresh();
       res = await this.send(path, { ...init, headers: { ...init.headers, authorization: `Bearer ${a.access_token}` } });
@@ -198,7 +217,12 @@ export class BlindajeApi {
     return res;
   }
 
-  private async json<S extends z.ZodType>(schema: S, path: string, method: "GET" | "POST" | "PUT" | "DELETE" = "GET", body?: unknown): Promise<z.infer<S>> {
+  private async json<S extends z.ZodType>(
+    schema: S,
+    path: string,
+    method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+    body?: unknown,
+  ): Promise<z.infer<S>> {
     const res = await this.authed(path, {
       method,
       headers: body === undefined ? {} : { "content-type": "application/json" },
@@ -295,7 +319,12 @@ export class BlindajeApi {
   }
 
   submitCase(caseId: string, narrative?: string) {
-    return this.json(SubmitCaseResponse, `/cases/${encodeURIComponent(caseId)}/submit`, "POST", narrative ? { narrative } : {});
+    return this.json(
+      SubmitCaseResponse,
+      `/cases/${encodeURIComponent(caseId)}/submit`,
+      "POST",
+      narrative ? { narrative } : {},
+    );
   }
 
   getReport(caseId: string): Promise<VictimReportConConsejos> {
@@ -303,7 +332,10 @@ export class BlindajeApi {
   }
 
   async getReportPdf(caseId: string): Promise<Uint8Array> {
-    const res = await this.authed(`/cases/${encodeURIComponent(caseId)}/report.pdf`, { method: "GET", headers: { accept: "application/pdf" } });
+    const res = await this.authed(`/cases/${encodeURIComponent(caseId)}/report.pdf`, {
+      method: "GET",
+      headers: { accept: "application/pdf" },
+    });
     return res.bytes();
   }
 
@@ -327,7 +359,9 @@ export class BlindajeApi {
    * Recomendaciones de prevención aprobadas por el equipo central para su distrito y su rubro. Un
    * 404 (la API todavía no tiene la ruta) se lee como lista vacía: la pantalla no se rompe.
    */
-  async recommendations(f: { zona?: string | null; sector?: string | null } = {}): Promise<BusinessRecommendationView[]> {
+  async recommendations(
+    f: { zona?: string | null; sector?: string | null } = {},
+  ): Promise<BusinessRecommendationView[]> {
     try {
       return await this.json(RecommendationsResponse, `/recommendations${query({ zona: f.zona, sector: f.sector })}`);
     } catch (e) {

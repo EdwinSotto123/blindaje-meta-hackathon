@@ -17,10 +17,15 @@ function perfil(net: SeededNetwork, over: Partial<PerfilRed> = {}): PerfilRed {
     territorio: [{ zona: "Lima Este - E12", casos: 3 }],
     modus_operandi: `Audios de voz masculina y cobro por Yape con plazo de 48 horas (FICHA-${a!.code}).`,
     hechos: [
-      { texto: `La cuenta ${net.identifier} aparece en 2 casos de la red`, evidencia: [net.identifier, `VIN-${net.links[0]!.num}`] },
+      {
+        texto: `La cuenta ${net.identifier} aparece en 2 casos de la red`,
+        evidencia: [net.identifier, `VIN-${net.links[0]!.num}`],
+      },
       { texto: `El caso ${a!.code} recibió una foto del local con una bala`, evidencia: [a!.evidence[1]!.label] },
     ],
-    hipotesis: [{ texto: `${net.identifier} funciona como cuenta recaudadora`, confianza: "media", evidencia: [net.identifier] }],
+    hipotesis: [
+      { texto: `${net.identifier} funciona como cuenta recaudadora`, confianza: "media", evidencia: [net.identifier] },
+    ],
     escalamiento: `En el caso ${a!.code} hubo intimidación física unos 4 días después del plazo vencido (FICHA-${a!.code}).`,
     brechas: [`Faltan los audios originales del caso ${b!.code}`],
     recomendaciones_autoridad: ["Solicitar por la vía fiscal la información de la cuenta compartida"],
@@ -47,7 +52,12 @@ function goodScript(net: SeededNetwork) {
         evidencia_ids: [`V-${net.voices[0]}`, `VIN-${net.links[0]!.num}`],
         confianza: "alta",
       }),
-      call("registrar_hipotesis", { red_id: net.label, texto: "Hay una tercera cuenta que nadie reportó", evidencia_ids: ["EV-ZZ9"], confianza: "baja" }),
+      call("registrar_hipotesis", {
+        red_id: net.label,
+        texto: "Hay una tercera cuenta que nadie reportó",
+        evidencia_ids: ["EV-ZZ9"],
+        confianza: "baja",
+      }),
     ],
     () => [final(perfil(net))],
   ];
@@ -58,7 +68,10 @@ describe("Cartógrafo", () => {
     const net = await seedNetwork({ n: 3 });
     const meta = fakeMeta(goodScript(net));
     const analyst = await loginAs("analyst", net.orgId);
-    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, { token: analyst.token, json: {} });
+    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, {
+      token: analyst.token,
+      json: {},
+    });
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     const p = res.body;
     expect(p.status).toBe("borrador");
@@ -98,27 +111,56 @@ describe("Cartógrafo", () => {
     // Las herramientas viajan en la petición y sin búsqueda web.
     const first = meta.responses()[0]!.body as { tools: Array<{ name: string }>; text: { format: { name: string } } };
     expect(first.tools.map((t) => t.name).sort()).toEqual(
-      ["centralidad_identificadores", "comparar_guiones", "estadisticas_territoriales", "linea_de_tiempo", "obtener_ficha", "obtener_red", "registrar_hipotesis"].sort(),
+      [
+        "centralidad_identificadores",
+        "comparar_guiones",
+        "estadisticas_territoriales",
+        "linea_de_tiempo",
+        "obtener_ficha",
+        "obtener_red",
+        "registrar_hipotesis",
+      ].sort(),
     );
     expect(first.text.format.name).toBe("perfil_red");
 
-    const run = await env.DB.prepare("SELECT status, attempts, tool_calls FROM agent_runs WHERE agent = 'cartografo' AND target_id = ?").bind(net.networkId).first();
+    const run = await env.DB.prepare(
+      "SELECT status, attempts, tool_calls FROM agent_runs WHERE agent = 'cartografo' AND target_id = ?",
+    )
+      .bind(net.networkId)
+      .first();
     expect(run).toMatchObject({ status: "ok", attempts: 1, tool_calls: 8 });
-    const costs = await env.DB.prepare("SELECT COUNT(*) AS n FROM api_costs WHERE operation = 'cartografo' AND status = 'ok'").first<{ n: number }>();
+    const costs = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM api_costs WHERE operation = 'cartografo' AND status = 'ok'",
+    ).first<{ n: number }>();
     expect(costs!.n).toBeGreaterThanOrEqual(3);
-    const auditRow = await env.DB.prepare("SELECT details_json FROM audit_log WHERE action = 'agent.cartografo.result' AND target_id = ?").bind(net.networkId).first<{ details_json: string }>();
+    const auditRow = await env.DB.prepare(
+      "SELECT details_json FROM audit_log WHERE action = 'agent.cartografo.result' AND target_id = ?",
+    )
+      .bind(net.networkId)
+      .first<{ details_json: string }>();
     expect(JSON.parse(auditRow!.details_json)).toMatchObject({ status: "borrador", citas_ok: true, hipotesis: 2 });
 
     // Revisión humana: aprobar una hipótesis y el perfil.
     const hyp = p.hypotheses.find((h) => h.confianza === "alta")!;
     const reviewer = await loginAs("reviewer", net.orgId);
-    expect((await api(`/v1/console/profiles/${p.id}/decision`, { token: reviewer.token, json: { decision: "aprobar" } })).status).toBe(403);
-    const hd = await apiJson<{ status: string }>(`/v1/console/hypotheses/${hyp.id}/decision`, { token: analyst.token, json: { decision: "aprobar" } });
+    expect(
+      (await api(`/v1/console/profiles/${p.id}/decision`, { token: reviewer.token, json: { decision: "aprobar" } }))
+        .status,
+    ).toBe(403);
+    const hd = await apiJson<{ status: string }>(`/v1/console/hypotheses/${hyp.id}/decision`, {
+      token: analyst.token,
+      json: { decision: "aprobar" },
+    });
     expect(hd.body.status).toBe("aprobada");
-    const pd = await apiJson<ProfileView>(`/v1/console/profiles/${p.id}/decision`, { token: analyst.token, json: { decision: "aprobar" } });
+    const pd = await apiJson<ProfileView>(`/v1/console/profiles/${p.id}/decision`, {
+      token: analyst.token,
+      json: { decision: "aprobar" },
+    });
     expect(pd.status).toBe(200);
     expect(pd.body.status).toBe("aprobado");
-    const list = await apiJson<{ profiles: ProfileView[] }>(`/v1/console/networks/${net.networkId}/profiles`, { token: analyst.token });
+    const list = await apiJson<{ profiles: ProfileView[] }>(`/v1/console/networks/${net.networkId}/profiles`, {
+      token: analyst.token,
+    });
     expect(list.body.profiles[0]!.hypotheses.find((h) => h.id === hyp.id)!.status).toBe("aprobada");
   });
 
@@ -130,7 +172,10 @@ describe("Cartógrafo", () => {
     });
     const meta = fakeMeta([() => [final(bad)], () => [final(bad)]]);
     const analyst = await loginAs("analyst", net.orgId);
-    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, { token: analyst.token, json: { model: "muse-spark-1.3" } });
+    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, {
+      token: analyst.token,
+      json: { model: "muse-spark-1.3" },
+    });
     expect(res.status).toBe(200);
     expect(res.body.status).toBe("invalido");
     expect(res.body.citation_check.ok).toBe(false);
@@ -138,22 +183,42 @@ describe("Cartógrafo", () => {
     expect(meta.responses()).toHaveLength(2);
     expect(String(meta.responses()[1]!.body.input)).toContain("no pasó el validador de citas");
     expect(String(meta.responses()[1]!.body.input)).toContain("EV-ZZ9");
-    const run = await env.DB.prepare("SELECT status, attempts FROM agent_runs WHERE agent = 'cartografo' AND target_id = ?").bind(net.networkId).first();
+    const run = await env.DB.prepare(
+      "SELECT status, attempts FROM agent_runs WHERE agent = 'cartografo' AND target_id = ?",
+    )
+      .bind(net.networkId)
+      .first();
     expect(run).toMatchObject({ status: "invalido", attempts: 2 });
     // Nada de un perfil inválido se puede aprobar.
     const hyp = res.body.hypotheses[0]!;
-    expect((await api(`/v1/console/hypotheses/${hyp.id}/decision`, { token: analyst.token, json: { decision: "aprobar" } })).status).toBe(409);
-    expect((await api(`/v1/console/profiles/${res.body.id}/decision`, { token: analyst.token, json: { decision: "aprobar" } })).status).toBe(409);
+    expect(
+      (await api(`/v1/console/hypotheses/${hyp.id}/decision`, { token: analyst.token, json: { decision: "aprobar" } }))
+        .status,
+    ).toBe(409);
+    expect(
+      (
+        await api(`/v1/console/profiles/${res.body.id}/decision`, {
+          token: analyst.token,
+          json: { decision: "aprobar" },
+        })
+      ).status,
+    ).toBe(409);
   });
 
   it("con 5 casos y 3 víctimas el territorio sale agregado del servidor, nunca del modelo", async () => {
     const net = await seedNetwork({ n: 5, victims: 3 });
     const meta = fakeMeta([
-      () => [call("estadisticas_territoriales", { red_id: net.label, nivel: "cuadricula" }), call("obtener_red", { red_id: net.label })],
+      () => [
+        call("estadisticas_territoriales", { red_id: net.label, nivel: "cuadricula" }),
+        call("obtener_red", { red_id: net.label }),
+      ],
       () => [final(perfil(net, { territorio: [{ zona: "Jr. Inventado 123", casos: 5 }] }))],
     ]);
     const analyst = await loginAs("analyst", net.orgId);
-    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, { token: analyst.token, json: {} });
+    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, {
+      token: analyst.token,
+      json: {},
+    });
     expect(res.status).toBe(200);
     expect(res.body.perfil.territorio).toEqual([{ zona: "Lima Este - E12", casos: 5 }]);
     const stats = JSON.parse(toolOutputs(meta.responses()[1]!)[0]!) as { zonas: unknown[] };
@@ -166,7 +231,10 @@ describe("Cartógrafo", () => {
     const out = () => [final(perfil(net, { territorio: [{ zona: "Lima Este - E12", casos: 5 }] }))];
     fakeMeta([], out);
     const analyst = await loginAs("analyst", net.orgId);
-    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, { token: analyst.token, json: {} });
+    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, {
+      token: analyst.token,
+      json: {},
+    });
     expect(res.status).toBe(200);
     expect(res.body.perfil.territorio).toEqual([]);
   });
@@ -174,10 +242,18 @@ describe("Cartógrafo", () => {
   it("las herramientas solo responden por la red analizada", async () => {
     const net = await seedNetwork({ n: 2 });
     const other = await seedNetwork({ n: 2 });
-    const finalOut = () => [final(perfil(net, { hechos: [{ texto: "La red tiene 2 casos", evidencia: [net.label] }], hipotesis: [] }))];
-    const meta = fakeMeta([() => [call("obtener_red", { red_id: other.label }), call("obtener_ficha", { caso_id: other.cases[0]!.code })]], finalOut);
+    const finalOut = () => [
+      final(perfil(net, { hechos: [{ texto: "La red tiene 2 casos", evidencia: [net.label] }], hipotesis: [] })),
+    ];
+    const meta = fakeMeta(
+      [() => [call("obtener_red", { red_id: other.label }), call("obtener_ficha", { caso_id: other.cases[0]!.code })]],
+      finalOut,
+    );
     const analyst = await loginAs("analyst", net.orgId);
-    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, { token: analyst.token, json: {} });
+    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, {
+      token: analyst.token,
+      json: {},
+    });
     expect(res.status).toBe(200);
     const outs = toolOutputs(meta.responses()[1]!);
     expect(outs[0]).toContain(`Solo puedes consultar la red ${net.label}`);
@@ -190,10 +266,21 @@ describe("Cartógrafo", () => {
     const net = await seedNetwork({ n: 2 });
     const lag = () =>
       Response.json(
-        { error: { message: "Previous response with id 'resp_1' not found.", type: "invalid_request_error", param: "previous_response_id" } },
+        {
+          error: {
+            message: "Previous response with id 'resp_1' not found.",
+            type: "invalid_request_error",
+            param: "previous_response_id",
+          },
+        },
         { status: 400 },
       );
-    const out = perfil(net, { hechos: [{ texto: "La red tiene 2 casos", evidencia: [net.label] }], hipotesis: [], modus_operandi: "Cobro por Yape", escalamiento: null });
+    const out = perfil(net, {
+      hechos: [{ texto: "La red tiene 2 casos", evidencia: [net.label] }],
+      hipotesis: [],
+      modus_operandi: "Cobro por Yape",
+      escalamiento: null,
+    });
     const meta = fakeMeta([
       () => [call("obtener_red", { red_id: net.label })],
       lag,
@@ -203,7 +290,10 @@ describe("Cartógrafo", () => {
       () => [final(out)],
     ]);
     const analyst = await loginAs("analyst", net.orgId);
-    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, { token: analyst.token, json: {} });
+    const res = await apiJson<ProfileView>(`/v1/console/networks/${net.networkId}/cartografo`, {
+      token: analyst.token,
+      json: {},
+    });
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(res.body.status).toBe("borrador");
     expect(meta.responses()).toHaveLength(6);
@@ -214,7 +304,13 @@ describe("Cartógrafo", () => {
     const net = await seedNetwork({ n: 2 });
     const meta = fakeMeta([]);
     const analyst = await loginAs("analyst", net.orgId);
-    await recordCost(env, { model: "muse-spark-1.3", operation: "prueba", cost_usd: 121, essential: true, status: "ok" });
+    await recordCost(env, {
+      model: "muse-spark-1.3",
+      operation: "prueba",
+      cost_usd: 121,
+      essential: true,
+      status: "ok",
+    });
     try {
       const res = await apiJson<{ error: { code: string } }>(`/v1/console/networks/${net.networkId}/cartografo`, {
         token: analyst.token,
@@ -223,7 +319,9 @@ describe("Cartógrafo", () => {
       expect(res.status).toBe(402);
       expect(res.body.error.code).toBe("budget_exceeded");
       expect(meta.requests).toHaveLength(0);
-      const blocked = await env.DB.prepare("SELECT model, essential FROM api_costs WHERE status = 'blocked' AND operation = 'cartografo'").first();
+      const blocked = await env.DB.prepare(
+        "SELECT model, essential FROM api_costs WHERE status = 'blocked' AND operation = 'cartografo'",
+      ).first();
       expect(blocked).toEqual({ model: "muse-wonder-1.0", essential: 0 });
     } finally {
       await env.DB.prepare("DELETE FROM api_costs WHERE operation = 'prueba'").run();

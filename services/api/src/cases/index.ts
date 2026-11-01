@@ -50,13 +50,17 @@ export interface CaseRow {
 
 /** Caso de la víctima o 404 (nunca 403: no confirmamos que un caso ajeno exista). */
 export async function getOwnedCase(env: Env, caseId: string, deviceId: string): Promise<CaseRow> {
-  const row = await env.DB.prepare("SELECT * FROM cases WHERE id = ? AND device_id = ?").bind(caseId, deviceId).first<CaseRow>();
+  const row = await env.DB.prepare("SELECT * FROM cases WHERE id = ? AND device_id = ?")
+    .bind(caseId, deviceId)
+    .first<CaseRow>();
   if (!row) throw notFound("Caso");
   return row;
 }
 
 export async function caseSummary(env: Env, c: CaseRow): Promise<CaseSummary> {
-  const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?").bind(c.id).first<{ n: number }>();
+  const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?")
+    .bind(c.id)
+    .first<{ n: number }>();
   return toCaseSummary(c, n?.n ?? 0);
 }
 
@@ -104,7 +108,9 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
   let identificadores: Array<{ tipo: string; valor: string }> = [];
   if (c.identifiers_enc) {
     try {
-      const plain = JSON.parse(await openString(env.EVIDENCE_ENCRYPTION_KEY, c.identifiers_enc, identifiersAad(c.id))) as CaseIdentifiersPlain;
+      const plain = JSON.parse(
+        await openString(env.EVIDENCE_ENCRYPTION_KEY, c.identifiers_enc, identifiersAad(c.id)),
+      ) as CaseIdentifiersPlain;
       identificadores = (plain.identificadores ?? []).map((i) => ({ tipo: String(i.tipo), valor: String(i.valor) }));
     } catch (err) {
       log("error", "identifiers_decrypt_failed", { case_id: c.id, ...errorFields(err) });
@@ -116,7 +122,12 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
   if (primer) cronologia.push({ fecha: primer, texto: "Primer contacto", evidencia: [] });
   for (const e of evidence) {
     if (e.captured_at && e.source !== "relato") {
-      const texto = e.source === "llamada" ? (e.tipo === "audio" ? "Grabación de una llamada" : "Llamada recibida") : (TIPO_TEXTO[e.tipo] ?? "Evidencia");
+      const texto =
+        e.source === "llamada"
+          ? e.tipo === "audio"
+            ? "Grabación de una llamada"
+            : "Llamada recibida"
+          : (TIPO_TEXTO[e.tipo] ?? "Evidencia");
       cronologia.push({ fecha: e.captured_at, texto, evidencia: [e.label] });
     }
   }
@@ -157,7 +168,9 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
           .map((d) => parseJsonColumn<Partial<LecturaContent>>(d.content_json)?.nota)
           .find((n): n is string => typeof n === "string" && n.length > 0) ?? null;
       // Autenticidad: a la víctima solo le llega el texto corto, nunca las señales ni el análisis.
-      const nivel = NivelAutenticidad.safeParse(parseJsonColumn<{ nivel?: unknown }>(mine.find((d) => d.tipo === "autenticidad")?.content_json)?.nivel);
+      const nivel = NivelAutenticidad.safeParse(
+        parseJsonColumn<{ nivel?: unknown }>(mine.find((d) => d.tipo === "autenticidad")?.content_json)?.nivel,
+      );
       return {
         ...toEvidenceItem(e),
         transcripcion: trContent?.turns
@@ -186,14 +199,9 @@ export async function setConsent(env: Env, c: CaseRow, mode: ConsentMode, actor:
   const now = nowIso();
   await env.DB.batch([
     env.DB.prepare("UPDATE consents SET revoked_at = ? WHERE case_id = ? AND revoked_at IS NULL").bind(now, c.id),
-    env.DB.prepare("INSERT INTO consents (id, case_id, device_id, mode, text_version, granted_at) VALUES (?, ?, ?, ?, ?, ?)").bind(
-      newId(),
-      c.id,
-      c.device_id,
-      mode,
-      CONSENT_TEXT_VERSION,
-      now,
-    ),
+    env.DB.prepare(
+      "INSERT INTO consents (id, case_id, device_id, mode, text_version, granted_at) VALUES (?, ?, ?, ?, ?, ?)",
+    ).bind(newId(), c.id, c.device_id, mode, CONSENT_TEXT_VERSION, now),
     env.DB.prepare("UPDATE cases SET consent_mode = ?, updated_at = ? WHERE id = ?").bind(mode, now, c.id),
   ]);
   let deindex: Awaited<ReturnType<typeof deindexCase>> | null = null;
@@ -240,11 +248,15 @@ export async function deleteCaseFully(
       log("warn", "workflow_terminate_failed", { case_id: c.id, ...errorFields(err) });
     }
   }
-  const evCount = await env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?").bind(c.id).first<{ n: number }>();
+  const evCount = await env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?")
+    .bind(c.id)
+    .first<{ n: number }>();
   const deindex = await deindexCase(env, c.id, { recompute: false });
 
   let r2Objects = await deleteR2Prefix(env.EVIDENCE, caseR2Prefix(c.id));
-  const { results: cached } = await env.DB.prepare("SELECT DISTINCT cache_key FROM api_costs WHERE case_id = ? AND cache_key IS NOT NULL")
+  const { results: cached } = await env.DB.prepare(
+    "SELECT DISTINCT cache_key FROM api_costs WHERE case_id = ? AND cache_key IS NOT NULL",
+  )
     .bind(c.id)
     .all<{ cache_key: string }>();
   if (cached.length) {

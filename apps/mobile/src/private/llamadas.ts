@@ -18,7 +18,13 @@ import { endExternal, expectExternal, isDecoy } from "@/state/session";
  * Burbuja (opcional): el ícono de Cuaderno sobre las llamadas de números desconocidos que suenan,
  * para anotarlas sin colgar y recordar tocar Grabar en el teléfono del celular. No graba la voz.
  */
-export const AJUSTES_INICIALES: AjustesLlamadas = { activo: false, modo: "desconocidos", accion: "sonar", marcados: [], burbuja: false };
+export const AJUSTES_INICIALES: AjustesLlamadas = {
+  activo: false,
+  modo: "desconocidos",
+  accion: "sonar",
+  marcados: [],
+  burbuja: false,
+};
 
 const SIN_BURBUJA = { disponible: false, permitida: false };
 
@@ -35,7 +41,13 @@ export type EstadoLlamadas = {
 
 export function leerEstado(): EstadoLlamadas {
   const n = cuadernoNativo();
-  const vacio: EstadoLlamadas = { disponible: false, rol: false, ajustes: AJUSTES_INICIALES, llamadas: [], burbuja: SIN_BURBUJA };
+  const vacio: EstadoLlamadas = {
+    disponible: false,
+    rol: false,
+    ajustes: AJUSTES_INICIALES,
+    llamadas: [],
+    burbuja: SIN_BURBUJA,
+  };
   if (!n || isDecoy()) return vacio;
   try {
     const disponible = n.llamadasDisponible();
@@ -172,7 +184,11 @@ export async function elegirGrabacion(): Promise<Grabacion | null> {
  * "Fue extorsión": la llamada (y su grabación, si la hay) entra a la denuncia por la cola cifrada,
  * el número queda marcado y la llamada sale de la lista por revisar.
  */
-export async function guardarComoExtorsion(l: LlamadaAnotada, comentario: string, grabacion: Grabacion | null): Promise<string | null> {
+export async function guardarComoExtorsion(
+  l: LlamadaAnotada,
+  comentario: string,
+  grabacion: Grabacion | null,
+): Promise<string | null> {
   const capturedAt = new Date(l.recibida).toISOString();
   // Primero la grabación: si no se puede leer, no queda la nota a medias y la llamada sigue en la lista.
   if (grabacion) await saveFile(grabacion.uri, { tipo: "audio", mime: grabacion.mime, source: "llamada", capturedAt });

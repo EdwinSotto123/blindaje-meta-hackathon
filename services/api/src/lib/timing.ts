@@ -64,8 +64,12 @@ function wrapStatement(stmt: D1PreparedStatement): D1PreparedStatement {
     get(target, prop) {
       const value = Reflect.get(target, prop, target) as unknown;
       if (typeof value !== "function") return value;
-      if (prop === "bind") return (...args: unknown[]) => wrapStatement((value as (...a: unknown[]) => D1PreparedStatement).apply(target, args));
-      if (RUN_METHODS.has(prop)) return (...args: unknown[]) => timed("db", () => (value as (...a: unknown[]) => Promise<unknown>).apply(target, args));
+      if (prop === "bind")
+        return (...args: unknown[]) =>
+          wrapStatement((value as (...a: unknown[]) => D1PreparedStatement).apply(target, args));
+      if (RUN_METHODS.has(prop))
+        return (...args: unknown[]) =>
+          timed("db", () => (value as (...a: unknown[]) => Promise<unknown>).apply(target, args));
       return (value as (...a: unknown[]) => unknown).bind(target);
     },
   });

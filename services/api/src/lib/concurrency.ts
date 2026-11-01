@@ -1,5 +1,9 @@
 /** Aplica `fn` a cada elemento con a lo más `limit` llamadas en vuelo; los resultados salen en el mismo orden. */
-export async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (item: T, i: number) => Promise<R>): Promise<R[]> {
+export async function mapLimit<T, R>(
+  items: readonly T[],
+  limit: number,
+  fn: (item: T, i: number) => Promise<R>,
+): Promise<R[]> {
   const out = new Array<R>(items.length);
   let next = 0;
   const worker = async () => {

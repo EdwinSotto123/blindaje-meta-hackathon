@@ -39,24 +39,32 @@ export function losXContent(zona: string, sector: string): AsesorOutput {
     modalidades: [
       {
         descripcion: "Audios de alguien que dice ser de “Los X”. Piden un pago por Yape y dan 48 horas de plazo.",
-        senales_de_alerta: ["“Habla con el jefe”", "Plazo de 48 horas", "Piden el pago por Yape", "Mandan una foto de tu local"],
+        senales_de_alerta: [
+          "“Habla con el jefe”",
+          "Plazo de 48 horas",
+          "Piden el pago por Yape",
+          "Mandan una foto de tu local",
+        ],
         evidencia: ["R-001", "FICHA-A", "FICHA-B", "FICHA-C"],
       },
     ],
     recomendaciones: [
       {
         titulo: "No respondas ni negocies",
-        detalle: "Si te llega un audio o un mensaje, no contestes ni discutas el monto. Cualquier respuesta les dice que pueden presionarte.",
+        detalle:
+          "Si te llega un audio o un mensaje, no contestes ni discutas el monto. Cualquier respuesta les dice que pueden presionarte.",
         prioridad: "alta",
       },
       {
         titulo: "Guarda cada audio y cada captura",
-        detalle: "Guárdalos en Blindaje apenas te lleguen y no borres el chat. Sirven para tu denuncia y para que el equipo de Blindaje vea si los casos se repiten en tu distrito.",
+        detalle:
+          "Guárdalos en Blindaje apenas te lleguen y no borres el chat. Sirven para tu denuncia y para que el equipo de Blindaje vea si los casos se repiten en tu distrito.",
         prioridad: "alta",
       },
       {
         titulo: "Aprende a reconocer el guion",
-        detalle: "Si escuchas “habla con el jefe” o te dan 48 horas, es la modalidad de “Los X”. No respondas, guarda el audio y denuncia en la Línea 1818.",
+        detalle:
+          "Si escuchas “habla con el jefe” o te dan 48 horas, es la modalidad de “Los X”. No respondas, guarda el audio y denuncia en la Línea 1818.",
         prioridad: "media",
       },
       {
@@ -138,7 +146,8 @@ function initialState(): AdvisorState {
         "Algunos conductores notaron una moto que sigue la unidad antes de que les pidan un cobro semanal “por su seguridad”. Nadie cobra por la seguridad de una ruta: no pagues y denuncia en la Línea 1818.",
       modalidades: [
         {
-          descripcion: "Una moto sigue la unidad varios días y luego piden un pago semanal en efectivo “por tu seguridad”.",
+          descripcion:
+            "Una moto sigue la unidad varios días y luego piden un pago semanal en efectivo “por tu seguridad”.",
           senales_de_alerta: ["Una moto que se repite en tu ruta", "“Es por tu seguridad”", "Cobro cada semana"],
           evidencia: ["R-002", "FICHA-D", "FICHA-E"],
         },
@@ -146,7 +155,8 @@ function initialState(): AdvisorState {
       recomendaciones: [
         {
           titulo: "Nadie cobra por la seguridad de la ruta",
-          detalle: "Si alguien te pide un pago semanal “por tu seguridad”, no pagues. Guarda los mensajes en Blindaje y anota la hora en que te escribieron.",
+          detalle:
+            "Si alguien te pide un pago semanal “por tu seguridad”, no pagues. Guarda los mensajes en Blindaje y anota la hora en que te escribieron.",
           prioridad: "alta",
         },
       ],
@@ -262,7 +272,11 @@ export class MockAdvisorApi implements AdvisorApi {
     const r = state.recommendations.find((x) => x.id === id);
     if (!r) throw new ApiRequestError(404, "not_found", "No se encontró la recomendación.");
     if (decision === "aprobar" && !r.citation_check.ok) {
-      throw new ApiRequestError(409, "conflict", "La recomendación no pasó el validador de citas: vuelve a correr el Asesor");
+      throw new ApiRequestError(
+        409,
+        "conflict",
+        "La recomendación no pasó el validador de citas: vuelve a correr el Asesor",
+      );
     }
     const now = this.now().toISOString();
     const updated: ConsoleRecommendationView =

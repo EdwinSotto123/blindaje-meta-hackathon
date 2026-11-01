@@ -93,7 +93,9 @@ export interface DeviceSession {
 const DEVICES_FILE = resolve(CACHE_DIR, "demo-devices.json");
 
 function loadDevices(): Record<string, DeviceSession> {
-  return existsSync(DEVICES_FILE) ? (JSON.parse(readFileSync(DEVICES_FILE, "utf8")) as Record<string, DeviceSession>) : {};
+  return existsSync(DEVICES_FILE)
+    ? (JSON.parse(readFileSync(DEVICES_FILE, "utf8")) as Record<string, DeviceSession>)
+    : {};
 }
 
 function saveDevice(name: string, s: DeviceSession | null) {
@@ -110,7 +112,11 @@ export function forgetDevices() {
 
 async function signRefresh(privateJwk: JsonWebKey, deviceId: string, ts: number): Promise<string> {
   const key = await subtle.importKey("jwk", privateJwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
-  const sig = await subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, new TextEncoder().encode(`refresh:${deviceId}:${ts}`));
+  const sig = await subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    key,
+    new TextEncoder().encode(`refresh:${deviceId}:${ts}`),
+  );
   return Buffer.from(sig).toString("base64url");
 }
 
@@ -119,8 +125,16 @@ async function signRefresh(privateJwk: JsonWebKey, deviceId: string, ts: number)
  * `x-demo-secret` (en `headers`): con DEMO_MODE=true la API lo exime del límite de 10 registros
  * por hora por IP, para que los reseeds no choquen con ese límite.
  */
-export async function registerDevice(api: Api, name: string, inviteCode: string, headers: Record<string, string> = {}): Promise<DeviceSession> {
-  const kp = (await subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"])) as CryptoKeyPair;
+export async function registerDevice(
+  api: Api,
+  name: string,
+  inviteCode: string,
+  headers: Record<string, string> = {},
+): Promise<DeviceSession> {
+  const kp = (await subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, [
+    "sign",
+    "verify",
+  ])) as CryptoKeyPair;
   const pub = await subtle.exportKey("jwk", kp.publicKey);
   const priv = await subtle.exportKey("jwk", kp.privateKey);
   const r = await api.request<{

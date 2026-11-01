@@ -186,7 +186,9 @@ export class EvidenceQueue {
 
   private async doFlush(force: boolean): Promise<FlushResult> {
     const res: FlushResult = { uploaded: 0, pending: 0, failed: 0 };
-    const items = (await this.d.repo.all()).filter((i) => i.status === "pendiente" || i.status === "subiendo" || (force && i.status === "error"));
+    const items = (await this.d.repo.all()).filter(
+      (i) => i.status === "pendiente" || i.status === "subiendo" || (force && i.status === "error"),
+    );
     let offline = false;
     for (const item of items) {
       if (offline || (!force && item.next_at > this.now())) {
@@ -202,12 +204,22 @@ export class EvidenceQueue {
         const ev = await this.d.uploader.upload(item, plain);
         if (ev.sha256 !== item.sha256) {
           // El servidor guardó algo distinto: no se borra nada del celular.
-          await this.d.repo.update(item.id, { status: "error", last_error: "integrity_mismatch", attempts: item.attempts + 1 });
+          await this.d.repo.update(item.id, {
+            status: "error",
+            last_error: "integrity_mismatch",
+            attempts: item.attempts + 1,
+          });
           res.failed += 1;
         } else {
           // Confirmado: el celular ya no guarda la evidencia.
           await this.d.blobs.remove(item.blob);
-          await this.d.repo.update(item.id, { status: "subido", evidence_id: ev.id, label: ev.label, last_error: null, preview: null });
+          await this.d.repo.update(item.id, {
+            status: "subido",
+            evidence_id: ev.id,
+            label: ev.label,
+            last_error: null,
+            preview: null,
+          });
           res.uploaded += 1;
         }
       } catch (e) {

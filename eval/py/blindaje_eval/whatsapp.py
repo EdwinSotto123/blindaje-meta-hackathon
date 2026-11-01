@@ -52,7 +52,9 @@ def _run(cmd: list[str]) -> None:
         raise RuntimeError(f"ffmpeg falló ({proc.returncode}): {proc.stderr[-800:]}")
 
 
-def simular(entrada: Path, salida_ogg: Path, canal: int, seed: int = 0, salida_wav: Path | None = None) -> Path:
+def simular(
+    entrada: Path, salida_ogg: Path, canal: int, seed: int = 0, salida_wav: Path | None = None
+) -> Path:
     """Aplica el canal y codifica a Opus. Si se pide, decodifica de vuelta a WAV 16 kHz mono."""
     c = CANALES[canal]
     salida_ogg.parent.mkdir(parents=True, exist_ok=True)
@@ -63,12 +65,34 @@ def simular(entrada: Path, salida_ogg: Path, canal: int, seed: int = 0, salida_w
     )
     _run(
         [
-            "ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y",
-            "-i", str(entrada),
-            "-f", "lavfi", "-i", f"anoisesrc=color=pink:amplitude={c.ruido_amplitud}:sample_rate=16000:seed={seed}",
-            "-filter_complex", grafo, "-map", "[out]",
-            "-c:a", "libopus", "-b:a", c.bitrate, "-vbr", "on", "-application", "voip",
-            "-ar", "16000", "-ac", "1",
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-i",
+            str(entrada),
+            "-f",
+            "lavfi",
+            "-i",
+            f"anoisesrc=color=pink:amplitude={c.ruido_amplitud}:sample_rate=16000:seed={seed}",
+            "-filter_complex",
+            grafo,
+            "-map",
+            "[out]",
+            "-c:a",
+            "libopus",
+            "-b:a",
+            c.bitrate,
+            "-vbr",
+            "on",
+            "-application",
+            "voip",
+            "-ar",
+            "16000",
+            "-ac",
+            "1",
             str(salida_ogg),
         ]
     )
@@ -82,8 +106,21 @@ def a_wav(entrada: Path, salida_wav: Path) -> Path:
     salida_wav.parent.mkdir(parents=True, exist_ok=True)
     _run(
         [
-            "ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y",
-            "-i", str(entrada), "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", str(salida_wav),
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-i",
+            str(entrada),
+            "-ar",
+            "16000",
+            "-ac",
+            "1",
+            "-c:a",
+            "pcm_s16le",
+            str(salida_wav),
         ]
     )
     return salida_wav

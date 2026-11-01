@@ -42,7 +42,15 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
 }
 
 /** Nota en una banda hundida, con un ícono de trazo. */
-export function Note({ icon = "info", title, children }: { icon?: "info" | "alert" | "shield" | "lock" | "eye"; title?: string; children: ReactNode }) {
+export function Note({
+  icon = "info",
+  title,
+  children,
+}: {
+  icon?: "info" | "alert" | "shield" | "lock" | "eye";
+  title?: string;
+  children: ReactNode;
+}) {
   return (
     <div className="note">
       <Icon name={icon} />
@@ -58,7 +66,15 @@ export function Note({ icon = "info", title, children }: { icon?: "info" | "aler
  * Encabezado de página: el título y una entrada corta. `compact` baja el título cuando la protagonista
  * de la página es otra frase (en Mi zona, la respuesta sobre el riesgo).
  */
-export function PageHead({ title, compact = false, children }: { title: string; compact?: boolean; children?: ReactNode }) {
+export function PageHead({
+  title,
+  compact = false,
+  children,
+}: {
+  title: string;
+  compact?: boolean;
+  children?: ReactNode;
+}) {
   return (
     <header className={compact ? "page-head page-head-compact" : "page-head"}>
       <h1>{title}</h1>
@@ -68,7 +84,17 @@ export function PageHead({ title, compact = false, children }: { title: string; 
 }
 
 /** Sección de una página, con su título. */
-export function Section({ id, title, children, intro }: { id: string; title: string; intro?: ReactNode; children: ReactNode }) {
+export function Section({
+  id,
+  title,
+  children,
+  intro,
+}: {
+  id: string;
+  title: string;
+  intro?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="section" aria-labelledby={id}>
       <h2 id={id}>{title}</h2>
@@ -84,11 +110,19 @@ export function Section({ id, title, children, intro }: { id: string; title: str
  */
 export function Threshold({ detail }: { detail?: string | null }) {
   // El aviso de la API suele empezar con la misma frase: se muestra una sola vez.
-  const rest = capitalizeFirst((detail ?? "").replace(THRESHOLD_TEXT, "").replace(/^[.:,;\s]+/, "").trim());
+  const rest = capitalizeFirst(
+    (detail ?? "")
+      .replace(THRESHOLD_TEXT, "")
+      .replace(/^[.:,;\s]+/, "")
+      .trim(),
+  );
   return (
     <div className="threshold" role="note">
       <p className="strong">{THRESHOLD_TEXT}</p>
-      <p>{rest || `Solo mostramos cifras cuando hay al menos ${MIN_CASES} casos de ${MIN_VICTIMS} personas distintas, para que nadie pueda ser reconocido.`}</p>
+      <p>
+        {rest ||
+          `Solo mostramos cifras cuando hay al menos ${MIN_CASES} casos de ${MIN_VICTIMS} personas distintas, para que nadie pueda ser reconocido.`}
+      </p>
     </div>
   );
 }

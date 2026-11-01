@@ -38,12 +38,21 @@ describe.skipIf(!client)("Meta Model API (live)", () => {
     const total = usage.reduce((n, e) => n + e.cost_usd, 0);
     log(
       "gasto",
-      usage.map((e) => ({ model: e.model, operation: e.operation, status: e.status, units: e.units, cost_usd: e.cost_usd, request_id: e.request_id })),
+      usage.map((e) => ({
+        model: e.model,
+        operation: e.operation,
+        status: e.status,
+        units: e.units,
+        cost_usd: e.cost_usd,
+        request_id: e.request_id,
+      })),
     );
     // Vitest 4 no muestra el stdout de los tests que pasan: todo se imprime aquí y queda en un JSON.
     for (const o of observations) console.log(`[live] ${o.label}: ${JSON.stringify(o.data)}`);
     writeFileSync(OBSERVATIONS_FILE, JSON.stringify(observations, null, 2));
-    console.log(`[live] costo total estimado: ${total.toFixed(6)} USD en ${usage.length} llamadas (detalle en ${OBSERVATIONS_FILE})`);
+    console.log(
+      `[live] costo total estimado: ${total.toFixed(6)} USD en ${usage.length} llamadas (detalle en ${OBSERVATIONS_FILE})`,
+    );
   });
 
   it("la llave funciona y lista los modelos (gratis)", async () => {
@@ -74,7 +83,12 @@ describe.skipIf(!client)("Meta Model API (live)", () => {
       },
       { operation: "live_structured" },
     );
-    log("structured", { output: res.output, usage: res.usage, cost: res.costUsd, outputTypes: res.response.output.map((o) => o.type) });
+    log("structured", {
+      output: res.output,
+      usage: res.usage,
+      cost: res.costUsd,
+      outputTypes: res.response.output.map((o) => o.type),
+    });
     expect(res.output.canal).toBe("yape");
     expect(res.output.monto_soles).toBe(500);
     expect(res.output.plazo_horas).toBe(48);
@@ -143,9 +157,20 @@ describe.skipIf(!client)("Meta Model API (live)", () => {
     );
     const summary = res.objects.map((o) => {
       const mask = decodeMask(o);
-      return { id: o.id, box: o.box, confidence: o.confidence, mask: { w: mask.width, h: mask.height, on: mask.data.reduce((n, v) => n + v, 0) }, tight: maskToBox(o) };
+      return {
+        id: o.id,
+        box: o.box,
+        confidence: o.confidence,
+        mask: { w: mask.width, h: mask.height, on: mask.data.reduce((n, v) => n + v, 0) },
+        tight: maskToBox(o),
+      };
     });
-    log("sam_image", { objects: summary, usage: res.usage, problems: res.problems, rawPrefix: res.rawText.slice(0, 90) });
+    log("sam_image", {
+      objects: summary,
+      usage: res.usage,
+      problems: res.problems,
+      rawPrefix: res.rawText.slice(0, 90),
+    });
     expect(res.objects).toHaveLength(1);
     const box = res.objects[0]!.box;
     expect(Math.abs(box.x1 - 32)).toBeLessThanOrEqual(3);
@@ -154,44 +179,74 @@ describe.skipIf(!client)("Meta Model API (live)", () => {
     expect(box.h).toBe(192);
   });
 
-  it.skipIf(!hasFfmpeg || process.env.LIVE_VIDEO === "0")("SAM 3.1 en video: upload, segmentación por frames y borrado", async () => {
-    // Clip de 2 s a 10 fps con la imagen de prueba fija (20 frames; se facturan 50).
-    const dir = mkdtempSync(join(tmpdir(), "blindaje-sam-"));
-    const png = join(dir, "frame.png");
-    const mp4 = join(dir, "circulo.mp4");
-    writeFileSync(png, circleAndSquarePng());
-    try {
-      execFileSync("ffmpeg", [
-        "-loglevel", "error", "-y", "-loop", "1", "-framerate", "10", "-t", "2", "-i", png,
-        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", mp4,
-      ]);
-      const file = await c.files.upload(new Uint8Array(readFileSync(mp4)), { filename: "circulo.mp4", mimeType: "video/mp4", expiresAfterSeconds: 3600 });
-      log("upload", file);
+  it.skipIf(!hasFfmpeg || process.env.LIVE_VIDEO === "0")(
+    "SAM 3.1 en video: upload, segmentación por frames y borrado",
+    async () => {
+      // Clip de 2 s a 10 fps con la imagen de prueba fija (20 frames; se facturan 50).
+      const dir = mkdtempSync(join(tmpdir(), "blindaje-sam-"));
+      const png = join(dir, "frame.png");
+      const mp4 = join(dir, "circulo.mp4");
+      writeFileSync(png, circleAndSquarePng());
       try {
-        const res = await c.segmentVideo({ fileId: file.id, concept: "circle" }, { operation: "live_sam_video" });
-        log("sam_video", {
-          frames: res.frames.length,
-          frameIndexes: res.frames.map((f) => f.frame),
-          firstFrame: res.frames[0] && { frame: res.frames[0].frame, objects: res.frames[0].objects.map((o) => ({ id: o.id, box: o.box })) },
-          framesProcessed: res.framesProcessed,
-          usage: res.usage,
-          problems: res.problems,
+        execFileSync("ffmpeg", [
+          "-loglevel",
+          "error",
+          "-y",
+          "-loop",
+          "1",
+          "-framerate",
+          "10",
+          "-t",
+          "2",
+          "-i",
+          png,
+          "-c:v",
+          "libx264",
+          "-pix_fmt",
+          "yuv420p",
+          "-movflags",
+          "+faststart",
+          mp4,
+        ]);
+        const file = await c.files.upload(new Uint8Array(readFileSync(mp4)), {
+          filename: "circulo.mp4",
+          mimeType: "video/mp4",
+          expiresAfterSeconds: 3600,
         });
-        expect(res.frames.length).toBeGreaterThanOrEqual(15);
-        expect(res.frames[0]!.objects[0]!.box.w).toBe(256);
-        expect(res.framesProcessed).toBe(50);
+        log("upload", file);
+        try {
+          const res = await c.segmentVideo({ fileId: file.id, concept: "circle" }, { operation: "live_sam_video" });
+          log("sam_video", {
+            frames: res.frames.length,
+            frameIndexes: res.frames.map((f) => f.frame),
+            firstFrame: res.frames[0] && {
+              frame: res.frames[0].frame,
+              objects: res.frames[0].objects.map((o) => ({ id: o.id, box: o.box })),
+            },
+            framesProcessed: res.framesProcessed,
+            usage: res.usage,
+            problems: res.problems,
+          });
+          expect(res.frames.length).toBeGreaterThanOrEqual(15);
+          expect(res.frames[0]!.objects[0]!.box.w).toBe(256);
+          expect(res.framesProcessed).toBe(50);
+        } finally {
+          const deleted = await c.files.delete(file.id);
+          log("delete", deleted);
+          expect(deleted.deleted).toBe(true);
+        }
       } finally {
-        const deleted = await c.files.delete(file.id);
-        log("delete", deleted);
-        expect(deleted.deleted).toBe(true);
+        rmSync(dir, { recursive: true, force: true });
       }
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
+    },
+  );
 
   it("las salvaguardas bloquean contributor y web_search sin llamar a la API", async () => {
-    await expect(c.responses.create({ model: "muse-spark-1.3-contributor", input: "x" })).rejects.toThrow(/Contributor/);
-    await expect(c.responses.create({ model: "muse-spark-1.3", input: "x", tools: [{ type: "web_search" }] })).rejects.toThrow(/búsqueda web/);
+    await expect(c.responses.create({ model: "muse-spark-1.3-contributor", input: "x" })).rejects.toThrow(
+      /Contributor/,
+    );
+    await expect(
+      c.responses.create({ model: "muse-spark-1.3", input: "x", tools: [{ type: "web_search" }] }),
+    ).rejects.toThrow(/búsqueda web/);
   });
 });

@@ -52,8 +52,7 @@ export const en: Dict = {
   },
   problem: {
     title: "Thousands of reports no one connects",
-    lead:
-      "Gangs work in series: the same voice calls several victims, they send the same photos, repeat the same script and the same account collects from different vendors. That information exists, but it is scattered across the phones of people who never meet.",
+    lead: "Gangs work in series: the same voice calls several victims, they send the same photos, repeat the same script and the same account collects from different vendors. That information exists, but it is scattered across the phones of people who never meet.",
     sourcePrefix: "Source:",
     figures: [
       {
@@ -77,7 +76,8 @@ export const en: Dict = {
       {
         value: "26,217",
         text: "extortion reports at the end of the period analyzed, up from 4,761, while sentenced prisoners fell from 712 to 650.",
-        detail: "The outlet notes the figures alone do not explain the gap: more reports do not automatically mean more convictions.",
+        detail:
+          "The outlet notes the figures alone do not explain the gap: more reports do not automatically mean more convictions.",
         source: src.elcomercio,
       },
     ],
@@ -100,13 +100,11 @@ export const en: Dict = {
   },
   actors: {
     title: "Everyone gets something concrete.",
-    lead:
-      "Victims document without exposing themselves, the community knows where it happens and the authorities receive cases that are already linked.",
+    lead: "Victims document without exposing themselves, the community knows where it happens and the authorities receive cases that are already linked.",
     victim: {
       name: "Victim",
       title: "Keep the evidence where no one will notice.",
-      lead:
-        "On the phone, Blindaje looks like an ordinary app for your business, and you choose which one. It really works. Your private notes open with a secret entry and your PIN.",
+      lead: "On the phone, Blindaje looks like an ordinary app for your business, and you choose which one. It really works. Your private notes open with a secret entry and your PIN.",
       points: [
         {
           title: "Decoy PIN and quick exit",
@@ -156,8 +154,7 @@ export const en: Dict = {
     community: {
       name: "Community and businesses",
       title: "See where it happens and know what to do",
-      lead:
-        "With consent, each case is compared with the others. The team approves anonymous alerts by district and every business sees prevention advice for its area and trade.",
+      lead: "With consent, each case is compared with the others. The team approves anonymous alerts by district and every business sees prevention advice for its area and trade.",
       points: [
         {
           title: "Aggregate figures only",
@@ -184,8 +181,7 @@ export const en: Dict = {
     authority: {
       name: "Authorities",
       title: "Network case files for police and prosecutors.",
-      lead:
-        "When an authorized analyst approves a network, Blindaje assembles the case file as a PDF. It is only sent through a formal channel with the authorities.",
+      lead: "When an authorized analyst approves a network, Blindaje assembles the case file as a PDF. It is only sent through a formal channel with the authorities.",
       dossier: [
         { title: "Network summary", text: "Size, period, sectors and shared modus operandi." },
         { title: "Unified timeline", text: "Events from every case, in order." },
@@ -197,14 +193,14 @@ export const en: Dict = {
         "Accounts that appear in several cases are flagged so the authorities can request them through legal channels. Blindaje shares no data with banks or fintechs.",
       shot: {
         alt: "Screenshot of the console: the Cartographer’s profile of network R-001, with cited facts on the left and hypotheses awaiting approval on the right.",
-        caption: "The Cartographer keeps facts apart from hypotheses. Only what is approved goes into the case file. Console in Spanish, simulated mode, fictitious data.",
+        caption:
+          "The Cartographer keeps facts apart from hypotheses. Only what is approved goes into the case file. Console in Spanish, simulated mode, fictitious data.",
       },
     },
   },
   intel: {
     title: "What no victim can see alone.",
-    lead:
-      "Every voice note, message and photo becomes comparable signals. With them, Blindaje’s agents link cases, map networks, draft alerts and advice, and check whether the evidence is real. None of them decides alone.",
+    lead: "Every voice note, message and photo becomes comparable signals. With them, Blindaje’s agents link cases, map networks, draft alerts and advice, and check whether the evidence is real. None of them decides alone.",
     link: {
       title: "Links cases even when the number changes",
       text: "It compares voiceprints, collection accounts, reused photos and scripts. The Linker explains each possible link citing the evidence: what supports it and what contradicts it. A team reviewer confirms or dismisses it.",
@@ -273,17 +269,23 @@ export const en: Dict = {
         approves: "The reviewer, when deciding the link",
       },
     ],
-    rules: "Every claim cites evidence: without a citation, the output is invalid. Never names of people. Web search is off.",
+    rules:
+      "Every claim cites evidence: without a citation, the output is invalid. Never names of people. Web search is off.",
   },
   tech: {
     title: "Built with Meta AI, piece by piece",
-    lead:
-      "Evidence flows through a pipeline on Cloudflare and an ML container. Every piece is transcribed, segmented, summarized into a case record and turned into signals that can be compared.",
+    lead: "Evidence flows through a pipeline on Cloudflare and an ML container. Every piece is transcribed, segmented, summarized into a case record and turned into signals that can be compared.",
     pipelineLabel: "From file to decision",
     pipeline: [
       { stage: "Evidence", items: ["WhatsApp voice note", "Message", "Photo", "Video"] },
-      { stage: "Models", items: ["Muse Voice Transcribe", "Muse Spark 1.3 and 1.2", "SAM 3.1", "DINOv2", "AudioSeal and Video Seal"] },
-      { stage: "Signals", items: ["Voiceprint", "Case record", "HMAC identifiers", "Crops and vectors", "Authenticity"] },
+      {
+        stage: "Models",
+        items: ["Muse Voice Transcribe", "Muse Spark 1.3 and 1.2", "SAM 3.1", "DINOv2", "AudioSeal and Video Seal"],
+      },
+      {
+        stage: "Signals",
+        items: ["Voiceprint", "Case record", "HMAC identifiers", "Crops and vectors", "Authenticity"],
+      },
       { stage: "Agents", items: ["Linker", "Cartographer", "Lookout", "Case writer", "Advisor"] },
       { stage: "A person approves", items: ["Link", "Alert", "Advice", "Case file"] },
     ],
@@ -377,7 +379,10 @@ export const en: Dict = {
         text: "The map is by district, in ranges, with no totals, and needs at least 5 cases from 3 different victims.",
       },
       { title: "It does not decide guilt.", text: "Every link is a hypothesis with its score and its evidence." },
-      { title: "It uses no real data in the demo.", text: "Cases, voices, numbers, accounts and photos are fictitious." },
+      {
+        title: "It uses no real data in the demo.",
+        text: "Cases, voices, numbers, accounts and photos are fictitious.",
+      },
       { title: "It has no political content.", text: "" },
     ],
     honestyTitle: "And we say it plainly",
@@ -388,8 +393,7 @@ export const en: Dict = {
   },
   results: {
     title: "What we measure, with fictitious data",
-    lead:
-      "The evaluation uses threat scripts written for the project and voices from an open corpus of Peruvian Spanish (OpenSLR SLR73), compressed the way WhatsApp does. We publish the real results, whatever they are.",
+    lead: "The evaluation uses threat scripts written for the project and voices from an open corpus of Peruvian Spanish (OpenSLR SLR73), compressed the way WhatsApp does. We publish the real results, whatever they are.",
     placeholder: "The evaluation report is not available yet.",
     pendingNote: "The evaluation has not published its report yet. Targets are working goals, not results.",
     cols: { what: "What is measured", target: "Target", result: "Result" },
@@ -397,7 +401,11 @@ export const en: Dict = {
     metrics: [
       { id: "voice_top1", label: "Voice linking: the right case ranks first", target: "80% or more" },
       { id: "voice_top3", label: "Voice linking: the right case is in the top 3", target: "90% or more" },
-      { id: "false_links_per_100", label: "Wrong links per 100 comparisons above the review threshold", target: "2 at most" },
+      {
+        id: "false_links_per_100",
+        label: "Wrong links per 100 comparisons above the review threshold",
+        target: "2 at most",
+      },
       { id: "identifier_match", label: "Exact identifier matches detected", target: "100%" },
       { id: "ficha_accuracy", label: "Case record fields correct against manual labels", target: "90% or more" },
       { id: "citation_fidelity", label: "Agent claims with cited, verifiable evidence", target: "100%" },
@@ -434,8 +442,7 @@ export const en: Dict = {
   },
   pilot: {
     title: "Request access for your institution",
-    lead:
-      "Blindaje works with institutions that can act: police stations, prosecutors, municipalities and NGOs. Guilds, churches and neighborhood councils can help spread the app.",
+    lead: "Blindaje works with institutions that can act: police stations, prosecutors, municipalities and NGOs. Guilds, churches and neighborhood councils can help spread the app.",
     who: "Police and prosecutors receive each network’s file through a formal channel. Municipalities and NGOs use the map and alerts for their districts, which are already public.",
     steps: [
       "We talk with your institution.",
@@ -510,20 +517,30 @@ export const en: Dict = {
   lp: {
     hero: {
       title: "No one should face extortion alone",
-      lead:
-        "Blindaje brings together what victims keep (audio, photos, messages, numbers and accounts) to uncover the same gang behind different cases and show which districts it hits. A person reviews every link.",
+      lead: "Blindaje brings together what victims keep (audio, photos, messages, numbers and accounts) to uncover the same gang behind different cases and show which districts it hits. A person reviews every link.",
       ctaMap: "See the district map",
       ctaMapShort: "See the map",
       audienceLabel: "For",
       audience: ["corner shops", "mototaxi drivers", "market stalls", "transport workers"],
       photoAlt: "Yellow, blue and red mototaxis waiting for passengers on a pedestrian street in central Lima.",
       photoCredit: "Illustrative photo: Paulo Guereta, CC BY 2.0. It shows no victims.",
-      phoneAlt: "Screenshot of the public portal on a phone: in Ate, the risk for corner shops is high, between 10 and 19 cases.",
+      phoneAlt:
+        "Screenshot of the public portal on a phone: in Ate, the risk for corner shops is high, between 10 and 19 cases.",
       phoneCap: "The public portal, no account. Fictitious data.",
     },
     built: {
       label: "Built with Meta AI",
-      items: ["Muse Spark", "Muse Voice Transcribe", "SAM 3.1", "AudioSeal", "Video Seal", "DINOv2", "FAISS", "PyTorch", "React Native"],
+      items: [
+        "Muse Spark",
+        "Muse Voice Transcribe",
+        "SAM 3.1",
+        "AudioSeal",
+        "Video Seal",
+        "DINOv2",
+        "FAISS",
+        "PyTorch",
+        "React Native",
+      ],
     },
     signals: {
       title: "The traces a gang leaves behind",
@@ -577,10 +594,11 @@ export const en: Dict = {
     problem: { gapsTitle: "Why today is not enough" },
     benefits: {
       title: "What each one gets",
-      lead:
-        "Victims document without exposing themselves, the community knows where it happens and what to do, and the authorities get cases already linked.",
-      illustration: "Illustration of the app. Outside, a working sales notebook; inside, the private notes. You choose the disguise.",
-      victimPhotoAlt: "Inside a corner shop in Lima: shelves of goods, stacked red beer crates and two people at the counter, seen from behind.",
+      lead: "Victims document without exposing themselves, the community knows where it happens and what to do, and the authorities get cases already linked.",
+      illustration:
+        "Illustration of the app. Outside, a working sales notebook; inside, the private notes. You choose the disguise.",
+      victimPhotoAlt:
+        "Inside a corner shop in Lima: shelves of goods, stacked red beer crates and two people at the counter, seen from behind.",
       victimPhotoCredit: "Illustrative photo: cemeiakano, CC BY-SA 2.0. It shows no victims.",
       audiences: [
         {
@@ -878,10 +896,21 @@ export const en: Dict = {
       place: "Lima, 2026",
       photosLabel: "Photos from Wikimedia Commons",
       photos: [
-        { what: "mototaxis in central Lima", author: "Paulo Guereta", license: "CC BY 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima_-_Per%C3%BA_(20529612568).jpg" },
-        { what: "a corner shop in Lima", author: "cemeiakano", license: "CC BY-SA 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima2011_-_bodega.jpg" },
+        {
+          what: "mototaxis in central Lima",
+          author: "Paulo Guereta",
+          license: "CC BY 2.0",
+          href: "https://commons.wikimedia.org/wiki/File:Lima_-_Per%C3%BA_(20529612568).jpg",
+        },
+        {
+          what: "a corner shop in Lima",
+          author: "cemeiakano",
+          license: "CC BY-SA 2.0",
+          href: "https://commons.wikimedia.org/wiki/File:Lima2011_-_bodega.jpg",
+        },
       ],
-      photosNote: "Cropped and resized for the web. They are illustrative: they show no victims and no places where cases happened",
+      photosNote:
+        "Cropped and resized for the web. They are illustrative: they show no victims and no places where cases happened",
     },
   },
 };

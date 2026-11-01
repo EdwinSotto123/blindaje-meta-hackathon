@@ -39,43 +39,56 @@ export async function binaryDerivative(
   await putEncrypted(env.EVIDENCE, key, env.EVIDENCE_ENCRYPTION_KEY, bytes, id, { derivative_id: id, tipo });
   w.r2Written.push(key);
   w.statements.push(
-    env.DB.prepare("INSERT INTO derivatives (id, evidence_id, case_id, tipo, content_json, r2_key, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(
-      id,
-      ev.id,
-      ev.case_id,
-      tipo,
-      content == null ? null : JSON.stringify(content),
-      key,
-      nowIso(),
-    ),
+    env.DB.prepare(
+      "INSERT INTO derivatives (id, evidence_id, case_id, tipo, content_json, r2_key, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    ).bind(id, ev.id, ev.case_id, tipo, content == null ? null : JSON.stringify(content), key, nowIso()),
   );
   return id;
 }
 
 /** Derivado solo con JSON en D1. */
-export function jsonDerivative(env: Env, w: PendingWrites, ev: { id: string; case_id: string }, tipo: DerivativeType, content: unknown): string {
+export function jsonDerivative(
+  env: Env,
+  w: PendingWrites,
+  ev: { id: string; case_id: string },
+  tipo: DerivativeType,
+  content: unknown,
+): string {
   const id = newId();
   w.statements.push(
-    env.DB.prepare("INSERT INTO derivatives (id, evidence_id, case_id, tipo, content_json, r2_key, created_at) VALUES (?, ?, ?, ?, ?, NULL, ?)").bind(
-      id,
-      ev.id,
-      ev.case_id,
-      tipo,
-      JSON.stringify(content),
-      nowIso(),
-    ),
+    env.DB.prepare(
+      "INSERT INTO derivatives (id, evidence_id, case_id, tipo, content_json, r2_key, created_at) VALUES (?, ?, ?, ?, ?, NULL, ?)",
+    ).bind(id, ev.id, ev.case_id, tipo, JSON.stringify(content), nowIso()),
   );
   return id;
 }
 
 export function embeddingStatement(
   env: Env,
-  e: { faiss_id: number; index_name: MlIndexName; case_id: string; ref_type: string; ref_id: string; vector: number[]; model: string },
+  e: {
+    faiss_id: number;
+    index_name: MlIndexName;
+    case_id: string;
+    ref_type: string;
+    ref_id: string;
+    vector: number[];
+    model: string;
+  },
 ): D1PreparedStatement {
   return env.DB.prepare(
     `INSERT INTO embeddings (faiss_id, index_name, case_id, ref_type, ref_id, dim, vector_b64, model, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).bind(e.faiss_id, e.index_name, e.case_id, e.ref_type, e.ref_id, e.vector.length, encodeVector(e.vector), e.model, nowIso());
+  ).bind(
+    e.faiss_id,
+    e.index_name,
+    e.case_id,
+    e.ref_type,
+    e.ref_id,
+    e.vector.length,
+    encodeVector(e.vector),
+    e.model,
+    nowIso(),
+  );
 }
 
 export interface PreviousOutputs {
@@ -92,14 +105,20 @@ const OWN_STEP_DERIVATIVES: DerivativeType[] = ["autenticidad", "prompt_guard"];
  * los tipos de `keep` y los de otros pasos, como `autenticidad`), huellas de voz, recortes y sus
  * vectores.
  */
-export async function previousOutputs(env: Env, evidenceId: string, keep: DerivativeType[] = []): Promise<PreviousOutputs> {
+export async function previousOutputs(
+  env: Env,
+  evidenceId: string,
+  keep: DerivativeType[] = [],
+): Promise<PreviousOutputs> {
   keep = [...keep, ...OWN_STEP_DERIVATIVES];
   const [ders, prints, crops] = await env.DB.batch([
     env.DB.prepare("SELECT id, tipo, r2_key FROM derivatives WHERE evidence_id = ?").bind(evidenceId),
     env.DB.prepare("SELECT id FROM voice_prints WHERE evidence_id = ?").bind(evidenceId),
     env.DB.prepare("SELECT id, r2_key FROM image_crops WHERE evidence_id = ?").bind(evidenceId),
   ]);
-  const derRows = (ders!.results as Array<{ id: string; tipo: DerivativeType; r2_key: string | null }>).filter((d) => !keep.includes(d.tipo));
+  const derRows = (ders!.results as Array<{ id: string; tipo: DerivativeType; r2_key: string | null }>).filter(
+    (d) => !keep.includes(d.tipo),
+  );
   const printIds = (prints!.results as Array<{ id: string }>).map((p) => p.id);
   const cropRows = crops!.results as Array<{ id: string; r2_key: string | null }>;
   const refIds = [...printIds, ...cropRows.map((c) => c.id)];
@@ -118,11 +137,17 @@ export async function previousOutputs(env: Env, evidenceId: string, keep: Deriva
     statements.push(env.DB.prepare(`DELETE FROM embeddings WHERE ${where}`).bind(...binds));
   }
   if (derRows.length) {
-    statements.push(env.DB.prepare(`DELETE FROM derivatives WHERE id IN (${derRows.map(() => "?").join(",")})`).bind(...derRows.map((d) => d.id)));
+    statements.push(
+      env.DB.prepare(`DELETE FROM derivatives WHERE id IN (${derRows.map(() => "?").join(",")})`).bind(
+        ...derRows.map((d) => d.id),
+      ),
+    );
   }
   statements.push(env.DB.prepare("DELETE FROM voice_prints WHERE evidence_id = ?").bind(evidenceId));
   statements.push(env.DB.prepare("DELETE FROM image_crops WHERE evidence_id = ?").bind(evidenceId));
-  const r2Keys = [...derRows.map((d) => d.r2_key), ...cropRows.map((c) => c.r2_key)].filter((k): k is string => Boolean(k));
+  const r2Keys = [...derRows.map((d) => d.r2_key), ...cropRows.map((c) => c.r2_key)].filter((k): k is string =>
+    Boolean(k),
+  );
   return { statements, r2Keys, faiss };
 }
 

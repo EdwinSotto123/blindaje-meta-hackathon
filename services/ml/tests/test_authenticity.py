@@ -45,8 +45,8 @@ def _xmp(dst: str, tool: str = "Generador de prueba 2.0") -> str:
         '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
         '<rdf:Description xmlns:Iptc4xmpExt="http://iptc.org/std/Iptc4xmpExt/2008-02-29/" '
         f'xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmp:CreatorTool="{tool}">'
-        f'<Iptc4xmpExt:DigitalSourceType>{DST}{dst}</Iptc4xmpExt:DigitalSourceType>'
-        "</rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end=\"w\"?>"
+        f"<Iptc4xmpExt:DigitalSourceType>{DST}{dst}</Iptc4xmpExt:DigitalSourceType>"
+        '</rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end="w"?>'
     )
 
 
@@ -165,37 +165,63 @@ def _signing_chain() -> tuple[bytes, bytes]:
 
     now = datetime.datetime.now(datetime.UTC)
     ca_key, key = ec.generate_private_key(ec.SECP256R1()), ec.generate_private_key(ec.SECP256R1())
-    ca_name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "CA de prueba"),
-                         x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Blindaje Test")])
-    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Generador de prueba"),
-                      x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Blindaje Test")])
+    ca_name = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COMMON_NAME, "CA de prueba"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Blindaje Test"),
+        ]
+    )
+    name = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COMMON_NAME, "Generador de prueba"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Blindaje Test"),
+        ]
+    )
 
     def usage(sign: bool) -> x509.KeyUsage:
-        return x509.KeyUsage(digital_signature=sign, content_commitment=False, key_encipherment=False,
-                             data_encipherment=False, key_agreement=False, key_cert_sign=not sign,
-                             crl_sign=not sign, encipher_only=False, decipher_only=False)
+        return x509.KeyUsage(
+            digital_signature=sign,
+            content_commitment=False,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=False,
+            key_cert_sign=not sign,
+            crl_sign=not sign,
+            encipher_only=False,
+            decipher_only=False,
+        )
 
     def base(subject, pub):
-        return (x509.CertificateBuilder().subject_name(subject).issuer_name(ca_name).public_key(pub)
-                .serial_number(x509.random_serial_number())
-                .not_valid_before(now - datetime.timedelta(days=1))
-                .not_valid_after(now + datetime.timedelta(days=7)))
+        return (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(ca_name)
+            .public_key(pub)
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(now - datetime.timedelta(days=1))
+            .not_valid_after(now + datetime.timedelta(days=7))
+        )
 
-    ca = (base(ca_name, ca_key.public_key())
-          .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
-          .add_extension(usage(False), critical=True)
-          .add_extension(x509.SubjectKeyIdentifier.from_public_key(ca_key.public_key()), critical=False)
-          .sign(ca_key, hashes.SHA256()))
-    leaf = (base(name, key.public_key())
-            .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
-            .add_extension(usage(True), critical=True)
-            .add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.EMAIL_PROTECTION]), critical=False)
-            .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()), critical=False)
-            .add_extension(x509.SubjectKeyIdentifier.from_public_key(key.public_key()), critical=False)
-            .sign(ca_key, hashes.SHA256()))
+    ca = (
+        base(ca_name, ca_key.public_key())
+        .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
+        .add_extension(usage(False), critical=True)
+        .add_extension(x509.SubjectKeyIdentifier.from_public_key(ca_key.public_key()), critical=False)
+        .sign(ca_key, hashes.SHA256())
+    )
+    leaf = (
+        base(name, key.public_key())
+        .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+        .add_extension(usage(True), critical=True)
+        .add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.EMAIL_PROTECTION]), critical=False)
+        .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()), critical=False)
+        .add_extension(x509.SubjectKeyIdentifier.from_public_key(key.public_key()), critical=False)
+        .sign(ca_key, hashes.SHA256())
+    )
     pem = leaf.public_bytes(serialization.Encoding.PEM) + ca.public_bytes(serialization.Encoding.PEM)
-    pkey = key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,
-                             serialization.NoEncryption())
+    pkey = key.private_bytes(
+        serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()
+    )
     return pem, pkey
 
 
@@ -205,8 +231,9 @@ def _signed_jpeg(dst: str = "trainedAlgorithmicMedia") -> bytes:
     manifest = {
         "claim_generator_info": [{"name": "Generador de prueba", "version": "1.0"}],
         "title": "prueba.jpg",
-        "assertions": [{"label": "c2pa.actions", "data": {"actions": [
-            {"action": "c2pa.created", "digitalSourceType": DST + dst}]}}],
+        "assertions": [
+            {"label": "c2pa.actions", "data": {"actions": [{"action": "c2pa.created", "digitalSourceType": DST + dst}]}}
+        ],
     }
     signer = c2pa.Signer.from_info(c2pa.C2paSignerInfo(c2pa.C2paSigningAlg.ES256, certs, pkey, None))
     out = io.BytesIO()
@@ -232,7 +259,11 @@ def test_c2pa_digital_capture_is_not_ai():
 def test_c2pa_absent_and_unsupported():
     pytest.importorskip("c2pa")
     assert provenance.read_c2pa(_jpeg(), "image/jpeg") == {
-        "present": False, "ai_generated": None, "generator": None, "claims": []}
+        "present": False,
+        "ai_generated": None,
+        "generator": None,
+        "claims": [],
+    }
     ogg = provenance.read_c2pa(b"OggS" + b"\x00" * 40, None)
     assert ogg["present"] is False and ogg["claims"]
 
@@ -252,11 +283,26 @@ def test_summarize_c2pa_ingredient_and_agents():
     store = {
         "active_manifest": "a",
         "manifests": {
-            "a": {"claim_generator": "Editor 1.0", "assertions": [
-                {"label": "c2pa.actions.v2", "data": {"actions": [{"action": "c2pa.opened"}]}}]},
-            "b": {"assertions": [{"label": "c2pa.actions", "data": {"actions": [
-                {"action": "c2pa.created", "digitalSourceType": DST + "trainedAlgorithmicMedia",
-                 "softwareAgent": {"name": "Generador", "version": "3"}}]}}]},
+            "a": {
+                "claim_generator": "Editor 1.0",
+                "assertions": [{"label": "c2pa.actions.v2", "data": {"actions": [{"action": "c2pa.opened"}]}}],
+            },
+            "b": {
+                "assertions": [
+                    {
+                        "label": "c2pa.actions",
+                        "data": {
+                            "actions": [
+                                {
+                                    "action": "c2pa.created",
+                                    "digitalSourceType": DST + "trainedAlgorithmicMedia",
+                                    "softwareAgent": {"name": "Generador", "version": "3"},
+                                }
+                            ]
+                        },
+                    }
+                ]
+            },
         },
         "validation_status": [{"code": "signingCredential.untrusted"}],
     }
@@ -316,9 +362,25 @@ def test_audio_endpoint_tags(client, tmp_path):
     src = tmp_path / "in.wav"
     out = tmp_path / "out.m4a"
     src.write_bytes(to_wav(tone(220, 2.0)))
-    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", str(src), "-c:a", "aac",
-                    "-metadata", "comment=Generated with ElevenLabs", "-metadata", "artist=Persona Ficticia",
-                    str(out)], check=True)
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-i",
+            str(src),
+            "-c:a",
+            "aac",
+            "-metadata",
+            "comment=Generated with ElevenLabs",
+            "-metadata",
+            "artist=Persona Ficticia",
+            str(out),
+        ],
+        check=True,
+    )
     r = client.post("/authenticity/audio", content=out.read_bytes())
     assert r.status_code == 200, r.text
     body = r.json()
@@ -342,9 +404,29 @@ def test_audio_endpoint_errors(client):
 def test_video_endpoint(client, fakes, tmp_path):
     out = tmp_path / "in.mp4"
     subprocess.run(
-        ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i",
-         "testsrc=size=320x240:rate=10:duration=3", "-f", "lavfi", "-i", "sine=frequency=500:duration=3",
-         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", str(out)],
+        [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "testsrc=size=320x240:rate=10:duration=3",
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=frequency=500:duration=3",
+            "-c:v",
+            "libx264",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "aac",
+            "-shortest",
+            str(out),
+        ],
         check=True,
     )
     r = client.post("/authenticity/video?frames=6", content=out.read_bytes())

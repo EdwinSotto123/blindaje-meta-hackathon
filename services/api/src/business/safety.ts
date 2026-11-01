@@ -44,7 +44,18 @@ export function hasLongDigits(text: string): boolean {
 }
 
 /** Claves cuyo valor no es texto libre (identificadores de fila y de distrito, correos y fechas ISO). */
-const RAW_KEYS = new Set(["id", "org_id", "email", "approved_at", "actualizado_at", "actualizado", "created_at", "semana", "desde", "distrito"]);
+const RAW_KEYS = new Set([
+  "id",
+  "org_id",
+  "email",
+  "approved_at",
+  "actualizado_at",
+  "actualizado",
+  "created_at",
+  "semana",
+  "desde",
+  "distrito",
+]);
 
 /** Aplica `sanitizePublicText` a todos los textos de una respuesta para negocios. */
 export function sanitizeDeep<T>(value: T): T {
@@ -55,23 +66,79 @@ export function sanitizeDeep<T>(value: T): T {
 // Consejos inseguros: pagar, negociar o actuar contra personas
 // ---------------------------------------------------------------------------
 
-const PAGAR = /^(?:pag(?:a|ar|ue|ues|uen|ad|ando|arles?|arlos?|arla|ale|ales|alo|uele|ueles)|pág(?:a|ale|ales|alo|uele|ueles|ales)|yape(?:a|ar|e|es|en|ales?|arles?)|yapé(?:ale|ales)|deposit(?:a|ar|e|es|en|ales?|arles?)|depósit(?:ale|ales)|transfi(?:ere|eras|eran|érele|éreles)|transferir(?:le|les)?|abon(?:a|ar|e|es|ales?))$/;
-const NEGOCIAR = /^(?:negoci(?:a|ar|e|es|en|ad|ando|arlo|arla|ales?|arles?|ación|aciones)|negocí(?:a|ale|ales)|regate(?:a|ar|e|es)|transa|transar|transes)$/;
-const TACTICO = /^(?:sigue|seguir|sigas|siguen|persigue|perseguir|persigas|enfrent\p{L}*|confront\p{L}*|encar(?:a|ar|es|alo|alos)|identific\p{L}*|ubic(?:a|ar|es|alo|alos)|rastre\p{L}*|captur\p{L}*|atrap\p{L}*|vigil(?:a|ar|es|alo|alos)|fotografí\p{L}*|fotografi\p{L}*|investig\p{L}*|desenmascar\p{L}*|busc(?:a|ar|es)|averigu\p{L}*)$/u;
+const PAGAR =
+  /^(?:pag(?:a|ar|ue|ues|uen|ad|ando|arles?|arlos?|arla|ale|ales|alo|uele|ueles)|pág(?:a|ale|ales|alo|uele|ueles|ales)|yape(?:a|ar|e|es|en|ales?|arles?)|yapé(?:ale|ales)|deposit(?:a|ar|e|es|en|ales?|arles?)|depósit(?:ale|ales)|transfi(?:ere|eras|eran|érele|éreles)|transferir(?:le|les)?|abon(?:a|ar|e|es|ales?))$/;
+const NEGOCIAR =
+  /^(?:negoci(?:a|ar|e|es|en|ad|ando|arlo|arla|ales?|arles?|ación|aciones)|negocí(?:a|ale|ales)|regate(?:a|ar|e|es)|transa|transar|transes)$/;
+const TACTICO =
+  /^(?:sigue|seguir|sigas|siguen|persigue|perseguir|persigas|enfrent\p{L}*|confront\p{L}*|encar(?:a|ar|es|alo|alos)|identific\p{L}*|ubic(?:a|ar|es|alo|alos)|rastre\p{L}*|captur\p{L}*|atrap\p{L}*|vigil(?:a|ar|es|alo|alos)|fotografí\p{L}*|fotografi\p{L}*|investig\p{L}*|desenmascar\p{L}*|busc(?:a|ar|es)|averigu\p{L}*)$/u;
 /** Objeto de un verbo táctico que es una persona: "enfrenta al cobrador", "identifica a quien llama". */
-const OBJ_PERSONA = /^(?:quien|quién|quienes|quiénes|extorsionador\p{L}*|cobrador\p{L}*|delincuente\p{L}*|criminal\p{L}*|sospechos\p{L}*|cabecilla\p{L}*|llamante\p{L}*|persona\p{L}*|responsable\p{L}*|miembro\p{L}*|integrante\p{L}*|jefe\p{L}*|ell[oa]s|él|ella|aquel\p{L}*|tipo|sujeto\p{L}*|cómplice\p{L}*|complice\p{L}*)$/u;
-const ARTICULO = /^(?:a|al|los|las|el|la|del|de|un|una|unos|unas|esos?|esas?|estos?|estas?|aquellos?|aquellas?|tu|tus|su|sus)$/;
+const OBJ_PERSONA =
+  /^(?:quien|quién|quienes|quiénes|extorsionador\p{L}*|cobrador\p{L}*|delincuente\p{L}*|criminal\p{L}*|sospechos\p{L}*|cabecilla\p{L}*|llamante\p{L}*|persona\p{L}*|responsable\p{L}*|miembro\p{L}*|integrante\p{L}*|jefe\p{L}*|ell[oa]s|él|ella|aquel\p{L}*|tipo|sujeto\p{L}*|cómplice\p{L}*|complice\p{L}*)$/u;
+const ARTICULO =
+  /^(?:a|al|los|las|el|la|del|de|un|una|unos|unas|esos?|esas?|estos?|estas?|aquellos?|aquellas?|tu|tus|su|sus)$/;
 const FRASE_NEGOCIACION =
   /\b(?:(?:lleg(?:a|ar|ues|uen)|busc(?:a|ar|ues)|intent(?:a|ar|es)|haz|hacer|cierr(?:a|as)|cerrar)\s+(?:a\s+)?(?:un\s+)?(?:acuerdo|arreglo|trato)|(?:pid(?:e|as|an)|pedir|solicit(?:a|ar|es))\s+(?:una?\s+|más\s+)?(?:rebaja|descuento|prórroga|prorroga|plazo|tiempo)|(?:ofrec(?:e|er|es|eles|ele)|entreg(?:a|ar|ues|ales?))\s+(?:un\s+|una\s+|el\s+|la\s+|algo\s+de\s+|parte\s+del?\s+)?(?:monto|parte|pago|cuota|cupo|dinero|plata|colaboración)|(?:da|dar|dales|dale)\s+(?:un\s+|una\s+|el\s+|la\s+|algo\s+de\s+)?(?:monto|pago|cuota|cupo|dinero|plata|colaboración)|(?:tend(?:er|ió|iendo)|tiende)\s+una\s+trampa|tom(?:a|ar)\s+represalias|justicia\s+por\s+(?:tu|su|sus|tus)\s+propia)/giu;
 
-const NEGACION = new Set(["no", "nunca", "jamás", "jamas", "ni", "sin", "evita", "evites", "evitar", "eviten", "tampoco", "ningún", "ningun", "ninguna", "nadie", "nada", "rechaza", "rechazar", "niégate", "negarte"]);
+const NEGACION = new Set([
+  "no",
+  "nunca",
+  "jamás",
+  "jamas",
+  "ni",
+  "sin",
+  "evita",
+  "evites",
+  "evitar",
+  "eviten",
+  "tampoco",
+  "ningún",
+  "ningun",
+  "ninguna",
+  "nadie",
+  "nada",
+  "rechaza",
+  "rechazar",
+  "niégate",
+  "negarte",
+]);
 /** Tras una negación invierten el sentido: "no dudes en pagar", "no dejes de pagar". */
 const INVIERTE = new Set(["dudes", "duden", "dudar", "temas", "teman", "olvides", "olviden", "dejes", "dejen"]);
 /** Verbos que describen la exigencia del extorsionador, no un consejo: "si te exigen pagar…". */
 const EXIGENCIA = new Set([
-  "exigen", "exige", "exijan", "exija", "exigir", "exigiendo", "piden", "pide", "pidan", "pida", "pedir", "pidiendo", "obligan", "obliga",
-  "obliguen", "obligar", "cobran", "cobrar", "presionan", "presionar", "quieren", "quiere", "dicen", "insisten", "amenazan", "intimidan",
-  "ordenan", "ordena", "reclaman", "exigía", "pedía", "pidieron", "exigieron",
+  "exigen",
+  "exige",
+  "exijan",
+  "exija",
+  "exigir",
+  "exigiendo",
+  "piden",
+  "pide",
+  "pidan",
+  "pida",
+  "pedir",
+  "pidiendo",
+  "obligan",
+  "obliga",
+  "obliguen",
+  "obligar",
+  "cobran",
+  "cobrar",
+  "presionan",
+  "presionar",
+  "quieren",
+  "quiere",
+  "dicen",
+  "insisten",
+  "amenazan",
+  "intimidan",
+  "ordenan",
+  "ordena",
+  "reclaman",
+  "exigía",
+  "pedía",
+  "pidieron",
+  "exigieron",
 ]);
 const CONJUNCION = new Set(["y", "e", "o", "u", "pero", "sino", "luego", "después", "mejor"]);
 
@@ -153,5 +220,11 @@ export function dropUnsafeSentences(text: string): { text: string; removed: stri
   const kept: string[] = [];
   const removed: string[] = [];
   for (const s of sentences) (isUnsafeAdvice(s) ? removed : kept).push(s);
-  return { text: kept.join("").replace(/\s{2,}/g, " ").trim(), removed: removed.map((s) => s.trim()) };
+  return {
+    text: kept
+      .join("")
+      .replace(/\s{2,}/g, " ")
+      .trim(),
+    removed: removed.map((s) => s.trim()),
+  };
 }

@@ -135,8 +135,9 @@ def test_audio_embed_returns_wav_and_headers(client, fakes):
 def test_audio_embed_resamples_stereo_44k_m4a(client, tmp_path):
     from .conftest import ffmpeg_encode
 
-    src = ffmpeg_encode(to_wav(tone(440, 1.5)), ["-ar", "44100", "-ac", "2", "-c:a", "aac", "-b:a", "64k"],
-                        ".m4a", tmp_path)
+    src = ffmpeg_encode(
+        to_wav(tone(440, 1.5)), ["-ar", "44100", "-ac", "2", "-c:a", "aac", "-b:a", "64k"], ".m4a", tmp_path
+    )
     r = client.post("/watermark/audio/embed?message=0", content=src)
     assert r.status_code == 200, r.text
     ch, sr, width, _ = _wav_info(r.content)
@@ -243,8 +244,9 @@ def test_image_detect_shape(client):
     assert len(body["bits"]) == 256 and len(body["message_hex"]) == 64
 
 
-def _screenshot(photo_size=(1080, 720), screen=(1080, 2340), photo: Image.Image | None = None
-                ) -> tuple[Image.Image, tuple[int, int, int, int]]:
+def _screenshot(
+    photo_size=(1080, 720), screen=(1080, 2340), photo: Image.Image | None = None
+) -> tuple[Image.Image, tuple[int, int, int, int]]:
     """Captura falsa: fondo oscuro, barras con texto y una 'foto' (con textura si no se da) en el medio."""
     from PIL import ImageDraw
 

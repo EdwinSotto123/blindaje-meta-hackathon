@@ -69,7 +69,11 @@ export function moProbability(
   s: { similitud_texto: number | null; frases_comunes: number; mismo_canal_pago: boolean; mismo_grupo: boolean },
   c: Calibration,
 ): number {
-  const x = (s.similitud_texto ?? 0) + 0.05 * Math.min(s.frases_comunes, 3) + (s.mismo_canal_pago ? 0.03 : 0) + (s.mismo_grupo ? 0.05 : 0);
+  const x =
+    (s.similitud_texto ?? 0) +
+    0.05 * Math.min(s.frases_comunes, 3) +
+    (s.mismo_canal_pago ? 0.03 : 0) +
+    (s.mismo_grupo ? 0.05 : 0);
   return Math.min(logistic(x, c.mo.a, c.mo.b), c.mo.p_max);
 }
 
@@ -135,7 +139,11 @@ export function phraseSimilarity(a: string, b: string): number {
 export function commonPhrases(mine: string[], theirs: string[], threshold = 0.8): string[] {
   const out: string[] = [];
   for (const m of mine) {
-    if (theirs.some((t) => phraseSimilarity(m, t) >= threshold) && !out.some((o) => phraseSimilarity(o, m) >= threshold)) out.push(m);
+    if (
+      theirs.some((t) => phraseSimilarity(m, t) >= threshold) &&
+      !out.some((o) => phraseSimilarity(o, m) >= threshold)
+    )
+      out.push(m);
   }
   return out;
 }

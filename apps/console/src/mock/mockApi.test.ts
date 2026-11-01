@@ -1,6 +1,16 @@
 import * as S from "@blindaje/shared";
 import { describe, expect, it } from "vitest";
-import { DEMO_PASSWORD, ORGS, USERS, approvedAlertR002, demoUser, initialLinks, profileForR001, profileR002Invalid, vigiaDrafts } from "./fixtures";
+import {
+  DEMO_PASSWORD,
+  ORGS,
+  USERS,
+  approvedAlertR002,
+  demoUser,
+  initialLinks,
+  profileForR001,
+  profileR002Invalid,
+  vigiaDrafts,
+} from "./fixtures";
 import { MockApi } from "./mockApi";
 
 const mock = () => new MockApi({ latency: 0, persist: false });
@@ -16,7 +26,8 @@ describe("datos ficticios", () => {
     for (const p of [profileForR001("p", "muse-spark-1.3", "2026-10-20T00:00:00Z", 3), profileR002Invalid()]) {
       expect(S.ProfileView.safeParse(p).success).toBe(true);
     }
-    for (const a of [approvedAlertR002(), ...vigiaDrafts("2026-10-21T00:00:00Z", 1)]) expect(S.AlertView.safeParse(a).success).toBe(true);
+    for (const a of [approvedAlertR002(), ...vigiaDrafts("2026-10-21T00:00:00Z", 1)])
+      expect(S.AlertView.safeParse(a).success).toBe(true);
   });
 
   it("el equipo es de la organización central y las demás organizaciones son canales de difusión", () => {
@@ -40,18 +51,23 @@ describe("datos ficticios", () => {
   });
 
   it("los casos están en un distrito de la lista (con su celda interna)", () => {
-    for (const l of initialLinks()) for (const c of [l.case_a, l.case_b]) expect(S.districtOfZone(c.zona)).not.toBeNull();
+    for (const l of initialLinks())
+      for (const c of [l.case_a, l.case_b]) expect(S.districtOfZone(c.zona)).not.toBeNull();
   });
 
   it("todas las citas de los vínculos tienen formato citable", () => {
     for (const l of initialLinks()) {
       const v = l.vinculador!;
-      for (const a of [...v.afirmaciones, ...v.contradicciones]) for (const ref of a.evidencia) expect(S.isCitation(ref)).toBe(true);
+      for (const a of [...v.afirmaciones, ...v.contradicciones])
+        for (const ref of a.evidencia) expect(S.isCitation(ref)).toBe(true);
     }
   });
 
   it("cuentan la historia A-B por voz con números distintos y B-C por la misma cuenta", () => {
-    const [ab, bc] = [initialLinks().find((l) => l.label === "VIN-1")!, initialLinks().find((l) => l.label === "VIN-2")!];
+    const [ab, bc] = [
+      initialLinks().find((l) => l.label === "VIN-1")!,
+      initialLinks().find((l) => l.label === "VIN-2")!,
+    ];
     expect([ab.case_a.code, ab.case_b.code]).toEqual(["A", "B"]);
     expect(ab.signals.voz?.p).toBeGreaterThan(0.8);
     expect(ab.signals.identificador).toBeUndefined();
@@ -141,11 +157,18 @@ describe("MockApi", () => {
     await as("reviewer", api);
     const [sjl, ate] = await api.listAlerts("borrador");
     const approved = await api.decideAlert(sjl!.id, { decision: "aprobar", titulo: "Aviso para tu zona" });
-    expect(approved).toMatchObject({ status: "aprobada", approved_by: "Revisora Demo", borrador: { titulo: "Aviso para tu zona" } });
+    expect(approved).toMatchObject({
+      status: "aprobada",
+      approved_by: "Revisora Demo",
+      borrador: { titulo: "Aviso para tu zona" },
+    });
     await expect(api.decideAlert(sjl!.id, { decision: "rechazar" })).rejects.toMatchObject({ status: 409 });
     await api.logout();
     await as("analyst", api);
-    expect(await api.decideAlert(ate!.id, { decision: "rechazar" })).toMatchObject({ status: "rechazada", approved_by: "Analista Demo" });
+    expect(await api.decideAlert(ate!.id, { decision: "rechazar" })).toMatchObject({
+      status: "rechazada",
+      approved_by: "Analista Demo",
+    });
     await expect(api.runVigia()).resolves.toEqual([]);
   });
 
@@ -163,7 +186,13 @@ describe("MockApi", () => {
     await expect((await as("reviewer")).createInvites({ count: 2 })).rejects.toMatchObject({ status: 403 });
     const admin = await as("admin");
     expect(await admin.createInvites({ org_id: "org-bodegas", count: 2 })).toHaveLength(2);
-    const u = await admin.createUser({ email: "nueva@demo.blindaje.pe", display_name: "Nueva", role: "reviewer", org_id: S.CENTRAL_ORG_ID, password: "x".repeat(12) });
+    const u = await admin.createUser({
+      email: "nueva@demo.blindaje.pe",
+      display_name: "Nueva",
+      role: "reviewer",
+      org_id: S.CENTRAL_ORG_ID,
+      password: "x".repeat(12),
+    });
     expect(u.org.id).toBe(S.CENTRAL_ORG_ID);
   });
 

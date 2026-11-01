@@ -8,8 +8,16 @@ def test_health_shape(client):
     assert r.status_code == 200
     body = r.json()
     assert body["ok"] is True
-    assert set(body["models"]) == {"voice", "text", "image", "audioseal", "videoseal", "audioseal_embedder",
-                                   "videoseal_embedder", "prompt_guard"}
+    assert set(body["models"]) == {
+        "voice",
+        "text",
+        "image",
+        "audioseal",
+        "videoseal",
+        "audioseal_embedder",
+        "videoseal_embedder",
+        "prompt_guard",
+    }
     assert body["models"]["prompt_guard"]["name"].startswith("meta-llama/Llama-Prompt-Guard-2-")
     assert body["models"]["videoseal_embedder"]["dim"] == 256
     assert body["models"]["voice"]["dim"] == 192

@@ -98,8 +98,10 @@ def test_embed_route(client):
         "/voice/embed",
         json={
             "wav_b64": base64.b64encode(to_wav(wave)).decode(),
-            "turns": [{"speaker": "A", "startMs": 0, "endMs": 3_500}, {"speaker": "B", "start_ms": 3_500,
-                                                                         "end_ms": 11_500}],
+            "turns": [
+                {"speaker": "A", "startMs": 0, "endMs": 3_500},
+                {"speaker": "B", "start_ms": 3_500, "end_ms": 11_500},
+            ],
             "exclude_vectors": [victim],
         },
     )

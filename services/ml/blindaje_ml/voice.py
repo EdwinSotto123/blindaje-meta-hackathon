@@ -140,9 +140,7 @@ def plan_segments(wave: np.ndarray, turns: list[Turn] | None) -> dict[str, list[
         plan = {"A": windows_over(duration_ms)}
     out: dict[str, list[Segment]] = {}
     for spk, wins in plan.items():
-        segs = [
-            Segment(s, e) for s, e in wins if voiced_ratio(_slice(wave, s, e)) >= MIN_VOICED_RATIO
-        ]
+        segs = [Segment(s, e) for s, e in wins if voiced_ratio(_slice(wave, s, e)) >= MIN_VOICED_RATIO]
         out[spk] = segs
     return out
 

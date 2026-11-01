@@ -22,25 +22,51 @@ describe("integración con @blindaje/meta-client", () => {
           model: "muse-spark-1.3",
           status: "completed",
           output: [],
-          usage: { input_tokens: 10_000, output_tokens: 2_000, input_tokens_details: { cached_tokens: 0 }, output_tokens_details: { reasoning_tokens: 500 } },
+          usage: {
+            input_tokens: 10_000,
+            output_tokens: 2_000,
+            input_tokens_details: { cached_tokens: 0 },
+            output_tokens_details: { reasoning_tokens: 500 },
+          },
         },
         { headers: { "x-request-id": "req-ficticio" } },
       );
     };
     const client = createMetaClient({ apiKey: "sin-uso", fetch: fakeFetch, hooks, maxRetries: 0 });
 
-    await client.responses.create({ model: "muse-spark-1.3", input: "texto ficticio" }, { operation: "ficha", context: { case_id: "caso-x", cache_key: "k-1" } });
+    await client.responses.create(
+      { model: "muse-spark-1.3", input: "texto ficticio" },
+      { operation: "ficha", context: { case_id: "caso-x", cache_key: "k-1" } },
+    );
     const ok = await env.DB.prepare("SELECT * FROM api_costs WHERE status = 'ok'").first<Record<string, unknown>>();
-    expect(ok).toMatchObject({ model: "muse-spark-1.3", operation: "ficha", input_tokens: 10_000, output_tokens: 2_000, case_id: "caso-x", cache_key: "k-1", essential: 1 });
+    expect(ok).toMatchObject({
+      model: "muse-spark-1.3",
+      operation: "ficha",
+      input_tokens: 10_000,
+      output_tokens: 2_000,
+      case_id: "caso-x",
+      cache_key: "k-1",
+      essential: 1,
+    });
     expect(Number(ok!.cost_usd)).toBeCloseTo((10_000 * 1.25 + 2_000 * 4.25) / 1_000_000, 6);
 
     // Presupuesto al 80 %: Muse Wonder se bloquea antes de llamar y queda UNA fila 'blocked'.
-    await recordCost(env, { model: "muse-spark-1.3", operation: "ficha", cost_usd: 121, essential: true, status: "ok" });
-    await expect(client.responses.create({ model: "muse-wonder-1.0", input: "red ficticia" }, { operation: "cartografo" })).rejects.toMatchObject({
+    await recordCost(env, {
+      model: "muse-spark-1.3",
+      operation: "ficha",
+      cost_usd: 121,
+      essential: true,
+      status: "ok",
+    });
+    await expect(
+      client.responses.create({ model: "muse-wonder-1.0", input: "red ficticia" }, { operation: "cartografo" }),
+    ).rejects.toMatchObject({
       code: "budget_exceeded",
     });
     expect(calls).toEqual(["muse-spark-1.3"]);
-    const blocked = await env.DB.prepare("SELECT model, essential, cost_usd FROM api_costs WHERE status = 'blocked'").all();
+    const blocked = await env.DB.prepare(
+      "SELECT model, essential, cost_usd FROM api_costs WHERE status = 'blocked'",
+    ).all();
     expect(blocked.results).toEqual([{ model: "muse-wonder-1.0", essential: 0, cost_usd: 0 }]);
 
     // Lo esencial sigue pasando.

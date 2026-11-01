@@ -59,7 +59,10 @@ export function ZoneView({ distrito }: { distrito: District }) {
               ))}
             </select>
           </div>
-          <Link className="btn btn-outline btn-sm" to={{ pathname: "/elegir", search: choiceSearch({ distrito: distrito.id, rubro }) }}>
+          <Link
+            className="btn btn-outline btn-sm"
+            to={{ pathname: "/elegir", search: choiceSearch({ distrito: distrito.id, rubro }) }}
+          >
             Otro distrito
           </Link>
         </div>
@@ -140,12 +143,13 @@ export function Panorama({
           {/* Sin nivel, la tarjeta de la respuesta se dibuja punteada: la ausencia, no un hueco. */}
           <div className="answer-card" data-nivel="sin_datos">
             <p className="answer-text">
-              En {name}, para {rubro ? sectorLabel(rubro) : "todos los rubros"}, todavía no podemos decirte el nivel de riesgo.
+              En {name}, para {rubro ? sectorLabel(rubro) : "todos los rubros"}, todavía no podemos decirte el nivel de
+              riesgo.
             </p>
             <Threshold detail={risk.aviso_umbral} />
             <p className="answer-facts">
-              Eso no quiere decir que no pase nada: un distrito con pocos casos se ve igual que uno sin casos. Si te llega un mensaje que te pide
-              dinero, sigue el protocolo.
+              Eso no quiere decir que no pase nada: un distrito con pocos casos se ve igual que uno sin casos. Si te
+              llega un mensaje que te pide dinero, sigue el protocolo.
             </p>
           </div>
           {alertLine}
@@ -154,7 +158,10 @@ export function Panorama({
           </Note>
         </div>
         <div className="pending">
-          <p>Aquí verás el rango de casos por semana, cómo operan y qué rubros reciben casos cuando haya al menos 5 casos de 3 personas distintas.</p>
+          <p>
+            Aquí verás el rango de casos por semana, cómo operan y qué rubros reciben casos cuando haya al menos 5 casos
+            de 3 personas distintas.
+          </p>
         </div>
         {next}
       </>
@@ -162,7 +169,9 @@ export function Panorama({
   }
 
   const lastWeek = risk.tendencia[risk.tendencia.length - 1];
-  const toToday = lastWeek ? new Date(`${lastWeek.semana}T00:00:00-05:00`).getTime() + 7 * 86_400_000 > Date.parse(risk.actualizado_at) : false;
+  const toToday = lastWeek
+    ? new Date(`${lastWeek.semana}T00:00:00-05:00`).getTime() + 7 * 86_400_000 > Date.parse(risk.actualizado_at)
+    : false;
   const weekRows: BandRow[] = risk.tendencia.map((t, i) => {
     const row: BandRow = { key: t.semana, label: fmtShort(t.semana), band: t.casos };
     if (i === risk.tendencia.length - 1 && toToday) row.mark = "hasta hoy";
@@ -194,7 +203,8 @@ export function Panorama({
               ))}
             </ol>
             <p className="answer-facts">
-              <strong>{capitalize(bandPhrase(risk.casos_periodo!))}</strong> en los últimos {risk.periodo_dias} días. {NIVEL_HINT[risk.nivel_riesgo]}
+              <strong>{capitalize(bandPhrase(risk.casos_periodo!))}</strong> en los últimos {risk.periodo_dias} días.{" "}
+              {NIVEL_HINT[risk.nivel_riesgo]}
             </p>
           </div>
         </div>
@@ -222,7 +232,9 @@ export function Panorama({
 
       <Section id="modalidades" title="Lo que está circulando">
         {risk.modalidades_activas.length === 0 ? (
-          <Empty title="No hay modalidades que mostrar">En este periodo no se repitió ninguna forma de operar en {name}.</Empty>
+          <Empty title="No hay modalidades que mostrar">
+            En este periodo no se repitió ninguna forma de operar en {name}.
+          </Empty>
         ) : (
           <ul className="plain stack">
             {risk.modalidades_activas.map((m) => (

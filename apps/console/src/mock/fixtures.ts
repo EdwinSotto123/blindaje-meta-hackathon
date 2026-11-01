@@ -60,10 +60,46 @@ const CENTRAL_NAME = "Equipo de análisis de Blindaje (demo)";
  * asociaciones que reparten la app. Sus códigos solo marcan por dónde llegó la persona.
  */
 export const ORGS: OrgView[] = [
-  { id: CENTRAL_ORG_ID, name: CENTRAL_NAME, kind: "alianza", district: null, created_at: "2026-10-26T14:50:00Z", is_demo: true, devices: 2, users: 3 },
-  { id: "org-bodegas", name: "Asociación de Bodegueros de San Juan de Lurigancho (ficticia)", kind: "gremio", district: "San Juan de Lurigancho", created_at: "2026-10-26T15:00:00Z", is_demo: true, devices: 2, users: 0 },
-  { id: "org-mototaxi", name: "Gremio de Mototaxistas Unidos (ficticio)", kind: "gremio", district: "Ate", created_at: "2026-10-26T15:05:00Z", is_demo: true, devices: 1, users: 0 },
-  { id: "org-mercado", name: "Asociación del Mercado de La Victoria (ficticia)", kind: "asociacion_mercado", district: "La Victoria", created_at: "2026-10-26T15:10:00Z", is_demo: true, devices: 1, users: 0 },
+  {
+    id: CENTRAL_ORG_ID,
+    name: CENTRAL_NAME,
+    kind: "alianza",
+    district: null,
+    created_at: "2026-10-26T14:50:00Z",
+    is_demo: true,
+    devices: 2,
+    users: 3,
+  },
+  {
+    id: "org-bodegas",
+    name: "Asociación de Bodegueros de San Juan de Lurigancho (ficticia)",
+    kind: "gremio",
+    district: "San Juan de Lurigancho",
+    created_at: "2026-10-26T15:00:00Z",
+    is_demo: true,
+    devices: 2,
+    users: 0,
+  },
+  {
+    id: "org-mototaxi",
+    name: "Gremio de Mototaxistas Unidos (ficticio)",
+    kind: "gremio",
+    district: "Ate",
+    created_at: "2026-10-26T15:05:00Z",
+    is_demo: true,
+    devices: 1,
+    users: 0,
+  },
+  {
+    id: "org-mercado",
+    name: "Asociación del Mercado de La Victoria (ficticia)",
+    kind: "asociacion_mercado",
+    district: "La Victoria",
+    created_at: "2026-10-26T15:10:00Z",
+    is_demo: true,
+    devices: 1,
+    users: 0,
+  },
 ];
 
 export const DEMO_PASSWORD = "demo-blindaje";
@@ -137,8 +173,22 @@ function evidence(code: string, seeds: EvidenceSeed[]): CaseSide["evidencia"] {
 // Llama Prompt Guard 2 (inyección de instrucciones en el texto de la evidencia)
 // ---------------------------------------------------------------------------
 
-function guard(label: "benigno" | "inyeccion", score: number, textos = 1, marcados = label === "inyeccion" ? 1 : 0): PromptGuardResult {
-  return { status: "revisado", label, score, model: "llama-prompt-guard-2-86m", threshold: 0.5, textos, marcados, revisado_at: "2026-10-19T16:45:00Z" };
+function guard(
+  label: "benigno" | "inyeccion",
+  score: number,
+  textos = 1,
+  marcados = label === "inyeccion" ? 1 : 0,
+): PromptGuardResult {
+  return {
+    status: "revisado",
+    label,
+    score,
+    model: "llama-prompt-guard-2-86m",
+    threshold: 0.5,
+    textos,
+    marcados,
+    revisado_at: "2026-10-19T16:45:00Z",
+  };
 }
 
 /**
@@ -155,7 +205,16 @@ export const PROMPT_GUARD: Record<string, PromptGuardResult> = {
   "EV-B3": guard("benigno", 0.01, 4),
   "EV-C1": guard("inyeccion", 0.98),
   "EV-C2": guard("benigno", 0.02, 4),
-  "EV-D1": { status: "no_revisado", label: null, score: null, model: null, threshold: null, textos: 1, marcados: 0, revisado_at: "2026-09-21T11:31:00Z" },
+  "EV-D1": {
+    status: "no_revisado",
+    label: null,
+    score: null,
+    model: null,
+    threshold: null,
+    textos: 1,
+    marcados: 0,
+    revisado_at: "2026-09-21T11:31:00Z",
+  },
   "EV-E2": guard("benigno", 0.05),
   "EV-F1": guard("benigno", 0.02),
 };
@@ -175,16 +234,39 @@ function tecnicas(tipo: "audio" | "imagen" | "video", over: Partial<Tecnicas> = 
     c2pa: { present: false, ai_generated: null, generator: null, claims: [] },
     metadata:
       tipo === "audio"
-        ? { present: true, software: null, digital_source_type: null, suspicious: [], fields: { codec: "opus", canales: "1" } }
+        ? {
+            present: true,
+            software: null,
+            digital_source_type: null,
+            suspicious: [],
+            fields: { codec: "opus", canales: "1" },
+          }
         : tipo === "video"
-          ? { present: true, software: null, digital_source_type: null, suspicious: [], fields: { codec: "h264", creation_time: "2026-09-25" } }
-          : { present: true, software: null, digital_source_type: null, suspicious: [], fields: { Make: "(celular)", DateTimeOriginal: "2026:10:06 16:52" } },
+          ? {
+              present: true,
+              software: null,
+              digital_source_type: null,
+              suspicious: [],
+              fields: { codec: "h264", creation_time: "2026-09-25" },
+            }
+          : {
+              present: true,
+              software: null,
+              digital_source_type: null,
+              suspicious: [],
+              fields: { Make: "(celular)", DateTimeOriginal: "2026:10:06 16:52" },
+            },
     synthetic_speech: tipo === "audio" ? { detector: "ninguno", score: 0, available: false } : null,
     ...over,
   };
 }
 
-function limpio(label: string, tipo: "audio" | "imagen" | "video", explicacion: string, analizado_at: string): ResultadoAutenticidad {
+function limpio(
+  label: string,
+  tipo: "audio" | "imagen" | "video",
+  explicacion: string,
+  analizado_at: string,
+): ResultadoAutenticidad {
   return {
     evidence_label: label,
     tipo,
@@ -205,10 +287,30 @@ function limpio(label: string, tipo: "audio" | "imagen" | "video", explicacion: 
 }
 
 export const AUTENTICIDAD: Record<string, ResultadoAutenticidad> = {
-  "EV-A1": limpio("EV-A1", "audio", "La voz tiene respiración, pausas y ruido de calle coherentes entre sí. No se oyen señales de una voz generada.", "2026-10-04T00:41:30Z"),
-  "EV-A2": limpio("EV-A2", "audio", "Voz con respiración y fondo continuo; no se observan cortes ni un timbre metálico.", "2026-10-06T22:06:20Z"),
-  "EV-A4": limpio("EV-A4", "imagen", "Sombras, reflejos y el texto de la nota son coherentes con una foto tomada con celular.", "2026-10-06T21:59:10Z"),
-  "EV-B1": limpio("EV-B1", "audio", "La voz y el ruido de fondo son continuos; no hay señales de generación.", "2026-10-11T13:16:40Z"),
+  "EV-A1": limpio(
+    "EV-A1",
+    "audio",
+    "La voz tiene respiración, pausas y ruido de calle coherentes entre sí. No se oyen señales de una voz generada.",
+    "2026-10-04T00:41:30Z",
+  ),
+  "EV-A2": limpio(
+    "EV-A2",
+    "audio",
+    "Voz con respiración y fondo continuo; no se observan cortes ni un timbre metálico.",
+    "2026-10-06T22:06:20Z",
+  ),
+  "EV-A4": limpio(
+    "EV-A4",
+    "imagen",
+    "Sombras, reflejos y el texto de la nota son coherentes con una foto tomada con celular.",
+    "2026-10-06T21:59:10Z",
+  ),
+  "EV-B1": limpio(
+    "EV-B1",
+    "audio",
+    "La voz y el ruido de fondo son continuos; no hay señales de generación.",
+    "2026-10-11T13:16:40Z",
+  ),
   "EV-B3": {
     evidence_label: "EV-B3",
     tipo: "audio",
@@ -216,9 +318,17 @@ export const AUTENTICIDAD: Record<string, ResultadoAutenticidad> = {
     tecnicas: tecnicas("audio"),
     forense: {
       nivel: "indicios_debiles",
-      senales: [{ fuente: "analisis_audio", descripcion: "Un corte abrupto a los 14 segundos, podría ser un empalme", peso: "debil" }],
-      explicacion: "Hay un corte abrupto que podría ser un empalme o una pausa de la grabación. El resto de la voz suena natural.",
-      limitaciones: "Un corte también aparece al pausar la grabación en WhatsApp; no basta para decir que el audio fue editado.",
+      senales: [
+        {
+          fuente: "analisis_audio",
+          descripcion: "Un corte abrupto a los 14 segundos, podría ser un empalme",
+          peso: "debil",
+        },
+      ],
+      explicacion:
+        "Hay un corte abrupto que podría ser un empalme o una pausa de la grabación. El resto de la voz suena natural.",
+      limitaciones:
+        "Un corte también aparece al pausar la grabación en WhatsApp; no basta para decir que el audio fue editado.",
     },
     model: "muse-spark-1.2",
     analizado_at: "2026-10-13T15:03:10Z",
@@ -234,36 +344,70 @@ export const AUTENTICIDAD: Record<string, ResultadoAutenticidad> = {
     forense: {
       nivel: "indicios_fuertes",
       senales: [
-        { fuente: "analisis_audio", descripcion: "Entonación demasiado uniforme y sin respiración entre frases", peso: "fuerte" },
-        { fuente: "analisis_audio", descripcion: "El ruido de fondo desaparece en seco entre palabras", peso: "fuerte" },
+        {
+          fuente: "analisis_audio",
+          descripcion: "Entonación demasiado uniforme y sin respiración entre frases",
+          peso: "fuerte",
+        },
+        {
+          fuente: "analisis_audio",
+          descripcion: "El ruido de fondo desaparece en seco entre palabras",
+          peso: "fuerte",
+        },
         { fuente: "metadatos", descripcion: "El archivo no trae datos de la grabación", peso: "debil" },
       ],
       explicacion:
         "La voz podría ser sintética: la entonación es plana, no se oye respiración y el fondo se corta entre palabras, lo que sugiere un texto leído por un generador de voz.",
-      limitaciones: "Sin marca de agua no se puede confirmar que sea una voz hecha con IA; una grabación muy limpia o procesada podría sonar parecido.",
+      limitaciones:
+        "Sin marca de agua no se puede confirmar que sea una voz hecha con IA; una grabación muy limpia o procesada podría sonar parecido.",
     },
     model: "muse-spark-1.2",
     analizado_at: "2026-10-19T16:41:50Z",
   },
-  "EV-D2": limpio("EV-D2", "video", "Movimiento, sombras y desenfoque coherentes entre cuadros; la placa se lee igual en todo el recorrido.", "2026-09-25T12:02:00Z"),
-  "EV-E1": limpio("EV-E1", "video", "La moto y el fondo se mueven de forma coherente; no se observan empalmes.", "2026-09-30T12:11:30Z"),
+  "EV-D2": limpio(
+    "EV-D2",
+    "video",
+    "Movimiento, sombras y desenfoque coherentes entre cuadros; la placa se lee igual en todo el recorrido.",
+    "2026-09-25T12:02:00Z",
+  ),
+  "EV-E1": limpio(
+    "EV-E1",
+    "video",
+    "La moto y el fondo se mueven de forma coherente; no se observan empalmes.",
+    "2026-09-30T12:11:30Z",
+  ),
   "EV-F2": {
     evidence_label: "EV-F2",
     tipo: "imagen",
     nivel: "indicios_fuertes",
     tecnicas: tecnicas("imagen", {
-      metadata: { present: false, software: null, digital_source_type: null, suspicious: ["sin datos de cámara ni fecha de captura"], fields: {} },
+      metadata: {
+        present: false,
+        software: null,
+        digital_source_type: null,
+        suspicious: ["sin datos de cámara ni fecha de captura"],
+        fields: {},
+      },
     }),
     forense: {
       nivel: "indicios_fuertes",
       senales: [
-        { fuente: "analisis_visual", descripcion: "La sombra de la bala va en otra dirección que la del resto de la mesa", peso: "fuerte" },
-        { fuente: "analisis_visual", descripcion: "Textura del metal demasiado lisa y bordes que se funden con el fondo", peso: "fuerte" },
+        {
+          fuente: "analisis_visual",
+          descripcion: "La sombra de la bala va en otra dirección que la del resto de la mesa",
+          peso: "fuerte",
+        },
+        {
+          fuente: "analisis_visual",
+          descripcion: "Textura del metal demasiado lisa y bordes que se funden con el fondo",
+          peso: "fuerte",
+        },
         { fuente: "metadatos", descripcion: "Sin datos de cámara ni fecha de captura", peso: "debil" },
       ],
       explicacion:
         "La foto podría estar generada con IA: la sombra de la bala no coincide con la luz de la escena y la textura del metal es demasiado uniforme.",
-      limitaciones: "Sin marca de agua ni C2PA no se puede confirmar. Una foto reenviada por WhatsApp también pierde los datos de cámara.",
+      limitaciones:
+        "Sin marca de agua ni C2PA no se puede confirmar. Una foto reenviada por WhatsApp también pierde los datos de cámara.",
     },
     model: "muse-spark-1.3",
     analizado_at: "2026-10-16T01:03:40Z",
@@ -335,7 +479,7 @@ const FICHA_C: FichaStored = {
   grupo_que_dice_ser: "Los X",
   frases_firma: ["habla con el jefe", "ya sabemos dónde trabajas"],
   escalamiento: [],
-  resumen_mo: "Mensaje con cuenta de Yape para el pago y audio de seguimiento; dice ser de \"Los X\".",
+  resumen_mo: 'Mensaje con cuenta de Yape para el pago y audio de seguimiento; dice ser de "Los X".',
   fuentes: ["EV-C1", "EV-C2"],
 };
 
@@ -478,13 +622,7 @@ export const CASES: Record<string, CaseSide> = {
 };
 
 /** Transcripciones (ficticias) de los fragmentos relevantes. */
-function fragment(
-  evidenceLabel: string,
-  voice: string,
-  start_ms: number,
-  end_ms: number,
-  text: string,
-): AudioFragment {
+function fragment(evidenceLabel: string, voice: string, start_ms: number, end_ms: number, text: string): AudioFragment {
   const id = `ev-${evidenceLabel.slice(3).toLowerCase()}`;
   return {
     evidence_label: evidenceLabel,
@@ -539,11 +677,20 @@ export function initialLinks(): LinkView[] {
         puntaje_ajustado: 0.91,
         recomendacion: "probable",
         explicacion:
-          "Posible vínculo A–B (0.91). La voz de EV-B1 se parece a la de EV-A1 y EV-A2 en 4 de 5 segmentos (V-3, V-7). Ambas fichas repiten \"habla con el jefe\" y \"no llames a la policía\" y piden pago por Yape con plazo de 48 horas (FICHA-A, FICHA-B). Los números de contacto son distintos (ID-7c41e2, ID-b20d5f).",
+          'Posible vínculo A–B (0.91). La voz de EV-B1 se parece a la de EV-A1 y EV-A2 en 4 de 5 segmentos (V-3, V-7). Ambas fichas repiten "habla con el jefe" y "no llames a la policía" y piden pago por Yape con plazo de 48 horas (FICHA-A, FICHA-B). Los números de contacto son distintos (ID-7c41e2, ID-b20d5f).',
         afirmaciones: [
-          { texto: "La voz del audio B1 coincide con la de A1 y A2 en 4 de 5 segmentos de al menos 3 segundos.", evidencia: ["V-3", "V-7", "EV-A1", "EV-A2", "EV-B1"] },
-          { texto: "Los dos guiones repiten \"habla con el jefe\" y \"no llames a la policía\".", evidencia: ["FICHA-A", "FICHA-B", "EV-A1", "EV-B1"] },
-          { texto: "Ambos casos piden pago por Yape con plazo de 48 horas y dicen ser de \"Los X\".", evidencia: ["EV-A3", "EV-B2"] },
+          {
+            texto: "La voz del audio B1 coincide con la de A1 y A2 en 4 de 5 segmentos de al menos 3 segundos.",
+            evidencia: ["V-3", "V-7", "EV-A1", "EV-A2", "EV-B1"],
+          },
+          {
+            texto: 'Los dos guiones repiten "habla con el jefe" y "no llames a la policía".',
+            evidencia: ["FICHA-A", "FICHA-B", "EV-A1", "EV-B1"],
+          },
+          {
+            texto: 'Ambos casos piden pago por Yape con plazo de 48 horas y dicen ser de "Los X".',
+            evidencia: ["EV-A3", "EV-B2"],
+          },
         ],
         contradicciones: [
           { texto: "Los números de contacto son distintos.", evidencia: ["ID-7c41e2", "ID-b20d5f"] },
@@ -592,10 +739,16 @@ export function initialLinks(): LinkView[] {
         puntaje_ajustado: 0.95,
         recomendacion: "probable",
         explicacion:
-          "La cuenta de Yape ID-3fa9c1 aparece como cuenta de cobro en EV-B2 y EV-C1. Ambos casos dicen ser de \"Los X\" y repiten \"habla con el jefe\" (FICHA-B, FICHA-C). La voz de EV-C2 no se parece a la de B (V-7, V-9): podría hablar otra persona de la misma estructura, o una voz sintética, porque EV-C2 tiene indicios de haber sido generado con IA.",
+          'La cuenta de Yape ID-3fa9c1 aparece como cuenta de cobro en EV-B2 y EV-C1. Ambos casos dicen ser de "Los X" y repiten "habla con el jefe" (FICHA-B, FICHA-C). La voz de EV-C2 no se parece a la de B (V-7, V-9): podría hablar otra persona de la misma estructura, o una voz sintética, porque EV-C2 tiene indicios de haber sido generado con IA.',
         afirmaciones: [
-          { texto: "La misma cuenta de Yape recibe los pagos en los dos casos.", evidencia: ["ID-3fa9c1", "EV-B2", "EV-C1"] },
-          { texto: "Los dos casos dicen ser de \"Los X\" y repiten \"habla con el jefe\".", evidencia: ["FICHA-B", "FICHA-C", "EV-B1", "EV-C2"] },
+          {
+            texto: "La misma cuenta de Yape recibe los pagos en los dos casos.",
+            evidencia: ["ID-3fa9c1", "EV-B2", "EV-C1"],
+          },
+          {
+            texto: 'Los dos casos dicen ser de "Los X" y repiten "habla con el jefe".',
+            evidencia: ["FICHA-B", "FICHA-C", "EV-B1", "EV-C2"],
+          },
         ],
         contradicciones: [{ texto: "Las voces de B y C no coinciden.", evidencia: ["V-7", "V-9", "EV-C2"] }],
       },
@@ -634,10 +787,15 @@ export function initialLinks(): LinkView[] {
         puntaje_ajustado: 0.62,
         recomendacion: "por_revisar",
         explicacion:
-          "Las fotos de una bala de EV-A4 y EV-F2 son parecidas (IMG-1, IMG-5), pero no idénticas. F pide pago en efectivo y no dice ser de \"Los X\" (FICHA-F). La similitud visual sola no basta: revisa si es la misma plantilla. EV-F2 tiene indicios de haber sido generada con IA.",
-        afirmaciones: [{ texto: "Los recortes de la bala tienen similitud visual alta (DINOv2 0.83).", evidencia: ["IMG-1", "IMG-5", "EV-A4", "EV-F2"] }],
+          'Las fotos de una bala de EV-A4 y EV-F2 son parecidas (IMG-1, IMG-5), pero no idénticas. F pide pago en efectivo y no dice ser de "Los X" (FICHA-F). La similitud visual sola no basta: revisa si es la misma plantilla. EV-F2 tiene indicios de haber sido generada con IA.',
+        afirmaciones: [
+          {
+            texto: "Los recortes de la bala tienen similitud visual alta (DINOv2 0.83).",
+            evidencia: ["IMG-1", "IMG-5", "EV-A4", "EV-F2"],
+          },
+        ],
         contradicciones: [
-          { texto: "F pide pago en efectivo y no dice ser de \"Los X\".", evidencia: ["FICHA-F", "EV-F1"] },
+          { texto: 'F pide pago en efectivo y no dice ser de "Los X".', evidencia: ["FICHA-F", "EV-F1"] },
           { texto: "Las fotos no son idénticas: distancia de Hamming 14.", evidencia: ["IMG-1", "IMG-5"] },
         ],
       },
@@ -665,8 +823,11 @@ export function initialLinks(): LinkView[] {
       vinculador: {
         puntaje_ajustado: 0.95,
         recomendacion: "probable",
-        explicacion: "La misma placa ID-a4419b aparece en los videos de seguimiento EV-D2 y EV-E1. Ambos casos usan la frase \"te estamos siguiendo\" (FICHA-D, FICHA-E).",
-        afirmaciones: [{ texto: "La misma placa aparece en los dos videos.", evidencia: ["ID-a4419b", "EV-D2", "EV-E1"] }],
+        explicacion:
+          'La misma placa ID-a4419b aparece en los videos de seguimiento EV-D2 y EV-E1. Ambos casos usan la frase "te estamos siguiendo" (FICHA-D, FICHA-E).',
+        afirmaciones: [
+          { texto: "La misma placa aparece en los dos videos.", evidencia: ["ID-a4419b", "EV-D2", "EV-E1"] },
+        ],
         contradicciones: [],
       },
       vinculador_valid: true,
@@ -748,7 +909,13 @@ export function buildGraph(caseCodes: string[], links: LinkView[]): GraphBuild {
       id: caseNode,
       type: "caso",
       label: `Caso ${code}`,
-      data: { code, sector: c.sector, zona: c.zona, primer_contacto: c.primer_contacto, evidencia: c.evidencia.map((e) => e.label) },
+      data: {
+        code,
+        sector: c.sector,
+        zona: c.zona,
+        primer_contacto: c.primer_contacto,
+        evidencia: c.evidencia.map((e) => e.label),
+      },
     });
     const seed = GRAPH_SEEDS[code];
     for (const v of seed?.voices ?? []) {
@@ -758,7 +925,12 @@ export function buildGraph(caseCodes: string[], links: LinkView[]): GraphBuild {
       const casos = new Set([...((prev?.data?.casos as string[] | undefined) ?? []), code]);
       const ev = new Set([...((prev?.data?.evidencia as string[] | undefined) ?? []), ...v.evidencia]);
       const segs = ((prev?.data?.segmentos as number | undefined) ?? 0) + v.segmentos;
-      nodes.set(id, { id, type: "voz", label: v.label, data: { huellas: [...huellas], casos: [...casos], segmentos: segs, evidencia: [...ev] } });
+      nodes.set(id, {
+        id,
+        type: "voz",
+        label: v.label,
+        data: { huellas: [...huellas], casos: [...casos], segmentos: segs, evidencia: [...ev] },
+      });
       addEdge(caseNode, id, "voz");
     }
     for (const ident of c.ficha?.identificadores ?? []) {
@@ -783,7 +955,12 @@ export function buildGraph(caseCodes: string[], links: LinkView[]): GraphBuild {
     }
     for (const img of seed?.images ?? []) {
       const id = `img-${img.label}`;
-      nodes.set(id, { id, type: "imagen", label: img.label, data: { evidencia: [img.evidencia], descripcion: img.descripcion, casos: [code] } });
+      nodes.set(id, {
+        id,
+        type: "imagen",
+        label: img.label,
+        data: { evidencia: [img.evidencia], descripcion: img.descripcion, casos: [code] },
+      });
       addEdge(caseNode, id, "imagen");
     }
   }
@@ -801,19 +978,49 @@ export function buildGraph(caseCodes: string[], links: LinkView[]): GraphBuild {
 }
 
 export const TIMELINE: (TimelineEvent & { caso: string })[] = [
-  { fecha: "2026-10-03T19:40:00-05:00", caso: "A", texto: "Primer audio: voz masculina dice ser de \"Los X\".", evidencia: ["EV-A1"] },
-  { fecha: "2026-10-04T09:12:00-05:00", caso: "A", texto: "Mensaje: exige S/ 2,000 por Yape en 48 horas.", evidencia: ["EV-A3"] },
+  {
+    fecha: "2026-10-03T19:40:00-05:00",
+    caso: "A",
+    texto: 'Primer audio: voz masculina dice ser de "Los X".',
+    evidencia: ["EV-A1"],
+  },
+  {
+    fecha: "2026-10-04T09:12:00-05:00",
+    caso: "A",
+    texto: "Mensaje: exige S/ 2,000 por Yape en 48 horas.",
+    evidencia: ["EV-A3"],
+  },
   { fecha: "2026-10-06T16:58:00-05:00", caso: "A", texto: "Foto del local con una bala encima.", evidencia: ["EV-A4"] },
-  { fecha: "2026-10-06T17:05:00-05:00", caso: "A", texto: "Segundo audio: \"tienes 48 horas\".", evidencia: ["EV-A2"] },
-  { fecha: "2026-10-11T08:15:00-05:00", caso: "B", texto: "Audio desde otro número con la misma voz.", evidencia: ["EV-B1"] },
-  { fecha: "2026-10-11T08:20:00-05:00", caso: "B", texto: "Mensaje con la cuenta de Yape para el cupo semanal.", evidencia: ["EV-B2"] },
+  { fecha: "2026-10-06T17:05:00-05:00", caso: "A", texto: 'Segundo audio: "tienes 48 horas".', evidencia: ["EV-A2"] },
+  {
+    fecha: "2026-10-11T08:15:00-05:00",
+    caso: "B",
+    texto: "Audio desde otro número con la misma voz.",
+    evidencia: ["EV-B1"],
+  },
+  {
+    fecha: "2026-10-11T08:20:00-05:00",
+    caso: "B",
+    texto: "Mensaje con la cuenta de Yape para el cupo semanal.",
+    evidencia: ["EV-B2"],
+  },
   { fecha: "2026-10-13T10:02:00-05:00", caso: "B", texto: "Segundo audio: el plazo ya corre.", evidencia: ["EV-B3"] },
-  { fecha: "2026-10-18T10:05:00-05:00", caso: "C", texto: "Mensaje con la misma cuenta de Yape que en B.", evidencia: ["EV-C1"] },
+  {
+    fecha: "2026-10-18T10:05:00-05:00",
+    caso: "C",
+    texto: "Mensaje con la misma cuenta de Yape que en B.",
+    evidencia: ["EV-C1"],
+  },
   { fecha: "2026-10-19T11:40:00-05:00", caso: "C", texto: "Audio de seguimiento con otra voz.", evidencia: ["EV-C2"] },
   { fecha: "2026-09-21T06:30:00-05:00", caso: "D", texto: "Mensaje: cobro semanal en efectivo.", evidencia: ["EV-D1"] },
   { fecha: "2026-09-25T07:00:00-05:00", caso: "D", texto: "Video: una moto sigue la unidad.", evidencia: ["EV-D2"] },
-  { fecha: "2026-09-29T07:10:00-05:00", caso: "E", texto: "Mensaje: \"te estamos siguiendo\".", evidencia: ["EV-E2"] },
-  { fecha: "2026-09-30T07:10:00-05:00", caso: "E", texto: "Video: la misma moto, placa legible.", evidencia: ["EV-E1"] },
+  { fecha: "2026-09-29T07:10:00-05:00", caso: "E", texto: 'Mensaje: "te estamos siguiendo".', evidencia: ["EV-E2"] },
+  {
+    fecha: "2026-09-30T07:10:00-05:00",
+    caso: "E",
+    texto: "Video: la misma moto, placa legible.",
+    evidencia: ["EV-E1"],
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -823,23 +1030,51 @@ export const TIMELINE: (TimelineEvent & { caso: string })[] = [
 export function profileForR001(id: string, model: string, createdAt: string, nCases: number): ProfileView {
   const threeCases = nCases >= 3;
   const hechos = [
-    { texto: "La huella V-3 aparece en los casos A y B, con números de contacto distintos.", evidencia: ["V-3", "VIN-1", "EV-A1", "EV-B1"] },
+    {
+      texto: "La huella V-3 aparece en los casos A y B, con números de contacto distintos.",
+      evidencia: ["V-3", "VIN-1", "EV-A1", "EV-B1"],
+    },
     ...(threeCases
       ? [
-          { texto: "La cuenta ID-3fa9c1 aparece como cuenta de cobro en los casos B y C.", evidencia: ["ID-3fa9c1", "VIN-2", "EV-B2", "EV-C1"] },
-          { texto: "Los tres casos repiten la frase \"habla con el jefe\" y dicen ser de \"Los X\".", evidencia: ["FICHA-A", "FICHA-B", "FICHA-C"] },
+          {
+            texto: "La cuenta ID-3fa9c1 aparece como cuenta de cobro en los casos B y C.",
+            evidencia: ["ID-3fa9c1", "VIN-2", "EV-B2", "EV-C1"],
+          },
+          {
+            texto: 'Los tres casos repiten la frase "habla con el jefe" y dicen ser de "Los X".',
+            evidencia: ["FICHA-A", "FICHA-B", "FICHA-C"],
+          },
           { texto: "La voz del caso C (V-9) no coincide con V-3.", evidencia: ["V-9", "EV-C2"] },
         ]
       : []),
-    { texto: "En el caso A, la foto del local con una bala llegó 3 días después del primer contacto.", evidencia: ["EV-A1", "EV-A4"] },
+    {
+      texto: "En el caso A, la foto del local con una bala llegó 3 días después del primer contacto.",
+      evidencia: ["EV-A1", "EV-A4"],
+    },
   ];
   const hipotesis = [
-    { texto: "V-3 podría ser la voz de quien realiza las llamadas de la red.", confianza: "alta" as const, evidencia: ["V-3", "EV-A1", "EV-A2", "EV-B1"] },
-    { texto: "La red parece cambiar de número de contacto entre víctimas para evitar bloqueos.", confianza: "media" as const, evidencia: ["ID-7c41e2", "ID-b20d5f", "VIN-1"] },
+    {
+      texto: "V-3 podría ser la voz de quien realiza las llamadas de la red.",
+      confianza: "alta" as const,
+      evidencia: ["V-3", "EV-A1", "EV-A2", "EV-B1"],
+    },
+    {
+      texto: "La red parece cambiar de número de contacto entre víctimas para evitar bloqueos.",
+      confianza: "media" as const,
+      evidencia: ["ID-7c41e2", "ID-b20d5f", "VIN-1"],
+    },
     ...(threeCases
       ? [
-          { texto: "ID-3fa9c1 podría ser una cuenta recaudadora de la red.", confianza: "media" as const, evidencia: ["ID-3fa9c1", "EV-B2", "EV-C1"] },
-          { texto: "Más de una persona hace las llamadas: V-9 podría ser un segundo llamador.", confianza: "baja" as const, evidencia: ["V-9", "EV-C2", "VIN-2"] },
+          {
+            texto: "ID-3fa9c1 podría ser una cuenta recaudadora de la red.",
+            confianza: "media" as const,
+            evidencia: ["ID-3fa9c1", "EV-B2", "EV-C1"],
+          },
+          {
+            texto: "Más de una persona hace las llamadas: V-9 podría ser un segundo llamador.",
+            confianza: "baja" as const,
+            evidencia: ["V-9", "EV-C2", "VIN-2"],
+          },
         ]
       : []),
   ];
@@ -859,10 +1094,11 @@ export function profileForR001(id: string, model: string, createdAt: string, nCa
       ],
       territorio: [],
       modus_operandi:
-        "Audio de voz masculina que dice ser de \"Los X\", pago por Yape con plazo de 48 a 72 horas y foto del local como intimidación.",
+        'Audio de voz masculina que dice ser de "Los X", pago por Yape con plazo de 48 a 72 horas y foto del local como intimidación.',
       hechos,
       hipotesis,
-      escalamiento: "En el caso A hubo intimidación física (foto con bala) 3 días después del primer contacto, dentro del plazo de pago.",
+      escalamiento:
+        "En el caso A hubo intimidación física (foto con bala) 3 días después del primer contacto, dentro del plazo de pago.",
       brechas: [
         "Falta el audio del primer contacto del caso C.",
         "No hay comprobantes de pago para confirmar el uso de ID-3fa9c1.",
@@ -900,16 +1136,32 @@ export function profileR002Invalid(): ProfileView {
       territorio: [],
       modus_operandi: "Seguimiento en moto y cobro semanal en efectivo a conductores.",
       hechos: [
-        { texto: "La placa ID-a4419b aparece en los videos de los casos D y E.", evidencia: ["ID-a4419b", "EV-D2", "EV-E1"] },
+        {
+          texto: "La placa ID-a4419b aparece en los videos de los casos D y E.",
+          evidencia: ["ID-a4419b", "EV-D2", "EV-E1"],
+        },
         { texto: "El cobro se hace siempre los lunes.", evidencia: [] },
       ],
-      hipotesis: [{ texto: "La moto de ID-a4419b hace el seguimiento físico.", confianza: "media", evidencia: ["ID-a4419b", "EV-D9"] }],
+      hipotesis: [
+        {
+          texto: "La moto de ID-a4419b hace el seguimiento físico.",
+          confianza: "media",
+          evidencia: ["ID-a4419b", "EV-D9"],
+        },
+      ],
       escalamiento: null,
       brechas: ["Faltan audios de los dos casos."],
       recomendaciones_autoridad: ["Pedir los registros de la placa por los canales formales."],
     },
     hypotheses: [
-      { id: "prof-r002-1-h1", texto: "La moto de ID-a4419b hace el seguimiento físico.", confianza: "media", evidencia: ["ID-a4419b", "EV-D9"], status: "borrador", reviewed_by: null },
+      {
+        id: "prof-r002-1-h1",
+        texto: "La moto de ID-a4419b hace el seguimiento físico.",
+        confianza: "media",
+        evidencia: ["ID-a4419b", "EV-D9"],
+        status: "borrador",
+        reviewed_by: null,
+      },
     ],
     citation_check: { ok: false, sin_cita: ["El cobro se hace siempre los lunes."], citas_inexistentes: ["EV-D9"] },
     created_at: "2026-10-02T16:00:00Z",
@@ -935,7 +1187,12 @@ export function approvedAlertR002(): AlertView {
         "En las últimas semanas, conductores de Comas notaron una moto que sigue a las unidades antes de pedir un cobro semanal en efectivo. No pagues ni negocies. Guarda lo que recibas y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.",
       zona: "Comas",
       modalidad: "Seguimiento en moto y cobro semanal en efectivo",
-      que_hacer: ["No pagues ni negocies.", "Guarda los mensajes y videos.", "Denuncia en la Línea 1818 o en tu comisaría.", "Si estás en peligro inmediato, llama al 105."],
+      que_hacer: [
+        "No pagues ni negocies.",
+        "Guarda los mensajes y videos.",
+        "Denuncia en la Línea 1818 o en tu comisaría.",
+        "Si estás en peligro inmediato, llama al 105.",
+      ],
       evidencia: ["R-002", "FICHA-D", "FICHA-E"],
     },
     network_id: "net-2",
@@ -954,7 +1211,7 @@ export function vigiaDrafts(now: string, seq: number): AlertView[] {
     titulo: `Aviso para tu zona - ${zona}`,
     cuerpo: `En las últimas dos semanas varios comerciantes de ${zona} recibieron audios de una persona que dice ser de "Los X" y exige pagos por Yape con plazo de 48 horas. No pagues ni negocies. Guarda los audios y mensajes en tus notas y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.`,
     zona,
-    modalidad: "Audios que dicen ser de \"Los X\" y piden pago por Yape con plazo de 48 horas",
+    modalidad: 'Audios que dicen ser de "Los X" y piden pago por Yape con plazo de 48 horas',
     que_hacer: [
       "No pagues ni negocies.",
       "Guarda los audios y mensajes.",

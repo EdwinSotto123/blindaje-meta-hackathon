@@ -60,7 +60,14 @@ interface RefInfo {
 async function resolveRefs(env: Env, faissIds: number[]): Promise<Map<number, RefInfo>> {
   const out = new Map<number, RefInfo>();
   const ids = [...new Set(faissIds)];
-  const rows: Array<{ faiss_id: number; index_name: VectorIndexName; case_id: string; ref_type: string; ref_id: string; code: string }> = [];
+  const rows: Array<{
+    faiss_id: number;
+    index_name: VectorIndexName;
+    case_id: string;
+    ref_type: string;
+    ref_id: string;
+    code: string;
+  }> = [];
   for (let i = 0; i < ids.length; i += 90) {
     const chunk = ids.slice(i, i + 90);
     const { results } = await env.DB.prepare(
@@ -72,21 +79,34 @@ async function resolveRefs(env: Env, faissIds: number[]): Promise<Map<number, Re
     rows.push(...results);
   }
   const caseIds = [...new Set(rows.map((r) => r.case_id))];
-  const prints = new Map<string, { num: number; evidence_id: string | null; segments: Array<{ start_ms: number; end_ms: number; faiss_id: number }> }>();
+  const prints = new Map<
+    string,
+    { num: number; evidence_id: string | null; segments: Array<{ start_ms: number; end_ms: number; faiss_id: number }> }
+  >();
   const crops = new Map<string, { num: number; concept: string; evidence_id: string }>();
   const evidence = new Map<string, string>();
   for (let i = 0; i < caseIds.length; i += 90) {
     const chunk = caseIds.slice(i, i + 90);
     const marks = chunk.map(() => "?").join(",");
     const [p, cr, ev] = await env.DB.batch([
-      env.DB.prepare(`SELECT id, num, evidence_id, segments_json FROM voice_prints WHERE case_id IN (${marks})`).bind(...chunk),
-      env.DB.prepare(`SELECT id, num, concept, evidence_id FROM image_crops WHERE case_id IN (${marks})`).bind(...chunk),
+      env.DB.prepare(`SELECT id, num, evidence_id, segments_json FROM voice_prints WHERE case_id IN (${marks})`).bind(
+        ...chunk,
+      ),
+      env.DB.prepare(`SELECT id, num, concept, evidence_id FROM image_crops WHERE case_id IN (${marks})`).bind(
+        ...chunk,
+      ),
       env.DB.prepare(`SELECT id, label FROM evidence WHERE case_id IN (${marks})`).bind(...chunk),
     ]);
-    for (const r of p!.results as Array<{ id: string; num: number; evidence_id: string | null; segments_json: string | null }>) {
+    for (const r of p!.results as Array<{
+      id: string;
+      num: number;
+      evidence_id: string | null;
+      segments_json: string | null;
+    }>) {
       prints.set(r.id, { num: r.num, evidence_id: r.evidence_id, segments: parseJsonColumn(r.segments_json) ?? [] });
     }
-    for (const r of cr!.results as Array<{ id: string; num: number; concept: string; evidence_id: string }>) crops.set(r.id, r);
+    for (const r of cr!.results as Array<{ id: string; num: number; concept: string; evidence_id: string }>)
+      crops.set(r.id, r);
     for (const r of ev!.results as Array<{ id: string; label: string }>) evidence.set(r.id, r.label);
   }
   for (const r of rows) {
@@ -136,12 +156,33 @@ async function storeStatus(env: Env): Promise<VectorStoreStatus> {
     const t = Date.now();
     try {
       await ml.health();
-      return { proveedor: "faiss", base: null, conectado: true, latencia_ms: Date.now() - t, sincronizado_en: null, solo_demo: false };
+      return {
+        proveedor: "faiss",
+        base: null,
+        conectado: true,
+        latencia_ms: Date.now() - t,
+        sincronizado_en: null,
+        solo_demo: false,
+      };
     } catch {
-      return { proveedor: "faiss", base: null, conectado: false, latencia_ms: null, sincronizado_en: null, solo_demo: false };
+      return {
+        proveedor: "faiss",
+        base: null,
+        conectado: false,
+        latencia_ms: null,
+        sincronizado_en: null,
+        solo_demo: false,
+      };
     }
   }
-  return { proveedor: "ninguno", base: null, conectado: false, latencia_ms: null, sincronizado_en: null, solo_demo: soloDemo };
+  return {
+    proveedor: "ninguno",
+    base: null,
+    conectado: false,
+    latencia_ms: null,
+    sincronizado_en: null,
+    solo_demo: soloDemo,
+  };
 }
 
 async function collections(env: Env, statusP: Promise<VectorStoreStatus>): Promise<VectorCollection[]> {
@@ -197,10 +238,18 @@ async function caseSummaries(env: Env): Promise<VectorCaseSummary[]> {
   const ids = cases.map((c) => c.id);
   const [ev, emb, idf] = await env.DB.batch([
     env.DB.prepare(`SELECT case_id, label, tipo FROM evidence WHERE case_id IN (${marks}) ORDER BY seq`).bind(...ids),
-    env.DB.prepare(`SELECT case_id, index_name, COUNT(*) AS n FROM embeddings WHERE case_id IN (${marks}) GROUP BY case_id, index_name`).bind(...ids),
-    env.DB.prepare(`SELECT case_id, COUNT(*) AS n FROM case_identifiers WHERE case_id IN (${marks}) GROUP BY case_id`).bind(...ids),
+    env.DB.prepare(
+      `SELECT case_id, index_name, COUNT(*) AS n FROM embeddings WHERE case_id IN (${marks}) GROUP BY case_id, index_name`,
+    ).bind(...ids),
+    env.DB.prepare(
+      `SELECT case_id, COUNT(*) AS n FROM case_identifiers WHERE case_id IN (${marks}) GROUP BY case_id`,
+    ).bind(...ids),
   ]);
-  const evRows = ev!.results as Array<{ case_id: string; label: string; tipo: VectorCaseSummary["evidencia"][number]["tipo"] }>;
+  const evRows = ev!.results as Array<{
+    case_id: string;
+    label: string;
+    tipo: VectorCaseSummary["evidencia"][number]["tipo"];
+  }>;
   const embRows = emb!.results as Array<{ case_id: string; index_name: VectorIndexName; n: number }>;
   const idfRows = idf!.results as Array<{ case_id: string; n: number }>;
   return cases.map((c) => ({
@@ -208,10 +257,9 @@ async function caseSummaries(env: Env): Promise<VectorCaseSummary[]> {
     caso: c.code,
     distrito: districtById(c.zona_cuadricula)?.name ?? null,
     evidencia: evRows.filter((e) => e.case_id === c.id).map((e) => ({ label: e.label, tipo: e.tipo })),
-    vectores: Object.fromEntries(VECTOR_INDEX_NAMES.map((i) => [i, embRows.find((r) => r.case_id === c.id && r.index_name === i)?.n ?? 0])) as Record<
-      VectorIndexName,
-      number
-    >,
+    vectores: Object.fromEntries(
+      VECTOR_INDEX_NAMES.map((i) => [i, embRows.find((r) => r.case_id === c.id && r.index_name === i)?.n ?? 0]),
+    ) as Record<VectorIndexName, number>,
     identificadores: idfRows.find((r) => r.case_id === c.id)?.n ?? 0,
   }));
 }
@@ -240,7 +288,18 @@ async function indexMap(env: Env, indice: VectorIndexName): Promise<VectorMap> {
       const info = refs.get(r.faiss_id);
       if (!info) return [];
       const [x, y] = proj.coords[i]!;
-      return [{ id: r.faiss_id, case_id: info.case_id, caso: info.caso, ref: info.ref, evidencia: info.evidencia, x, y, muestra: vectorSample(vectors[i]!) }];
+      return [
+        {
+          id: r.faiss_id,
+          case_id: info.case_id,
+          caso: info.caso,
+          ref: info.ref,
+          evidencia: info.evidencia,
+          x,
+          y,
+          muestra: vectorSample(vectors[i]!),
+        },
+      ];
     }),
   };
 }
@@ -248,7 +307,12 @@ async function indexMap(env: Env, indice: VectorIndexName): Promise<VectorMap> {
 export async function vectorOverview(env: Env): Promise<VectorOverview> {
   // El latido de la base va en paralelo con lo demás: los conteos ya dicen si la base respondió.
   const status = storeStatus(env);
-  const [almacen, colecciones, casos, mapas] = await Promise.all([status, collections(env, status), caseSummaries(env), maps(env)]);
+  const [almacen, colecciones, casos, mapas] = await Promise.all([
+    status,
+    collections(env, status),
+    caseSummaries(env),
+    maps(env),
+  ]);
   return { almacen, colecciones, casos, mapas };
 }
 
@@ -262,7 +326,9 @@ const round4 = (n: number) => Math.round(n * 10_000) / 10_000;
 export async function vectorTrace(env: Env, caseId: string): Promise<VectorTrace> {
   const started = Date.now();
   const [me, cal] = await Promise.all([
-    env.DB.prepare("SELECT id, code, indexed FROM cases WHERE id = ?").bind(caseId).first<{ id: string; code: string; indexed: number }>(),
+    env.DB.prepare("SELECT id, code, indexed FROM cases WHERE id = ?")
+      .bind(caseId)
+      .first<{ id: string; code: string; indexed: number }>(),
     loadCalibration(env),
   ]);
   if (!me) throw notFound("Caso");
@@ -275,7 +341,10 @@ export async function vectorTrace(env: Env, caseId: string): Promise<VectorTrace
     query: (q) => queries.push(q),
     source: (id, s) => sources.set(id, (sources.get(id) ?? new Set()).add(s)),
   });
-  const refs = await resolveRefs(env, [...queries.map((q) => q.query_id), ...queries.flatMap((q) => q.hits.map((h) => h.id))]);
+  const refs = await resolveRefs(env, [
+    ...queries.map((q) => q.query_id),
+    ...queries.flatMap((q) => q.hits.map((h) => h.id)),
+  ]);
   const consultas: VectorQuery[] = queries.map((q) => ({
     indice: q.index,
     consulta: q.query_id,
@@ -288,14 +357,25 @@ export async function vectorTrace(env: Env, caseId: string): Promise<VectorTrace
       const info = refs.get(h.id);
       // Un id que ya no está en D1 (o cuyo caso salió de los índices) no se muestra: se filtra igual que en la vinculación.
       if (!info || info.case_id === caseId) return [];
-      return [{ id: h.id, case_id: info.case_id, caso: info.caso, ref: info.ref, score: round4(h.score), pasa: q.threshold === null || h.score >= q.threshold }];
+      return [
+        {
+          id: h.id,
+          case_id: info.case_id,
+          caso: info.caso,
+          ref: info.ref,
+          score: round4(h.score),
+          pasa: q.threshold === null || h.score >= q.threshold,
+        },
+      ];
     }),
   }));
   const codes = new Map<string, string>();
   for (const info of refs.values()) codes.set(info.case_id, info.caso);
   const missing = pairs.map((p) => p.other_case_id).filter((id) => !codes.has(id));
   if (missing.length) {
-    const { results } = await env.DB.prepare(`SELECT id, code FROM cases WHERE id IN (${missing.map(() => "?").join(",")})`)
+    const { results } = await env.DB.prepare(
+      `SELECT id, code FROM cases WHERE id IN (${missing.map(() => "?").join(",")})`,
+    )
       .bind(...missing)
       .all<{ id: string; code: string }>();
     for (const r of results) codes.set(r.id, r.code);
@@ -327,7 +407,8 @@ export async function vectorTrace(env: Env, caseId: string): Promise<VectorTrace
 export async function vectorSync(env: Env): Promise<VectorSyncResult> {
   const t = Date.now();
   const chroma = await syncChroma(env);
-  if (chroma) return { proveedor: "chroma-cloud", sincronizados: chroma.written, borrados: chroma.deleted, ms: Date.now() - t };
+  if (chroma)
+    return { proveedor: "chroma-cloud", sincronizados: chroma.written, borrados: chroma.deleted, ms: Date.now() - t };
   const faiss = await rebuildIndices(env);
   if (faiss) return { proveedor: "faiss", sincronizados: faiss, borrados: 0, ms: Date.now() - t };
   throw new ApiError("conflict", "No hay base vectorial configurada");

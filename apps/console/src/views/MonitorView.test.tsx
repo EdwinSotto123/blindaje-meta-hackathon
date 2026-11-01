@@ -60,13 +60,33 @@ describe("panel de monitoreo", () => {
 
   it("muestra la velocidad de las peticiones de esta pestaña con el desglose del servidor", async () => {
     const fetchImpl = async () =>
-      new Response("{}", { status: 200, headers: { "content-type": "application/json", "server-timing": 'app;dur=72, db;dur=21;desc="3 consultas a D1"' } });
-    const client = new HttpClient({ baseUrl: "https://api.blindaje.test", store: new MemoryTokenStore(), fetch: fetchImpl });
+      new Response("{}", {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+          "server-timing": 'app;dur=72, db;dur=21;desc="3 consultas a D1"',
+        },
+      });
+    const client = new HttpClient({
+      baseUrl: "https://api.blindaje.test",
+      store: new MemoryTokenStore(),
+      fetch: fetchImpl,
+    });
     await client.json("GET", "/v1/console/links/01JBX7ZK3Q9V2M8T4R6N5P0W1Y", { auth: false });
     const [rec] = requestLog.entries();
-    expect(rec).toMatchObject({ method: "GET", ruta: "/v1/console/links/:id", status: 200, servidor_ms: 72, db_ms: 21, db_n: 3 });
+    expect(rec).toMatchObject({
+      method: "GET",
+      ruta: "/v1/console/links/:id",
+      status: 200,
+      servidor_ms: 72,
+      db_ms: 21,
+      db_n: 3,
+    });
 
-    const m = { ...(await mockMonitor()), api: { version: "0.1.0", entorno: "x", colo: "EZE", ubicacion: "gcp:us-east1", ms: 80 } };
+    const m = {
+      ...(await mockMonitor()),
+      api: { version: "0.1.0", entorno: "x", colo: "EZE", ubicacion: "gcp:us-east1", ms: 80 },
+    };
     const t = text(
       renderToStaticMarkup(
         <MemoryRouter>
@@ -80,13 +100,19 @@ describe("panel de monitoreo", () => {
   });
 
   it("lee Server-Timing, quita ids de las rutas y resume con la mediana", () => {
-    expect(parseServerTiming('app;dur=103, db;dur=45;desc="1 consultas a D1", do;dur=58;desc="2 llamadas a Durable Objects"')).toEqual({
+    expect(
+      parseServerTiming(
+        'app;dur=103, db;dur=45;desc="1 consultas a D1", do;dur=58;desc="2 llamadas a Durable Objects"',
+      ),
+    ).toEqual({
       app: 103,
       db: 45,
       dbN: 1,
     });
     expect(parseServerTiming(null)).toEqual({ app: null, db: null, dbN: null });
-    expect(routeOf("https://x.test/v1/console/expedientes/abc12345678/pdf?x=1")).toBe("/v1/console/expedientes/:id/pdf");
+    expect(routeOf("https://x.test/v1/console/expedientes/abc12345678/pdf?x=1")).toBe(
+      "/v1/console/expedientes/:id/pdf",
+    );
     expect(routeOf("https://x.test/v1/console/monitoreo")).toBe("/v1/console/monitoreo");
     expect(median([300, 100, 200])).toBe(200);
     expect(median([100, 200])).toBe(150);

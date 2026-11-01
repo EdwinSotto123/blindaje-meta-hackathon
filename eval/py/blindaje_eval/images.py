@@ -115,7 +115,9 @@ def transformar(img: Image.Image, t: str) -> Image.Image:
         im.thumbnail((1080, 1920), Image.Resampling.LANCZOS)
         return _jpeg(im, 75)
     if t == "doble_reenvio":
-        return transformar(transformar(img, "whatsapp").resize((960, int(960 * img.size[1] / img.size[0]))), "whatsapp")
+        return transformar(
+            transformar(img, "whatsapp").resize((960, int(960 * img.size[1] / img.size[0]))), "whatsapp"
+        )
     raise ValueError(t)
 
 
@@ -125,7 +127,9 @@ class Dino:
         self._model = None
         self.client = None
         if backend in ("ml", "auto"):
-            c = httpx.Client(base_url=ML_URL, headers={"x-ml-token": ML_TOKEN} if ML_TOKEN else {}, timeout=120)
+            c = httpx.Client(
+                base_url=ML_URL, headers={"x-ml-token": ML_TOKEN} if ML_TOKEN else {}, timeout=120
+            )
             try:
                 if c.get("/health", timeout=5).status_code == 200:
                     self.client = c
@@ -142,7 +146,9 @@ class Dino:
         from transformers import AutoModel
 
         if self._model is None:
-            self._model = AutoModel.from_pretrained("facebook/dinov2-small", cache_dir=str(MODELS_DIR / "hf")).eval()
+            self._model = AutoModel.from_pretrained(
+                "facebook/dinov2-small", cache_dir=str(MODELS_DIR / "hf")
+            ).eval()
         w, h = img.size
         side = max(w, h)
         canvas = Image.new("RGB", (side, side), (124, 116, 104))
@@ -158,7 +164,9 @@ class Dino:
         if self.client is not None:
             buf = io.BytesIO()
             img.save(buf, "JPEG", quality=95)
-            r = self.client.post("/image/crops", json={"image_b64": base64.b64encode(buf.getvalue()).decode(), "boxes": []})
+            r = self.client.post(
+                "/image/crops", json={"image_b64": base64.b64encode(buf.getvalue()).decode(), "boxes": []}
+            )
             r.raise_for_status()
             full = r.json()["full"]
             return np.asarray(full["vector"], dtype=np.float32), full.get("phash")
@@ -209,8 +217,14 @@ def run(backend: str = "auto") -> dict:
 
     def resumen(x: list[float]) -> dict:
         a = np.asarray(x, dtype=np.float64)
-        return {"n": int(a.size), "min": float(a.min()), "media": float(a.mean()), "max": float(a.max()),
-                "p05": float(np.quantile(a, 0.05)), "p95": float(np.quantile(a, 0.95))}
+        return {
+            "n": int(a.size),
+            "min": float(a.min()),
+            "media": float(a.mean()),
+            "max": float(a.max()),
+            "p05": float(np.quantile(a, 0.05)),
+            "p95": float(np.quantile(a, 0.95)),
+        }
 
     hm = 10
     res = {

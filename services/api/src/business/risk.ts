@@ -50,7 +50,8 @@ export const AVISO_SIN_DATOS = "Aún no hay suficientes casos para mostrar cifra
 export const AVISO_SIN_DATOS_LARGO = `${AVISO_SIN_DATOS}: hacen falta al menos ${MIN_CASES_FOR_STATS} casos de ${MIN_VICTIMS_FOR_STATS} personas distintas en la zona.`;
 export const OTROS_RUBROS = "Otros rubros (agregado)";
 export const VARIOS_RUBROS = "Varios rubros (agregado)";
-export const AVISO_RUBRO = "Aún no hay suficientes casos de tu rubro en esta zona para mostrar cifras propias: las cifras son de toda la zona.";
+export const AVISO_RUBRO =
+  "Aún no hay suficientes casos de tu rubro en esta zona para mostrar cifras propias: las cifras son de toda la zona.";
 
 export interface RiskCase {
   id: string;
@@ -125,7 +126,12 @@ export interface RiskAnalysis {
   actualizado_at: string;
 }
 
-const CANAL: Record<string, string> = { yape: "Yape", plin: "Plin", transferencia: "transferencia bancaria", efectivo: "efectivo" };
+const CANAL: Record<string, string> = {
+  yape: "Yape",
+  plin: "Plin",
+  transferencia: "transferencia bancaria",
+  efectivo: "efectivo",
+};
 const AMENAZA: Record<string, string> = {
   dano_local: "Amenazan con dañar el local",
   dano_fisico: "Amenazan con hacerte daño",
@@ -178,7 +184,10 @@ export function bandOf(cases: Array<Pick<RiskCase, "device_id">>): CountBand | n
  * Casos comunitarios con ficha del mundo pedido (real o demo) cuya fecha (primer contacto) cae en
  * [since, until]. Base de todo lo territorial: mapa, panorama, Asesor y vista de zonas.
  */
-export async function loadCommunityCases(env: Env, opts: { isDemo: boolean; since: number; until: number }): Promise<RiskCase[]> {
+export async function loadCommunityCases(
+  env: Env,
+  opts: { isDemo: boolean; since: number; until: number },
+): Promise<RiskCase[]> {
   const { results } = await env.DB.prepare(
     `SELECT id, code, device_id, sector, zona_cuadricula, primer_contacto, created_at, ficha_json FROM cases
      WHERE consent_mode = 'comunitario' AND ficha_json IS NOT NULL AND is_demo = ?`,
@@ -215,10 +224,18 @@ export async function loadCommunityCases(env: Env, opts: { isDemo: boolean; sinc
 }
 
 /** Casos comunitarios con ficha de la zona, en el periodo. */
-export async function loadZoneCases(env: Env, zona: string, opts: { isDemo: boolean; now: number }): Promise<RiskCase[]> {
+export async function loadZoneCases(
+  env: Env,
+  zona: string,
+  opts: { isDemo: boolean; now: number },
+): Promise<RiskCase[]> {
   const key = zoneKey(zona);
   if (!key) return [];
-  const all = await loadCommunityCases(env, { isDemo: opts.isDemo, since: opts.now - RISK_PERIOD_DAYS * DAY_MS, until: opts.now + DAY_MS });
+  const all = await loadCommunityCases(env, {
+    isDemo: opts.isDemo,
+    since: opts.now - RISK_PERIOD_DAYS * DAY_MS,
+    until: opts.now + DAY_MS,
+  });
   return all.filter((c) => zoneKey(c.zona) === key);
 }
 
@@ -237,7 +254,10 @@ export function alertWorldSql(isDemo: boolean): string {
  * Alertas aprobadas por el equipo central (organización central) del mundo pedido, las más
  * recientes primero. Las de otras organizaciones (anteriores al rediseño) no salen por aquí.
  */
-export async function approvedAlerts(env: Env, opts: { isDemo: boolean; since?: string; limit?: number }): Promise<ZoneAlert[]> {
+export async function approvedAlerts(
+  env: Env,
+  opts: { isDemo: boolean; since?: string; limit?: number },
+): Promise<ZoneAlert[]> {
   const { results } = await env.DB.prepare(
     `SELECT a.id, a.draft_json, a.approved_at FROM alerts a
      WHERE a.org_id = ? AND a.status = 'aprobada' AND a.approved_at >= ? AND ${alertWorldSql(opts.isDemo)}
@@ -266,7 +286,11 @@ export async function approvedAlerts(env: Env, opts: { isDemo: boolean; since?: 
 }
 
 /** Alertas aprobadas para la zona, aprobadas dentro del periodo. */
-export async function loadZoneAlerts(env: Env, zona: string, opts: { isDemo: boolean; now: number }): Promise<ZoneAlert[]> {
+export async function loadZoneAlerts(
+  env: Env,
+  zona: string,
+  opts: { isDemo: boolean; now: number },
+): Promise<ZoneAlert[]> {
   const key = zoneKey(zona);
   if (!key) return [];
   const since = new Date(opts.now - RISK_PERIOD_DAYS * DAY_MS).toISOString();
@@ -278,8 +302,12 @@ async function linkAndNetworkLabels(env: Env, caseIds: string[]): Promise<{ link
   if (!caseIds.length) return { links: [], networks: [] };
   const ph = caseIds.map(() => "?").join(",");
   const [l, n] = await env.DB.batch([
-    env.DB.prepare(`SELECT num FROM links WHERE status = 'confirmado' AND case_a IN (${ph}) AND case_b IN (${ph}) ORDER BY num`).bind(...caseIds, ...caseIds),
-    env.DB.prepare(`SELECT DISTINCT n.num FROM networks n JOIN network_cases nc ON nc.network_id = n.id WHERE nc.case_id IN (${ph}) ORDER BY n.num`).bind(...caseIds),
+    env.DB.prepare(
+      `SELECT num FROM links WHERE status = 'confirmado' AND case_a IN (${ph}) AND case_b IN (${ph}) ORDER BY num`,
+    ).bind(...caseIds, ...caseIds),
+    env.DB.prepare(
+      `SELECT DISTINCT n.num FROM networks n JOIN network_cases nc ON nc.network_id = n.id WHERE nc.case_id IN (${ph}) ORDER BY n.num`,
+    ).bind(...caseIds),
   ]);
   return {
     links: (l!.results as Array<{ num: number }>).map((r) => linkLabel(r.num)),
@@ -313,7 +341,8 @@ function features(cases: RiskCase[]): Feature[] {
   for (const c of cases) {
     const f = c.ficha;
     if (!f) continue;
-    if (f.grupo_que_dice_ser && !hasLongDigits(f.grupo_que_dice_ser)) add(c, "grupo", normalizePhrase(f.grupo_que_dice_ser), f.grupo_que_dice_ser.trim());
+    if (f.grupo_que_dice_ser && !hasLongDigits(f.grupo_que_dice_ser))
+      add(c, "grupo", normalizePhrase(f.grupo_que_dice_ser), f.grupo_que_dice_ser.trim());
     if (f.canal_pago && CANAL[f.canal_pago]) add(c, "canal", f.canal_pago, CANAL[f.canal_pago]!);
     if (f.plazo_horas && f.plazo_horas > 0) add(c, "plazo", String(f.plazo_horas), String(f.plazo_horas));
     if (f.tipo_amenaza && AMENAZA[f.tipo_amenaza]) add(c, "amenaza", f.tipo_amenaza, AMENAZA[f.tipo_amenaza]!);
@@ -324,7 +353,12 @@ function features(cases: RiskCase[]): Feature[] {
   }
   return [...groups.values()]
     .filter((g) => meets(g.cases))
-    .sort((a, b) => PRIORITY.indexOf(a.kind) - PRIORITY.indexOf(b.kind) || b.cases.length - a.cases.length || a.key.localeCompare(b.key));
+    .sort(
+      (a, b) =>
+        PRIORITY.indexOf(a.kind) - PRIORITY.indexOf(b.kind) ||
+        b.cases.length - a.cases.length ||
+        a.key.localeCompare(b.key),
+    );
 }
 
 function capitalize(s: string): string {
@@ -364,7 +398,9 @@ function clusterFeatures(feats: Feature[]): Feature[][] {
   const clusters: Array<{ feats: Feature[]; ids: Set<string> }> = [];
   for (const f of feats) {
     const ids = f.cases.map((c) => c.id);
-    const target = clusters.find((cl) => ids.filter((id) => cl.ids.has(id)).length / Math.min(ids.length, cl.ids.size) >= 0.5);
+    const target = clusters.find(
+      (cl) => ids.filter((id) => cl.ids.has(id)).length / Math.min(ids.length, cl.ids.size) >= 0.5,
+    );
     if (target) {
       target.feats.push(f);
       for (const id of ids) target.ids.add(id);
@@ -413,7 +449,9 @@ function escalation(cases: RiskCase[], sectorScope: boolean): RiskAnalysis["esca
   if (!dias.length) {
     return {
       any,
-      texto: any ? `${donde} hubo intimidación física después de las primeras amenazas. No esperes a que pase para denunciar.` : null,
+      texto: any
+        ? `${donde} hubo intimidación física después de las primeras amenazas. No esperes a que pase para denunciar.`
+        : null,
       dias: null,
       evidencia: [],
     };
@@ -444,21 +482,39 @@ function escalation(cases: RiskCase[], sectorScope: boolean): RiskAnalysis["esca
  * 3 o más = alto. Los cortes de 10 y 20 coinciden con los de countBand: el nivel no dice de la
  * cifra más de lo que ya dice su rango.
  */
-export function riskLevel(o: { umbral: boolean; casos: number; escalamiento: boolean; modalidadActiva: boolean }): NivelRiesgo {
+export function riskLevel(o: {
+  umbral: boolean;
+  casos: number;
+  escalamiento: boolean;
+  modalidadActiva: boolean;
+}): NivelRiesgo {
   if (!o.umbral) return "sin_datos";
-  const puntos = (o.casos >= 10 ? 1 : 0) + (o.casos >= 20 ? 1 : 0) + (o.escalamiento ? 1 : 0) + (o.modalidadActiva ? 1 : 0);
+  const puntos =
+    (o.casos >= 10 ? 1 : 0) + (o.casos >= 20 ? 1 : 0) + (o.escalamiento ? 1 : 0) + (o.modalidadActiva ? 1 : 0);
   return puntos === 0 ? "bajo" : puntos <= 2 ? "medio" : "alto";
 }
 
-function levelOf(scope: RiskCase[], zoneCases: RiskCase[], alertas: Array<Pick<ZoneAlert, "approved_at">>, umbral: boolean, now: number, escAny: boolean): NivelRiesgo {
+function levelOf(
+  scope: RiskCase[],
+  zoneCases: RiskCase[],
+  alertas: Array<Pick<ZoneAlert, "approved_at">>,
+  umbral: boolean,
+  now: number,
+  escAny: boolean,
+): NivelRiesgo {
   const recent = now - ACTIVE_DAYS * DAY_MS;
   const modalidadActiva =
-    alertas.some((a) => timeOf(a.approved_at) >= recent) || (umbral && features(zoneCases).some((f) => f.cases.some((c) => c.t >= recent)));
+    alertas.some((a) => timeOf(a.approved_at) >= recent) ||
+    (umbral && features(zoneCases).some((f) => f.cases.some((c) => c.t >= recent)));
   return riskLevel({ umbral, casos: scope.length, escalamiento: escAny, modalidadActiva });
 }
 
 /** Nivel de una zona para todos los rubros (el mapa público): la misma regla que `analyzeRisk` sin rubro. */
-export function zoneLevel(zoneCases: RiskCase[], alertas: Array<Pick<ZoneAlert, "approved_at">>, now: number): NivelRiesgo {
+export function zoneLevel(
+  zoneCases: RiskCase[],
+  alertas: Array<Pick<ZoneAlert, "approved_at">>,
+  now: number,
+): NivelRiesgo {
   const umbral = meets(zoneCases);
   return levelOf(zoneCases, zoneCases, alertas, umbral, now, umbral && escalation(zoneCases, false).any);
 }
@@ -487,7 +543,10 @@ function exactParts<T extends { casos: RiskCase[] }>(total: RiskCase[], parts: T
 // Análisis completo
 // ---------------------------------------------------------------------------
 
-export async function analyzeRisk(env: Env, q: { zona: string; sector: string | null; isDemo: boolean; now?: Date }): Promise<RiskAnalysis> {
+export async function analyzeRisk(
+  env: Env,
+  q: { zona: string; sector: string | null; isDemo: boolean; now?: Date },
+): Promise<RiskAnalysis> {
   const now = (q.now ?? new Date()).getTime();
   const zona = zoneLabel(q.zona);
   const [zoneCases, alertas] = await Promise.all([
@@ -533,7 +592,10 @@ export async function analyzeRisk(env: Env, q: { zona: string; sector: string | 
   if (umbral) {
     for (const cluster of clusterFeatures(features(zoneCases))) {
       const m = modalidadFromCluster(cluster);
-      const labels = await linkAndNetworkLabels(env, m.cases.map((c) => c.id));
+      const labels = await linkAndNetworkLabels(
+        env,
+        m.cases.map((c) => c.id),
+      );
       const evidencia = [...m.cases.map((c) => fichaLabel(c.code)), ...labels.links, ...labels.networks];
       // Si una alerta aprobada ya describe estos casos, se usa su texto y se suman las señales.
       const alerta = fromAlerts.find((a) => {
@@ -546,7 +608,13 @@ export async function analyzeRisk(env: Env, q: { zona: string; sector: string | 
         alerta.evidencia = [...new Set([...alerta.evidencia, ...evidencia])];
         if (m.desde && (!alerta.desde || m.desde < alerta.desde)) alerta.desde = m.desde;
       } else {
-        fromFichas.push({ descripcion: m.descripcion, senales_de_alerta: m.senales_de_alerta, desde: m.desde, evidencia, origen: "fichas" });
+        fromFichas.push({
+          descripcion: m.descripcion,
+          senales_de_alerta: m.senales_de_alerta,
+          desde: m.desde,
+          evidencia,
+          origen: "fichas",
+        });
       }
     }
   }
@@ -559,7 +627,11 @@ export async function analyzeRisk(env: Env, q: { zona: string; sector: string | 
     const start = now - (w + 1) * 7 * DAY_MS;
     const end = now - w * 7 * DAY_MS;
     const inWeek = (c: RiskCase) => c.t >= start && c.t < end;
-    semanas.push({ semana: limaDate(start), casos: scope.filter(inWeek), zona: umbral ? zoneCases.filter(inWeek) : [] });
+    semanas.push({
+      semana: limaDate(start),
+      casos: scope.filter(inWeek),
+      zona: umbral ? zoneCases.filter(inWeek) : [],
+    });
   }
 
   return {
@@ -587,7 +659,9 @@ export async function analyzeRisk(env: Env, q: { zona: string; sector: string | 
 // ---------------------------------------------------------------------------
 
 /** Cifras en rangos (lo público y lo que ve el Asesor): cada parte con su rango propio, sin cubo "otros". */
-export function riskBands(a: RiskAnalysis): Pick<PublicRiskOverview, "casos_periodo" | "tendencia" | "sectores_afectados"> {
+export function riskBands(
+  a: RiskAnalysis,
+): Pick<PublicRiskOverview, "casos_periodo" | "tendencia" | "sectores_afectados"> {
   return {
     casos_periodo: a.umbral ? bandOf(a.alcance) : null,
     tendencia: a.semanas.map((w) => ({ semana: w.semana, casos: a.umbral ? bandOf(w.casos) : null })),
@@ -624,7 +698,10 @@ function legacyWeeks(a: RiskAnalysis): RiskOverview["tendencia"] {
  */
 function legacySectors(a: RiskAnalysis): RiskOverview["sectores_afectados"] {
   if (!a.umbral) return [];
-  const out: RiskOverview["sectores_afectados"] = a.rubros.map((r) => ({ sector: r.sector, casos: r.exacta ? r.casos.length : null }));
+  const out: RiskOverview["sectores_afectados"] = a.rubros.map((r) => ({
+    sector: r.sector,
+    casos: r.exacta ? r.casos.length : null,
+  }));
   if (a.resto.length) {
     if (a.rubros.some((r) => r.exacta) && meets(a.resto)) out.push({ sector: OTROS_RUBROS, casos: a.resto.length });
     else if (!a.rubros.length) out.push({ sector: VARIOS_RUBROS, casos: a.resto.length });
@@ -633,7 +710,11 @@ function legacySectors(a: RiskAnalysis): RiskOverview["sectores_afectados"] {
 }
 
 function modalidadesView(a: RiskAnalysis) {
-  return a.modalidades.map((m) => ({ descripcion: m.descripcion, senales_de_alerta: m.senales_de_alerta, desde: m.desde }));
+  return a.modalidades.map((m) => ({
+    descripcion: m.descripcion,
+    senales_de_alerta: m.senales_de_alerta,
+    desde: m.desde,
+  }));
 }
 
 /** Vista para el portal de negocios anterior: cifras exactas sin fuga por resta, sin citas internas y con los textos saneados. */

@@ -41,7 +41,13 @@ export function Icon({ name, size = 22, color = colors.tinta, strokeWidth = 2 }:
     strokeLinejoin: "round" as const,
   };
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
       {shapes(name, common)}
     </Svg>
   );
@@ -107,7 +113,9 @@ function shapes(name: IconName, p: Record<string, unknown>) {
     case "chevron":
       return <Path d="M9 5l7 7-7 7" {...p} />;
     case "phone":
-      return <Path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z" {...p} />;
+      return (
+        <Path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z" {...p} />
+      );
     case "download":
       return <Path d="M12 4v11M7 10l5 5 5-5M5 20h14" {...p} />;
     case "upload":
@@ -134,7 +142,10 @@ function shapes(name: IconName, p: Record<string, unknown>) {
       return (
         <>
           <Rect x={5} y={3} width={14} height={18} rx={2} {...p} />
-          <Path d="M8 7h8M8.5 11.5h0M12 11.5h0M15.5 11.5h0M8.5 15h0M12 15h0M15.5 15h0M8.5 18h0M12 18h0M15.5 18h0" {...p} />
+          <Path
+            d="M8 7h8M8.5 11.5h0M12 11.5h0M15.5 11.5h0M8.5 15h0M12 15h0M15.5 15h0M8.5 18h0M12 18h0M15.5 18h0"
+            {...p}
+          />
         </>
       );
     case "list":

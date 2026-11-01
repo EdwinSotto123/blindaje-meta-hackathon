@@ -55,13 +55,20 @@ const WEEKS = ["2026-09-30", "2026-10-07", "2026-10-14", "2026-10-21"];
 
 /** Mismos textos que la API (services/api/src/business/risk.ts). */
 export const SESGO = SESGO_FALLBACK;
-export const AVISO_UMBRAL = "Aún no hay suficientes casos para mostrar cifras: hacen falta al menos 5 casos de 3 personas distintas en la zona.";
-export const AVISO_RUBRO = "Aún no hay suficientes casos de tu rubro en esta zona para mostrar cifras propias: las cifras son de toda la zona.";
+export const AVISO_UMBRAL =
+  "Aún no hay suficientes casos para mostrar cifras: hacen falta al menos 5 casos de 3 personas distintas en la zona.";
+export const AVISO_RUBRO =
+  "Aún no hay suficientes casos de tu rubro en esta zona para mostrar cifras propias: las cifras son de toda la zona.";
 
 const LOS_X: Modalidad = {
   corta: "Audios de “Los X”: piden pago por Yape en 48 horas",
   descripcion: "Audios de alguien que dice ser de “Los X”. Piden un pago por Yape y dan 48 horas de plazo.",
-  senales_de_alerta: ["“Habla con el jefe”", "Plazo de 48 horas", "Piden el pago por Yape", "Mandan una foto de tu local"],
+  senales_de_alerta: [
+    "“Habla con el jefe”",
+    "Plazo de 48 horas",
+    "Piden el pago por Yape",
+    "Mandan una foto de tu local",
+  ],
   desde: "2026-10-12",
 };
 
@@ -114,7 +121,12 @@ export const CASOS_FICTICIOS: Record<string, RawZone> = {
       [5, 4],
       [10, 7],
     ],
-    rubros: { bodega: { total: [9, 6] }, transporte: { total: [8, 5] }, mototaxi: { total: [5, 3] }, restaurante: { total: [2, 2] } },
+    rubros: {
+      bodega: { total: [9, 6] },
+      transporte: { total: [8, 5] },
+      mototaxi: { total: [5, 3] },
+      restaurante: { total: [2, 2] },
+    },
     escalamiento: ESCALAMIENTO,
     modalidades: [LOS_X],
   },
@@ -157,16 +169,124 @@ export const CASOS_FICTICIOS: Record<string, RawZone> = {
     escalamiento: null,
     modalidades: [],
   },
-  "el-agustino": { total: [6, 4], previos: 3, semanas: [[1, 1], [1, 1], [2, 2], [2, 2]], rubros: { bodega: { total: [4, 3] } }, escalamiento: null, modalidades: [] },
-  comas: { total: [7, 5], previos: 7, semanas: [[2, 2], [2, 2], [1, 1], [2, 2]], rubros: { transporte: { total: [5, 3] } }, escalamiento: null, modalidades: [] },
-  "villa-el-salvador": { total: [5, 3], previos: 6, semanas: [[1, 1], [2, 1], [1, 1], [1, 1]], rubros: {}, escalamiento: null, modalidades: [] },
-  callao: { total: [6, 4], previos: 6, semanas: [[2, 2], [1, 1], [2, 2], [1, 1]], rubros: { transporte: { total: [3, 2] } }, escalamiento: null, modalidades: [] },
+  "el-agustino": {
+    total: [6, 4],
+    previos: 3,
+    semanas: [
+      [1, 1],
+      [1, 1],
+      [2, 2],
+      [2, 2],
+    ],
+    rubros: { bodega: { total: [4, 3] } },
+    escalamiento: null,
+    modalidades: [],
+  },
+  comas: {
+    total: [7, 5],
+    previos: 7,
+    semanas: [
+      [2, 2],
+      [2, 2],
+      [1, 1],
+      [2, 2],
+    ],
+    rubros: { transporte: { total: [5, 3] } },
+    escalamiento: null,
+    modalidades: [],
+  },
+  "villa-el-salvador": {
+    total: [5, 3],
+    previos: 6,
+    semanas: [
+      [1, 1],
+      [2, 1],
+      [1, 1],
+      [1, 1],
+    ],
+    rubros: {},
+    escalamiento: null,
+    modalidades: [],
+  },
+  callao: {
+    total: [6, 4],
+    previos: 6,
+    semanas: [
+      [2, 2],
+      [1, 1],
+      [2, 2],
+      [1, 1],
+    ],
+    rubros: { transporte: { total: [3, 2] } },
+    escalamiento: null,
+    modalidades: [],
+  },
   // Con casos, pero bajo el umbral: en lo público se ven igual que un distrito sin casos.
-  lurigancho: { total: [4, 3], previos: 2, semanas: [[1, 1], [1, 1], [1, 1], [1, 1]], rubros: { transporte: { total: [4, 3] } }, escalamiento: null, modalidades: [LOS_X] },
-  brena: { total: [6, 2], previos: 1, semanas: [[1, 1], [2, 1], [1, 1], [2, 1]], rubros: { bodega: { total: [6, 2] } }, escalamiento: null, modalidades: [COBRO_SEGURIDAD] },
-  "los-olivos": { total: [3, 3], previos: 4, semanas: [[1, 1], [0, 0], [1, 1], [1, 1]], rubros: {}, escalamiento: null, modalidades: [] },
-  chorrillos: { total: [2, 2], previos: 0, semanas: [[0, 0], [1, 1], [0, 0], [1, 1]], rubros: {}, escalamiento: null, modalidades: [] },
-  independencia: { total: [1, 1], previos: 0, semanas: [[0, 0], [0, 0], [1, 1], [0, 0]], rubros: {}, escalamiento: null, modalidades: [] },
+  lurigancho: {
+    total: [4, 3],
+    previos: 2,
+    semanas: [
+      [1, 1],
+      [1, 1],
+      [1, 1],
+      [1, 1],
+    ],
+    rubros: { transporte: { total: [4, 3] } },
+    escalamiento: null,
+    modalidades: [LOS_X],
+  },
+  brena: {
+    total: [6, 2],
+    previos: 1,
+    semanas: [
+      [1, 1],
+      [2, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    rubros: { bodega: { total: [6, 2] } },
+    escalamiento: null,
+    modalidades: [COBRO_SEGURIDAD],
+  },
+  "los-olivos": {
+    total: [3, 3],
+    previos: 4,
+    semanas: [
+      [1, 1],
+      [0, 0],
+      [1, 1],
+      [1, 1],
+    ],
+    rubros: {},
+    escalamiento: null,
+    modalidades: [],
+  },
+  chorrillos: {
+    total: [2, 2],
+    previos: 0,
+    semanas: [
+      [0, 0],
+      [1, 1],
+      [0, 0],
+      [1, 1],
+    ],
+    rubros: {},
+    escalamiento: null,
+    modalidades: [],
+  },
+  independencia: {
+    total: [1, 1],
+    previos: 0,
+    semanas: [
+      [0, 0],
+      [0, 0],
+      [1, 1],
+      [0, 0],
+    ],
+    rubros: {},
+    escalamiento: null,
+    modalidades: [],
+  },
 };
 
 const band = ([c, v]: Pair): CountBand | null => countBand(c, v);
@@ -198,7 +318,8 @@ export function publicZones(): PublicZoneMap {
     celdas: DISTRICTS.map((d): PublicZoneCell => {
       const z = CASOS_FICTICIOS[d.id];
       const casos = z ? band(z.total) : null;
-      if (!z || casos === null) return { distrito: d.id, nivel: "sin_datos", casos: null, tendencia: null, modalidades: [] };
+      if (!z || casos === null)
+        return { distrito: d.id, nivel: "sin_datos", casos: null, tendencia: null, modalidades: [] };
       return {
         distrito: d.id,
         nivel: nivelDe(z.total, z.escalamiento !== null, z.modalidades.length > 0),
@@ -264,7 +385,11 @@ export function publicRisk(zona: string, sector: string | null = null): PublicRi
     nivel_riesgo: nivelDe(scope, z.escalamiento !== null, modalidadActiva),
     casos_periodo: band(scope),
     tendencia: weeks(useRubro ? rubro.semanas : z.semanas),
-    modalidades_activas: z.modalidades.map(({ descripcion, senales_de_alerta, desde }) => ({ descripcion, senales_de_alerta, desde })),
+    modalidades_activas: z.modalidades.map(({ descripcion, senales_de_alerta, desde }) => ({
+      descripcion,
+      senales_de_alerta,
+      desde,
+    })),
     escalamiento: z.escalamiento,
     sectores_afectados: sectores,
     sesgo: SESGO,
@@ -300,32 +425,38 @@ const RECOMENDACIONES: BusinessRecommendationView[] = [
     recomendaciones: [
       {
         titulo: "Aprende a reconocer el guion",
-        detalle: "Si escuchas “habla con el jefe” o te dan 48 horas, es la modalidad de “Los X”. No respondas, guarda el audio y denuncia.",
+        detalle:
+          "Si escuchas “habla con el jefe” o te dan 48 horas, es la modalidad de “Los X”. No respondas, guarda el audio y denuncia.",
         prioridad: "media",
       },
       {
         titulo: "No respondas ni negocies",
-        detalle: "Si te llega un audio o un mensaje, no contestes ni discutas el monto. Cualquier respuesta les dice que pueden presionarte.",
+        detalle:
+          "Si te llega un audio o un mensaje, no contestes ni discutas el monto. Cualquier respuesta les dice que pueden presionarte.",
         prioridad: "alta",
       },
       {
         titulo: "Guarda cada audio y cada captura",
-        detalle: "Guárdalos en Blindaje apenas te lleguen y no borres el chat. Sirven para tu denuncia y para ver si los casos se repiten en tu distrito.",
+        detalle:
+          "Guárdalos en Blindaje apenas te lleguen y no borres el chat. Sirven para tu denuncia y para ver si los casos se repiten en tu distrito.",
         prioridad: "alta",
       },
       {
         titulo: "Acuerda un protocolo con tu personal",
-        detalle: "Que todos sepan que nadie paga ni negocia, y que cualquier mensaje raro te lo pasan a ti. Practiquen qué decir si llaman al local.",
+        detalle:
+          "Que todos sepan que nadie paga ni negocia, y que cualquier mensaje raro te lo pasan a ti. Practiquen qué decir si llaman al local.",
         prioridad: "alta",
       },
       {
         titulo: "Cuida lo que publicas del negocio",
-        detalle: "No publiques horarios de caja, montos ni fotos del interior en redes. Revisa quién puede ver tus publicaciones.",
+        detalle:
+          "No publiques horarios de caja, montos ni fotos del interior en redes. Revisa quién puede ver tus publicaciones.",
         prioridad: "media",
       },
       {
         titulo: "Registra lo que recibiste aunque no pase a más",
-        detalle: "Guárdalo en Blindaje y, si quieres, compártelo con la comunidad. Juntar los casos ayuda a que la autoridad vea si están relacionados, sin decir quién eres.",
+        detalle:
+          "Guárdalo en Blindaje y, si quieres, compártelo con la comunidad. Juntar los casos ayuda a que la autoridad vea si están relacionados, sin decir quién eres.",
         prioridad: "baja",
       },
     ],
@@ -344,7 +475,8 @@ const RECOMENDACIONES: BusinessRecommendationView[] = [
     recomendaciones: [
       {
         titulo: "Nadie cobra por la seguridad del barrio",
-        detalle: "Si alguien te pide un pago semanal “por tu seguridad”, no pagues. Anota la hora de la llamada y guárdala en Blindaje.",
+        detalle:
+          "Si alguien te pide un pago semanal “por tu seguridad”, no pagues. Anota la hora de la llamada y guárdala en Blindaje.",
         prioridad: "alta",
       },
       {
@@ -368,7 +500,8 @@ const RECOMENDACIONES: BusinessRecommendationView[] = [
     recomendaciones: [
       {
         titulo: "No respondas ni negocies",
-        detalle: "Si te llega un audio, no contestes ni discutas el monto. Avísale al dueño de la unidad o a quien maneja contigo.",
+        detalle:
+          "Si te llega un audio, no contestes ni discutas el monto. Avísale al dueño de la unidad o a quien maneja contigo.",
         prioridad: "alta",
       },
       {
@@ -395,7 +528,12 @@ const AVISOS: VictimAlert[] = [
     cuerpo:
       "En las últimas dos semanas, varias personas de Ate registraron audios de alguien que dice ser de “Los X” y exige pagos por Yape con 48 horas de plazo. No pagues ni negocies. Guarda los audios y mensajes y denuncia en la Línea 1818 o en tu comisaría. Si estás en peligro inmediato, llama al 105.",
     zona: "ate",
-    que_hacer: ["No pagues ni negocies.", "Guarda los audios y mensajes.", "Denuncia en la Línea 1818 o en tu comisaría.", "Si estás en peligro inmediato, llama al 105."],
+    que_hacer: [
+      "No pagues ni negocies.",
+      "Guarda los audios y mensajes.",
+      "Denuncia en la Línea 1818 o en tu comisaría.",
+      "Si estás en peligro inmediato, llama al 105.",
+    ],
     approved_at: "2026-10-27T18:30:00Z",
   },
   {
@@ -404,7 +542,11 @@ const AVISOS: VictimAlert[] = [
     cuerpo:
       "Algunas bodegas de Ate recibieron llamadas que piden un pago semanal “por seguridad”. Nadie del barrio cobra por eso. No pagues, no des datos del negocio y denuncia en la Línea 1818.",
     zona: "ate",
-    que_hacer: ["No pagues ni negocies.", "No des datos del negocio por teléfono.", "Denuncia en la Línea 1818 o en tu comisaría."],
+    que_hacer: [
+      "No pagues ni negocies.",
+      "No des datos del negocio por teléfono.",
+      "Denuncia en la Línea 1818 o en tu comisaría.",
+    ],
     approved_at: "2026-10-12T15:00:00Z",
   },
   {
@@ -413,7 +555,11 @@ const AVISOS: VictimAlert[] = [
     cuerpo:
       "Personas de San Juan de Lurigancho registraron audios de “Los X” que piden pagos por Yape con 48 horas de plazo. No pagues ni negocies. Guarda todo y denuncia en la Línea 1818. Si estás en peligro inmediato, llama al 105.",
     zona: "san-juan-de-lurigancho",
-    que_hacer: ["No pagues ni negocies.", "Guarda los audios y mensajes.", "Denuncia en la Línea 1818 o en tu comisaría."],
+    que_hacer: [
+      "No pagues ni negocies.",
+      "Guarda los audios y mensajes.",
+      "Denuncia en la Línea 1818 o en tu comisaría.",
+    ],
     approved_at: "2026-10-25T13:00:00Z",
   },
   {
@@ -422,7 +568,11 @@ const AVISOS: VictimAlert[] = [
     cuerpo:
       "En Santa Anita también llegan audios que repiten “habla con el jefe” y dan 48 horas de plazo. No pagues ni negocies. Guarda los audios y denuncia en la Línea 1818.",
     zona: "santa-anita",
-    que_hacer: ["No pagues ni negocies.", "Guarda los audios y mensajes.", "Denuncia en la Línea 1818 o en tu comisaría."],
+    que_hacer: [
+      "No pagues ni negocies.",
+      "Guarda los audios y mensajes.",
+      "Denuncia en la Línea 1818 o en tu comisaría.",
+    ],
     approved_at: "2026-10-20T16:00:00Z",
   },
 ];

@@ -108,8 +108,12 @@ def _video(request: Request, data: bytes, frames: int) -> dict[str, Any]:
         imgs = media.sample_frames(data, frames, duration, size=size)
         v = vdet.detect(imgs)
         del imgs
-        watermark = {"detector": VIDEOSEAL_NAME, "detected": v["detected"], "score": v["score"],
-                     "frames_checked": v["frames"]}
+        watermark = {
+            "detector": VIDEOSEAL_NAME,
+            "detected": v["detected"],
+            "score": v["score"],
+            "frames_checked": v["frames"],
+        }
     # La pista de audio de un video generado también puede traer AudioSeal.
     if has_audio:
         a = _audio_watermark(request, data)
@@ -136,11 +140,15 @@ def _video(request: Request, data: bytes, frames: int) -> dict[str, Any]:
 def _log(tipo: str, kind: str, out: dict[str, Any]) -> None:
     """Solo banderas y conteos: nunca valores de metadatos."""
     wm, c2, md = out["watermark"], out["c2pa"], out["metadata"]
-    log("authenticity", tipo=tipo, formato=kind,
+    log(
+        "authenticity",
+        tipo=tipo,
+        formato=kind,
         watermark=None if wm is None else wm["detected"],
         c2pa=None if c2 is None else c2["present"],
         c2pa_ai=None if c2 is None else c2["ai_generated"],
-        metadata_suspicious=0 if md is None else len(md["suspicious"]))
+        metadata_suspicious=0 if md is None else len(md["suspicious"]),
+    )
 
 
 @router.post("/authenticity/audio")

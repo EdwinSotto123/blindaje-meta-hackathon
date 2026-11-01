@@ -14,7 +14,10 @@ import { fixturesDir } from "./helpers/env";
 import { jsonResponse, mockFetch } from "./helpers/mock-fetch";
 
 const wav = new Uint8Array(readFileSync(join(fixturesDir, "dialogo.wav")));
-const transcribeJson = JSON.parse(readFileSync(join(fixturesDir, "transcribe-diarization.json"), "utf8")) as Record<string, unknown>;
+const transcribeJson = JSON.parse(readFileSync(join(fixturesDir, "transcribe-diarization.json"), "utf8")) as Record<
+  string,
+  unknown
+>;
 
 function makeWav(sampleRate: number, channels: number, seconds = 1): Uint8Array {
   const dataBytes = sampleRate * channels * 2 * seconds;
@@ -71,7 +74,9 @@ describe("transcribe", () => {
     const boundary = /boundary=(.+)$/.exec(contentType)![1]!;
     const parts = call.text.split(`--${boundary}`).slice(1, -1);
     expect(parts).toHaveLength(2);
-    expect(parts[0]).toContain('Content-Disposition: form-data; name="request"\r\nContent-Type: application/json\r\n\r\n');
+    expect(parts[0]).toContain(
+      'Content-Disposition: form-data; name="request"\r\nContent-Type: application/json\r\n\r\n',
+    );
     const requestJson = JSON.parse(parts[0]!.split("\r\n\r\n")[1]!.trim()) as Record<string, unknown>;
     expect(requestJson).toEqual({
       model: "muse-voice-transcribe-1.0",
@@ -82,7 +87,12 @@ describe("transcribe", () => {
     });
     expect(parts[1]).toContain('name="audio"; filename="audio.wav"\r\nContent-Type: audio/wav');
     expect(parts[1]).toContain("RIFF");
-    expect(events[0]).toMatchObject({ model: "muse-voice-transcribe-1.0", operation: "transcribe", units: { audio_seconds: 14 }, status: "ok" });
+    expect(events[0]).toMatchObject({
+      model: "muse-voice-transcribe-1.0",
+      operation: "transcribe",
+      units: { audio_seconds: 14 },
+      status: "ok",
+    });
     expect(events[0]!.cost_usd).toBeCloseTo((14 * 0.18) / 3600, 10);
   });
 
@@ -96,14 +106,26 @@ describe("transcribe", () => {
 
 describe("files", () => {
   it("upload: purpose primero, expiración, y file al final", async () => {
-    const fetch = mockFetch(() => jsonResponse({ id: "file-1", object: "file", bytes: 3, created_at: 1, filename: "clip.mp4", purpose: "user_data" }));
+    const fetch = mockFetch(() =>
+      jsonResponse({
+        id: "file-1",
+        object: "file",
+        bytes: 3,
+        created_at: 1,
+        filename: "clip.mp4",
+        purpose: "user_data",
+      }),
+    );
     const c = new MetaClient({ apiKey: "k", fetch });
     const file = await c.files.upload(new Uint8Array([1, 2, 3]), { filename: "clip.mp4", expiresAfterSeconds: 3600 });
     expect(file.id).toBe("file-1");
     const text = fetch.calls[0]!.text;
-    const order = ['name="purpose"', 'name="expires_after[anchor]"', 'name="expires_after[seconds]"', 'name="file"; filename="clip.mp4"'].map((s) =>
-      text.indexOf(s),
-    );
+    const order = [
+      'name="purpose"',
+      'name="expires_after[anchor]"',
+      'name="expires_after[seconds]"',
+      'name="file"; filename="clip.mp4"',
+    ].map((s) => text.indexOf(s));
     expect(order.every((i) => i >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(text).toContain("Content-Type: video/mp4");
@@ -122,7 +144,9 @@ describe("files", () => {
 describe("images.generate", () => {
   it("apaga la búsqueda integrada, es no esencial y cuesta 0.01 por imagen", async () => {
     const events: UsageEvent[] = [];
-    const fetch = mockFetch(() => jsonResponse({ created: 1, data: [{ b64_json: "AAA" }, { b64_json: "BBB" }], output_format: "png" }));
+    const fetch = mockFetch(() =>
+      jsonResponse({ created: 1, data: [{ b64_json: "AAA" }, { b64_json: "BBB" }], output_format: "png" }),
+    );
     const c = new MetaClient({ apiKey: "k", fetch, hooks: { onUsage: (e) => void events.push(e) } });
     const res = await c.images.generate({ prompt: "tarjeta de alerta", n: 2, size: "1024x1024" });
     expect(res.images).toEqual([

@@ -1,4 +1,12 @@
-import { DISTRICTS, districtById, districtOfZone, Sector, ZONE_AREAS, type District, type ZoneArea } from "@blindaje/shared";
+import {
+  DISTRICTS,
+  districtById,
+  districtOfZone,
+  Sector,
+  ZONE_AREAS,
+  type District,
+  type ZoneArea,
+} from "@blindaje/shared";
 import { useSearchParams } from "react-router";
 
 /**

@@ -14,7 +14,10 @@ export function Transcript({ turns, terms = [] }: { turns: Turns; terms?: string
       {turns.map((t, i) => (
         <View key={i} style={{ gap: 2 }}>
           {t.speaker ? <T variant="small">{t.es_victima ? "Tú" : t.speaker}</T> : null}
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={{ fontFamily: fonts.texto, fontSize: 17, lineHeight: 27, color: colors.tinta }}>
+          <Text
+            maxFontSizeMultiplier={MAX_FONT_SCALE}
+            style={{ fontFamily: fonts.texto, fontSize: 17, lineHeight: 27, color: colors.tinta }}
+          >
             {highlight(t.text, terms).map((sgm, j) =>
               sgm.hl ? (
                 <Text key={j} style={{ backgroundColor: colors.resaltador, fontFamily: fonts.textoBold }}>
@@ -34,5 +37,9 @@ export function Transcript({ turns, terms = [] }: { turns: Turns; terms?: string
 /** Términos extra para resaltar, tomados de la ficha del propio caso. */
 export function termsFromReport(r: VictimReport | null): string[] {
   if (!r?.ficha) return [];
-  return [...r.ficha.frases_firma, ...r.ficha.identificadores.map((i) => i.valor), r.ficha.grupo_que_dice_ser ?? ""].filter(Boolean);
+  return [
+    ...r.ficha.frases_firma,
+    ...r.ficha.identificadores.map((i) => i.valor),
+    r.ficha.grupo_que_dice_ser ?? "",
+  ].filter(Boolean);
 }

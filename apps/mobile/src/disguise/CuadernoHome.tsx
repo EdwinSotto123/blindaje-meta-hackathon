@@ -78,7 +78,12 @@ export function CuadernoHome() {
           <T variant="title">{c.cuaderno.title}</T>
           <T variant="small">{longDate()}</T>
         </Pressable>
-        <IconButton icon="calc" label={c.cuaderno.menuVuelto} onPress={() => router.push("/calculadora")} testID="calcular-vuelto" />
+        <IconButton
+          icon="calc"
+          label={c.cuaderno.menuVuelto}
+          onPress={() => router.push("/calculadora")}
+          testID="calcular-vuelto"
+        />
       </View>
 
       <View style={{ gap: 4 }}>
@@ -153,7 +158,6 @@ export function CuadernoHome() {
           ))
         )}
       </View>
-
     </Paper>
   );
 }

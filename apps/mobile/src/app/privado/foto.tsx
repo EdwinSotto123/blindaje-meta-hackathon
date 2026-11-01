@@ -45,12 +45,22 @@ export default function Foto() {
   const pick = async () => {
     expectExternal();
     try {
-      const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images", "videos"], quality: 1, exif: false, allowsEditing: false });
+      const r = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images", "videos"],
+        quality: 1,
+        exif: false,
+        allowsEditing: false,
+      });
       if (r.canceled || !r.assets[0]) return;
       const a = r.assets[0];
       setBusy(true);
       const mime = a.mimeType ?? (a.type === "video" ? "video/mp4" : "image/jpeg");
-      const item = await saveFile(a.uri, { tipo: evidenceTypeForMime(mime), mime, source: "galeria", durationMs: a.duration ?? null });
+      const item = await saveFile(a.uri, {
+        tipo: evidenceTypeForMime(mime),
+        mime,
+        source: "galeria",
+        durationMs: a.duration ?? null,
+      });
       setQueueId(item?.id ?? null);
       setSaved(true);
     } finally {
@@ -63,7 +73,9 @@ export default function Foto() {
     <PrivateScreen title="Foto" testID="foto">
       {!perm ? null : !perm.granted ? (
         <View style={{ gap: 12 }}>
-          <T variant="body">Para tomar fotos aquí, permite el uso de la cámara. Las fotos no se guardan en tu galería.</T>
+          <T variant="body">
+            Para tomar fotos aquí, permite el uso de la cámara. Las fotos no se guardan en tu galería.
+          </T>
           <Button
             label="Permitir cámara"
             onPress={() => {
@@ -116,6 +128,22 @@ export default function Foto() {
 }
 
 const s = StyleSheet.create({
-  frame: { height: 360, borderRadius: radius.boton, overflow: "hidden", borderWidth: 1.5, borderColor: colors.borde, backgroundColor: colors.tinta },
-  shutter: { width: 76, height: 76, borderRadius: 999, backgroundColor: colors.tinta, alignItems: "center", justifyContent: "center", borderWidth: 4, borderColor: colors.cuadriculaSuave },
+  frame: {
+    height: 360,
+    borderRadius: radius.boton,
+    overflow: "hidden",
+    borderWidth: 1.5,
+    borderColor: colors.borde,
+    backgroundColor: colors.tinta,
+  },
+  shutter: {
+    width: 76,
+    height: 76,
+    borderRadius: 999,
+    backgroundColor: colors.tinta,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 4,
+    borderColor: colors.cuadriculaSuave,
+  },
 });

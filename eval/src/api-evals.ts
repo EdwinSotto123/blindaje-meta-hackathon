@@ -134,7 +134,9 @@ export async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; es
 
   try {
     // Vinculador
-    const { links } = await api.request<{ links: Record<string, unknown>[] }>("/v1/console/links?status=todos", { token });
+    const { links } = await api.request<{ links: Record<string, unknown>[] }>("/v1/console/links?status=todos", {
+      token,
+    });
     for (const l of links) {
       collectStrings({ label: l.label, signals: l.signals, a: l.case_a, b: l.case_b, fragments: l.fragments }, known);
       const v = l.vinculador as { afirmaciones: Claim[]; contradicciones: Claim[] } | null;
@@ -142,11 +144,11 @@ export async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; es
       if (l.vinculador_valid === false) base.validacion_de_la_api.vinculador_valid_false++;
     }
     // Redes, Cartógrafo (perfil) y estadísticas
-    const { networks } = await api.request<{ networks: { id: string; label: string; n_cases: number; profile_status: string | null }[] }>(
-      "/v1/console/networks",
-      { token },
-    );
-    if (networks.length === 0) avisos.push("Sin redes para el Cartógrafo: se forman cuando una persona aprueba los vínculos en la consola.");
+    const { networks } = await api.request<{
+      networks: { id: string; label: string; n_cases: number; profile_status: string | null }[];
+    }>("/v1/console/networks", { token });
+    if (networks.length === 0)
+      avisos.push("Sin redes para el Cartógrafo: se forman cuando una persona aprueba los vínculos en la consola.");
     // Si la red más grande no tiene perfil, se pide uno (una sola llamada, para limitar el costo).
     const mayor = [...networks].sort((a, b) => b.n_cases - a.n_cases)[0];
     if (mayor && mayor.profile_status === null) {
@@ -161,10 +163,9 @@ export async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; es
       const view = await api.request<Record<string, unknown>>(`/v1/console/networks/${n.id}`, { token });
       collectStrings(view, known);
       known.add(n.label);
-      const { profiles } = await api.request<{ profiles: { perfil: Record<string, unknown>; citation_check: { ok: boolean } }[] }>(
-        `/v1/console/networks/${n.id}/profiles`,
-        { token },
-      );
+      const { profiles } = await api.request<{
+        profiles: { perfil: Record<string, unknown>; citation_check: { ok: boolean } }[];
+      }>(`/v1/console/networks/${n.id}/profiles`, { token });
       for (const p of profiles) {
         const perfil = p.perfil as { hechos: Claim[]; hipotesis: Claim[]; territorio: unknown[] };
         addClaims("cartografo", [...perfil.hechos, ...perfil.hipotesis]);
@@ -177,10 +178,16 @@ export async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; es
       }
     }
     // Vigía: si no hay alertas, se corre una vez (lo mismo que hace el cron)
-    let { alerts } = await api.request<{ alerts: { borrador: { titulo: string; evidencia: string[] } }[] }>("/v1/console/alerts", { token });
+    let { alerts } = await api.request<{ alerts: { borrador: { titulo: string; evidencia: string[] } }[] }>(
+      "/v1/console/alerts",
+      { token },
+    );
     if (alerts.length === 0) {
       try {
-        const r = await api.request<{ alerts: { borrador: { titulo: string; evidencia: string[] } }[] }>("/v1/console/vigia/run", { token, method: "POST" });
+        const r = await api.request<{ alerts: { borrador: { titulo: string; evidencia: string[] } }[] }>(
+          "/v1/console/vigia/run",
+          { token, method: "POST" },
+        );
         alerts = r.alerts;
         avisos.push(`Vigía: ${alerts.length} borradores de alerta.`);
       } catch (e) {
@@ -189,7 +196,10 @@ export async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; es
     }
     for (const a of alerts) addClaims("vigia", [{ texto: a.borrador.titulo, evidencia: a.borrador.evidencia }]);
   } catch (e) {
-    const m = e instanceof ApiHttpError && e.status === 501 ? "La API todavía no implementa esta ruta (501)" : String(e instanceof Error ? e.message : e);
+    const m =
+      e instanceof ApiHttpError && e.status === 501
+        ? "La API todavía no implementa esta ruta (501)"
+        : String(e instanceof Error ? e.message : e);
     return { agentes: { ...base, estado: "error", motivo: m }, estadisticas: { ...est, estado: "error", motivo: m } };
   }
 
@@ -223,12 +233,29 @@ export async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; es
           ...base,
           salidas,
           por_agente: porAgente,
-          motivo: ["Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo.", ...avisos].join(" "),
+          motivo: [
+            "Todavía no hay salidas de los agentes (Vinculador, Cartógrafo, Vigía) en el entorno del demo.",
+            ...avisos,
+          ].join(" "),
         }
-      : { ...base, estado: "ok", salidas, afirmaciones: claims.length, verificadas, fidelidad: verificadas / claims.length, por_agente: porAgente };
+      : {
+          ...base,
+          estado: "ok",
+          salidas,
+          afirmaciones: claims.length,
+          verificadas,
+          fidelidad: verificadas / claims.length,
+          por_agente: porAgente,
+        };
   const estadisticas: EstadisticasReport =
     est.perfiles_revisados === 0
-      ? { ...est, motivo: ["Todavía no hay perfiles de red del Cartógrafo para revisar.", ...avisos.filter((a) => a.includes("Cartógrafo"))].join(" ") }
+      ? {
+          ...est,
+          motivo: [
+            "Todavía no hay perfiles de red del Cartógrafo para revisar.",
+            ...avisos.filter((a) => a.includes("Cartógrafo")),
+          ].join(" "),
+        }
       : { ...est, estado: "ok" };
   return { agentes, estadisticas };
 }
@@ -237,15 +264,25 @@ export async function runAgentes(api: Api): Promise<{ agentes: AgentesReport; es
 
 export async function runInfiltrado(api: Api, waitSeconds: number): Promise<InfiltradoReport> {
   const seed = demoSeedResult();
-  if (!seed) return { ...pend("Falta correr pnpm demo:seed (los casos A, B y C son el blanco de la prueba)."), pasa: null, chequeos: [] };
+  if (!seed)
+    return {
+      ...pend("Falta correr pnpm demo:seed (los casos A, B y C son el blanco de la prueba)."),
+      pasa: null,
+      chequeos: [],
+    };
   const demo = loadDemo();
   const chequeos: InfiltradoReport["chequeos"] = [];
   const advertencias: string[] = [];
-  const check = (nombre: string, ok: boolean, detalle?: string) => chequeos.push({ nombre, ok, ...(detalle ? { detalle } : {}) });
+  const check = (nombre: string, ok: boolean, detalle?: string) =>
+    chequeos.push({ nombre, ok, ...(detalle ? { detalle } : {}) });
   try {
     const p = await prepareCase(api, "infiltrado", demo.infiltrado);
     const r = await submitAndWait(api, p, demo.infiltrado.relato, waitSeconds);
-    check("Su caso se procesa con normalidad", r.status === "listo" || r.status === "procesando", `estado: ${r.status}`);
+    check(
+      "Su caso se procesa con normalidad",
+      r.status === "listo" || r.status === "procesando",
+      `estado: ${r.status}`,
+    );
     const fichaPropia = (r.report as { ficha?: unknown } | null)?.ficha ?? null;
     if (!fichaPropia) {
       advertencias.push(
@@ -259,14 +296,22 @@ export async function runInfiltrado(api: Api, waitSeconds: number): Promise<Infi
       alertas: await api.request("/v1/alerts", { token: t }),
     };
     const claves = forbiddenKeys(respuestas);
-    check("Ninguna respuesta trae claves prohibidas (vínculos, redes, puntajes, HMAC…)", claves.length === 0, claves.join(", ") || undefined);
+    check(
+      "Ninguna respuesta trae claves prohibidas (vínculos, redes, puntajes, HMAC…)",
+      claves.length === 0,
+      claves.join(", ") || undefined,
+    );
     const blob = JSON.stringify(respuestas);
     const codigos = demo.casos.map((c) => c.code);
     const otros = [
       ...codigos.flatMap((k) => [`EV-${k}1`, `EV-${k}2`, `FICHA-${k}`]),
       ...Object.values(seed.casos).map((c) => c.case_id),
     ].filter((x) => blob.includes(x));
-    check(`No aparece ningún caso, evidencia ni ficha de los casos del demo (${codigos.join(", ")})`, otros.length === 0, otros.join(", ") || undefined);
+    check(
+      `No aparece ningún caso, evidencia ni ficha de los casos del demo (${codigos.join(", ")})`,
+      otros.length === 0,
+      otros.join(", ") || undefined,
+    );
     const digits = blob.replace(/\D/g, "");
     // La cuenta recaudadora la subió el propio infiltrado: puede verla en su ficha. Las demás no.
     const ajenos = Object.entries(demo.identificadores)
@@ -280,20 +325,32 @@ export async function runInfiltrado(api: Api, waitSeconds: number): Promise<Infi
       await api.request(`/v1/cases/${ajeno}/report`, { token: t });
       check("Pedir el reporte de otro caso responde 404", false, "respondió 200");
     } catch (e) {
-      check("Pedir el reporte de otro caso responde 404", e instanceof ApiHttpError && e.status === 404, e instanceof ApiHttpError ? `${e.status}` : String(e));
+      check(
+        "Pedir el reporte de otro caso responde 404",
+        e instanceof ApiHttpError && e.status === 404,
+        e instanceof ApiHttpError ? `${e.status}` : String(e),
+      );
     }
     try {
       await api.request("/v1/console/links", { token: t });
       check("La consola rechaza el token de víctima", false, "respondió 200");
     } catch (e) {
-      check("La consola rechaza el token de víctima", e instanceof ApiHttpError && (e.status === 401 || e.status === 403), e instanceof ApiHttpError ? `${e.status}` : String(e));
+      check(
+        "La consola rechaza el token de víctima",
+        e instanceof ApiHttpError && (e.status === 401 || e.status === 403),
+        e instanceof ApiHttpError ? `${e.status}` : String(e),
+      );
     }
     // Limpieza: el caso del infiltrado no debe quedar en la red ni en el conteo del Vigía.
     try {
       await api.request(`/v1/cases/${p.case_id}`, { method: "DELETE", token: t });
       check("El infiltrado puede borrar su propio caso (y deja de contar en la red)", true);
     } catch (e) {
-      check("El infiltrado puede borrar su propio caso (y deja de contar en la red)", false, e instanceof Error ? e.message : String(e));
+      check(
+        "El infiltrado puede borrar su propio caso (y deja de contar en la red)",
+        false,
+        e instanceof Error ? e.message : String(e),
+      );
     }
   } catch (e) {
     return { estado: "error", motivo: e instanceof Error ? e.message : String(e), pasa: null, chequeos };
@@ -307,8 +364,24 @@ export async function runApiEvals(opts: { waitSeconds?: number } = {}): Promise<
     const m = "La API no está desplegada (falta API_URL o la URL en services/api/README.md).";
     return {
       api: null,
-      agentes: { ...pend(m), salidas: 0, afirmaciones: 0, verificadas: 0, fidelidad: null, sin_cita: [], citas_inexistentes: [], por_agente: {}, validacion_de_la_api: { vinculador_valid_false: 0, perfiles_citation_check_false: 0 } },
-      estadisticas_menos_5: { ...pend(m), perfiles_revisados: 0, perfiles_con_menos_de_5_casos: 0, estadisticas_con_menos_de_5: 0, detalle: [] },
+      agentes: {
+        ...pend(m),
+        salidas: 0,
+        afirmaciones: 0,
+        verificadas: 0,
+        fidelidad: null,
+        sin_cita: [],
+        citas_inexistentes: [],
+        por_agente: {},
+        validacion_de_la_api: { vinculador_valid_false: 0, perfiles_citation_check_false: 0 },
+      },
+      estadisticas_menos_5: {
+        ...pend(m),
+        perfiles_revisados: 0,
+        perfiles_con_menos_de_5_casos: 0,
+        estadisticas_con_menos_de_5: 0,
+        detalle: [],
+      },
       infiltrado: { ...pend(m), pasa: null, chequeos: [] },
     };
   }
@@ -319,14 +392,31 @@ export async function runApiEvals(opts: { waitSeconds?: number } = {}): Promise<
     const m = `La API no responde: ${e instanceof Error ? e.message : e}`;
     return {
       api: url,
-      agentes: { ...pend(m), salidas: 0, afirmaciones: 0, verificadas: 0, fidelidad: null, sin_cita: [], citas_inexistentes: [], por_agente: {}, validacion_de_la_api: { vinculador_valid_false: 0, perfiles_citation_check_false: 0 } },
-      estadisticas_menos_5: { ...pend(m), perfiles_revisados: 0, perfiles_con_menos_de_5_casos: 0, estadisticas_con_menos_de_5: 0, detalle: [] },
+      agentes: {
+        ...pend(m),
+        salidas: 0,
+        afirmaciones: 0,
+        verificadas: 0,
+        fidelidad: null,
+        sin_cita: [],
+        citas_inexistentes: [],
+        por_agente: {},
+        validacion_de_la_api: { vinculador_valid_false: 0, perfiles_citation_check_false: 0 },
+      },
+      estadisticas_menos_5: {
+        ...pend(m),
+        perfiles_revisados: 0,
+        perfiles_con_menos_de_5_casos: 0,
+        estadisticas_con_menos_de_5: 0,
+        detalle: [],
+      },
       infiltrado: { ...pend(m), pasa: null, chequeos: [] },
     };
   }
   const { agentes, estadisticas } = await runAgentes(api);
-  const infiltrado = hasDemoSecret() || demoSeedResult()
-    ? await runInfiltrado(api, opts.waitSeconds ?? 120)
-    : { ...pend("Falta DEMO_SECRET y pnpm demo:seed."), pasa: null, chequeos: [] };
+  const infiltrado =
+    hasDemoSecret() || demoSeedResult()
+      ? await runInfiltrado(api, opts.waitSeconds ?? 120)
+      : { ...pend("Falta DEMO_SECRET y pnpm demo:seed."), pasa: null, chequeos: [] };
   return { api: url, agentes, estadisticas_menos_5: estadisticas, infiltrado };
 }

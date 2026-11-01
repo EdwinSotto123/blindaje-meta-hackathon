@@ -61,7 +61,10 @@ describe("elegir distrito y rubro", () => {
     expect(all.reduce((n, g) => n + g.districts.length, 0)).toBe(50);
     expect(filterDistricts("rimac").flatMap((g) => g.districts.map((d) => d.id))).toEqual(["rimac"]);
     expect(filterDistricts("Surco").flatMap((g) => g.districts.map((d) => d.id))).toContain("santiago-de-surco");
-    expect(filterDistricts("san juan").flatMap((g) => g.districts.map((d) => d.id))).toEqual(["san-juan-de-lurigancho", "san-juan-de-miraflores"]);
+    expect(filterDistricts("san juan").flatMap((g) => g.districts.map((d) => d.id))).toEqual([
+      "san-juan-de-lurigancho",
+      "san-juan-de-miraflores",
+    ]);
     expect(filterDistricts("zzz")).toEqual([]);
   });
 
@@ -69,7 +72,9 @@ describe("elegir distrito y rubro", () => {
     const html = render(<DistrictPicker rubro="bodega" onRubro={() => {}} current="ate" />);
     const links = html.match(/href="\/\?distrito=[a-z-]+&amp;rubro=bodega"/g) ?? [];
     expect(links).toHaveLength(50);
-    expect(html).toMatch(/<a [^>]*aria-current="true"[^>]*href="\/\?distrito=ate&amp;rubro=bodega"|<a [^>]*href="\/\?distrito=ate&amp;rubro=bodega"[^>]*aria-current="true"/);
+    expect(html).toMatch(
+      /<a [^>]*aria-current="true"[^>]*href="\/\?distrito=ate&amp;rubro=bodega"|<a [^>]*href="\/\?distrito=ate&amp;rubro=bodega"[^>]*aria-current="true"/,
+    );
     for (const area of ZONE_AREAS) expect(html).toContain(`>${area}</h2>`);
     expect(text(html)).toContain("Mira el mapa de Lima y el Callao");
   });
@@ -145,13 +150,18 @@ describe("mapa público", () => {
     const ate = cellHtml(html, "ate");
     expect(ate).toContain('data-nivel="alto"');
     expect(ate).toContain('<span class="zcell-band" aria-hidden="true">10-19</span>');
-    expect(ate).toContain('<span class="zcell-name">Ate</span><span class="sr-only">: riesgo alto, entre 10 y 19 casos, van en aumento</span>');
+    expect(ate).toContain(
+      '<span class="zcell-name">Ate</span><span class="sr-only">: riesgo alto, entre 10 y 19 casos, van en aumento</span>',
+    );
     // Ningún cuadro tiene una cifra suelta.
     expect(text(gridHtml(html))).not.toMatch(/\b16\b|\b24\b/);
   });
 
   it("marca tu distrito y lleva el rubro a cada enlace", () => {
-    const html = render(<MapPage map={map} selected={districtById("ate")} rubro="bodega" />, "/mapa?distrito=ate&rubro=bodega");
+    const html = render(
+      <MapPage map={map} selected={districtById("ate")} rubro="bodega" />,
+      "/mapa?distrito=ate&rubro=bodega",
+    );
     expect(cellHtml(html, "ate")).toContain('aria-current="true"');
     expect(text(html)).toContain("Tu distrito (Ate)");
     expect(text(html)).toContain("Ate: riesgo alto, entre 10 y 19 casos.");
@@ -174,7 +184,10 @@ describe("mapa público", () => {
       "villa-el-salvador",
     ]);
     const html = render(<MapPage map={map} selected={null} rubro={null} />, "/mapa");
-    const list = html.slice(html.indexOf('class="zrank-list"'), html.indexOf("</ol>", html.indexOf('class="zrank-list"')));
+    const list = html.slice(
+      html.indexOf('class="zrank-list"'),
+      html.indexOf("</ol>", html.indexOf('class="zrank-list"')),
+    );
     expect(list.match(/<li>/g)).toHaveLength(9);
     // Breña (6 casos de 2 personas) no llega al mínimo: no aparece ni se nombra.
     expect(list).not.toContain("Breña");
@@ -183,6 +196,8 @@ describe("mapa público", () => {
 
   it("los cuadros empiezan su nombre accesible con el nombre visible", () => {
     const html = render(<MapPage map={map} selected={null} rubro={null} />, "/mapa");
-    expect(cellHtml(html, "san-juan-de-lurigancho")).toContain('<span class="zcell-name">SJL</span><span class="sr-only"> (San Juan de Lurigancho): riesgo alto');
+    expect(cellHtml(html, "san-juan-de-lurigancho")).toContain(
+      '<span class="zcell-name">SJL</span><span class="sr-only"> (San Juan de Lurigancho): riesgo alto',
+    );
   });
 });

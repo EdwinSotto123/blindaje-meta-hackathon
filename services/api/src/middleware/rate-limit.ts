@@ -74,7 +74,12 @@ export function rateLimit(bucket: Bucket): MiddlewareHandler<AppEnv> {
 /** El script del demo (`demo:seed`) se identifica con DEMO_MODE=true y el header x-demo-secret. */
 function isDemoScript(c: Parameters<MiddlewareHandler<AppEnv>>[0]): boolean {
   const secret = c.req.header("x-demo-secret");
-  return c.env.DEMO_MODE === "true" && Boolean(c.env.DEMO_SECRET) && Boolean(secret) && timingSafeEqualStr(secret!, c.env.DEMO_SECRET);
+  return (
+    c.env.DEMO_MODE === "true" &&
+    Boolean(c.env.DEMO_SECRET) &&
+    Boolean(secret) &&
+    timingSafeEqualStr(secret!, c.env.DEMO_SECRET)
+  );
 }
 
 /**

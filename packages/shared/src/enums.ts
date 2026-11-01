@@ -28,24 +28,10 @@ export type EvidenceStatus = z.infer<typeof EvidenceStatus>;
 export const CaseStatus = z.enum(["borrador", "procesando", "listo", "error"]);
 export type CaseStatus = z.infer<typeof CaseStatus>;
 
-export const Sector = z.enum([
-  "bodega",
-  "mototaxi",
-  "transporte",
-  "mercado",
-  "restaurante",
-  "construccion",
-  "otro",
-]);
+export const Sector = z.enum(["bodega", "mototaxi", "transporte", "mercado", "restaurante", "construccion", "otro"]);
 export type Sector = z.infer<typeof Sector>;
 
-export const IdentifierType = z.enum([
-  "telefono",
-  "cuenta_yape",
-  "cuenta_plin",
-  "cuenta_bancaria",
-  "placa",
-]);
+export const IdentifierType = z.enum(["telefono", "cuenta_yape", "cuenta_plin", "cuenta_bancaria", "placa"]);
 export type IdentifierType = z.infer<typeof IdentifierType>;
 
 /** Para qué se usó el identificador dentro del caso. */

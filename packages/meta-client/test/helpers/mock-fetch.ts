@@ -57,13 +57,17 @@ export function sseResponse(text: string, chunkSizes: number[] = [7, 64, 3, 500]
       offset += size;
     },
   });
-  return new Response(stream, { status: 200, headers: { "content-type": "text/event-stream", "x-request-id": "req-sse" } });
+  return new Response(stream, {
+    status: 200,
+    headers: { "content-type": "text/event-stream", "x-request-id": "req-sse" },
+  });
 }
 
 /** Arma un SSE de la Responses API a partir de eventos. */
 export function sseText(events: Array<Record<string, unknown>>, done = true): string {
   return (
-    events.map((e) => `event: ${String(e.type)}\ndata: ${JSON.stringify(e)}\n\n`).join("") + (done ? "data: [DONE]\n\n" : "")
+    events.map((e) => `event: ${String(e.type)}\ndata: ${JSON.stringify(e)}\n\n`).join("") +
+    (done ? "data: [DONE]\n\n" : "")
   );
 }
 

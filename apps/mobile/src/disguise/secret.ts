@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 
 import type { AppConfig } from "@/state/config";
 
@@ -25,7 +25,9 @@ export function holdReached(startedAt: number | null, now: number, ms = HOLD_MS)
 export function useHoldToOpen(onOpen: () => void, enabled: boolean, ms = HOLD_MS) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cb = useRef(onOpen);
-  cb.current = onOpen;
+  useLayoutEffect(() => {
+    cb.current = onOpen;
+  });
 
   const clear = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);

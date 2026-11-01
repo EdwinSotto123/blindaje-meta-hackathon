@@ -104,7 +104,8 @@ export class HttpApi implements BlindajeApi {
    * estados se pide "todos" y se filtra aquí.
    */
   async listLinks(status?: LinkStatus[]): Promise<LinkView[]> {
-    const pendingOnly = !status || (status.length === 2 && status.includes("probable") && status.includes("por_revisar"));
+    const pendingOnly =
+      !status || (status.length === 2 && status.includes("probable") && status.includes("por_revisar"));
     const param = pendingOnly ? undefined : status.length === 1 ? status[0] : "todos";
     const res = await this.client.json<{ links: LinkView[] }>("GET", "/v1/console/links", {
       query: { status: param, limit: 200 },
@@ -208,9 +209,13 @@ export class HttpApi implements BlindajeApi {
   }
 
   createExpediente(networkId: string): Promise<ExpedienteView> {
-    return this.client.json<ExpedienteView>("POST", `/v1/console/networks/${encodeURIComponent(networkId)}/expediente`, {
-      validate: S.ExpedienteView,
-    });
+    return this.client.json<ExpedienteView>(
+      "POST",
+      `/v1/console/networks/${encodeURIComponent(networkId)}/expediente`,
+      {
+        validate: S.ExpedienteView,
+      },
+    );
   }
 
   getExpediente(id: string): Promise<ExpedienteView> {

@@ -24,7 +24,12 @@ import {
 import { businessMeView, getBusinessByEmail, getBusinessById } from "../business/accounts";
 import { ApiError } from "../lib/errors";
 import { isUniqueViolation } from "../lib/db";
-import { DEVICE_SIGNATURE_SKEW_MS, importDevicePublicKey, refreshMessage, verifyDeviceSignature } from "../lib/device-signature";
+import {
+  DEVICE_SIGNATURE_SKEW_MS,
+  importDevicePublicKey,
+  refreshMessage,
+  verifyDeviceSignature,
+} from "../lib/device-signature";
 import { readJson, victimJson } from "../lib/http";
 import { newId, nowIso, pseudonym } from "../lib/ids";
 import { log } from "../lib/log";
@@ -55,7 +60,9 @@ authRoutes.post("/device/register", rateLimitUnlessDemo("register"), async (c) =
   const now = nowIso();
   let orgId = CENTRAL_ORG_ID;
   if (code) {
-    const invite = await c.env.DB.prepare("SELECT code, org_id FROM invites WHERE code = ?").bind(code).first<{ code: string; org_id: string }>();
+    const invite = await c.env.DB.prepare("SELECT code, org_id FROM invites WHERE code = ?")
+      .bind(code)
+      .first<{ code: string; org_id: string }>();
     if (!invite) throw invalidInvite();
     const used = await c.env.DB.prepare(
       "UPDATE invites SET uses = uses + 1 WHERE code = ? AND uses < max_uses AND (expires_at IS NULL OR expires_at > ?)",
@@ -101,7 +108,12 @@ authRoutes.post("/device/register", rateLimitUnlessDemo("register"), async (c) =
     target_id: deviceId,
     details: { org_id: org.id, platform: body.platform, invite: Boolean(code) },
   });
-  return victimJson(c, DeviceRegisterResponse, { ...tokens, device_id: deviceId, pseudonym: pse, org: { id: org.id, name: org.name } }, 201);
+  return victimJson(
+    c,
+    DeviceRegisterResponse,
+    { ...tokens, device_id: deviceId, pseudonym: pse, org: { id: org.id, name: org.name } },
+    201,
+  );
 });
 
 authRoutes.post("/device/refresh", rateLimit("auth"), async (c) => {
@@ -114,14 +126,22 @@ authRoutes.post("/device/refresh", rateLimit("auth"), async (c) => {
     .bind(body.device_id)
     .first<{ id: string; org_id: string; pseudonym: string; public_key_jwk: string }>();
   if (!device) throw unauthorized();
-  const ok = await verifyDeviceSignature(JSON.parse(device.public_key_jwk), refreshMessage(device.id, body.timestamp), body.signature);
+  const ok = await verifyDeviceSignature(
+    JSON.parse(device.public_key_jwk),
+    refreshMessage(device.id, body.timestamp),
+    body.signature,
+  );
   if (!ok) {
     log("warn", "device_signature_invalid");
     throw unauthorized();
   }
   await consumeRefreshToken(c.env, body.refresh_token, "device", device.id);
   await c.env.DB.prepare("UPDATE devices SET last_seen_at = ? WHERE id = ?").bind(nowIso(), device.id).run();
-  const tokens = await issueTokens(c.env, { sub: device.id, role: "victim", org: device.org_id, pse: device.pseudonym }, "device");
+  const tokens = await issueTokens(
+    c.env,
+    { sub: device.id, role: "victim", org: device.org_id, pse: device.pseudonym },
+    "device",
+  );
   return victimJson(c, TokenPair, tokens);
 });
 
@@ -177,7 +197,9 @@ authRoutes.post("/business/login", rateLimit("login"), async (c) => {
     throw invalidLogin();
   }
   const tokens = await issueTokens(c.env, { sub: account.id, role: "business", org: account.org_id }, "business");
-  await c.env.DB.prepare("UPDATE business_accounts SET last_login_at = ? WHERE id = ?").bind(nowIso(), account.id).run();
+  await c.env.DB.prepare("UPDATE business_accounts SET last_login_at = ? WHERE id = ?")
+    .bind(nowIso(), account.id)
+    .run();
   await audit(c.env, {
     actor_type: "business",
     actor_id: account.id,

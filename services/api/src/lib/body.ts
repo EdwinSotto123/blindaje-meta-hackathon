@@ -6,7 +6,8 @@ import { ApiError } from "./errors";
  * (importante con archivos de 50 MB y 128 MB de memoria por isolate).
  */
 export async function readBodyLimited(c: AppContext, maxBytes: number): Promise<ArrayBuffer> {
-  const tooLarge = () => new ApiError("payload_too_large", `El archivo supera el límite de ${Math.round(maxBytes / 1024 / 1024)} MB`);
+  const tooLarge = () =>
+    new ApiError("payload_too_large", `El archivo supera el límite de ${Math.round(maxBytes / 1024 / 1024)} MB`);
   const declared = c.req.header("content-length");
   const declaredLen = declared ? Number(declared) : NaN;
   if (Number.isFinite(declaredLen) && declaredLen > maxBytes) throw tooLarge();

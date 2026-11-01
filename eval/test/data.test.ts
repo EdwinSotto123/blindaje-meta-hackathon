@@ -33,7 +33,8 @@ describe("guiones ficticios", () => {
           expect(normalizeIdentifier(i.tipo, i.valor)).not.toBeNull();
           if (i.tipo === "placa") expect(texto).toContain(i.valor);
           else expect(digits(texto)).toContain(digits(i.valor).replace(/^51/, ""));
-          if (i.tipo !== "cuenta_bancaria" && i.tipo !== "placa") expect(digits(i.valor)).toMatch(/^(51)?900000[45]\d\d$/);
+          if (i.tipo !== "cuenta_bancaria" && i.tipo !== "placa")
+            expect(digits(i.valor)).toMatch(/^(51)?900000[45]\d\d$/);
           if (i.tipo === "cuenta_bancaria") expect(i.valor.startsWith("000-")).toBe(true);
         }
       });
@@ -43,7 +44,9 @@ describe("guiones ficticios", () => {
       it("el grupo aparece en la evidencia y no es un nombre real", () => {
         if (g.etiqueta.grupo_que_dice_ser) {
           expect(texto).toContain(g.etiqueta.grupo_que_dice_ser);
-          expect(["Los X", "Los Y", "Los Z", "Los del Norte", "Los del Sur", "Los del Cerro"]).toContain(g.etiqueta.grupo_que_dice_ser);
+          expect(["Los X", "Los Y", "Los Z", "Los del Norte", "Los del Sur", "Los del Cerro"]).toContain(
+            g.etiqueta.grupo_que_dice_ser,
+          );
         }
       });
       it("los datos de la víctima aparecen en el relato o en la llamada y en el rango 9xx", () => {
@@ -72,7 +75,11 @@ describe("guiones ficticios", () => {
           fuentes: e.fuentes,
         };
         const s = scoreFicha(e, perfecta);
-        expect(Object.entries(s.campos).filter(([, v]) => !v.ok).map(([k]) => k)).toEqual([]);
+        expect(
+          Object.entries(s.campos)
+            .filter(([, v]) => !v.ok)
+            .map(([k]) => k),
+        ).toEqual([]);
         expect(s.privacidad_ok).toBe(true);
       });
       it("arma la entrada con todas las etiquetas", () => {
@@ -103,7 +110,12 @@ describe("escenarios", () => {
   });
   it("cubre los cuatro tipos de escenario pedidos", () => {
     const tipos = new Set(esc.escenarios.map((e) => e.tipo));
-    for (const t of ["misma_persona_distintos_numeros", "distintas_personas_mismo_guion", "cuentas_compartidas", "imagenes_reutilizadas"]) {
+    for (const t of [
+      "misma_persona_distintos_numeros",
+      "distintas_personas_mismo_guion",
+      "cuentas_compartidas",
+      "imagenes_reutilizadas",
+    ]) {
       expect(tipos.has(t)).toBe(true);
     }
   });

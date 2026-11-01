@@ -76,8 +76,8 @@ export function NetworkDetailView() {
           </Link>
         }
       >
-        {n.n_cases} casos ({n.sectores.map((s) => SECTOR_LABEL[s] ?? s).join(", ")}), {n.periodo ? fmtPeriod(n.periodo) : "periodo sin dato"}. Actualizada el{" "}
-        {fmtDateTime(n.updated_at)}
+        {n.n_cases} casos ({n.sectores.map((s) => SECTOR_LABEL[s] ?? s).join(", ")}),{" "}
+        {n.periodo ? fmtPeriod(n.periodo) : "periodo sin dato"}. Actualizada el {fmtDateTime(n.updated_at)}
       </PageHead>
       <nav className="tabs" aria-label="Secciones de la red">
         <NavLink to={base} end>
@@ -107,7 +107,9 @@ function GraphTab({ net }: { net: NetworkView }) {
   const sel = selected ? nodesById.get(selected) : undefined;
   const neighbours = useMemo(() => {
     if (!selected) return [];
-    const ids = net.edges.flatMap((e) => (e.source === selected ? [e.target] : e.target === selected ? [e.source] : []));
+    const ids = net.edges.flatMap((e) =>
+      e.source === selected ? [e.target] : e.target === selected ? [e.source] : [],
+    );
     return [...new Set(ids)].map((i) => nodesById.get(i)).filter((x): x is GraphNode => !!x);
   }, [selected, net.edges, nodesById]);
   const caseNodeByCode = (code: string) => net.nodes.find((n) => n.type === "caso" && caseCodeOf(n) === code);
@@ -150,7 +152,9 @@ function GraphTab({ net }: { net: NetworkView }) {
               </span>
             </section>
           ) : (
-            <p className="small muted">Elige un nodo en el grafo o en esta lista para ver su detalle y sus conexiones.</p>
+            <p className="small muted">
+              Elige un nodo en el grafo o en esta lista para ver su detalle y sus conexiones.
+            </p>
           )}
           <hr className="divider" />
           {NODE_TYPE_ORDER.map((t) => {
@@ -203,7 +207,12 @@ function GraphTab({ net }: { net: NetworkView }) {
           <h2 id="vin-titulo">Vínculos confirmados</h2>
         </div>
         {net.links.length ? (
-          <div className="table-wrap" tabIndex={0} role="region" aria-label="Vínculos confirmados (se desplaza a los lados)">
+          <div
+            className="table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label="Vínculos confirmados (se desplaza a los lados)"
+          >
             <table className="table">
               <thead>
                 <tr>
@@ -347,7 +356,9 @@ function NodeDetail({ node, neighbours }: { node: GraphNode; neighbours: GraphNo
           {typeof d.descripcion === "string" || typeof d.concept === "string" ? (
             <>
               <dt>Descripción</dt>
-              <dd>{typeof d.descripcion === "string" ? d.descripcion : `Concepto de SAM 3.1: “${String(d.concept)}”`}</dd>
+              <dd>
+                {typeof d.descripcion === "string" ? d.descripcion : `Concepto de SAM 3.1: “${String(d.concept)}”`}
+              </dd>
             </>
           ) : null}
           <dt>Casos</dt>

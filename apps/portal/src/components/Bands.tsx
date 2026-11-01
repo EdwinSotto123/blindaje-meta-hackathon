@@ -106,15 +106,21 @@ export function BandLedger({
 export function bandTrendSummary(tendencia: { semana: string; casos: CountBand | null }[]): string {
   const known = tendencia.filter((t): t is { semana: string; casos: CountBand } => t.casos !== null);
   const missing = tendencia.length - known.length;
-  const tail = missing > 0 ? ` ${missing === 1 ? "Una semana no llega" : `${missing} semanas no llegan`} al mínimo y ${missing === 1 ? "va" : "van"} sin datos.` : "";
+  const tail =
+    missing > 0
+      ? ` ${missing === 1 ? "Una semana no llega" : `${missing} semanas no llegan`} al mínimo y ${missing === 1 ? "va" : "van"} sin datos.`
+      : "";
   if (known.length === 0) return "Todavía no hay semanas con casos suficientes para mostrar un rango.";
   const first = known[0]!;
   const last = known[known.length - 1]!;
-  if (known.length === 1) return `Solo la semana del ${fmtDayMonth(first.semana)} llega al mínimo: ${bandLabel(first.casos)} casos.${tail}`;
+  if (known.length === 1)
+    return `Solo la semana del ${fmtDayMonth(first.semana)} llega al mínimo: ${bandLabel(first.casos)} casos.${tail}`;
   const span = `entre la semana del ${fmtDayMonth(first.semana)} y la del ${fmtDayMonth(last.semana)}`;
   const a = bandIndex(first.casos);
   const b = bandIndex(last.casos);
-  if (b > a) return `Los casos por semana subieron del rango de ${bandLabel(first.casos)} al de ${bandLabel(last.casos)} ${span}.${tail}`;
-  if (b < a) return `Los casos por semana bajaron del rango de ${bandLabel(first.casos)} al de ${bandLabel(last.casos)} ${span}.${tail}`;
+  if (b > a)
+    return `Los casos por semana subieron del rango de ${bandLabel(first.casos)} al de ${bandLabel(last.casos)} ${span}.${tail}`;
+  if (b < a)
+    return `Los casos por semana bajaron del rango de ${bandLabel(first.casos)} al de ${bandLabel(last.casos)} ${span}.${tail}`;
   return `Los casos por semana se mantuvieron en el rango de ${bandLabel(last.casos)} ${span}.${tail}`;
 }

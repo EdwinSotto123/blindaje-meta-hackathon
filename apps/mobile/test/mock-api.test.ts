@@ -68,9 +68,20 @@ describe("Servidor simulado (respeta el contrato)", () => {
     expect(c.consent_mode).toBe("solo_denuncia");
 
     const texto = utf8("Si no yapeas S/ 2,000 en 48 horas al 987 654 321, somos de Los X. (ficticio)");
-    await api.uploadEvidence(c.id, texto, { tipo: "texto", mime: "text/plain", sha256: sha256Hex(texto), source: "pegado" });
+    await api.uploadEvidence(c.id, texto, {
+      tipo: "texto",
+      mime: "text/plain",
+      sha256: sha256Hex(texto),
+      source: "pegado",
+    });
     const audio = utf8("audio ficticio");
-    await api.uploadEvidence(c.id, audio, { tipo: "audio", mime: "audio/mp4", sha256: sha256Hex(audio), source: "grabacion", durationMs: 42000 });
+    await api.uploadEvidence(c.id, audio, {
+      tipo: "audio",
+      mime: "audio/mp4",
+      sha256: sha256Hex(audio),
+      source: "grabacion",
+      durationMs: 42000,
+    });
 
     let r = VictimReportConConsejos.parse(await api.getReport(c.id));
     expect(r.hallazgos).toEqual(expect.arrayContaining(["Pide pago por Yape", "Plazo de 48 horas"]));
@@ -85,7 +96,9 @@ describe("Servidor simulado (respeta el contrato)", () => {
     expect(r.ficha?.resumen).toBeTruthy();
     expect(r.cronologia.length).toBe(2);
     // Consejos de prevención según su propio caso: Yape y el plazo de 48 horas.
-    expect(r.consejos).toEqual(expect.arrayContaining([expect.stringMatching(/Yape/), expect.stringMatching(/48 horas/)]));
+    expect(r.consejos).toEqual(
+      expect.arrayContaining([expect.stringMatching(/Yape/), expect.stringMatching(/48 horas/)]),
+    );
     // Autenticidad: el texto corto para audio, imagen y video procesados; null para un texto pegado.
     const porTipo = new Map(r.evidencia.map((e) => [e.tipo, e.autenticidad]));
     expect(porTipo.get("audio")).toBe(textoAutenticidadVictima("sin_senales"));
@@ -112,7 +125,9 @@ describe("Servidor simulado (respeta el contrato)", () => {
     const { api } = client();
     await api.registerDevice(JWK, "android");
     const c = await api.createCase({});
-    await expect(api.uploadEvidence(c.id, utf8("a"), { tipo: "texto", mime: "text/plain", sha256: "0".repeat(64) })).rejects.toMatchObject({
+    await expect(
+      api.uploadEvidence(c.id, utf8("a"), { tipo: "texto", mime: "text/plain", sha256: "0".repeat(64) }),
+    ).rejects.toMatchObject({
       status: 422,
       code: "integrity_mismatch",
     });
@@ -139,7 +154,12 @@ describe("Servidor simulado (respeta el contrato)", () => {
   });
 
   it("extrae datos simples para el simulador", () => {
-    expect(extraerDatos("Yapea S/ 2,000 en 48 horas, somos de los X")).toMatchObject({ canal_pago: "yape", monto_soles: 2000, plazo: "48 horas", grupo: "Los X" });
+    expect(extraerDatos("Yapea S/ 2,000 en 48 horas, somos de los X")).toMatchObject({
+      canal_pago: "yape",
+      monto_soles: 2000,
+      plazo: "48 horas",
+      grupo: "Los X",
+    });
     expect(fromUtf8(minimalPdf(["hola"])).endsWith("%%EOF\n")).toBe(true);
   });
 });
@@ -176,14 +196,18 @@ describe("Registro sin código (rediseño del 28/10)", () => {
   });
 
   it("acepta una respuesta de registro sin org (el API la va a quitar)", async () => {
-    const sinOrg = (f: Fetcher): Fetcher => async (url, req) => {
-      const res = await f(url, req);
-      if (!url.endsWith("/auth/device/register")) return res;
-      const { org: _org, ...rest } = (await res.json()) as Record<string, unknown>;
-      return fake(res.status, rest);
-    };
+    const sinOrg =
+      (f: Fetcher): Fetcher =>
+      async (url, req) => {
+        const res = await f(url, req);
+        if (!url.endsWith("/auth/device/register")) return res;
+        const { org: _org, ...rest } = (await res.json()) as Record<string, unknown>;
+        return fake(res.status, rest);
+      };
     const { api } = client({}, sinOrg);
-    await expect(api.registerDevice(JWK, "android")).resolves.toMatchObject({ pseudonym: expect.stringMatching(/^V-/) });
+    await expect(api.registerDevice(JWK, "android")).resolves.toMatchObject({
+      pseudonym: expect.stringMatching(/^V-/),
+    });
   });
 
   it("sin sesión, la primera llamada registra el celular una sola vez", async () => {
@@ -236,17 +260,27 @@ describe("Distrito", () => {
       zona: "san-juan-de-lurigancho",
     });
     // Texto libre de una versión anterior: se traduce si es un distrito.
-    expect(caseRequestFrom({ consent: "comunitario", sector: null, zona: "Rímac" })).toEqual({ consent_mode: "comunitario", zona: "rimac" });
+    expect(caseRequestFrom({ consent: "comunitario", sector: null, zona: "Rímac" })).toEqual({
+      consent_mode: "comunitario",
+      zona: "rimac",
+    });
     // Si no es un distrito (por ejemplo, una dirección), no se manda.
-    expect(caseRequestFrom({ consent: "solo_denuncia", sector: null, zona: "Av. Los Olivos 123" })).toEqual({ consent_mode: "solo_denuncia" });
-    expect(caseRequestFrom({ consent: "solo_denuncia", sector: null, zona: null })).toEqual({ consent_mode: "solo_denuncia" });
+    expect(caseRequestFrom({ consent: "solo_denuncia", sector: null, zona: "Av. Los Olivos 123" })).toEqual({
+      consent_mode: "solo_denuncia",
+    });
+    expect(caseRequestFrom({ consent: "solo_denuncia", sector: null, zona: null })).toEqual({
+      consent_mode: "solo_denuncia",
+    });
   });
 
   it("crear el caso manda la zona como id y el simulador la guarda así", async () => {
     const log: Parameters<typeof spy>[0] = [];
     const { api, server } = client({}, spy(log), { device: true });
     const c = await api.createCase(caseRequestFrom({ consent: "solo_denuncia", sector: null, zona: "ate" }));
-    expect(log.find((r) => r.method === "POST" && r.url.endsWith("/v1/cases"))!.body).toEqual({ consent_mode: "solo_denuncia", zona: "ate" });
+    expect(log.find((r) => r.method === "POST" && r.url.endsWith("/v1/cases"))!.body).toEqual({
+      consent_mode: "solo_denuncia",
+      zona: "ate",
+    });
     expect(server.debug.cases.get(c.id)?.zona).toBe("ate");
   });
 
@@ -266,7 +300,11 @@ describe("Distrito", () => {
     await api.createCase({ zona: "san-juan-de-miraflores" });
     expect((await api.alerts()).map((a) => a.distrito)).toEqual(["san-juan-de-miraflores"]);
     // Cada aviso del simulador trae el nombre para mostrar y el id del distrito.
-    for (const a of await api.alerts()) expect(VictimAlert.parse(a)).toMatchObject({ zona: "San Juan de Miraflores", distrito: "san-juan-de-miraflores" });
+    for (const a of await api.alerts())
+      expect(VictimAlert.parse(a)).toMatchObject({
+        zona: "San Juan de Miraflores",
+        distrito: "san-juan-de-miraflores",
+      });
   });
 });
 
@@ -305,14 +343,18 @@ describe("Recomendaciones aprobadas de la zona (GET /v1/recommendations)", () =>
     expect(r).toMatchObject({ zona: "San Juan de Lurigancho", distrito: "san-juan-de-lurigancho" });
     expect(r.sector).toBe("bodegas");
     expect(r.advertencias).toEqual(
-      expect.arrayContaining(["Más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa.", expect.stringMatching(/ficticios/)]),
+      expect.arrayContaining([
+        "Más casos en una zona puede significar que ahí se denuncia más, no que sea más peligrosa.",
+        expect.stringMatching(/ficticios/),
+      ]),
     );
     const texto = JSON.stringify(recs);
     // Nunca números completos, nunca aconseja pagar ni negociar, y "habla con el jefe" está para reconocerla.
     expect(texto).not.toMatch(TELEFONO_COMPLETO);
     expect(texto).toMatch(/habla con el jefe/);
     const consejos = [...r.recomendaciones.map((x) => `${x.titulo}. ${x.detalle}`), ...r.que_hacer_si_te_pasa];
-    for (const c of consejos.filter((x) => /\b(pag(a|ar|ues)|negoci(a|ar|es))\b/i.test(x))) expect(c).toMatch(/\b(no|ni|nadie|nunca)\b/i);
+    for (const c of consejos.filter((x) => /\b(pag(a|ar|ues)|negoci(a|ar|es))\b/i.test(x)))
+      expect(c).toMatch(/\b(no|ni|nadie|nunca)\b/i);
     // Sin citas internas ni claves prohibidas para la víctima.
     const keys = keysDeep(recs);
     for (const k of VICTIM_FORBIDDEN_KEYS) expect(keys.has(k)).toBe(false);
@@ -409,7 +451,9 @@ describe("Ayudas de las recomendaciones", () => {
   });
 
   it("la zona se muestra con el nombre del distrito, venga como id o como texto", () => {
-    expect(nombreDeZona({ zona: "San Juan de Lurigancho", distrito: "san-juan-de-lurigancho" })).toBe("San Juan de Lurigancho");
+    expect(nombreDeZona({ zona: "San Juan de Lurigancho", distrito: "san-juan-de-lurigancho" })).toBe(
+      "San Juan de Lurigancho",
+    );
     expect(nombreDeZona({ zona: "san-juan-de-miraflores" })).toBe("San Juan de Miraflores");
     expect(nombreDeZona({ zona: "Rimac", distrito: null })).toBe("Rímac");
     expect(nombreDeZona({ zona: "Lima Este" })).toBe("Lima Este");

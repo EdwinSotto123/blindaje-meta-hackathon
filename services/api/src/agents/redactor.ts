@@ -1,4 +1,11 @@
-import { Expediente, PROMPT_VERSION, REDACTOR_SYSTEM, ResultadoAutenticidad, type NivelAutenticidad, type PerfilRed } from "@blindaje/shared";
+import {
+  Expediente,
+  PROMPT_VERSION,
+  REDACTOR_SYSTEM,
+  ResultadoAutenticidad,
+  type NivelAutenticidad,
+  type PerfilRed,
+} from "@blindaje/shared";
 import type { Env } from "../env";
 import { audit } from "../audit";
 import { putEncrypted, sha256Hex } from "../lib/crypto";
@@ -6,7 +13,17 @@ import { parseJsonColumn } from "../lib/db";
 import { ApiError } from "../lib/errors";
 import { newId, nowIso } from "../lib/ids";
 import { getMlClient } from "../ml/client";
-import { activityPeriod, analyzeGraph, buildGraph, caseCodeOf, loadNetworkData, sectorCounts, territorialStats, timeOf, type NetworkData } from "../networks/graph";
+import {
+  activityPeriod,
+  analyzeGraph,
+  buildGraph,
+  caseCodeOf,
+  loadNetworkData,
+  sectorCounts,
+  territorialStats,
+  timeOf,
+  type NetworkData,
+} from "../networks/graph";
 import type { Actor } from "../types";
 import { metaClientFor, runCheckedAgent } from "./common";
 import { loadApproved, NetworkToolbox, type ApprovedHypothesis } from "./tools/network";
@@ -37,7 +54,8 @@ Cita solo identificadores que devolvieron tus herramientas. No nombres personas 
 }
 
 function linkFallbackText(data: NetworkData, l: NetworkData["links"][number]): { texto: string; evidencia: string[] } {
-  if (l.vinculador && l.vinculador_valid !== false) return { texto: l.vinculador.explicacion, evidencia: l.vinculador.afirmaciones.flatMap((a) => a.evidencia) };
+  if (l.vinculador && l.vinculador_valid !== false)
+    return { texto: l.vinculador.explicacion, evidencia: l.vinculador.afirmaciones.flatMap((a) => a.evidencia) };
   const parts: string[] = [];
   const evidencia: string[] = [];
   const s = l.signals;
@@ -53,10 +71,14 @@ function linkFallbackText(data: NetworkData, l: NetworkData["links"][number]): {
     parts.push(`imágenes parecidas (${s.imagen.recortes.join(", ")})`);
     evidencia.push(...s.imagen.recortes, ...s.imagen.evidencia);
   }
-  if (s.modus_operandi?.frases_comunes.length) parts.push(`frases comunes: ${s.modus_operandi.frases_comunes.map((f) => `"${f}"`).join(", ")}`);
+  if (s.modus_operandi?.frases_comunes.length)
+    parts.push(`frases comunes: ${s.modus_operandi.frases_comunes.map((f) => `"${f}"`).join(", ")}`);
   const a = caseCodeOf(data, l.case_a);
   const b = caseCodeOf(data, l.case_b);
-  return { texto: `Los casos ${a} y ${b} ${parts.length ? parts.join("; ") : "fueron vinculados por una persona revisora"}.`, evidencia: [l.label, ...evidencia] };
+  return {
+    texto: `Los casos ${a} y ${b} ${parts.length ? parts.join("; ") : "fueron vinculados por una persona revisora"}.`,
+    evidencia: [l.label, ...evidencia],
+  };
 }
 
 /**
@@ -107,9 +129,20 @@ const FUENTE_TEXTO: Record<string, string> = {
 function tecnicasTexto(r: ResultadoAutenticidad): string[] {
   const t = r.tecnicas;
   const out: string[] = [];
-  if (t.watermark) out.push(`Marca de agua (${t.watermark.detector}): ${t.watermark.detected ? "detectada" : "no detectada"}`);
-  if (t.c2pa) out.push(t.c2pa.present ? `C2PA: ${t.c2pa.ai_generated ? "declara IA" : "presente, no declara IA"}${t.c2pa.generator ? ` (${t.c2pa.generator})` : ""}` : "C2PA: no trae");
-  if (t.metadata) out.push(t.metadata.suspicious.length ? `Metadatos: ${t.metadata.suspicious.join("; ")}` : `Metadatos: ${t.metadata.present ? "sin alertas" : "no trae"}`);
+  if (t.watermark)
+    out.push(`Marca de agua (${t.watermark.detector}): ${t.watermark.detected ? "detectada" : "no detectada"}`);
+  if (t.c2pa)
+    out.push(
+      t.c2pa.present
+        ? `C2PA: ${t.c2pa.ai_generated ? "declara IA" : "presente, no declara IA"}${t.c2pa.generator ? ` (${t.c2pa.generator})` : ""}`
+        : "C2PA: no trae",
+    );
+  if (t.metadata)
+    out.push(
+      t.metadata.suspicious.length
+        ? `Metadatos: ${t.metadata.suspicious.join("; ")}`
+        : `Metadatos: ${t.metadata.present ? "sin alertas" : "no trae"}`,
+    );
   if (t.synthetic_speech?.available) out.push(`Voz sintética: puntaje ${t.synthetic_speech.score.toFixed(2)}`);
   return out;
 }
@@ -147,7 +180,9 @@ export async function autenticidadExpediente(
       nivel: r?.nivel ?? null,
       nivel_texto: r ? NIVEL_AUTENTICIDAD_TEXTO[r.nivel] : "No analizado",
       tecnicas: r ? tecnicasTexto(r) : [],
-      senales: (r?.forense?.senales ?? []).map((s) => `${FUENTE_TEXTO[s.fuente] ?? s.fuente} (${s.peso}): ${s.descripcion}`),
+      senales: (r?.forense?.senales ?? []).map(
+        (s) => `${FUENTE_TEXTO[s.fuente] ?? s.fuente} (${s.peso}): ${s.descripcion}`,
+      ),
       explicacion: r?.forense?.explicacion ?? null,
       limitaciones: r?.forense?.limitaciones ?? null,
       modelo: r?.model ?? null,
@@ -170,7 +205,11 @@ interface CustodyRow {
 }
 
 /** Entradas de audit_log de los casos, evidencias, vínculos, perfiles e hipótesis de la red. */
-async function custodyChain(env: Env, data: NetworkData, extraLabels: Map<string, string>): Promise<Array<Omit<CustodyRow, "target_type">>> {
+async function custodyChain(
+  env: Env,
+  data: NetworkData,
+  extraLabels: Map<string, string>,
+): Promise<Array<Omit<CustodyRow, "target_type">>> {
   const labels = new Map<string, string>(extraLabels);
   labels.set(data.id, data.label);
   for (const c of data.cases) labels.set(c.id, `Caso ${c.code}`);
@@ -208,7 +247,11 @@ async function custodyChain(env: Env, data: NetworkData, extraLabels: Map<string
  * AAD = id) con su SHA-256 y devuelve el id. El PDF sale como "Borrador para revisión": se envía
  * solo cuando una persona analista lo aprueba y existe un canal formal con la autoridad.
  */
-export async function runRedactor(env: Env, networkId: string, opts: RedactorOptions): Promise<{ expediente_id: string }> {
+export async function runRedactor(
+  env: Env,
+  networkId: string,
+  opts: RedactorOptions,
+): Promise<{ expediente_id: string }> {
   const data = await loadNetworkData(env, networkId);
   if (data.cases.length < 2) throw new ApiError("conflict", "La red no tiene casos suficientes para un expediente");
   const graph = await buildGraph(data);
@@ -219,8 +262,11 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
   box.citations.add(approved.hypotheses);
 
   const id = newId();
-  const createdBy = opts.actor.actor_type === "analyst" || opts.actor.actor_type === "admin" ? opts.actor.actor_id : null;
-  await env.DB.prepare("INSERT INTO expedientes (id, network_id, status, created_by, created_at) VALUES (?, ?, 'generando', ?, ?)")
+  const createdBy =
+    opts.actor.actor_type === "analyst" || opts.actor.actor_type === "admin" ? opts.actor.actor_id : null;
+  await env.DB.prepare(
+    "INSERT INTO expedientes (id, network_id, status, created_by, created_at) VALUES (?, ?, 'generando', ?, ?)",
+  )
     .bind(id, networkId, createdBy, nowIso())
     .run();
   const fail = async (content: unknown, check: unknown) =>
@@ -240,7 +286,10 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
       target_id: networkId,
       known: () => box.known,
       attempt: async (feedback) => {
-        const input = feedback && previous ? `${task}\n\nTu respuesta anterior fue:\n${JSON.stringify(previous)}\n\n${feedback}` : task;
+        const input =
+          feedback && previous
+            ? `${task}\n\nTu respuesta anterior fue:\n${JSON.stringify(previous)}\n\n${feedback}`
+            : task;
         const res = await restartOnChainLag("redactor", () =>
           client.runAgent(
             {
@@ -265,7 +314,13 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
     });
   } catch (err) {
     await fail(null, null);
-    await audit(env, { ...opts.actor, action: "expediente.error", target_type: "expediente", target_id: id, details: { network_id: networkId, stage: "agente", error: (err as Error).name } });
+    await audit(env, {
+      ...opts.actor,
+      action: "expediente.error",
+      target_type: "expediente",
+      target_id: id,
+      details: { network_id: networkId, stage: "agente", error: (err as Error).name },
+    });
     throw toAgentError(err, "Redactor");
   }
 
@@ -276,12 +331,22 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
       action: "expediente.error",
       target_type: "expediente",
       target_id: id,
-      details: { network_id: networkId, stage: "citas", sin_cita: result.check.sin_cita.length, citas_inexistentes: result.check.citas_inexistentes, agent_run_id: result.run_id },
+      details: {
+        network_id: networkId,
+        stage: "citas",
+        sin_cita: result.check.sin_cita.length,
+        citas_inexistentes: result.check.citas_inexistentes,
+        agent_run_id: result.run_id,
+      },
     });
-    throw new ApiError("upstream_error", "El expediente no pasó el validador de citas después de un reintento. Revisa el perfil de la red e intenta de nuevo.", {
-      status: 502,
-      details: { expediente_id: id, citation_check: result.check },
-    });
+    throw new ApiError(
+      "upstream_error",
+      "El expediente no pasó el validador de citas después de un reintento. Revisa el perfil de la red e intenta de nuevo.",
+      {
+        status: 502,
+        details: { expediente_id: id, citation_check: result.check },
+      },
+    );
   }
 
   // Datos para el PDF.
@@ -293,7 +358,12 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
   const st = territorialStats(data.cases, "cuadricula");
   const perfil: Partial<PerfilRed> = approved.profile
     ? (({ hipotesis: _h, hechos: _f, ...rest }) => rest)(approved.profile.perfil)
-    : { casos: data.cases.length, periodo: activityPeriod(data.cases), sectores: sectorCounts(data.cases), territorio: st.disponible ? st.zonas : [] };
+    : {
+        casos: data.cases.length,
+        periodo: activityPeriod(data.cases),
+        sectores: sectorCounts(data.cases),
+        territorio: st.disponible ? st.zonas : [],
+      };
   // Defensa en profundidad: el territorio del PDF siempre respeta el umbral.
   if (!st.disponible) perfil.territorio = [];
   const linkById = new Map(data.links.map((l) => [l.label, l]));
@@ -307,13 +377,23 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
     cronologia: exp.cronologia,
     vinculos: exp.vinculos.map((v) => {
       const l = linkById.get(v.vinculo);
-      return { ...v, puntaje: l?.score ?? null, casos: l ? [caseCodeOf(data, l.case_a), caseCodeOf(data, l.case_b)] : [] };
+      return {
+        ...v,
+        puntaje: l?.score ?? null,
+        casos: l ? [caseCodeOf(data, l.case_a), caseCodeOf(data, l.case_b)] : [],
+      };
     }),
     hechos: exp.hechos,
     hipotesis: exp.hipotesis,
     brechas: exp.brechas,
     evidencia: data.evidence
-      .map((e) => ({ label: e.label, caso: caseCodeOf(data, e.case_id), tipo: e.tipo, sha256: e.sha256, received_utc: e.received_utc }))
+      .map((e) => ({
+        label: e.label,
+        caso: caseCodeOf(data, e.case_id),
+        tipo: e.tipo,
+        sha256: e.sha256,
+        received_utc: e.received_utc,
+      }))
       .sort((a, b) => a.caso.localeCompare(b.caso) || a.label.localeCompare(b.label, "es", { numeric: true })),
     custodia,
     // Sección "Autenticidad de la evidencia" (la plantilla del ML la mostrará cuando tenga el bloque).
@@ -325,13 +405,24 @@ export async function runRedactor(env: Env, networkId: string, opts: RedactorOpt
     pdf = await getMlClient(env).pdfRender("expediente", pdfData);
   } catch (err) {
     await fail(pdfData, result.check);
-    await audit(env, { ...opts.actor, action: "expediente.error", target_type: "expediente", target_id: id, details: { network_id: networkId, stage: "pdf", error: (err as Error).name } });
+    await audit(env, {
+      ...opts.actor,
+      action: "expediente.error",
+      target_type: "expediente",
+      target_id: id,
+      details: { network_id: networkId, stage: "pdf", error: (err as Error).name },
+    });
     throw err;
   }
   const sha256 = await sha256Hex(pdf);
   const r2Key = `expedientes/${id}.pdf`;
-  await putEncrypted(env.EVIDENCE, r2Key, env.EVIDENCE_ENCRYPTION_KEY, pdf, id, { kind: "expediente", network_id: networkId });
-  await env.DB.prepare("UPDATE expedientes SET status = 'listo', content_json = ?, citation_check_json = ?, r2_key = ?, sha256 = ? WHERE id = ?")
+  await putEncrypted(env.EVIDENCE, r2Key, env.EVIDENCE_ENCRYPTION_KEY, pdf, id, {
+    kind: "expediente",
+    network_id: networkId,
+  });
+  await env.DB.prepare(
+    "UPDATE expedientes SET status = 'listo', content_json = ?, citation_check_json = ?, r2_key = ?, sha256 = ? WHERE id = ?",
+  )
     .bind(JSON.stringify(pdfData), JSON.stringify(result.check), r2Key, sha256, id)
     .run();
   await audit(env, {

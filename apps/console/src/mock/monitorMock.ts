@@ -20,7 +20,12 @@ export class MockMonitorApi implements MonitorApi {
     ]);
     const now = new Date().toISOString();
     const count = (s: string) => links.filter((l) => l.status === s).length;
-    const service = (s: MonitorService["servicio"], estado: MonitorService["estado"], latencia_ms: number | null, detalle: string): MonitorService => ({
+    const service = (
+      s: MonitorService["servicio"],
+      estado: MonitorService["estado"],
+      latencia_ms: number | null,
+      detalle: string,
+    ): MonitorService => ({
       servicio: s,
       estado,
       latencia_ms,
@@ -40,7 +45,12 @@ export class MockMonitorApi implements MonitorApi {
         service("auditoria", "ok", 28, `Cadena de auditoría al día hasta la entrada ${audit[0]?.seq ?? 0}`),
       ],
       casos: { total: 133, nuevos_24h: 4, nuevos_7d: 133, procesando: 0, con_error: 0, indexados: 7 },
-      vinculos: { probable: count("probable"), por_revisar: count("por_revisar"), confirmado: count("confirmado"), descartado: count("descartado") },
+      vinculos: {
+        probable: count("probable"),
+        por_revisar: count("por_revisar"),
+        confirmado: count("confirmado"),
+        descartado: count("descartado"),
+      },
       redes: networks.length,
       pendientes: { alertas: alerts.filter((a) => a.status === "borrador").length, recomendaciones: 0, hipotesis: 0 },
       presupuesto: {

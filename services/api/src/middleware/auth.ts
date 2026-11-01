@@ -10,7 +10,12 @@ export const requireAuth: MiddlewareHandler<AppEnv> = async (c, next) => {
   const m = /^Bearer\s+([A-Za-z0-9._-]+)$/.exec(header);
   if (!m) throw new ApiError("unauthorized", "Falta el token de acceso");
   const claims = await verifyAccessToken(c.env.JWT_SECRET, m[1]!);
-  const auth: AuthContext = { sub: claims.sub, role: claims.role, org: claims.org, ...(claims.pse ? { pse: claims.pse } : {}) };
+  const auth: AuthContext = {
+    sub: claims.sub,
+    role: claims.role,
+    org: claims.org,
+    ...(claims.pse ? { pse: claims.pse } : {}),
+  };
   c.set("auth", auth);
   await next();
 };

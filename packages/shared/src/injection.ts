@@ -57,7 +57,11 @@ export function neutralizarDelimitadores(texto: string): string {
  *
  * El aviso va FUERA del bloque: es nuestro, no de la evidencia.
  */
-export function delimitarEvidencia(label: string, contenido: string, opts: { marcada?: boolean; score?: number | null } = {}): string {
+export function delimitarEvidencia(
+  label: string,
+  contenido: string,
+  opts: { marcada?: boolean; score?: number | null } = {},
+): string {
   const etiqueta = neutralizarDelimitadores(label.trim());
   const lineas = [`<<<EVIDENCIA ${etiqueta}>>>`, neutralizarDelimitadores(contenido.trim()), `<<<FIN ${etiqueta}>>>`];
   return (opts.marcada ? [avisoInyeccion(opts.score ?? null), ...lineas] : lineas).join("\n");

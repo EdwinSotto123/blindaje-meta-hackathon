@@ -39,7 +39,13 @@ export async function handleIngesta(batch: MessageBatch<IngestaMessage>, env: En
       msg.ack();
     } catch (err) {
       const permanent = isPermanentPipelineError(err);
-      log(permanent ? "warn" : "error", "ingesta_failed", { evidence_id: evidenceId, attempts: msg.attempts, permanent, code: errorCode(err), ...errorFields(err) });
+      log(permanent ? "warn" : "error", "ingesta_failed", {
+        evidence_id: evidenceId,
+        attempts: msg.attempts,
+        permanent,
+        code: errorCode(err),
+        ...errorFields(err),
+      });
       if (permanent) msg.ack();
       else msg.retry({ delaySeconds: retryDelay(msg.attempts) });
     }
@@ -49,7 +55,15 @@ export async function handleIngesta(batch: MessageBatch<IngestaMessage>, env: En
 export interface LinkingSummary {
   case_id: string;
   candidates: number;
-  links: Array<{ id: string; label: string; other_case_id: string; status: string; score: number; score_raw: number; vinculador_valid: boolean | null }>;
+  links: Array<{
+    id: string;
+    label: string;
+    other_case_id: string;
+    status: string;
+    score: number;
+    score_raw: number;
+    vinculador_valid: boolean | null;
+  }>;
 }
 
 /**
@@ -57,7 +71,11 @@ export interface LinkingSummary {
  * combinado llega al umbral de revisión, el Vinculador ajusta y explica; si no, el par se guarda
  * como `descartado_auto` (para recalibrar, no se muestra). Todo vínculo queda en la auditoría.
  */
-export async function processCaseLinking(env: Env, caseId: string, reason: VinculacionMessage["reason"] = "submit"): Promise<LinkingSummary> {
+export async function processCaseLinking(
+  env: Env,
+  caseId: string,
+  reason: VinculacionMessage["reason"] = "submit",
+): Promise<LinkingSummary> {
   const calibration = await loadCalibration(env);
   const pairs = await findCandidates(env, caseId, calibration);
   const summary: LinkingSummary = { case_id: caseId, candidates: pairs.length, links: [] };
@@ -107,7 +125,15 @@ export async function processCaseLinking(env: Env, caseId: string, reason: Vincu
         calibration: calibration.version,
       },
     });
-    summary.links.push({ id: saved.id, label, other_case_id: pair.other_case_id, status: saved.status, score, score_raw: pair.score_raw, vinculador_valid: valid });
+    summary.links.push({
+      id: saved.id,
+      label,
+      other_case_id: pair.other_case_id,
+      status: saved.status,
+      score,
+      score_raw: pair.score_raw,
+      vinculador_valid: valid,
+    });
   }
   return summary;
 }
@@ -121,17 +147,28 @@ export async function handleVinculacion(batch: MessageBatch<VinculacionMessage>,
       continue;
     }
     try {
-      const c = await env.DB.prepare("SELECT indexed FROM cases WHERE id = ?").bind(caseId).first<{ indexed: number }>();
+      const c = await env.DB.prepare("SELECT indexed FROM cases WHERE id = ?")
+        .bind(caseId)
+        .first<{ indexed: number }>();
       if (!c || !c.indexed) {
         msg.ack();
         continue;
       }
       const summary = await processCaseLinking(env, caseId, msg.body.reason);
-      log("info", "vinculacion_done", { case_id: caseId, candidates: summary.candidates, links: summary.links.length, reason: msg.body.reason });
+      log("info", "vinculacion_done", {
+        case_id: caseId,
+        candidates: summary.candidates,
+        links: summary.links.length,
+        reason: msg.body.reason,
+      });
       msg.ack();
     } catch (err) {
       const permanent = isPermanentPipelineError(err);
-      log(permanent ? "warn" : "error", "vinculacion_failed", { case_id: caseId, attempts: msg.attempts, ...errorFields(err) });
+      log(permanent ? "warn" : "error", "vinculacion_failed", {
+        case_id: caseId,
+        attempts: msg.attempts,
+        ...errorFields(err),
+      });
       if (permanent) msg.ack();
       else msg.retry({ delaySeconds: retryDelay(msg.attempts) });
     }

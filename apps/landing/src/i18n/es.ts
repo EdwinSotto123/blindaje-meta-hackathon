@@ -44,8 +44,7 @@ export const es: Dict = {
   },
   problem: {
     title: "Miles de denuncias que nadie conecta",
-    lead:
-      "Las bandas operan en serie: la misma voz llama a varias víctimas, mandan las mismas fotos, repiten el mismo guion y la misma cuenta cobra a distintos comerciantes. Esa información existe, pero está dispersa en celulares de personas que no se conocen.",
+    lead: "Las bandas operan en serie: la misma voz llama a varias víctimas, mandan las mismas fotos, repiten el mismo guion y la misma cuenta cobra a distintos comerciantes. Esa información existe, pero está dispersa en celulares de personas que no se conocen.",
     sourcePrefix: "Fuente:",
     figures: [
       {
@@ -63,13 +62,15 @@ export const es: Dict = {
       {
         value: "80",
         text: "por ciento de las empresas de transporte público admitió pagar cupos mensuales a bandas criminales.",
-        detail: "Al menos 69 conductores fueron asesinados durante su jornada en 2025, con la extorsión como principal móvil.",
+        detail:
+          "Al menos 69 conductores fueron asesinados durante su jornada en 2025, con la extorsión como principal móvil.",
         source: SOURCES.larepublica,
       },
       {
         value: "26,217",
         text: "denuncias por extorsión al cierre del periodo analizado, frente a 4,761 al inicio, mientras los presos sentenciados bajaron de 712 a 650.",
-        detail: "El medio aclara que las cifras solas no explican la diferencia: más denuncias no se traducen solas en más condenas.",
+        detail:
+          "El medio aclara que las cifras solas no explican la diferencia: más denuncias no se traducen solas en más condenas.",
         source: SOURCES.elcomercio,
       },
     ],
@@ -92,13 +93,11 @@ export const es: Dict = {
   },
   actors: {
     title: "Cada uno recibe algo concreto.",
-    lead:
-      "La víctima documenta sin exponerse, la comunidad sabe dónde pasa y la autoridad recibe casos ya vinculados.",
+    lead: "La víctima documenta sin exponerse, la comunidad sabe dónde pasa y la autoridad recibe casos ya vinculados.",
     victim: {
       name: "Víctima",
       title: "Guarda la evidencia sin que nadie lo note.",
-      lead:
-        "En el celular, Blindaje se ve como una app común de tu negocio, y tú eliges cuál. Funciona de verdad. Tus notas privadas se abren con una entrada secreta y tu PIN.",
+      lead: "En el celular, Blindaje se ve como una app común de tu negocio, y tú eliges cuál. Funciona de verdad. Tus notas privadas se abren con una entrada secreta y tu PIN.",
       points: [
         {
           title: "PIN señuelo y salir rápido",
@@ -148,8 +147,7 @@ export const es: Dict = {
     community: {
       name: "Comunidad y negocios",
       title: "Ven dónde pasa y saben qué hacer",
-      lead:
-        "Con consentimiento, cada caso se compara con los demás. El equipo aprueba alertas anónimas por distrito y cada negocio ve consejos de prevención para su zona y su rubro.",
+      lead: "Con consentimiento, cada caso se compara con los demás. El equipo aprueba alertas anónimas por distrito y cada negocio ve consejos de prevención para su zona y su rubro.",
       points: [
         {
           title: "Solo cifras agregadas",
@@ -176,8 +174,7 @@ export const es: Dict = {
     authority: {
       name: "Autoridad",
       title: "Expedientes de red para la policía y la fiscalía.",
-      lead:
-        "Cuando un analista autorizado aprueba una red, Blindaje arma el expediente en PDF. Se envía solo cuando existe un canal formal con la autoridad.",
+      lead: "Cuando un analista autorizado aprueba una red, Blindaje arma el expediente en PDF. Se envía solo cuando existe un canal formal con la autoridad.",
       dossier: [
         { title: "Resumen de la red", text: "Tamaño, periodo, sectores y modus operandi común." },
         { title: "Cronología unificada", text: "Los hechos de todos los casos, en orden." },
@@ -189,14 +186,14 @@ export const es: Dict = {
         "Las cuentas que aparecen en varios casos quedan señaladas para que la autoridad las pida por los canales legales. Blindaje no comparte datos con bancos ni fintechs.",
       shot: {
         alt: "Captura de la consola: perfil de la red R-001 hecho por el Cartógrafo, con hechos citados a la izquierda e hipótesis por aprobar a la derecha.",
-        caption: "El Cartógrafo separa hechos de hipótesis. Solo lo aprobado entra al expediente. Consola en modo simulado, datos ficticios.",
+        caption:
+          "El Cartógrafo separa hechos de hipótesis. Solo lo aprobado entra al expediente. Consola en modo simulado, datos ficticios.",
       },
     },
   },
   intel: {
     title: "Lo que ninguna víctima puede ver sola.",
-    lead:
-      "Cada audio, mensaje y foto se convierte en señales comparables. Con ellas, los agentes de Blindaje vinculan casos, mapean redes, redactan alertas y consejos, y revisan si la evidencia es real. Ninguno decide solo.",
+    lead: "Cada audio, mensaje y foto se convierte en señales comparables. Con ellas, los agentes de Blindaje vinculan casos, mapean redes, redactan alertas y consejos, y revisan si la evidencia es real. Ninguno decide solo.",
     link: {
       title: "Vincula casos aunque cambie el número",
       text: "Compara la huella de voz, la cuenta de cobro, las fotos reutilizadas y el guion. El Vinculador explica cada posible vínculo citando la evidencia: lo que lo sostiene y lo que lo contradice. Una revisora del equipo lo confirma o lo descarta.",
@@ -265,17 +262,23 @@ export const es: Dict = {
         approves: "La revisora, al decidir el vínculo",
       },
     ],
-    rules: "Toda afirmación cita evidencia: sin cita, la salida no vale. Nunca nombres de personas. Búsqueda web desactivada.",
+    rules:
+      "Toda afirmación cita evidencia: sin cita, la salida no vale. Nunca nombres de personas. Búsqueda web desactivada.",
   },
   tech: {
     title: "Hecho con Meta AI, pieza por pieza",
-    lead:
-      "La evidencia pasa por un pipeline en Cloudflare y un contenedor de ML. Cada pieza se transcribe, se segmenta, se resume en una ficha y se convierte en señales que se pueden comparar.",
+    lead: "La evidencia pasa por un pipeline en Cloudflare y un contenedor de ML. Cada pieza se transcribe, se segmenta, se resume en una ficha y se convierte en señales que se pueden comparar.",
     pipelineLabel: "Del archivo a la decisión",
     pipeline: [
       { stage: "Evidencia", items: ["Audio de WhatsApp", "Mensaje", "Foto", "Video"] },
-      { stage: "Modelos", items: ["Muse Voice Transcribe", "Muse Spark 1.3 y 1.2", "SAM 3.1", "DINOv2", "AudioSeal y Video Seal"] },
-      { stage: "Señales", items: ["Huella de voz", "Ficha del caso", "Identificadores con HMAC", "Recortes y vectores", "Autenticidad"] },
+      {
+        stage: "Modelos",
+        items: ["Muse Voice Transcribe", "Muse Spark 1.3 y 1.2", "SAM 3.1", "DINOv2", "AudioSeal y Video Seal"],
+      },
+      {
+        stage: "Señales",
+        items: ["Huella de voz", "Ficha del caso", "Identificadores con HMAC", "Recortes y vectores", "Autenticidad"],
+      },
       { stage: "Agentes", items: ["Vinculador", "Cartógrafo", "Vigía", "Redactor", "Asesor"] },
       { stage: "Una persona aprueba", items: ["Vínculo", "Alerta", "Consejo", "Expediente"] },
     ],
@@ -380,19 +383,30 @@ export const es: Dict = {
   },
   results: {
     title: "Lo que medimos, con datos ficticios",
-    lead:
-      "La evaluación usa guiones de amenaza escritos para el proyecto y voces de un corpus abierto de español de Perú (OpenSLR SLR73), comprimidas como en WhatsApp. Publicamos los resultados reales, sean los que sean.",
+    lead: "La evaluación usa guiones de amenaza escritos para el proyecto y voces de un corpus abierto de español de Perú (OpenSLR SLR73), comprimidas como en WhatsApp. Publicamos los resultados reales, sean los que sean.",
     placeholder: "Todavía no hay reporte de la evaluación.",
     pendingNote: "La evaluación todavía no ha publicado su reporte. Las metas son objetivos de trabajo, no resultados.",
     cols: { what: "Qué se mide", target: "Meta", result: "Resultado" },
     pending: "Pendiente",
     metrics: [
       { id: "voice_top1", label: "Vinculación por voz: el caso correcto aparece primero", target: "80% o más" },
-      { id: "voice_top3", label: "Vinculación por voz: el caso correcto está entre los 3 primeros", target: "90% o más" },
-      { id: "false_links_per_100", label: "Vínculos incorrectos por cada 100 comparaciones sobre el umbral de revisión", target: "2 como máximo" },
+      {
+        id: "voice_top3",
+        label: "Vinculación por voz: el caso correcto está entre los 3 primeros",
+        target: "90% o más",
+      },
+      {
+        id: "false_links_per_100",
+        label: "Vínculos incorrectos por cada 100 comparaciones sobre el umbral de revisión",
+        target: "2 como máximo",
+      },
       { id: "identifier_match", label: "Coincidencias exactas de identificadores detectadas", target: "100%" },
       { id: "ficha_accuracy", label: "Campos de la ficha correctos frente a la etiqueta manual", target: "90% o más" },
-      { id: "citation_fidelity", label: "Afirmaciones de los agentes con evidencia citada y verificable", target: "100%" },
+      {
+        id: "citation_fidelity",
+        label: "Afirmaciones de los agentes con evidencia citada y verificable",
+        target: "100%",
+      },
       { id: "small_stats", label: "Estadísticas mostradas con menos de 5 casos", target: "0" },
       { id: "infiltrator", label: "Prueba del infiltrado: no recibe vínculos ni datos de otros casos", target: "Pasa" },
     ],
@@ -405,7 +419,8 @@ export const es: Dict = {
     noTarget: "Sin meta",
     extraTitle: "Otros resultados, sin meta",
     fullReport: "Reporte completo de la evaluación",
-    reportedNote: "Resultados reales de una corrida con datos ficticios. Las metas son objetivos de trabajo, no garantías.",
+    reportedNote:
+      "Resultados reales de una corrida con datos ficticios. Las metas son objetivos de trabajo, no garantías.",
     leak: {
       title: "Rastreo de filtraciones",
       lead: "Copias marcadas que se atribuyeron a la cuenta correcta después de cada cambio, con medios ficticios y 50 destinatarios simulados.",
@@ -426,8 +441,7 @@ export const es: Dict = {
   },
   pilot: {
     title: "Solicita acceso para tu institución",
-    lead:
-      "Blindaje trabaja con instituciones que pueden actuar: comisarías, fiscalías, municipios y ONG. Gremios, iglesias y juntas vecinales pueden ayudar a difundir la app.",
+    lead: "Blindaje trabaja con instituciones que pueden actuar: comisarías, fiscalías, municipios y ONG. Gremios, iglesias y juntas vecinales pueden ayudar a difundir la app.",
     who: "La policía y la fiscalía reciben el expediente de cada red por un canal formal. Municipios y ONG usan el mapa y las alertas de sus distritos, que ya son públicos.",
     steps: [
       "Conversamos con tu institución.",
@@ -488,7 +502,8 @@ export const es: Dict = {
     note: "No pagues ni negocies. Guarda los audios y los mensajes, y denuncia.",
   },
   footer: {
-    hackathon: "Proyecto para el Meta Global AI Developer Hackathon, construido del 26 de octubre al 4 de noviembre de 2026.",
+    hackathon:
+      "Proyecto para el Meta Global AI Developer Hackathon, construido del 26 de octubre al 4 de noviembre de 2026.",
     repo: "Código en GitHub",
     fictitious: "Los datos del demo y de la evaluación son ficticios. Nada de esta página viene de víctimas reales.",
     license: "Código abierto bajo licencia Apache-2.0.",
@@ -502,20 +517,30 @@ export const es: Dict = {
   lp: {
     hero: {
       title: "Nadie debería enfrentar la extorsión solo",
-      lead:
-        "Blindaje junta lo que guardan las víctimas (audios, fotos, mensajes, números y cuentas) para descubrir a la misma banda detrás de casos distintos y mostrar en qué distritos pasa. Una persona revisa cada vínculo.",
+      lead: "Blindaje junta lo que guardan las víctimas (audios, fotos, mensajes, números y cuentas) para descubrir a la misma banda detrás de casos distintos y mostrar en qué distritos pasa. Una persona revisa cada vínculo.",
       ctaMap: "Ver el mapa por distrito",
       ctaMapShort: "Ver el mapa",
       audienceLabel: "Para",
       audience: ["bodegueras", "mototaxistas", "puestos de mercado", "transportistas"],
       photoAlt: "Mototaxis amarillos, azules y rojos esperando pasajeros en una calle peatonal del centro de Lima.",
       photoCredit: "Foto ilustrativa: Paulo Guereta, CC BY 2.0. No muestra víctimas.",
-      phoneAlt: "Captura del portal público en un celular: en Ate, el riesgo para bodegas es alto, entre 10 y 19 casos.",
+      phoneAlt:
+        "Captura del portal público en un celular: en Ate, el riesgo para bodegas es alto, entre 10 y 19 casos.",
       phoneCap: "El portal público, sin cuenta. Datos ficticios.",
     },
     built: {
       label: "Hecho con Meta AI",
-      items: ["Muse Spark", "Muse Voice Transcribe", "SAM 3.1", "AudioSeal", "Video Seal", "DINOv2", "FAISS", "PyTorch", "React Native"],
+      items: [
+        "Muse Spark",
+        "Muse Voice Transcribe",
+        "SAM 3.1",
+        "AudioSeal",
+        "Video Seal",
+        "DINOv2",
+        "FAISS",
+        "PyTorch",
+        "React Native",
+      ],
     },
     signals: {
       title: "Las huellas que deja una banda",
@@ -569,10 +594,11 @@ export const es: Dict = {
     problem: { gapsTitle: "Por qué no alcanza hoy" },
     benefits: {
       title: "Lo que gana cada uno",
-      lead:
-        "La víctima documenta sin exponerse, la comunidad sabe dónde pasa y qué hacer, y la autoridad recibe casos ya vinculados.",
-      illustration: "Ilustración de la app. Por fuera, un cuaderno de ventas que funciona; por dentro, las notas privadas. El disfraz lo eliges tú.",
-      victimPhotoAlt: "Interior de una bodega de Lima: estantes con productos, cajas rojas de cerveza apiladas y dos personas de espaldas en el mostrador.",
+      lead: "La víctima documenta sin exponerse, la comunidad sabe dónde pasa y qué hacer, y la autoridad recibe casos ya vinculados.",
+      illustration:
+        "Ilustración de la app. Por fuera, un cuaderno de ventas que funciona; por dentro, las notas privadas. El disfraz lo eliges tú.",
+      victimPhotoAlt:
+        "Interior de una bodega de Lima: estantes con productos, cajas rojas de cerveza apiladas y dos personas de espaldas en el mostrador.",
       victimPhotoCredit: "Foto ilustrativa: cemeiakano, CC BY-SA 2.0. No muestra víctimas.",
       audiences: [
         {
@@ -870,8 +896,18 @@ export const es: Dict = {
       place: "Lima, 2026",
       photosLabel: "Fotos de Wikimedia Commons",
       photos: [
-        { what: "mototaxis en el centro de Lima", author: "Paulo Guereta", license: "CC BY 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima_-_Per%C3%BA_(20529612568).jpg" },
-        { what: "una bodega de Lima", author: "cemeiakano", license: "CC BY-SA 2.0", href: "https://commons.wikimedia.org/wiki/File:Lima2011_-_bodega.jpg" },
+        {
+          what: "mototaxis en el centro de Lima",
+          author: "Paulo Guereta",
+          license: "CC BY 2.0",
+          href: "https://commons.wikimedia.org/wiki/File:Lima_-_Per%C3%BA_(20529612568).jpg",
+        },
+        {
+          what: "una bodega de Lima",
+          author: "cemeiakano",
+          license: "CC BY-SA 2.0",
+          href: "https://commons.wikimedia.org/wiki/File:Lima2011_-_bodega.jpg",
+        },
       ],
       photosNote: "Recortadas y reducidas para la web. Son ilustrativas: no muestran víctimas ni lugares de casos",
     },

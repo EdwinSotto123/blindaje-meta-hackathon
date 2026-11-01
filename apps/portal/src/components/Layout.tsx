@@ -85,7 +85,9 @@ export function DemoFlag() {
     <div className="demo-flag" role="region" aria-label="Aviso de datos ficticios">
       <strong>Datos ficticios</strong>
       <span>
-        <span className="demo-long">Es una demostración: los distritos son reales, pero los casos, “Los X”, los negocios y las cifras no.</span>
+        <span className="demo-long">
+          Es una demostración: los distritos son reales, pero los casos, “Los X”, los negocios y las cifras no.
+        </span>
         <span className="demo-short">Los casos y las cifras no son reales.</span>
         {api.mode === "mock" ? <span className="demo-long"> Modo simulado, sin conexión al servidor.</span> : null}
       </span>
@@ -130,7 +132,8 @@ export function Layout() {
     const active = ul?.querySelector<HTMLElement>('[aria-current="page"]');
     if (!ul || !active || ul.scrollWidth <= ul.clientWidth) return;
     const left = active.offsetLeft - ul.offsetLeft;
-    if (left < ul.scrollLeft || left + active.offsetWidth > ul.scrollLeft + ul.clientWidth) ul.scrollLeft = Math.max(0, left - 8);
+    if (left < ul.scrollLeft || left + active.offsetWidth > ul.scrollLeft + ul.clientWidth)
+      ul.scrollLeft = Math.max(0, left - 8);
   }, [pathname]);
 
   return (
@@ -178,10 +181,14 @@ export function Footer() {
         </p>
         <div className="foot-text">
           <p>
-            <strong>Nunca pagues ni negocies.</strong> Blindaje no reemplaza a la policía ni a la fiscalía: si estás en peligro, llama al{" "}
-            <a href="tel:105">105</a>; para denunciar, a la <a href="tel:1818">Línea 1818</a> o ve a tu comisaría.
+            <strong>Nunca pagues ni negocies.</strong> Blindaje no reemplaza a la policía ni a la fiscalía: si estás en
+            peligro, llama al <a href="tel:105">105</a>; para denunciar, a la <a href="tel:1818">Línea 1818</a> o ve a
+            tu comisaría.
           </p>
-          <p className="small">Sin cuenta y sin rastreo: el portal no guarda tu distrito ni tu rubro; van solo en la dirección de la página.</p>
+          <p className="small">
+            Sin cuenta y sin rastreo: el portal no guarda tu distrito ni tu rubro; van solo en la dirección de la
+            página.
+          </p>
         </div>
       </div>
     </footer>

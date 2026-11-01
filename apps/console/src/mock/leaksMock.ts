@@ -25,15 +25,22 @@ export class MockLeaksApi implements LeaksApi {
   }
 
   async trace(file: Blob, kind?: LeakTraceKind): Promise<LeakTraceResult> {
-    if (this.actor.role !== "admin") throw new ApiRequestError(403, "forbidden", "Tu rol no tiene permiso para esta acción.");
+    if (this.actor.role !== "admin")
+      throw new ApiRequestError(403, "forbidden", "Tu rol no tiene permiso para esta acción.");
     if (!file.size) throw new ApiRequestError(400, "bad_request", "Falta el archivo");
-    if (file.size > MAX_BYTES) throw new ApiRequestError(413, "payload_too_large", "El archivo supera el límite de 50 MB");
+    if (file.size > MAX_BYTES)
+      throw new ApiRequestError(413, "payload_too_large", "El archivo supera el límite de 50 MB");
     const type = file.type.toLowerCase();
     if (!kind && type.startsWith("video/")) {
-      throw new ApiRequestError(400, "bad_request", "Los videos todavía no llevan marca: solo se rastrean audios e imágenes.");
+      throw new ApiRequestError(
+        400,
+        "bad_request",
+        "Los videos todavía no llevan marca: solo se rastrean audios e imágenes.",
+      );
     }
     const mark = await readMockMark(file);
-    const k: LeakTraceKind = kind ?? (type.startsWith("audio/") ? "audio" : type.startsWith("image/") ? "imagen" : (mark?.k ?? "imagen"));
+    const k: LeakTraceKind =
+      kind ?? (type.startsWith("audio/") ? "audio" : type.startsWith("image/") ? "imagen" : (mark?.k ?? "imagen"));
     await this.wait();
     const model = k === "audio" ? "audioseal-16bits (simulado)" : "videoseal-256bits (simulado)";
     if (!mark || mark.k !== k) {

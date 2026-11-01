@@ -23,7 +23,11 @@ export async function importDevicePublicKey(jwk: unknown): Promise<CryptoKey> {
   );
 }
 
-export async function verifyDeviceSignature(publicKeyJwk: unknown, message: string, signatureB64Url: string): Promise<boolean> {
+export async function verifyDeviceSignature(
+  publicKeyJwk: unknown,
+  message: string,
+  signatureB64Url: string,
+): Promise<boolean> {
   try {
     const key = await importDevicePublicKey(publicKeyJwk);
     const sig = b64UrlToBytes(signatureB64Url);

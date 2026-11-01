@@ -73,8 +73,8 @@ export function VectorsView() {
   return (
     <>
       <PageHead title="Motor vectorial">
-        Así se vuelve números cada evidencia, así se guarda en la base vectorial y así se buscan casos parecidos. Nada se vincula solo: todo
-        termina en la cola de revisión.
+        Así se vuelve números cada evidencia, así se guarda en la base vectorial y así se buscan casos parecidos. Nada
+        se vincula solo: todo termina en la cola de revisión.
       </PageHead>
       {ov.error && !ov.data ? (
         <ErrorBox error={ov.error} onRetry={ov.reload} />
@@ -87,14 +87,24 @@ export function VectorsView() {
   );
 }
 
-function VectorsBody({ overview, vectors, onSynced }: { overview: VectorOverview; vectors: VectorsApi; onSynced: () => void }) {
+function VectorsBody({
+  overview,
+  vectors,
+  onSynced,
+}: {
+  overview: VectorOverview;
+  vectors: VectorsApi;
+  onSynced: () => void;
+}) {
   return (
     <>
       <StoreStrip store={overview.almacen} vectors={vectors} onSynced={onSynced} />
       {overview.casos.length ? (
         <Walkthrough overview={overview} vectors={vectors} />
       ) : (
-        <Empty title="Todavía no hay casos indexados">Cuando un caso con consentimiento comunitario termine de procesarse, sus vectores aparecerán aquí.</Empty>
+        <Empty title="Todavía no hay casos indexados">
+          Cuando un caso con consentimiento comunitario termine de procesarse, sus vectores aparecerán aquí.
+        </Empty>
       )}
       <CollectionsTable overview={overview} />
       <MapNote overview={overview} />
@@ -107,7 +117,15 @@ function VectorsBody({ overview, vectors, onSynced }: { overview: VectorOverview
 // ---------------------------------------------------------------------------
 
 /** Franja de estado: proveedor, conexión, qué datos llegan y la sincronización. Exportada para los tests. */
-export function StoreStrip({ store, vectors, onSynced }: { store: VectorStoreStatus; vectors?: VectorsApi; onSynced?: () => void }) {
+export function StoreStrip({
+  store,
+  vectors,
+  onSynced,
+}: {
+  store: VectorStoreStatus;
+  vectors?: VectorsApi;
+  onSynced?: () => void;
+}) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<VectorSyncResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -146,7 +164,11 @@ export function StoreStrip({ store, vectors, onSynced }: { store: VectorStoreSta
           </h2>
           <span className="vx-conn-state" data-ok={store.conectado}>
             <i aria-hidden="true" />
-            {none ? "Sin búsqueda por vectores: solo identificadores y hash de imagen" : store.conectado ? "Conectada" : "No responde"}
+            {none
+              ? "Sin búsqueda por vectores: solo identificadores y hash de imagen"
+              : store.conectado
+                ? "Conectada"
+                : "No responde"}
             {store.conectado && store.latencia_ms !== null ? `, respondió en ${fmtMs(store.latencia_ms)}` : ""}
             {!none ? `. ${indexKind(store.proveedor)}` : ""}
           </span>
@@ -162,7 +184,8 @@ export function StoreStrip({ store, vectors, onSynced }: { store: VectorStoreSta
       </p>
       <div className="vx-store-sync">
         <span className="small muted">
-          Última sincronización: {store.sincronizado_en ? `${fmtDateTime(store.sincronizado_en)} (hora de Lima)` : "nunca"}
+          Última sincronización:{" "}
+          {store.sincronizado_en ? `${fmtDateTime(store.sincronizado_en)} (hora de Lima)` : "nunca"}
         </span>
         {vectors && !none ? (
           <Acciones compact>
@@ -183,7 +206,9 @@ export function StoreStrip({ store, vectors, onSynced }: { store: VectorStoreSta
 
 export function syncText(r: VectorSyncResult): string {
   const total = INDEX_ORDER.reduce((s, i) => s + (r.sincronizados[i] ?? 0), 0);
-  const parts = INDEX_ORDER.filter((i) => r.sincronizados[i] !== undefined).map((i) => `${INDEX_META[i].corto} ${r.sincronizados[i]}`);
+  const parts = INDEX_ORDER.filter((i) => r.sincronizados[i] !== undefined).map(
+    (i) => `${INDEX_META[i].corto} ${r.sincronizados[i]}`,
+  );
   const secs = (r.ms / 1000).toLocaleString("es-PE", { maximumFractionDigits: 1 });
   return `Listo: ${total} vectores copiados a ${PROVIDER_LABEL[r.proveedor]} (${parts.join(", ")}), ${r.borrados} ${r.borrados === 1 ? "borrado" : "borrados"}, en ${secs} s.`;
 }
@@ -196,7 +221,9 @@ type TraceState = { caseId: string; status: "loading" | "ready" | "error"; data?
 
 function useReducedMotion(): boolean {
   const query = "(prefers-reduced-motion: reduce)";
-  const [reduced, setReduced] = useState(() => typeof window !== "undefined" && Boolean(window.matchMedia?.(query).matches));
+  const [reduced, setReduced] = useState(
+    () => typeof window !== "undefined" && Boolean(window.matchMedia?.(query).matches),
+  );
   useEffect(() => {
     const mq = window.matchMedia?.(query);
     if (!mq) return;
@@ -328,7 +355,9 @@ function Walkthrough({ overview, vectors }: { overview: VectorOverview; vectors:
     <section className="panel vx-walk" aria-labelledby="vx-walk-title">
       <div className="panel-head">
         <h2 id="vx-walk-title">Recorrido de un caso</h2>
-        <span className="small muted">Los vectores, las consultas y los tiempos son los de la base; los casos son ficticios.</span>
+        <span className="small muted">
+          Los vectores, las consultas y los tiempos son los de la base; los casos son ficticios.
+        </span>
       </div>
 
       <div className="vx-controls">
@@ -418,11 +447,18 @@ function Walkthrough({ overview, vectors }: { overview: VectorOverview; vectors:
         <span>{caption}</span>
       </p>
 
-      {traceForCase?.status === "error" ? (
-        <ErrorBox error={traceForCase.error} onRetry={retry} />
-      ) : null}
+      {traceForCase?.status === "error" ? <ErrorBox error={traceForCase.error} onRetry={retry} /> : null}
 
-      <WalkStage overview={overview} c={c} steps={steps} stepIdx={stepIdx} trace={traceData} loading={loading} paused={held} vel={vel} />
+      <WalkStage
+        overview={overview}
+        c={c}
+        steps={steps}
+        stepIdx={stepIdx}
+        trace={traceData}
+        loading={loading}
+        paused={held}
+        vel={vel}
+      />
     </section>
   );
 }
@@ -453,7 +489,8 @@ interface StageProps {
 
 /** El escenario del recorrido en un paso dado. Exportado para los tests (se dibuja sin DOM). */
 export function WalkStage({ overview, c, steps, stepIdx, trace, loading, paused = false, vel = 1 }: StageProps) {
-  const ph = (kind: Step["kind"], indice?: VectorIndexName) => phaseOf(steps, stepIdx, (s) => s.kind === kind && (!indice || s.indice === indice));
+  const ph = (kind: Step["kind"], indice?: VectorIndexName) =>
+    phaseOf(steps, stepIdx, (s) => s.kind === kind && (!indice || s.indice === indice));
   const provider = trace?.proveedor ?? overview.almacen.proveedor;
   return (
     <div className="vx-stage" data-paused={paused} style={{ "--vel": vel } as CSSProperties}>
@@ -464,10 +501,26 @@ export function WalkStage({ overview, c, steps, stepIdx, trace, loading, paused 
       </div>
       <div className="vx-maps">
         {INDEX_ORDER.map((i) => (
-          <MapCard key={i} overview={overview} c={c} indice={i} land={ph("base")} search={ph("busqueda", i)} trace={trace} loading={loading} />
+          <MapCard
+            key={i}
+            overview={overview}
+            c={c}
+            indice={i}
+            land={ph("base")}
+            search={ph("busqueda", i)}
+            trace={trace}
+            loading={loading}
+          />
         ))}
       </div>
-      <Candidates c={c} overview={overview} trace={trace} loading={loading} senales={ph("senales")} revision={ph("revision")} />
+      <Candidates
+        c={c}
+        overview={overview}
+        trace={trace}
+        loading={loading}
+        senales={ph("senales")}
+        revision={ph("revision")}
+      />
       {trace && ph("busqueda") !== "later" ? <TraceTable trace={trace} /> : null}
     </div>
   );
@@ -489,7 +542,15 @@ const LANE_INDICES: Record<Lane, VectorIndexName[]> = {
   identificadores: [],
 };
 
-function Lanes({ overview, c, ph }: { overview: VectorOverview; c: VectorCaseSummary; ph: (k: Step["kind"]) => Phase }) {
+function Lanes({
+  overview,
+  c,
+  ph,
+}: {
+  overview: VectorOverview;
+  c: VectorCaseSummary;
+  ph: (k: Step["kind"]) => Phase;
+}) {
   const lanes = caseLanes(c);
   const pEv = ph("evidencia");
   const pMod = ph("modelos");
@@ -530,7 +591,9 @@ function Lanes({ overview, c, ph }: { overview: VectorOverview; c: VectorCaseSum
                     </span>
                   ))
                 )}
-                {lane === "texto" && c.evidencia.some((e) => e.tipo === "audio") ? <span className="vx-chip-note small muted">y lo transcrito</span> : null}
+                {lane === "texto" && c.evidencia.some((e) => e.tipo === "audio") ? (
+                  <span className="vx-chip-note small muted">y lo transcrito</span>
+                ) : null}
               </span>
             </div>
             <Connector phase={pMod} />
@@ -591,7 +654,15 @@ function Connector({ phase }: { phase: Phase }) {
 }
 
 /** Tiras de números de un carril: las huellas, la ficha o los recortes; los segmentos se resumen. */
-function LaneVectors({ overview, c, indices }: { overview: VectorOverview; c: VectorCaseSummary; indices: VectorIndexName[] }) {
+function LaneVectors({
+  overview,
+  c,
+  indices,
+}: {
+  overview: VectorOverview;
+  c: VectorCaseSummary;
+  indices: VectorIndexName[];
+}) {
   const main = indices[0]!;
   const pts = casePoints(overview, c.case_id, main);
   const dim = overview.colecciones.find((k) => k.indice === main)?.dim ?? 0;
@@ -611,7 +682,9 @@ function LaneVectors({ overview, c, indices }: { overview: VectorOverview; c: Ve
       <span className="small muted">
         {dim ? `32 de los ${dim} números de cada vector` : null}
         {pts.length > shown.length ? `, y ${pts.length - shown.length} más` : ""}
-        {segs.length ? `. Además, ${segs.length} ${segs.length === 1 ? "segmento" : "segmentos"} de 3 s, uno por vector` : ""}
+        {segs.length
+          ? `. Además, ${segs.length} ${segs.length === 1 ? "segmento" : "segmentos"} de 3 s, uno por vector`
+          : ""}
       </span>
     </div>
   );
@@ -623,9 +696,25 @@ const GAP = 1.5;
 export function VectorStrip({ point, delay = 0 }: { point: VectorPoint; delay?: number }) {
   const w = point.muestra.length * (CELL + GAP) - GAP;
   return (
-    <svg className="vx-strip" width={w} height={18} viewBox={`0 0 ${w} 18`} aria-hidden="true" style={{ "--d": delay } as CSSProperties}>
+    <svg
+      className="vx-strip"
+      width={w}
+      height={18}
+      viewBox={`0 0 ${w} 18`}
+      aria-hidden="true"
+      style={{ "--d": delay } as CSSProperties}
+    >
       {point.muestra.map((v, i) => (
-        <rect key={i} x={i * (CELL + GAP)} y={0} width={CELL} height={18} rx={1.5} fill={divergingColor(v)} style={{ "--i": i } as CSSProperties} />
+        <rect
+          key={i}
+          x={i * (CELL + GAP)}
+          y={0}
+          width={CELL}
+          height={18}
+          rx={1.5}
+          fill={divergingColor(v)}
+          style={{ "--i": i } as CSSProperties}
+        />
       ))}
     </svg>
   );
@@ -663,7 +752,11 @@ function MapLegend({ caso }: { caso: string }) {
         No pasa el umbral
       </li>
       <li className="vx-legend-scale">
-        <span className="vx-scale" aria-hidden="true" style={{ "--neg": DIVERGING.neg, "--mid": DIVERGING.mid, "--pos": DIVERGING.pos } as CSSProperties} />
+        <span
+          className="vx-scale"
+          aria-hidden="true"
+          style={{ "--neg": DIVERGING.neg, "--mid": DIVERGING.mid, "--pos": DIVERGING.pos } as CSSProperties}
+        />
         <span>Tira: negativo, cero, positivo</span>
       </li>
     </ul>
@@ -715,7 +808,10 @@ function MapCard({
       })
       .filter((x): x is { id: number; text: string; cx: number; cy: number } => Boolean(x)),
     3,
-    [...(land !== "later" ? mine : []), ...neighbors.map((n) => byId.get(n.id)).filter((p): p is VectorPoint => Boolean(p))].map(toSvg),
+    [
+      ...(land !== "later" ? mine : []),
+      ...neighbors.map((n) => byId.get(n.id)).filter((p): p is VectorPoint => Boolean(p)),
+    ].map(toSvg),
   );
 
   const status = !has
@@ -746,11 +842,23 @@ function MapCard({
           aria-label={`Mapa de ${title}: ${all.length} vectores${has ? `, ${mine.length} del caso ${c.caso}` : ""}. La tabla de consultas trae los mismos datos.`}
         >
           <rect className="vx-map-frame" x="0.5" y="0.5" width={MAP.w - 1} height={MAP.h - 1} rx="8" />
-          <path className="vx-map-axis" d={`M${MAP.w / 2} ${MAP.pad}V${MAP.h - MAP.pad}M${MAP.pad} ${MAP.h / 2}H${MAP.w - MAP.pad}`} />
+          <path
+            className="vx-map-axis"
+            d={`M${MAP.w / 2} ${MAP.pad}V${MAP.h - MAP.pad}M${MAP.pad} ${MAP.h / 2}H${MAP.w - MAP.pad}`}
+          />
           {others.map((p) => {
             const { cx, cy } = toSvg(p);
             const nb = nbById.get(p.id);
-            return <circle key={p.id} className="vx-pt-other" data-nb={nb ? (nb.pasa ? "pasa" : "no") : undefined} cx={cx} cy={cy} r={4.2} />;
+            return (
+              <circle
+                key={p.id}
+                className="vx-pt-other"
+                data-nb={nb ? (nb.pasa ? "pasa" : "no") : undefined}
+                cx={cx}
+                cy={cy}
+                r={4.2}
+              />
+            );
           })}
           {/* Líneas de cada vecino a la consulta que más se le parece. */}
           {neighbors.map((n, i) => {
@@ -791,7 +899,11 @@ function MapCard({
             ? mine.map((p, i) => {
                 const { cx, cy } = toSvg(p);
                 return (
-                  <g key={`m-${p.id}`} className={`vx-mine${land === "now" ? " vx-in" : ""}`} style={{ "--i": i } as CSSProperties}>
+                  <g
+                    key={`m-${p.id}`}
+                    className={`vx-mine${land === "now" ? " vx-in" : ""}`}
+                    style={{ "--i": i } as CSSProperties}
+                  >
                     {land === "now" ? <circle className="vx-drop-ring" cx={cx} cy={cy} r={7} /> : null}
                     <circle className="vx-pt-mine" cx={cx} cy={cy} r={6} />
                   </g>
@@ -801,7 +913,16 @@ function MapCard({
           {(scanning || (anim && showSearch)) && land !== "later"
             ? mine.slice(0, 8).map((p, i) => {
                 const { cx, cy } = toSvg(p);
-                return <circle key={`r-${p.id}`} className={`vx-ring${scanning ? " vx-ring-wait" : ""}`} cx={cx} cy={cy} r={9} style={{ "--i": i } as CSSProperties} />;
+                return (
+                  <circle
+                    key={`r-${p.id}`}
+                    className={`vx-ring${scanning ? " vx-ring-wait" : ""}`}
+                    cx={cx}
+                    cy={cy}
+                    r={9}
+                    style={{ "--i": i } as CSSProperties}
+                  />
+                );
               })
             : null}
           {labels.map((l) => (
@@ -840,7 +961,9 @@ function MapCard({
         {scanning ? <span className="spinner" aria-hidden="true" /> : null}
         {status}
       </p>
-      {map ? <p className="vx-map-var small muted">Los dos ejes explican {fmtVarianza(map.varianza)} de la varianza</p> : null}
+      {map ? (
+        <p className="vx-map-var small muted">Los dos ejes explican {fmtVarianza(map.varianza)} de la varianza</p>
+      ) : null}
     </figure>
   );
 }
@@ -860,7 +983,11 @@ function MapTooltip({ hover, c }: { hover: Hover; c: VectorCaseSummary }) {
         {hover.point.ref}
         {hover.point.evidencia ? ` (${hover.point.evidencia})` : ""}
       </span>
-      {hover.score !== null ? <span>Coseno con el caso {c.caso}: {fmtScore(hover.score)}</span> : null}
+      {hover.score !== null ? (
+        <span>
+          Coseno con el caso {c.caso}: {fmtScore(hover.score)}
+        </span>
+      ) : null}
       <span className="muted">Vector #{hover.point.id}</span>
     </div>
   );
@@ -932,7 +1059,15 @@ function Candidates({
       {trace.candidatos.length ? (
         <ul className="list-plain vx-cand-list">
           {trace.candidatos.map((k, i) => (
-            <CandidateRow key={k.case_id} k={k} i={i} distrito={distrito(k.case_id)} showScore={showScore} animScore={revision === "now"} animBars={senales === "now"} />
+            <CandidateRow
+              key={k.case_id}
+              k={k}
+              i={i}
+              distrito={distrito(k.case_id)}
+              showScore={showScore}
+              animScore={revision === "now"}
+              animBars={senales === "now"}
+            />
           ))}
         </ul>
       ) : (
@@ -941,8 +1076,8 @@ function Candidates({
       {showScore ? (
         <Notice kind="notice">
           <span>
-            <strong>Ningún vínculo se crea solo.</strong> Los que pasan el umbral esperan en la cola de vínculos a que una persona del equipo los revise; los
-            demás se guardan para recalibrar y no se muestran.
+            <strong>Ningún vínculo se crea solo.</strong> Los que pasan el umbral esperan en la cola de vínculos a que
+            una persona del equipo los revise; los demás se guardan para recalibrar y no se muestran.
           </span>
         </Notice>
       ) : null}
@@ -988,7 +1123,13 @@ function CandidateRow({
               <span className="vx-sig-track" aria-hidden="true">
                 <span
                   className={animBars ? "vx-in" : undefined}
-                  style={{ width: `${Math.round(p * 100)}%`, background: SIGNAL_META[s].color, "--i": i * 2 + j } as CSSProperties}
+                  style={
+                    {
+                      width: `${Math.round(p * 100)}%`,
+                      background: SIGNAL_META[s].color,
+                      "--i": i * 2 + j,
+                    } as CSSProperties
+                  }
                 />
               </span>
               <span className="vx-sig-p small strong">{fmtScore(p)}</span>
@@ -997,7 +1138,11 @@ function CandidateRow({
         })}
         {!sigs.length ? <li className="small muted">Sin señales</li> : null}
       </ul>
-      <div className={`vx-cand-score${animScore ? " vx-in" : ""}`} data-show={showScore} style={{ "--i": i } as CSSProperties}>
+      <div
+        className={`vx-cand-score${animScore ? " vx-in" : ""}`}
+        data-show={showScore}
+        style={{ "--i": i } as CSSProperties}
+      >
         {showScore ? (
           <>
             <span className="vx-score">{fmtScore(k.puntaje)}</span>
@@ -1069,7 +1214,9 @@ export function CollectionsTable({ overview }: { overview: VectorOverview }) {
     <section className="panel vx-cols" aria-labelledby="vx-cols-title">
       <div className="panel-head">
         <h2 id="vx-cols-title">Colecciones</h2>
-        <span className="small muted">Una por tipo de vector. Las cifras de D1 son de casos indexados con consentimiento comunitario.</span>
+        <span className="small muted">
+          Una por tipo de vector. Las cifras de D1 son de casos indexados con consentimiento comunitario.
+        </span>
       </div>
       <div className="table-wrap">
         <table className="table">
@@ -1150,17 +1297,18 @@ function MapNote({ overview }: { overview: VectorOverview }) {
   return (
     <section className="vx-note small" aria-label="Cómo leer los mapas">
       <p>
-        <strong>Cómo leer los mapas.</strong> Cada punto es un vector. El mapa es una proyección (PCA) de 192 o 384 números a dos ejes, que explican
-        una parte de la varianza ({vs.join("; ")}): ayuda a ver, no decide. La comparación real es el coseno con todos los números, por eso dos puntos
-        cercanos en el mapa pueden no pasar el umbral.
+        <strong>Cómo leer los mapas.</strong> Cada punto es un vector. El mapa es una proyección (PCA) de 192 o 384
+        números a dos ejes, que explican una parte de la varianza ({vs.join("; ")}): ayuda a ver, no decide. La
+        comparación real es el coseno con todos los números, por eso dos puntos cercanos en el mapa pueden no pasar el
+        umbral.
       </p>
       <p>
         {overview.almacen.solo_demo
           ? "La base en la nube solo guarda casos ficticios del demo, con ids numéricos: sin texto, sin audio y sin datos personales. "
           : ""}
-        Si un caso deja de estar indexado, sus vectores salen de la base; y aunque quedara alguno, la búsqueda siempre vuelve a filtrar contra D1.
+        Si un caso deja de estar indexado, sus vectores salen de la base; y aunque quedara alguno, la búsqueda siempre
+        vuelve a filtrar contra D1.
       </p>
     </section>
   );
 }
-

@@ -31,7 +31,11 @@ export function copyMarkText(marca: MediaResult["marca"], motivo: string | null)
   if (marca === "aplicada") return { label: "Copia marcada para ti", tone: "marcada", detail: TEXTO_COPIA_MARCADA };
   if (marca === "no_aplicada") {
     const why = (motivo && SIN_MARCA[motivo]) ?? "Esta copia salió sin tu marca invisible.";
-    return { label: "Copia sin marca", tone: "sin_marca", detail: `${why} Igual, este acceso quedó en la auditoría con tu cuenta.` };
+    return {
+      label: "Copia sin marca",
+      tone: "sin_marca",
+      detail: `${why} Igual, este acceso quedó en la auditoría con tu cuenta.`,
+    };
   }
   return null;
 }

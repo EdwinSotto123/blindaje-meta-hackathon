@@ -103,6 +103,7 @@ describe("DistrictPicker", () => {
     await render(<DistrictPicker label="Tu distrito" value={null} onChange={() => undefined} />);
     expect(StyleSheet.flatten(screen.getByTestId("distrito").props.style).minHeight).toBeGreaterThanOrEqual(48);
     await fireEvent.press(screen.getByTestId("distrito"));
-    for (const r of screen.getAllByRole("radio")) expect(StyleSheet.flatten(r.props.style).minHeight).toBeGreaterThanOrEqual(48);
+    for (const r of screen.getAllByRole("radio"))
+      expect(StyleSheet.flatten(r.props.style).minHeight).toBeGreaterThanOrEqual(48);
   });
 });

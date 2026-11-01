@@ -229,8 +229,7 @@ export class ClientCore {
           throw error;
         }
       } catch (error) {
-        const retryable =
-          (error instanceof MetaApiError && error.retryable) || error instanceof MetaNetworkError;
+        const retryable = (error instanceof MetaApiError && error.retryable) || error instanceof MetaNetworkError;
         if (!retryable || attempt >= maxRetries || call.signal?.aborted) throw error;
         const retryAfter = error instanceof MetaApiError ? error.retryAfterMs : null;
         await this.#sleep(this.backoffDelay(attempt, retryAfter));
@@ -267,7 +266,16 @@ export class ClientCore {
     try {
       await this.hooks.beforeCall?.(info);
     } catch (error) {
-      await this.#emit({ ...info, units: {}, cost_usd: 0, status: "blocked", request_id: null, response_id: null, duration_ms: 0, error: describe(error) });
+      await this.#emit({
+        ...info,
+        units: {},
+        cost_usd: 0,
+        status: "blocked",
+        request_id: null,
+        response_id: null,
+        duration_ms: 0,
+        error: describe(error),
+      });
       throw error;
     }
     try {

@@ -44,7 +44,12 @@ export function useUser(): ConsoleUser {
 }
 
 export function AppProviders({ api, children }: { api: BlindajeApi; children: ReactNode }) {
-  const [state, setState] = useState<{ status: AuthStatus; user: ConsoleUser | null; expired: boolean; loggedOut: boolean }>({
+  const [state, setState] = useState<{
+    status: AuthStatus;
+    user: ConsoleUser | null;
+    expired: boolean;
+    loggedOut: boolean;
+  }>({
     status: "loading",
     user: null,
     expired: false,

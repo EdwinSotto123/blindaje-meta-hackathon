@@ -16,12 +16,18 @@ export function PickerView({ notFound = false }: { notFound?: boolean }) {
     <div className="picker-page">
       <PageHead title="¿Qué zona quieres ver?">
         <p>
-          Elige tu distrito y, si tienes un negocio, tu rubro. Verás el riesgo de la zona y los avisos y consejos que aprobó el equipo de Blindaje. No
-          necesitas cuenta.
+          Elige tu distrito y, si tienes un negocio, tu rubro. Verás el riesgo de la zona y los avisos y consejos que
+          aprobó el equipo de Blindaje. No necesitas cuenta.
         </p>
       </PageHead>
       <figure className="picker-photo">
-        <img src="/fotos/cerro.jpg" alt="Una avenida de Lima con un cerro poblado al fondo." width={1600} height={1200} decoding="async" />
+        <img
+          src="/fotos/cerro.jpg"
+          alt="Una avenida de Lima con un cerro poblado al fondo."
+          width={1600}
+          height={1200}
+          decoding="async"
+        />
         <figcaption>Foto: moctezuma nacario, CC BY 3.0</figcaption>
       </figure>
       {notFound ? (
@@ -68,7 +74,9 @@ export function DistrictPicker({
           <select
             id={`${ids}-rubro`}
             value={rubro ?? ""}
-            onChange={(e) => onRubro((RUBROS as readonly string[]).includes(e.target.value) ? (e.target.value as Rubro) : null)}
+            onChange={(e) =>
+              onRubro((RUBROS as readonly string[]).includes(e.target.value) ? (e.target.value as Rubro) : null)
+            }
           >
             <option value="">Todos los rubros (no tengo negocio)</option>
             {RUBROS.map((r) => (
@@ -96,7 +104,11 @@ export function DistrictPicker({
             />
           </span>
           <p id={`${ids}-count`} className="muted small" role="status" aria-live="polite">
-            {count === 0 ? "Ningún distrito coincide. Prueba con otra parte del nombre." : count === 50 ? "50 distritos de Lima y el Callao." : `${count} ${count === 1 ? "distrito coincide" : "distritos coinciden"}.`}
+            {count === 0
+              ? "Ningún distrito coincide. Prueba con otra parte del nombre."
+              : count === 50
+                ? "50 distritos de Lima y el Callao."
+                : `${count} ${count === 1 ? "distrito coincide" : "distritos coinciden"}.`}
           </p>
         </form>
       </div>
@@ -108,7 +120,10 @@ export function DistrictPicker({
             <ul className="district-list">
               {g.districts.map((d) => (
                 <li key={d.id}>
-                  <Link to={{ pathname: "/", search: choiceSearch({ distrito: d.id, rubro }) }} aria-current={d.id === current ? "true" : undefined}>
+                  <Link
+                    to={{ pathname: "/", search: choiceSearch({ distrito: d.id, rubro }) }}
+                    aria-current={d.id === current ? "true" : undefined}
+                  >
                     {d.name}
                   </Link>
                 </li>
@@ -121,7 +136,8 @@ export function DistrictPicker({
       <p className="picker-map">
         <Icon name="map" size={20} />
         <span>
-          ¿Prefieres verlo en un esquema? <Link to={{ pathname: "/mapa", search: choiceSearch({ rubro }) }}>Mira el mapa de Lima y el Callao</Link>.
+          ¿Prefieres verlo en un esquema?{" "}
+          <Link to={{ pathname: "/mapa", search: choiceSearch({ rubro }) }}>Mira el mapa de Lima y el Callao</Link>.
         </span>
       </p>
     </div>

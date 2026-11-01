@@ -12,7 +12,12 @@ import { LINEA_DENUNCIAS, LINEA_EMERGENCIAS } from "@/shared";
 import { useSessionMode } from "@/state/session";
 import { colors } from "@/theme/tokens";
 
-const PASOS = ["Guarda lo que recibiste", "Cuéntanos qué pasó", "Revisa tu denuncia", "Decide a dónde llevarla"] as const;
+const PASOS = [
+  "Guarda lo que recibiste",
+  "Cuéntanos qué pasó",
+  "Revisa tu denuncia",
+  "Decide a dónde llevarla",
+] as const;
 
 const PREGUNTAS = [
   "¿Cuándo empezó y cómo te contactaron?",
@@ -43,7 +48,9 @@ export default function Denuncia() {
   );
 
   const rows = useMemo(() => (decoy ? [] : buildRows(report, queueItems)), [decoy, report, queueItems]);
-  const pendientes = rows.filter((r) => r.state === "pendiente" || r.state === "error" || r.state === "subiendo").length;
+  const pendientes = rows.filter(
+    (r) => r.state === "pendiente" || r.state === "error" || r.state === "subiendo",
+  ).length;
   const total = decoy ? decoyItems.length : rows.length;
 
   const enviar = async () => {
@@ -70,7 +77,9 @@ export default function Denuncia() {
 
   const footer = (() => {
     if (paso === 0)
-      return <Button label="Siguiente" onPress={() => setPaso(1)} disabled={total === 0 && !decoy} testID="siguiente" />;
+      return (
+        <Button label="Siguiente" onPress={() => setPaso(1)} disabled={total === 0 && !decoy} testID="siguiente" />
+      );
     if (paso === 1) return <Button label="Siguiente" onPress={() => setPaso(2)} testID="siguiente" />;
     if (paso === 2) return <Button label="Armar mi denuncia" onPress={enviar} loading={busy} testID="enviar" />;
     return <Button label="Ver mi denuncia" onPress={() => router.replace("/privado/lista")} testID="ver-denuncia" />;
@@ -80,7 +89,10 @@ export default function Denuncia() {
     <PrivateScreen title="Preparar mi denuncia" testID="denuncia" footer={footer}>
       <View style={{ flexDirection: "row", gap: 6 }} accessible accessibilityLabel={`Paso ${paso + 1} de 4`}>
         {PASOS.map((p, i) => (
-          <View key={p} style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: i <= paso ? colors.tinta : colors.borde }} />
+          <View
+            key={p}
+            style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: i <= paso ? colors.tinta : colors.borde }}
+          />
         ))}
       </View>
       <View style={{ gap: 2 }}>
@@ -90,7 +102,9 @@ export default function Denuncia() {
 
       {paso === 0 ? (
         <>
-          <T variant="secondary">Junta aquí los audios, mensajes y fotos que recibiste. Todo se guarda cifrado y fuera de este celular.</T>
+          <T variant="secondary">
+            Junta aquí los audios, mensajes y fotos que recibiste. Todo se guarda cifrado y fuera de este celular.
+          </T>
           <View>
             {rows.length === 0 && !decoy ? <T variant="secondary">Todavía no guardas nada.</T> : null}
             {decoy && decoyItems.length === 0 ? <T variant="secondary">Todavía no guardas nada.</T> : null}
@@ -100,7 +114,10 @@ export default function Denuncia() {
           </View>
           {total === 0 && !decoy ? <T variant="small">Guarda al menos una nota para seguir.</T> : null}
           {pendientes > 0 ? (
-            <T variant="small">{pendientes === 1 ? "1 nota espera conexión." : `${pendientes} notas esperan conexión.`} Se incluirán apenas se suban.</T>
+            <T variant="small">
+              {pendientes === 1 ? "1 nota espera conexión." : `${pendientes} notas esperan conexión.`} Se incluirán
+              apenas se suban.
+            </T>
           ) : null}
           <View style={{ flexDirection: "row", gap: 8 }}>
             <ActionTile label="Grabar" icon="mic" onPress={() => router.push("/privado/grabar")} />
@@ -121,7 +138,14 @@ export default function Denuncia() {
               </T>
             ))}
           </Card>
-          <Field label="Lo que pasó" multiline value={relato} onChangeText={setRelato} placeholder="Escribe aquí" testID="relato" />
+          <Field
+            label="Lo que pasó"
+            multiline
+            value={relato}
+            onChangeText={setRelato}
+            placeholder="Escribe aquí"
+            testID="relato"
+          />
           <Button label="Volver" kind="ghost" compact onPress={() => setPaso(0)} />
         </>
       ) : null}
@@ -143,7 +167,16 @@ export default function Denuncia() {
           <View style={{ gap: 4 }}>
             <T variant="h2">Tu evidencia</T>
             {(report?.evidencia ?? []).map((e) => (
-              <View key={e.id} style={{ flexDirection: "row", justifyContent: "space-between", gap: 8, minHeight: 32, alignItems: "center" }}>
+              <View
+                key={e.id}
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  minHeight: 32,
+                  alignItems: "center",
+                }}
+              >
                 <T variant="bodyBold">{e.label}</T>
                 <T variant="small" style={{ fontFamily: "monospace" }}>
                   {e.sha256.slice(0, 16)}…
@@ -158,7 +191,10 @@ export default function Denuncia() {
               <T variant="body">{relato.trim()}</T>
             </Card>
           ) : null}
-          <T variant="small">Al armarla, ordenamos tu evidencia y preparamos un borrador para la comisaría. Solo tú decides a dónde llevarla.</T>
+          <T variant="small">
+            Al armarla, ordenamos tu evidencia y preparamos un borrador para la comisaría. Solo tú decides a dónde
+            llevarla.
+          </T>
           <Notice>{error}</Notice>
           <Button label="Volver" kind="ghost" compact onPress={() => setPaso(1)} />
         </>
@@ -171,9 +207,20 @@ export default function Denuncia() {
             <T variant="h2">Puedes llevarla a</T>
             <T variant="body">La comisaría de tu distrito, con el PDF que te preparamos.</T>
             <T variant="body">La Línea {LINEA_DENUNCIAS}, gratuita, para denuncias.</T>
-            <Button label={`Llamar a la Línea ${LINEA_DENUNCIAS}`} kind="secondary" icon="phone" compact onPress={() => void Linking.openURL(`tel:${LINEA_DENUNCIAS}`)} />
+            <Button
+              label={`Llamar a la Línea ${LINEA_DENUNCIAS}`}
+              kind="secondary"
+              icon="phone"
+              compact
+              onPress={() => void Linking.openURL(`tel:${LINEA_DENUNCIAS}`)}
+            />
           </Card>
-          <Button label={`Si estás en peligro ahora, llama al ${LINEA_EMERGENCIAS}`} kind="danger" icon="phone" onPress={() => void Linking.openURL(`tel:${LINEA_EMERGENCIAS}`)} />
+          <Button
+            label={`Si estás en peligro ahora, llama al ${LINEA_EMERGENCIAS}`}
+            kind="danger"
+            icon="phone"
+            onPress={() => void Linking.openURL(`tel:${LINEA_EMERGENCIAS}`)}
+          />
         </>
       ) : null}
     </PrivateScreen>

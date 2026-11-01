@@ -3,7 +3,9 @@ import { MetaApiError, MetaClient, MetaNetworkError, MetaTimeoutError, parseRetr
 import { jsonResponse, message, mockFetch, responseBody } from "./helpers/mock-fetch";
 
 const ok = () => jsonResponse(responseBody("resp_1", [message("hola")]));
-const errorBody = (code: string, type = "server_error") => ({ error: { message: `fallo ${code}`, type, param: null, code } });
+const errorBody = (code: string, type = "server_error") => ({
+  error: { message: `fallo ${code}`, type, param: null, code },
+});
 
 function client(fetch: ReturnType<typeof mockFetch>, extra: Partial<ConstructorParameters<typeof MetaClient>[0]> = {}) {
   const delays: number[] = [];
@@ -72,10 +74,15 @@ describe("transporte", () => {
 
   it("no reintenta 400 y conserva param", async () => {
     const fetch = mockFetch(() =>
-      jsonResponse({ error: { message: "`top_p` inválido", type: "invalid_request_error", param: "top_p", code: null } }, 400),
+      jsonResponse(
+        { error: { message: "`top_p` inválido", type: "invalid_request_error", param: "top_p", code: null } },
+        400,
+      ),
     );
     const { c } = client(fetch);
-    const error = (await c.responses.create({ model: "muse-spark-1.3", input: "x", top_p: 5 }).catch((e: unknown) => e)) as MetaApiError;
+    const error = (await c.responses
+      .create({ model: "muse-spark-1.3", input: "x", top_p: 5 })
+      .catch((e: unknown) => e)) as MetaApiError;
     expect(error.status).toBe(400);
     expect(error.param).toBe("top_p");
     expect(error.code).toBeNull();
@@ -150,12 +157,19 @@ describe("hooks de costo", () => {
   it("onUsage recibe unidades, costo, request id y contexto", async () => {
     const events: UsageEvent[] = [];
     const fetch = mockFetch(() =>
-      jsonResponse(responseBody("resp_9", [message("ok")], { input: 1000, output: 200, cached: 400, reasoning: 150 }), 200, {
-        "x-request-id": "req-9",
-      }),
+      jsonResponse(
+        responseBody("resp_9", [message("ok")], { input: 1000, output: 200, cached: 400, reasoning: 150 }),
+        200,
+        {
+          "x-request-id": "req-9",
+        },
+      ),
     );
     const { c } = client(fetch, { hooks: { onUsage: (e) => void events.push(e) } });
-    await c.responses.create({ model: "muse-spark-1.3", input: "x" }, { operation: "ficha", context: { case_id: "C-1" } });
+    await c.responses.create(
+      { model: "muse-spark-1.3", input: "x" },
+      { operation: "ficha", context: { case_id: "C-1" } },
+    );
     expect(events).toHaveLength(1);
     const e = events[0]!;
     expect(e).toMatchObject({
@@ -188,7 +202,9 @@ describe("hooks de costo", () => {
 
   it("una llamada fallida se registra como error con costo 0", async () => {
     const events: UsageEvent[] = [];
-    const fetch = mockFetch(() => jsonResponse(errorBody("x", "invalid_request_error"), 400, { "x-request-id": "req-400" }));
+    const fetch = mockFetch(() =>
+      jsonResponse(errorBody("x", "invalid_request_error"), 400, { "x-request-id": "req-400" }),
+    );
     const { c } = client(fetch, { hooks: { onUsage: (e) => void events.push(e) } });
     await expect(c.responses.create({ model: "muse-spark-1.3", input: "x" })).rejects.toBeInstanceOf(MetaApiError);
     expect(events[0]).toMatchObject({ status: "error", cost_usd: 0, request_id: "req-400", error: { status: 400 } });
@@ -212,10 +228,12 @@ describe("hooks de costo", () => {
     const fetch = mockFetch(ok);
     const beforeCall = vi.fn();
     const { c } = client(fetch, { hooks: { beforeCall } });
-    await expect(c.responses.create({ model: "muse-spark-1.3-contributor", input: "x" })).rejects.toThrow(/Contributor/);
-    await expect(c.responses.create({ model: "muse-spark-1.3", input: "x", tools: [{ type: "web_search" }] })).rejects.toThrow(
-      /búsqueda web/,
+    await expect(c.responses.create({ model: "muse-spark-1.3-contributor", input: "x" })).rejects.toThrow(
+      /Contributor/,
     );
+    await expect(
+      c.responses.create({ model: "muse-spark-1.3", input: "x", tools: [{ type: "web_search" }] }),
+    ).rejects.toThrow(/búsqueda web/);
     await expect(
       c.responses.create({ model: "muse-spark-1.3", input: "x", tool_choice: "required" as unknown as "auto" }),
     ).rejects.toThrow(/auto/);

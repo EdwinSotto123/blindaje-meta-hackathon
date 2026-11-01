@@ -40,14 +40,16 @@ export class AsesorToolbox {
     // Defensa en profundidad: ningún número largo ni ID-… llega al modelo, aunque venga de una alerta.
     const output = mapStrings(raw, (s) => sanitizeStoredText(s));
     const text = JSON.stringify(output);
-    if (hasLongDigits(text) || /ID-/.test(text)) throw new Error("Salida de herramienta bloqueada: contenía un número o un identificador");
+    if (hasLongDigits(text) || /ID-/.test(text))
+      throw new Error("Salida de herramienta bloqueada: contenía un número o un identificador");
     this.citations.add(text);
     this.outputs.push({ tool, output });
     return output;
   }
 
   private assertZona(zona: string): void {
-    if (zoneKey(zona) !== zoneKey(this.analysis.zona)) throw new Error(`Solo puedes consultar la zona ${this.analysis.zona}.`);
+    if (zoneKey(zona) !== zoneKey(this.analysis.zona))
+      throw new Error(`Solo puedes consultar la zona ${this.analysis.zona}.`);
   }
 
   panoramaRiesgo(zona: string) {
@@ -80,10 +82,15 @@ export class AsesorToolbox {
         descripcion: m.descripcion,
         senales_de_alerta: m.senales_de_alerta,
         desde: m.desde,
-        origen: m.origen === "alerta" ? "alerta aprobada por el equipo de Blindaje" : "rasgos comunes de las fichas (cada uno en al menos 5 casos de 3 víctimas)",
+        origen:
+          m.origen === "alerta"
+            ? "alerta aprobada por el equipo de Blindaje"
+            : "rasgos comunes de las fichas (cada uno en al menos 5 casos de 3 víctimas)",
         evidencia: m.evidencia,
       })),
-      nota: this.analysis.modalidades.length ? "Cita en evidencia los identificadores de cada modalidad." : "No hay modalidades que cumplan el umbral en la zona.",
+      nota: this.analysis.modalidades.length
+        ? "Cita en evidencia los identificadores de cada modalidad."
+        : "No hay modalidades que cumplan el umbral en la zona.",
     });
   }
 
@@ -95,7 +102,9 @@ export class AsesorToolbox {
       patron: e.texto,
       dias_despues_del_plazo: e.dias,
       evidencia: e.evidencia,
-      nota: e.texto ? "Patrón agregado de la zona." : "Sin patrón de escalamiento que mostrar (o la zona no llega al umbral).",
+      nota: e.texto
+        ? "Patrón agregado de la zona."
+        : "Sin patrón de escalamiento que mostrar (o la zona no llega al umbral).",
     });
   }
 
@@ -119,19 +128,22 @@ export class AsesorToolbox {
     return [
       defineTool({
         name: "panorama_riesgo",
-        description: "Nivel de riesgo, casos del periodo, tendencia semanal y rubros afectados de la zona (agregados, con el umbral de 5 casos y 3 víctimas).",
+        description:
+          "Nivel de riesgo, casos del periodo, tendencia semanal y rubros afectados de la zona (agregados, con el umbral de 5 casos y 3 víctimas).",
         parameters: zonaParam,
         handler: ({ zona }) => this.panoramaRiesgo(zona),
       }),
       defineTool({
         name: "modalidades_activas",
-        description: "Modalidades activas en la zona: cómo operan, señales de alerta para reconocerlas y sus citas internas.",
+        description:
+          "Modalidades activas en la zona: cómo operan, señales de alerta para reconocerlas y sus citas internas.",
         parameters: zonaParam,
         handler: ({ zona }) => this.modalidadesActivas(zona),
       }),
       defineTool({
         name: "escalamiento",
-        description: "Cuánto tarda en llegar la intimidación física después de vencido el plazo, agregado para la zona.",
+        description:
+          "Cuánto tarda en llegar la intimidación física después de vencido el plazo, agregado para la zona.",
         parameters: zonaParam,
         handler: ({ zona }) => this.escalamiento(zona),
       }),

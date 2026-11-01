@@ -4,7 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 import { HttpAdvisorApi, type AdvisorActor } from "../api/advisor";
 import { HttpClient, MemoryTokenStore } from "../api/client";
 import { losXContent, MockAdvisorApi } from "../mock/advisorMock";
-import { asesorProblem, BusinessPreview, ruleChecks, sectorPhrase, unsafeAdvice, visibleTexts } from "./RecommendationsView";
+import {
+  asesorProblem,
+  BusinessPreview,
+  ruleChecks,
+  sectorPhrase,
+  unsafeAdvice,
+  visibleTexts,
+} from "./RecommendationsView";
 
 const BASE = "https://api.blindaje.test";
 
@@ -25,14 +32,35 @@ function json(status: number, body: unknown): Response {
 describe("HttpAdvisorApi (rutas de docs/API.md)", () => {
   it("lista, corre el Asesor para un distrito y decide con el token de la consola", async () => {
     const calls: { method: string; path: string; search: string; body: unknown; auth: string | null }[] = [];
-    const draft = { id: "rec-1", org_id: S.CENTRAL_ORG_ID, status: "borrador", contenido: losXContent("San Juan de Lurigancho", "bodega"), citation_check: { ok: true, sin_cita: [], citas_inexistentes: [] }, model: "muse-spark-1.3", created_at: "2026-10-28T10:00:00Z", approved_by: null, approved_at: null };
+    const draft = {
+      id: "rec-1",
+      org_id: S.CENTRAL_ORG_ID,
+      status: "borrador",
+      contenido: losXContent("San Juan de Lurigancho", "bodega"),
+      citation_check: { ok: true, sin_cita: [], citas_inexistentes: [] },
+      model: "muse-spark-1.3",
+      created_at: "2026-10-28T10:00:00Z",
+      approved_by: null,
+      approved_at: null,
+    };
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(String(input));
-      calls.push({ method: init?.method ?? "GET", path: url.pathname, search: url.search, body: init?.body ? JSON.parse(String(init.body)) : undefined, auth: new Headers(init?.headers).get("authorization") });
-      if (url.pathname.endsWith("/decision")) return json(200, { ...draft, status: "aprobada", approved_by: "u1", approved_at: "2026-10-28T11:00:00Z" });
+      calls.push({
+        method: init?.method ?? "GET",
+        path: url.pathname,
+        search: url.search,
+        body: init?.body ? JSON.parse(String(init.body)) : undefined,
+        auth: new Headers(init?.headers).get("authorization"),
+      });
+      if (url.pathname.endsWith("/decision"))
+        return json(200, { ...draft, status: "aprobada", approved_by: "u1", approved_at: "2026-10-28T11:00:00Z" });
       return json(200, { recommendations: [draft] });
     });
-    const client = new HttpClient({ baseUrl: BASE, store: new MemoryTokenStore({ accessToken: "t", refreshToken: "r", expiresAt: Date.now() + 600_000 }), fetch: fetchImpl });
+    const client = new HttpClient({
+      baseUrl: BASE,
+      store: new MemoryTokenStore({ accessToken: "t", refreshToken: "r", expiresAt: Date.now() + 600_000 }),
+      fetch: fetchImpl,
+    });
     const api = new HttpAdvisorApi(client);
 
     expect((await api.listRecommendations("borrador"))[0]!.id).toBe("rec-1");
@@ -71,8 +99,14 @@ describe("Asesor simulado", () => {
     await expect(mock("reviewer").runAsesor({ zona: "ate", sector: "bodega" })).rejects.toMatchObject({ status: 403 });
     const drafts = await mock("analyst").runAsesor({ zona: "ate", sector: "bodega" });
     expect(drafts.every((d) => d.status === "borrador")).toBe(true);
-    expect(await mock("analyst").decideRecommendation("rec-003", "aprobar")).toMatchObject({ status: "aprobada", approved_by: "analyst demo" });
-    expect(await mock("reviewer").decideRecommendation("rec-003", "aprobar")).toMatchObject({ status: "aprobada", approved_by: "reviewer demo" });
+    expect(await mock("analyst").decideRecommendation("rec-003", "aprobar")).toMatchObject({
+      status: "aprobada",
+      approved_by: "analyst demo",
+    });
+    expect(await mock("reviewer").decideRecommendation("rec-003", "aprobar")).toMatchObject({
+      status: "aprobada",
+      approved_by: "reviewer demo",
+    });
   });
 
   it("el equipo central ve y decide recomendaciones de cualquier distrito", async () => {
@@ -110,7 +144,17 @@ describe("Asesor simulado", () => {
 
 describe("revisión antes de aprobar", () => {
   it("las recomendaciones del demo pasan todas las reglas de producto y no mencionan gremios", async () => {
-    const rec = { id: "x", org_id: "o", status: "borrador" as const, contenido: losXContent("San Juan de Lurigancho", "bodega"), citation_check: { ok: true, sin_cita: [], citas_inexistentes: [] }, model: "m", created_at: "", approved_by: null, approved_at: null };
+    const rec = {
+      id: "x",
+      org_id: "o",
+      status: "borrador" as const,
+      contenido: losXContent("San Juan de Lurigancho", "bodega"),
+      citation_check: { ok: true, sin_cita: [], citas_inexistentes: [] },
+      model: "m",
+      created_at: "",
+      approved_by: null,
+      approved_at: null,
+    };
     expect(ruleChecks(rec).filter((c) => !c.ok)).toEqual([]);
     for (const r of await mock("admin").listRecommendations()) {
       const texts = visibleTexts(r.contenido).join(" ");
@@ -123,10 +167,24 @@ describe("revisión antes de aprobar", () => {
 
   it("marca un consejo de pagar o negociar, un número completo y la falta de sesgo", () => {
     const contenido = losXContent("Ate", "bodega");
-    contenido.recomendaciones = [{ titulo: "Negocia el monto", detalle: "Paga por Yape al 987 654 321 si insisten.", prioridad: "alta" }];
+    contenido.recomendaciones = [
+      { titulo: "Negocia el monto", detalle: "Paga por Yape al 987 654 321 si insisten.", prioridad: "alta" },
+    ];
     contenido.advertencias = [];
-    const rec = { id: "x", org_id: "o", status: "borrador" as const, contenido, citation_check: { ok: false, sin_cita: ["Algo"], citas_inexistentes: [] }, model: "m", created_at: "", approved_by: null, approved_at: null };
-    const failing = ruleChecks(rec).filter((c) => !c.ok).map((c) => c.label);
+    const rec = {
+      id: "x",
+      org_id: "o",
+      status: "borrador" as const,
+      contenido,
+      citation_check: { ok: false, sin_cita: ["Algo"], citas_inexistentes: [] },
+      model: "m",
+      created_at: "",
+      approved_by: null,
+      approved_at: null,
+    };
+    const failing = ruleChecks(rec)
+      .filter((c) => !c.ok)
+      .map((c) => c.label);
     expect(failing).toEqual([
       "El validador de citas encontró problemas",
       "Sin números, cuentas ni identificadores completos",
@@ -161,7 +219,9 @@ describe("vista previa del portal", () => {
   });
 
   it("si la zona llega como id de distrito, muestra su nombre", () => {
-    const text = renderToStaticMarkup(<BusinessPreview content={losXContent("san-juan-de-lurigancho", "bodega")} />).replace(/<[^>]+>/g, " ");
+    const text = renderToStaticMarkup(
+      <BusinessPreview content={losXContent("san-juan-de-lurigancho", "bodega")} />,
+    ).replace(/<[^>]+>/g, " ");
     expect(text).toContain("Para bodegas de San Juan de Lurigancho");
   });
 });

@@ -74,7 +74,9 @@ export default defineConfig({
           {
             weight: "200 800",
             style: "normal",
-            src: ["./node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2"],
+            src: [
+              "./node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2",
+            ],
           },
         ],
       },

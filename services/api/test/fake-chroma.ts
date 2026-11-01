@@ -60,7 +60,8 @@ export class FakeChroma {
     const url = new URL(input);
     const method = init.method ?? "GET";
     const headers = new Headers(init.headers);
-    if (headers.get("x-chroma-token") !== FAKE_CHROMA_CONFIG.apiKey) return Response.json({ error: "unauthorized" }, { status: 401 });
+    if (headers.get("x-chroma-token") !== FAKE_CHROMA_CONFIG.apiKey)
+      return Response.json({ error: "unauthorized" }, { status: 401 });
     const path = url.pathname;
     this.calls.push(`${method} ${path.replace(FAKE_CHROMA_CONFIG.tenant, "<t>")}`);
     const body = init.body ? JSON.parse(String(init.body)) : null;
@@ -73,20 +74,29 @@ export class FakeChroma {
     if (rest.length === 0 && method === "POST") {
       let col = this.byName(body.name);
       if (!col) {
-        col = { id: `col-${++this.seq}`, name: body.name, space: body.configuration?.spann?.space ?? "l2", records: new Map() };
+        col = {
+          id: `col-${++this.seq}`,
+          name: body.name,
+          space: body.configuration?.spann?.space ?? "l2",
+          records: new Map(),
+        };
         this.collections.set(body.name, col);
       }
       return Response.json({ id: col.id, name: col.name, configuration_json: { spann: { space: col.space } } });
     }
     if (rest.length === 1 && method === "GET") {
       const col = this.byName(rest[0]!) ?? this.byId(rest[0]!);
-      return col ? Response.json({ id: col.id, name: col.name }) : Response.json({ error: "not_found" }, { status: 404 });
+      return col
+        ? Response.json({ id: col.id, name: col.name })
+        : Response.json({ error: "not_found" }, { status: 404 });
     }
     const col = this.byId(rest[0]!);
     if (!col) return Response.json({ error: "not_found" }, { status: 404 });
     switch (`${method} ${rest[1]}`) {
       case "POST upsert":
-        body.ids.forEach((id: string, i: number) => col.records.set(id, { embedding: body.embeddings[i], metadata: body.metadatas?.[i] ?? {} }));
+        body.ids.forEach((id: string, i: number) =>
+          col.records.set(id, { embedding: body.embeddings[i], metadata: body.metadatas?.[i] ?? {} }),
+        );
         return Response.json({});
       case "POST delete":
         for (const id of body.ids) col.records.delete(id);
@@ -105,7 +115,10 @@ export class FakeChroma {
             .sort((a, b) => a.d - b.d)
             .slice(0, body.n_results),
         );
-        return Response.json({ ids: ranked.map((rs) => rs.map((r) => r.id)), distances: ranked.map((rs) => rs.map((r) => r.d)) });
+        return Response.json({
+          ids: ranked.map((rs) => rs.map((r) => r.id)),
+          distances: ranked.map((rs) => rs.map((r) => r.d)),
+        });
       }
     }
     return Response.json({ error: "not_found" }, { status: 404 });

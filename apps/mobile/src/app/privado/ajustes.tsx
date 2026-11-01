@@ -46,7 +46,8 @@ export default function Ajustes() {
   const guardarPin = async () => {
     setMsg(null);
     if (!isValidPin(nuevo)) return setMsg("El PIN nuevo debe tener de 4 a 8 números.");
-    if (senuelo && (!isValidPin(senuelo) || senuelo === nuevo)) return setMsg("El PIN señuelo debe tener de 4 a 8 números y ser distinto.");
+    if (senuelo && (!isValidPin(senuelo) || senuelo === nuevo))
+      return setMsg("El PIN señuelo debe tener de 4 a 8 números y ser distinto.");
     setBusy(true);
     try {
       if (decoy) {
@@ -117,25 +118,29 @@ export default function Ajustes() {
   };
 
   const borrarCaso = () =>
-    Alert.alert("¿Borrar tu caso de la nube?", "Se borran tus audios, fotos, mensajes y tu denuncia del servidor. No se puede deshacer.", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Borrar mi caso",
-        style: "destructive",
-        onPress: async () => {
-          if (decoy) return;
-          try {
-            const caseId = await currentCaseId();
-            if (caseId) await api.deleteCase(caseId);
-            await forgetCase();
-            privateStore.set({ report: null });
-            setMsg("Tu caso se borró de la nube.", "info");
-          } catch (e) {
-            setMsg(errorMessage(e));
-          }
+    Alert.alert(
+      "¿Borrar tu caso de la nube?",
+      "Se borran tus audios, fotos, mensajes y tu denuncia del servidor. No se puede deshacer.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Borrar mi caso",
+          style: "destructive",
+          onPress: async () => {
+            if (decoy) return;
+            try {
+              const caseId = await currentCaseId();
+              if (caseId) await api.deleteCase(caseId);
+              await forgetCase();
+              privateStore.set({ report: null });
+              setMsg("Tu caso se borró de la nube.", "info");
+            } catch (e) {
+              setMsg(errorMessage(e));
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
 
   const borrarTodo = () =>
     Alert.alert(
@@ -156,9 +161,7 @@ export default function Ajustes() {
 
   return (
     <PrivateScreen title="Ajustes" testID="ajustes">
-      {auth && !decoy ? (
-        <T variant="small">Tu código: {auth.pseudonym}</T>
-      ) : null}
+      {auth && !decoy ? <T variant="small">Tu código: {auth.pseudonym}</T> : null}
 
       <View style={{ gap: 10 }}>
         <T variant="h2">Cómo se ve la app</T>
@@ -173,7 +176,13 @@ export default function Ajustes() {
           <T variant="body" style={{ flex: 1 }}>
             Mantener presionado el título 2 segundos
           </T>
-          <Switch value={cfg.holdTitle} onValueChange={(v) => void cambiarHold(v)} accessibilityLabel="Mantener presionado el título" trackColor={{ false: colors.borde, true: colors.tinta }} thumbColor={colors.blanco} />
+          <Switch
+            value={cfg.holdTitle}
+            onValueChange={(v) => void cambiarHold(v)}
+            accessibilityLabel="Mantener presionado el título"
+            trackColor={{ false: colors.borde, true: colors.tinta }}
+            thumbColor={colors.blanco}
+          />
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <T variant="body" style={{ flex: 1 }}>
@@ -192,10 +201,18 @@ export default function Ajustes() {
             <View style={{ flex: 1 }}>
               <Field label="Monto secreto" keyboardType="decimal-pad" value={monto} onChangeText={setMonto} />
             </View>
-            <Button label="Guardar" compact kind="secondary" onPress={() => void guardarMonto(true)} style={{ minHeight: 52 }} />
+            <Button
+              label="Guardar"
+              compact
+              kind="secondary"
+              onPress={() => void guardarMonto(true)}
+              style={{ minHeight: 52 }}
+            />
           </View>
         ) : null}
-        <T variant="small">Las dos abren la calculadora de vuelto. Ahí escribes tu PIN en “Pagó con” y tocas “Calcular”.</T>
+        <T variant="small">
+          Las dos abren la calculadora de vuelto. Ahí escribes tu PIN en “Pagó con” y tocas “Calcular”.
+        </T>
       </View>
 
       {!decoy ? (
@@ -203,8 +220,22 @@ export default function Ajustes() {
           <Divider />
           <View style={{ gap: 10 }}>
             <T variant="h2">Cambiar PIN</T>
-            <Field label="PIN actual" value={actual} onChangeText={setActual} keyboardType="number-pad" secureTextEntry maxLength={8} />
-            <Field label="PIN nuevo" value={nuevo} onChangeText={setNuevo} keyboardType="number-pad" secureTextEntry maxLength={8} />
+            <Field
+              label="PIN actual"
+              value={actual}
+              onChangeText={setActual}
+              keyboardType="number-pad"
+              secureTextEntry
+              maxLength={8}
+            />
+            <Field
+              label="PIN nuevo"
+              value={nuevo}
+              onChangeText={setNuevo}
+              keyboardType="number-pad"
+              secureTextEntry
+              maxLength={8}
+            />
             <Field
               label="PIN señuelo nuevo (opcional)"
               hint="Abre unas notas vacías. Úsalo si alguien te obliga a abrir la app."
@@ -260,9 +291,20 @@ export default function Ajustes() {
       <Divider />
       <View style={{ gap: 10 }}>
         <T variant="h2">Borrar</T>
-        {!decoy ? <Button label="Borrar mi caso de la nube" kind="secondary" icon="trash" onPress={borrarCaso} /> : null}
-        <Button label="Borrar todo de este celular" kind="danger" icon="trash" onPress={borrarTodo} testID="borrado-emergencia" />
-        <T variant="small">Borra el PIN, las llaves, la base cifrada y lo que espera conexión, y cierra tu sesión. Lo que ya subiste sigue a salvo en la nube.</T>
+        {!decoy ? (
+          <Button label="Borrar mi caso de la nube" kind="secondary" icon="trash" onPress={borrarCaso} />
+        ) : null}
+        <Button
+          label="Borrar todo de este celular"
+          kind="danger"
+          icon="trash"
+          onPress={borrarTodo}
+          testID="borrado-emergencia"
+        />
+        <T variant="small">
+          Borra el PIN, las llaves, la base cifrada y lo que espera conexión, y cierra tu sesión. Lo que ya subiste
+          sigue a salvo en la nube.
+        </T>
       </View>
 
       <Notice tone={msg?.tone}>{msg?.text}</Notice>

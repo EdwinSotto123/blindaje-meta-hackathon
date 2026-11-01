@@ -100,7 +100,10 @@ export class ChromaClient {
     const res = await timed("ext", () =>
       this.fetchImpl(this.cfg.url + path, {
         method,
-        headers: { "x-chroma-token": this.cfg.apiKey, ...(body === undefined ? {} : { "content-type": "application/json" }) },
+        headers: {
+          "x-chroma-token": this.cfg.apiKey,
+          ...(body === undefined ? {} : { "content-type": "application/json" }),
+        },
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: AbortSignal.timeout(TIMEOUT_MS),
       }),
@@ -125,7 +128,9 @@ export class ChromaClient {
     if (cached) return cached;
     // Al crear se pregunta siempre (get_or_create es idempotente): si alguien borró la colección,
     // el id de KV ya no sirve. Una colección borrada a mano se nota en hasta 5 minutos (404 y forget).
-    const stored = opts.create ? null : await this.idCache?.get(this.idKvKey(name), { cacheTtl: 300 }).catch(() => null);
+    const stored = opts.create
+      ? null
+      : await this.idCache?.get(this.idKvKey(name), { cacheTtl: 300 }).catch(() => null);
     if (stored) {
       collectionIds.set(key, stored);
       return stored;
@@ -159,7 +164,12 @@ export class ChromaClient {
     await this.idCache?.delete(this.idKvKey(name)).catch(() => undefined);
   }
 
-  async upsert(collectionId: string, ids: string[], embeddings: number[][], metadatas: Array<Record<string, string | number>>): Promise<void> {
+  async upsert(
+    collectionId: string,
+    ids: string[],
+    embeddings: number[][],
+    metadatas: Array<Record<string, string | number>>,
+  ): Promise<void> {
     for (let i = 0; i < ids.length; i += CHROMA_BATCH) {
       await this.call("POST", `${this.dbPath}/collections/${collectionId}/upsert`, {
         ids: ids.slice(i, i + CHROMA_BATCH),
@@ -196,7 +206,9 @@ export class ChromaClient {
 
   async delete(collectionId: string, ids: string[]): Promise<void> {
     for (let i = 0; i < ids.length; i += CHROMA_BATCH) {
-      await this.call("POST", `${this.dbPath}/collections/${collectionId}/delete`, { ids: ids.slice(i, i + CHROMA_BATCH) });
+      await this.call("POST", `${this.dbPath}/collections/${collectionId}/delete`, {
+        ids: ids.slice(i, i + CHROMA_BATCH),
+      });
     }
   }
 

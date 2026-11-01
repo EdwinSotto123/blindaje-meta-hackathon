@@ -32,7 +32,12 @@ export default function Consentimiento() {
   const comunitario = consent === "comunitario";
 
   return (
-    <Step n={5} title="Tú decides qué se comparte" testID="consentimiento" footer={<Button label="Continuar" onPress={() => router.push("/bienvenida/listo")} testID="continuar" />}>
+    <Step
+      n={5}
+      title="Tú decides qué se comparte"
+      testID="consentimiento"
+      footer={<Button label="Continuar" onPress={() => router.push("/bienvenida/listo")} testID="continuar" />}
+    >
       <Card style={{ borderColor: colors.tinta, borderWidth: 2 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Icon name="lock" />

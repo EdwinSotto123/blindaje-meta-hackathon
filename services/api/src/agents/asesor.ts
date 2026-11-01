@@ -72,9 +72,18 @@ export const NO_PAGAR: AsesorOutput["recomendaciones"][number] = {
 const PASOS_FIJOS: Array<{ test: RegExp; texto: string }> = [
   { test: /no pagues/i, texto: "No pagues ni negocies, aunque te den un plazo corto." },
   { test: /evidencia|blindaje/i, texto: "Guarda en Blindaje cada audio, mensaje o foto que te manden, sin borrarlos." },
-  { test: new RegExp(`\\b${LINEA_DENUNCIAS}\\b`), texto: `Denuncia en la Línea ${LINEA_DENUNCIAS} o en la comisaría más cercana.` },
-  { test: new RegExp(`\\b${LINEA_EMERGENCIAS}\\b`), texto: `Si estás en peligro inmediato, llama al ${LINEA_EMERGENCIAS}.` },
-  { test: /confianza/i, texto: "Cuéntale a alguien de confianza lo que pasa y acuerda con tu personal no responder ni entregar nada." },
+  {
+    test: new RegExp(`\\b${LINEA_DENUNCIAS}\\b`),
+    texto: `Denuncia en la Línea ${LINEA_DENUNCIAS} o en la comisaría más cercana.`,
+  },
+  {
+    test: new RegExp(`\\b${LINEA_EMERGENCIAS}\\b`),
+    texto: `Si estás en peligro inmediato, llama al ${LINEA_EMERGENCIAS}.`,
+  },
+  {
+    test: /confianza/i,
+    texto: "Cuéntale a alguien de confianza lo que pasa y acuerda con tu personal no responder ni entregar nada.",
+  },
 ];
 
 export interface FinalizeResult {
@@ -84,7 +93,11 @@ export interface FinalizeResult {
 }
 
 /** Post-proceso determinista de la salida del Asesor. Exportado para los tests. */
-export function finalizeAsesor(raw: AsesorOutput, a: Pick<RiskAnalysis, "zona" | "nivel" | "modalidades">, sectorLabel: string): FinalizeResult {
+export function finalizeAsesor(
+  raw: AsesorOutput,
+  a: Pick<RiskAnalysis, "zona" | "nivel" | "modalidades">,
+  sectorLabel: string,
+): FinalizeResult {
   const descartados: string[] = [];
   const clean = (s: string) => sanitizeStoredText(s);
   const keep = (s: string) => {
@@ -99,7 +112,9 @@ export function finalizeAsesor(raw: AsesorOutput, a: Pick<RiskAnalysis, "zona" |
   let recomendaciones = raw.recomendaciones
     .map((r) => ({ titulo: clean(r.titulo), detalle: clean(r.detalle), prioridad: r.prioridad }))
     .filter((r) => r.titulo && r.detalle && keep(`${r.titulo}. ${r.detalle}`));
-  const tieneNoPagar = recomendaciones.some((r) => /no pagues/i.test(`${r.titulo} ${r.detalle}`) && /negoci/i.test(`${r.titulo} ${r.detalle}`));
+  const tieneNoPagar = recomendaciones.some(
+    (r) => /no pagues/i.test(`${r.titulo} ${r.detalle}`) && /negoci/i.test(`${r.titulo} ${r.detalle}`),
+  );
   if (!tieneNoPagar) recomendaciones = [NO_PAGAR, ...recomendaciones];
 
   // Qué hacer si te pasa: pasos seguros más los fijos que falten.
@@ -112,13 +127,18 @@ export function finalizeAsesor(raw: AsesorOutput, a: Pick<RiskAnalysis, "zona" |
   const res = dropUnsafeSentences(clean(raw.resumen));
   descartados.push(...res.removed);
   let resumen = res.text;
-  if (a.nivel === "sin_datos" && !/suficientes casos/i.test(resumen)) resumen = `${AVISO_SIN_DATOS} en esta zona. ${resumen}`.trim();
+  if (a.nivel === "sin_datos" && !/suficientes casos/i.test(resumen))
+    resumen = `${AVISO_SIN_DATOS} en esta zona. ${resumen}`.trim();
 
   // Modalidades: bajo el umbral solo las de alertas aprobadas; nunca una que aconseje algo inseguro.
   const permitidas = a.nivel === "sin_datos" ? a.modalidades.filter((m) => m.origen === "alerta") : a.modalidades;
   const modalidades = permitidas.length
     ? raw.modalidades
-        .map((m) => ({ descripcion: clean(m.descripcion), senales_de_alerta: m.senales_de_alerta.map(clean).filter(Boolean), evidencia: m.evidencia }))
+        .map((m) => ({
+          descripcion: clean(m.descripcion),
+          senales_de_alerta: m.senales_de_alerta.map(clean).filter(Boolean),
+          evidencia: m.evidencia,
+        }))
         .filter((m) => m.descripcion && keep(m.descripcion))
     : [];
 
@@ -168,9 +188,18 @@ function withModalityCitations(check: CitationCheck, out: AsesorOutput): Citatio
 }
 
 /** Corre el Asesor para un distrito y un rubro y guarda la recomendación en borrador. */
-export async function runAsesorFor(env: Env, target: AsesorTarget, opts: AsesorRunOptions): Promise<ConsoleRecommendationView> {
+export async function runAsesorFor(
+  env: Env,
+  target: AsesorTarget,
+  opts: AsesorRunOptions,
+): Promise<ConsoleRecommendationView> {
   const sectorLabel = target.sector?.trim() || TODOS_LOS_RUBROS;
-  const analysis = await analyzeRisk(env, { zona: target.zona, sector: target.sector, isDemo: opts.isDemo, now: opts.now });
+  const analysis = await analyzeRisk(env, {
+    zona: target.zona,
+    sector: target.sector,
+    isDemo: opts.isDemo,
+    now: opts.now,
+  });
   const box = new AsesorToolbox(analysis, sectorLabel);
   const client = metaClientFor(env);
   const task = taskFor(analysis, sectorLabel);
@@ -247,7 +276,18 @@ export async function runAsesorFor(env: Env, target: AsesorTarget, opts: AsesorR
     `INSERT INTO business_recommendations (id, org_id, sector, zona, status, content_json, citation_check_json, model, agent_run_id, is_demo, created_at)
      VALUES (?, ?, ?, ?, 'borrador', ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(row.id, row.org_id, row.sector, row.zona, row.content_json, row.citation_check_json, row.model, row.agent_run_id, row.is_demo, row.created_at)
+    .bind(
+      row.id,
+      row.org_id,
+      row.sector,
+      row.zona,
+      row.content_json,
+      row.citation_check_json,
+      row.model,
+      row.agent_run_id,
+      row.is_demo,
+      row.created_at,
+    )
     .run();
 
   await audit(env, {
@@ -287,7 +327,11 @@ const DAY_MS = 86_400_000;
  * distritos que pasan el umbral en el periodo (de más a menos casos, como máximo 5), con el rubro
  * pedido o para todos los rubros. Ya no depende de las cuentas de negocio de una organización.
  */
-export async function asesorTargets(env: Env, req: AsesorBatchRequest, opts: { isDemo: boolean; now?: Date }): Promise<AsesorTarget[]> {
+export async function asesorTargets(
+  env: Env,
+  req: AsesorBatchRequest,
+  opts: { isDemo: boolean; now?: Date },
+): Promise<AsesorTarget[]> {
   const sector = req.sector?.trim() || null;
   const zona = req.zona?.trim() || null;
   if (zona) {
@@ -296,7 +340,11 @@ export async function asesorTargets(env: Env, req: AsesorBatchRequest, opts: { i
     return [{ zona: district.id, sector }];
   }
   const now = (opts.now ?? new Date()).getTime();
-  const cases = await loadCommunityCases(env, { isDemo: opts.isDemo, since: now - RISK_PERIOD_DAYS * DAY_MS, until: now + DAY_MS });
+  const cases = await loadCommunityCases(env, {
+    isDemo: opts.isDemo,
+    since: now - RISK_PERIOD_DAYS * DAY_MS,
+    until: now + DAY_MS,
+  });
   const byDistrict = new Map<string, RiskCase[]>();
   for (const c of cases) {
     const d = districtOfZone(c.zona);
@@ -308,7 +356,10 @@ export async function asesorTargets(env: Env, req: AsesorBatchRequest, opts: { i
     .slice(0, MAX_TARGETS)
     .map(([id]) => ({ zona: districtById(id)!.id, sector }));
   if (!targets.length) {
-    throw new ApiError("bad_request", "Ningún distrito llega todavía a 5 casos de 3 personas en el periodo: indica el distrito");
+    throw new ApiError(
+      "bad_request",
+      "Ningún distrito llega todavía a 5 casos de 3 personas en el periodo: indica el distrito",
+    );
   }
   return targets;
 }

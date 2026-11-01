@@ -23,7 +23,8 @@ const TITLES: [RegExp, string][] = [
 /** Título del documento: la sección y, si hay, el distrito ("Ate, Mi zona | Blindaje"). */
 export function documentTitle(pathname: string, search: string): string {
   const d = districtById(new URLSearchParams(search).get("distrito"));
-  const section = pathname === "/" ? (d ? "Mi zona" : "Elige tu distrito") : TITLES.find(([re]) => re.test(pathname))?.[1];
+  const section =
+    pathname === "/" ? (d ? "Mi zona" : "Elige tu distrito") : TITLES.find(([re]) => re.test(pathname))?.[1];
   if (!section) return "Blindaje";
   return d && pathname !== "/mapa" ? `${d.name}, ${section} | Blindaje` : `${section} | Blindaje`;
 }

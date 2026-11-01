@@ -19,7 +19,11 @@ type MediaState =
  * Marca de la copia (rastreo de filtraciones): antes de abrir, un aviso; después, si la copia lleva la
  * marca invisible de quien la pidió o si salió sin ella y por qué. Disuadir importa tanto como detectar.
  */
-export function CopyMark({ state }: { state: { status: "idle" | "loading" } | { status: "ready"; marca: MediaResult["marca"]; motivo: string | null } }) {
+export function CopyMark({
+  state,
+}: {
+  state: { status: "idle" | "loading" } | { status: "ready"; marca: MediaResult["marca"]; motivo: string | null };
+}) {
   if (state.status !== "ready") {
     return (
       <p className="copy-mark copy-mark-hint">
@@ -115,7 +119,10 @@ export function AudioClip({ fragment, onListened }: { fragment: AudioFragment; o
           }}
         />
       ) : state.status === "error" ? (
-        <ErrorBox error={state.error} onRetry={() => void load(fragment.media_url, { start_ms: fragment.start_ms, end_ms: fragment.end_ms })} />
+        <ErrorBox
+          error={state.error}
+          onRetry={() => void load(fragment.media_url, { start_ms: fragment.start_ms, end_ms: fragment.end_ms })}
+        />
       ) : (
         <span>
           <button
@@ -150,7 +157,12 @@ export function EvidenceImage({ evidenceId, label }: { evidenceId: string; label
   return (
     <div className="stack-sm">
       <span>
-        <button type="button" className="btn btn-sm" disabled={state.status === "loading"} onClick={() => void load(mediaUrl)}>
+        <button
+          type="button"
+          className="btn btn-sm"
+          disabled={state.status === "loading"}
+          onClick={() => void load(mediaUrl)}
+        >
           <Icon name="image" size={14} />
           {state.status === "loading" ? "Descargando…" : "Ver imagen redactada"}
         </button>

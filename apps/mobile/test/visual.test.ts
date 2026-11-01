@@ -4,7 +4,9 @@ import { colors } from "@/theme/tokens";
 import type { QueueItem } from "@/sync/queue";
 
 function lum(hex: string): number {
-  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  const c = [1, 3, 5]
+    .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
   return 0.2126 * c[0]! + 0.7152 * c[1]! + 0.0722 * c[2]!;
 }
 function contrast(a: string, b: string): number {
@@ -63,12 +65,16 @@ describe("Lo que está a salvo y lo que espera conexión", () => {
   it("el chip dice la verdad", () => {
     expect(safetyLabel(overallSafety([], true, true))).toBe("Guardado cifrado, fuera de este celular");
     expect(safetyLabel(overallSafety([q("pendiente")], false, true))).toBe("1 nota espera conexión");
-    expect(safetyLabel(overallSafety([q("pendiente", "a"), q("pendiente", "b")], false, false))).toBe("2 notas esperan conexión");
+    expect(safetyLabel(overallSafety([q("pendiente", "a"), q("pendiente", "b")], false, false))).toBe(
+      "2 notas esperan conexión",
+    );
   });
 
   it("cada fila dice dónde está; lo retenido no se lista hasta aceptarlo", () => {
     const rows = buildRows(null, [q("pendiente"), q("retenido"), q("error")]);
-    expect(rows.map((r) => r.subtitle)).toEqual(expect.arrayContaining(["Esperando conexión", "No se pudo subir. Toca para reintentar"]));
+    expect(rows.map((r) => r.subtitle)).toEqual(
+      expect.arrayContaining(["Esperando conexión", "No se pudo subir. Toca para reintentar"]),
+    );
     expect(rows).toHaveLength(2);
     expect(rows[0]!.title).toBe("Audio de 0:42");
   });

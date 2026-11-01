@@ -24,24 +24,39 @@ async function main() {
   const demo = loadDemo();
   const wait = Number(process.env.DEMO_WAIT_SECONDS ?? 240);
   console.log(`API: ${api.base}`);
-  const seed = await api.request<{ org: { name: string }; invites: string[]; users: { email: string; role: string }[] }>(
-    "/v1/demo/seed",
-    { method: "POST", headers: { "x-demo-secret": demoSecret() } },
-  );
+  const seed = await api.request<{
+    org: { name: string };
+    invites: string[];
+    users: { email: string; role: string }[];
+  }>("/v1/demo/seed", { method: "POST", headers: { "x-demo-secret": demoSecret() } });
   console.log(`Organización: ${seed.org.name}`);
-  console.log(`Consola: ${seed.users.map((u) => `${u.role} ${u.email}`).join(", ")} (contraseñas en services/api/README.md)`);
+  console.log(
+    `Consola: ${seed.users.map((u) => `${u.role} ${u.email}`).join(", ")} (contraseñas en services/api/README.md)`,
+  );
 
   const resumen: Record<string, unknown> = {};
   for (const c of demo.casos) {
-    console.log(`\nCaso ${c.code}${c.fondo ? " (de fondo, solo texto)" : ""}: ${c.sector}, ${c.zona}, primer contacto ${c.evidencia[0]!.captured_at}`);
+    console.log(
+      `\nCaso ${c.code}${c.fondo ? " (de fondo, solo texto)" : ""}: ${c.sector}, ${c.zona}, primer contacto ${c.evidencia[0]!.captured_at}`,
+    );
     const p = await prepareCase(api, `caso-${c.code}`, c);
     const r = await submitAndWait(api, p, c.relato, wait);
-    const estado = r.status === "procesando" ? `sigue procesando después de ${r.segundos} s` : `${r.status} en ${r.segundos} s`;
+    const estado =
+      r.status === "procesando" ? `sigue procesando después de ${r.segundos} s` : `${r.status} en ${r.segundos} s`;
     console.log(`  procesamiento: ${estado}`);
     if (r.hallazgos.length) console.log(`  lo que encontramos: ${r.hallazgos.join(" · ")}`);
-    resumen[c.code] = { case_id: p.case_id, status: r.status, segundos: r.segundos, evidencia: p.subidas, muestra_voz: p.muestra_voz };
+    resumen[c.code] = {
+      case_id: p.case_id,
+      status: r.status,
+      segundos: r.segundos,
+      evidencia: p.subidas,
+      muestra_voz: p.muestra_voz,
+    };
   }
-  writeFileSync(resolve(RESULTS_DIR, "demo-seed.json"), JSON.stringify({ ts: new Date().toISOString(), api: api.base, casos: resumen }, null, 2));
+  writeFileSync(
+    resolve(RESULTS_DIR, "demo-seed.json"),
+    JSON.stringify({ ts: new Date().toISOString(), api: api.base, casos: resumen }, null, 2),
+  );
   console.log("\nListo. Revisa la cola de vínculos en la consola con la cuenta de la revisora.");
 }
 

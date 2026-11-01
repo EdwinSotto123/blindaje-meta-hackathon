@@ -17,7 +17,12 @@ export default function Listo() {
   const [pseudonym, setPseudonym] = useState<string | null | undefined>(d.pseudonym ?? undefined);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const titulo = d.disguise === "lista" ? disguiseCopy.lista.title : d.disguise === "vueltos" ? disguiseCopy.vueltos.title : disguiseCopy.cuaderno.title;
+  const titulo =
+    d.disguise === "lista"
+      ? disguiseCopy.lista.title
+      : d.disguise === "vueltos"
+        ? disguiseCopy.vueltos.title
+        : disguiseCopy.cuaderno.title;
 
   useEffect(() => {
     let vivo = true;
@@ -42,7 +47,12 @@ export default function Listo() {
   };
 
   return (
-    <Step n={6} title="Listo. Así entras a tus notas" testID="listo" footer={<Button label={`Ir a ${titulo}`} onPress={terminar} loading={busy} testID="terminar" />}>
+    <Step
+      n={6}
+      title="Listo. Así entras a tus notas"
+      testID="listo"
+      footer={<Button label={`Ir a ${titulo}`} onPress={terminar} loading={busy} testID="terminar" />}
+    >
       <Card>
         {d.holdTitle ? <T variant="body">1. Mantén presionado el título “{titulo}” por 2 segundos.</T> : null}
         {d.secretAmountCents != null ? (
@@ -54,7 +64,9 @@ export default function Listo() {
       </Card>
       {d.decoy ? <T variant="secondary">Con tu PIN señuelo se abren unas notas vacías.</T> : null}
       {pseudonym ? <T variant="small">Tu código: {pseudonym}</T> : null}
-      {pseudonym === null ? <T variant="small">Todavía no hay conexión. Lo que guardes se subirá solo cuando tengas internet.</T> : null}
+      {pseudonym === null ? (
+        <T variant="small">Todavía no hay conexión. Lo que guardes se subirá solo cuando tengas internet.</T>
+      ) : null}
       <T variant="secondary">Si escribes otro número, la calculadora solo calcula el vuelto. Nadie notará nada.</T>
       <Notice>{error}</Notice>
     </Step>

@@ -2,11 +2,19 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
+import astro from "eslint-plugin-astro";
 import globals from "globals";
 
 export default tseslint.config(
   {
-    ignores: ["**/dist/**", "**/.wrangler/**", "**/.astro/**", "**/node_modules/**", "apps/mobile/**", "**/worker-configuration.d.ts"],
+    ignores: [
+      "**/dist/**",
+      "**/.wrangler/**",
+      "**/.astro/**",
+      "**/node_modules/**",
+      "apps/mobile/**",
+      "**/worker-configuration.d.ts",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -18,8 +26,10 @@ export default tseslint.config(
     },
   },
   {
-    files: ["apps/console/**/*.{ts,tsx}"],
+    files: ["apps/console/**/*.{ts,tsx}", "apps/portal/**/*.{ts,tsx}"],
     plugins: { "react-hooks": reactHooks },
     rules: { ...reactHooks.configs.recommended.rules },
   },
+  // Componentes .astro de la landing (frontmatter y scripts).
+  ...astro.configs["flat/recommended"],
 );

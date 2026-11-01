@@ -19,7 +19,14 @@ describe("monitoreo de la administración", () => {
       metaCalls.push(url);
       return Response.json({ data: [] });
     });
-    await audit(env, { actor_type: "admin", actor_id: "u-prueba", action: "monitor.prueba", target_type: null, target_id: null, details: { nota: "no sale" } });
+    await audit(env, {
+      actor_type: "admin",
+      actor_id: "u-prueba",
+      action: "monitor.prueba",
+      target_type: null,
+      target_id: null,
+      details: { nota: "no sale" },
+    });
 
     expect((await api("/v1/console/monitoreo", { token: reviewer.token })).status).toBe(403);
     expect((await api("/v1/console/monitoreo", { token: analyst.token })).status).toBe(403);

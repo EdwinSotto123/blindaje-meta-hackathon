@@ -11,6 +11,7 @@
     "prebuild": "expo prebuild --platform android",
     "sync-shared": "node ./scripts/sync-shared.mjs",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
     "test": "jest",
     "doctor": "expo-doctor"
   },
@@ -55,6 +56,8 @@
     "@types/node": "^22.20.5",
     "@types/react": "~19.3.0",
     "cross-env": "^10.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~58.0.4",
     "jest": "^30.5.2",
     "jest-expo": "~58.0.12",
     "test-renderer": "^1.3.1",

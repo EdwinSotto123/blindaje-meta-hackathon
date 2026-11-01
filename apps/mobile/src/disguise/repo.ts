@@ -2,7 +2,14 @@ import { dayKey } from "@/lib/format";
 
 /** Datos del disfraz: funcionan de verdad y se guardan en el celular. */
 export type Venta = { id: number; descripcion: string; cents: number; dia: string; created_at: number };
-export type Fiado = { id: number; nombre: string; descripcion: string; cents: number; pagado: number; created_at: number };
+export type Fiado = {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  cents: number;
+  pagado: number;
+  created_at: number;
+};
 export type Compra = { id: number; nombre: string; cents: number | null; hecho: number; created_at: number };
 export type Vuelto = { id: number; total_cents: number; pago_cents: number; created_at: number };
 

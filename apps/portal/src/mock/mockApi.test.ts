@@ -17,7 +17,8 @@ function allText(value: unknown): string {
 function numericPaths(value: unknown, path = ""): string[] {
   if (typeof value === "number") return [path];
   if (Array.isArray(value)) return value.flatMap((v) => numericPaths(v, `${path}[]`));
-  if (value && typeof value === "object") return Object.entries(value).flatMap(([k, v]) => numericPaths(v, path ? `${path}.${k}` : k));
+  if (value && typeof value === "object")
+    return Object.entries(value).flatMap(([k, v]) => numericPaths(v, path ? `${path}.${k}` : k));
   return [];
 }
 
@@ -56,14 +57,19 @@ describe("fixtures del modo simulado", () => {
   });
 
   it("nunca traen números, cuentas, citas internas ni gremios, y nunca aconsejan pagar", () => {
-    const text = allText([...DISTRICTS.flatMap((d): unknown[] => [publicRisk(d.id), publicRecommendations(d.id), publicAlerts(d.id)]), publicZones()]);
+    const text = allText([
+      ...DISTRICTS.flatMap((d): unknown[] => [publicRisk(d.id), publicRecommendations(d.id), publicAlerts(d.id)]),
+      publicZones(),
+    ]);
     // Fechas aparte, ninguna secuencia de 7 dígitos o más (teléfonos, cuentas).
     expect(text.replace(/\d{4}-\d{2}-\d{2}(T[\d:.]+Z)?/g, "")).not.toMatch(/\d[\d\s-]{6,}\d/);
     expect(text).not.toMatch(/\b(VIN|FICHA|EV|ID)-[A-Za-z0-9]/);
     expect(text).not.toMatch(/\bR-\d/);
     expect(text).not.toMatch(/gremio|asociad|dirigente/i);
     // Pagar o negociar solo aparece negado ("No pagues ni negocies", "nadie paga ni negocia").
-    for (const m of text.matchAll(/(?:(\p{L}+)\s+)?(?<!\p{L})(paga|pagues|pagar|págales|negocia|negocies|negociar)(?!\p{L})/giu)) {
+    for (const m of text.matchAll(
+      /(?:(\p{L}+)\s+)?(?<!\p{L})(paga|pagues|pagar|págales|negocia|negocies|negociar)(?!\p{L})/giu,
+    )) {
       expect(["no", "ni", "nadie", "nunca"], m[0]).toContain((m[1] ?? "").toLowerCase());
     }
   });
@@ -76,7 +82,8 @@ describe("fixtures del modo simulado", () => {
     expect(Object.keys(map)).not.toContain("total");
     for (const c of map.celdas) {
       if (c.casos !== null) expect(COUNT_BANDS).toContain(c.casos);
-      if (c.nivel === "sin_datos") expect(c).toEqual({ distrito: c.distrito, nivel: "sin_datos", casos: null, tendencia: null, modalidades: [] });
+      if (c.nivel === "sin_datos")
+        expect(c).toEqual({ distrito: c.distrito, nivel: "sin_datos", casos: null, tendencia: null, modalidades: [] });
     }
     const cell = (id: string) => map.celdas.find((c) => c.distrito === id)!;
     for (const id of ARRIBA) expect(cell(id).nivel, id).not.toBe("sin_datos");

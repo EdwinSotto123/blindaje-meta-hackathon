@@ -47,7 +47,12 @@ export default function Recibido() {
       footer={
         !decoy && held.length ? (
           <>
-            <Button label={held.length === 1 ? "Guardar en mis notas" : `Guardar los ${held.length}`} onPress={guardarTodo} loading={busy} testID="guardar-recibidos" />
+            <Button
+              label={held.length === 1 ? "Guardar en mis notas" : `Guardar los ${held.length}`}
+              onPress={guardarTodo}
+              loading={busy}
+              testID="guardar-recibidos"
+            />
           </>
         ) : undefined
       }
@@ -56,7 +61,10 @@ export default function Recibido() {
         <T variant="secondary">No tienes archivos por revisar.</T>
       ) : (
         <>
-          <T variant="secondary">Llegaron desde otra app y están guardados cifrados en este celular. Si los guardas, se suben a la nube y se borran de aquí.</T>
+          <T variant="secondary">
+            Llegaron desde otra app y están guardados cifrados en este celular. Si los guardas, se suben a la nube y se
+            borran de aquí.
+          </T>
           <View>
             {held.map((h) => (
               <View key={h.id} style={{ gap: 6 }}>
@@ -65,7 +73,9 @@ export default function Recibido() {
                     key: h.id,
                     tipo: h.tipo,
                     title: titleFor(h.tipo, h.duration_ms, h.source),
-                    subtitle: h.preview ? `“${h.preview.slice(0, 50)}”` : `${Math.max(1, Math.round(h.size / 1024))} KB`,
+                    subtitle: h.preview
+                      ? `“${h.preview.slice(0, 50)}”`
+                      : `${Math.max(1, Math.round(h.size / 1024))} KB`,
                     when: shortDateTime(h.captured_at ?? h.created_at),
                     state: "pendiente",
                     evidenceId: null,
@@ -87,7 +97,10 @@ export default function Recibido() {
             ))}
           </View>
           <Card>
-            <T variant="small">Consejo: después de guardarlo aquí, puedes borrar el audio o la foto del chat si te preocupa que alguien revise tu celular.</T>
+            <T variant="small">
+              Consejo: después de guardarlo aquí, puedes borrar el audio o la foto del chat si te preocupa que alguien
+              revise tu celular.
+            </T>
           </Card>
         </>
       )}

@@ -225,10 +225,24 @@ export async function loadNetworkData(env: Env, networkId: string): Promise<Netw
       reviewed_at: l.reviewed_at,
     })),
     voices: (
-      voices!.results as Array<{ num: number; case_id: string; segmentos: number; duracion_seg: number; evidence_label: string | null }>
+      voices!.results as Array<{
+        num: number;
+        case_id: string;
+        segmentos: number;
+        duracion_seg: number;
+        evidence_label: string | null;
+      }>
     ).map((v) => ({ ...v, label: voiceLabel(v.num) })),
     identifiers: (
-      idents!.results as Array<{ case_id: string; rol: string; evidence_json: string | null; ref: string | null; hmac: string; tipo: string; ultimos_3: string }>
+      idents!.results as Array<{
+        case_id: string;
+        rol: string;
+        evidence_json: string | null;
+        ref: string | null;
+        hmac: string;
+        tipo: string;
+        ultimos_3: string;
+      }>
     ).map((i) => ({
       ref: i.ref ?? identifierLabel(i.hmac),
       tipo: i.tipo,
@@ -237,7 +251,9 @@ export async function loadNetworkData(env: Env, networkId: string): Promise<Netw
       case_id: i.case_id,
       evidencia: (parseJsonColumn<unknown[]>(i.evidence_json) ?? []).filter((e): e is string => typeof e === "string"),
     })),
-    crops: (crops!.results as Array<{ num: number; case_id: string; concept: string; evidence_label: string | null }>).map((m) => ({
+    crops: (
+      crops!.results as Array<{ num: number; case_id: string; concept: string; evidence_label: string | null }>
+    ).map((m) => ({
       ...m,
       label: imageLabel(m.num),
     })),
@@ -301,33 +317,83 @@ export async function buildGraph(data: NetworkData): Promise<NetworkGraph> {
   };
 
   for (const c of data.cases) {
-    addNode({ id: caseNodeId(c.id), type: "caso", label: `Caso ${c.code}`, data: { case_id: c.id, code: c.code, sector: c.sector, zona: c.zona, ficha: fichaLabel(c.code) } });
+    addNode({
+      id: caseNodeId(c.id),
+      type: "caso",
+      label: `Caso ${c.code}`,
+      data: { case_id: c.id, code: c.code, sector: c.sector, zona: c.zona, ficha: fichaLabel(c.code) },
+    });
   }
   for (const v of data.voices) {
     const id = `voz:${v.num}`;
-    addNode({ id, type: "voz", label: v.label, data: { evidencia: evidenceOf(data.voices.filter((x) => x.num === v.num)) } });
-    addEdge({ id: `e:${v.case_id}:${id}`, source: caseNodeId(v.case_id), target: id, type: "senal", label: "voz", weight: 1 });
+    addNode({
+      id,
+      type: "voz",
+      label: v.label,
+      data: { evidencia: evidenceOf(data.voices.filter((x) => x.num === v.num)) },
+    });
+    addEdge({
+      id: `e:${v.case_id}:${id}`,
+      source: caseNodeId(v.case_id),
+      target: id,
+      type: "senal",
+      label: "voz",
+      weight: 1,
+    });
   }
   for (const i of data.identifiers) {
     const id = `id:${i.ref}`;
     addNode({ id, type: "identificador", label: i.ref, data: { tipo: i.tipo, ultimos_3: i.ultimos_3 } });
-    addEdge({ id: `e:${i.case_id}:${id}:${i.rol}`, source: caseNodeId(i.case_id), target: id, type: "senal", label: i.rol, weight: 1 });
+    addEdge({
+      id: `e:${i.case_id}:${id}:${i.rol}`,
+      source: caseNodeId(i.case_id),
+      target: id,
+      type: "senal",
+      label: i.rol,
+      weight: 1,
+    });
   }
   for (const m of data.crops) {
     const id = `img:${m.num}`;
-    addNode({ id, type: "imagen", label: m.label, data: { concept: m.concept, evidencia: evidenceOf(data.crops.filter((x) => x.num === m.num)) } });
-    addEdge({ id: `e:${m.case_id}:${id}`, source: caseNodeId(m.case_id), target: id, type: "senal", label: m.concept, weight: 1 });
+    addNode({
+      id,
+      type: "imagen",
+      label: m.label,
+      data: { concept: m.concept, evidencia: evidenceOf(data.crops.filter((x) => x.num === m.num)) },
+    });
+    addEdge({
+      id: `e:${m.case_id}:${id}`,
+      source: caseNodeId(m.case_id),
+      target: id,
+      type: "senal",
+      label: m.concept,
+      weight: 1,
+    });
   }
   for (const c of data.cases) {
     for (const frase of c.ficha?.frases_firma ?? []) {
       if (!normalizePhrase(frase)) continue;
       const id = await phraseNodeId(frase);
       addNode({ id, type: "frase", label: frase.trim() });
-      addEdge({ id: `e:${c.id}:${id}`, source: caseNodeId(c.id), target: id, type: "senal", label: "frase", weight: 1 });
+      addEdge({
+        id: `e:${c.id}:${id}`,
+        source: caseNodeId(c.id),
+        target: id,
+        type: "senal",
+        label: "frase",
+        weight: 1,
+      });
     }
   }
   for (const l of data.links) {
-    addEdge({ id: `vin:${l.num}`, source: caseNodeId(l.case_a), target: caseNodeId(l.case_b), type: "vinculo", label: l.label, weight: l.score });
+    addEdge({
+      id: `vin:${l.num}`,
+      source: caseNodeId(l.case_a),
+      target: caseNodeId(l.case_b),
+      type: "vinculo",
+      label: l.label,
+      weight: l.score,
+    });
   }
   return { nodes, edges };
 }
@@ -424,7 +490,9 @@ export function analyzeInWorker(graph: NetworkGraph): GraphAnalysis {
   }
   const groups = new Map<string, string[]>();
   for (const c of caseIds) groups.set(find(c), [...(groups.get(find(c)) ?? []), c]);
-  const communities = [...groups.values()].map((g) => g.sort()).sort((a, b) => b.length - a.length || (a[0]! < b[0]! ? -1 : 1));
+  const communities = [...groups.values()]
+    .map((g) => g.sort())
+    .sort((a, b) => b.length - a.length || (a[0]! < b[0]! ? -1 : 1));
   const membership: Record<string, number> = {};
   communities.forEach((c, i) => c.forEach((n) => (membership[n] = i)));
   for (const [node, nbrs] of adj) {
@@ -443,7 +511,11 @@ const GRAPH_CACHE_TTL = 86_400;
  * Comunidades y centralidad. Primero la caché en KV (por hash del grafo), después el contenedor
  * ML con un tiempo máximo corto y, si no responde, el cálculo en el Worker.
  */
-export async function analyzeGraph(env: Env, graph: NetworkGraph, opts: { timeoutMs?: number } = {}): Promise<GraphAnalysis> {
+export async function analyzeGraph(
+  env: Env,
+  graph: NetworkGraph,
+  opts: { timeoutMs?: number } = {},
+): Promise<GraphAnalysis> {
   if (!graph.nodes.length) return { communities: [], centrality: {}, degree: {}, membership: {}, source: "worker" };
   const req = {
     nodes: graph.nodes.map((n) => ({ id: n.id, type: n.type })),
@@ -467,8 +539,15 @@ export async function analyzeGraph(env: Env, graph: NetworkGraph, opts: { timeou
       });
       const body = (await res.json()) as GraphAnalyzeResponse & { membership?: Record<string, number> };
       if (Array.isArray(body.communities) && body.centrality && body.degree) {
-        const membership = body.membership ?? Object.fromEntries(body.communities.flatMap((c, i) => c.map((n) => [n, i] as const)));
-        const analysis: GraphAnalysis = { communities: body.communities, centrality: body.centrality, degree: body.degree, membership, source: "ml" };
+        const membership =
+          body.membership ?? Object.fromEntries(body.communities.flatMap((c, i) => c.map((n) => [n, i] as const)));
+        const analysis: GraphAnalysis = {
+          communities: body.communities,
+          centrality: body.centrality,
+          degree: body.degree,
+          membership,
+          source: "ml",
+        };
         try {
           await env.CONFIG.put(key, JSON.stringify(analysis), { expirationTtl: GRAPH_CACHE_TTL });
         } catch {
@@ -518,23 +597,45 @@ export function buildTimeline(data: NetworkData): TimelineItem[] {
   for (const c of data.cases) {
     const f = c.ficha;
     const ficha = fichaLabel(c.code);
-    if (c.primer_contacto) items.push({ fecha: c.primer_contacto, texto: "Primer contacto", evidencia: f ? [ficha] : [], caso: c.code });
+    if (c.primer_contacto)
+      items.push({ fecha: c.primer_contacto, texto: "Primer contacto", evidencia: f ? [ficha] : [], caso: c.code });
     if (c.primer_contacto && f?.plazo_horas) {
       const start = timeOf(c.primer_contacto);
       if (Number.isFinite(start)) {
-        items.push({ fecha: limaIso(start + f.plazo_horas * 3600_000), texto: `Vence el plazo de ${f.plazo_horas} horas (calculado desde el primer contacto)`, evidencia: [ficha], caso: c.code });
+        items.push({
+          fecha: limaIso(start + f.plazo_horas * 3600_000),
+          texto: `Vence el plazo de ${f.plazo_horas} horas (calculado desde el primer contacto)`,
+          evidencia: [ficha],
+          caso: c.code,
+        });
       }
     }
     for (const e of f?.escalamiento ?? []) {
-      if (e.fecha) items.push({ fecha: e.fecha, texto: e.tipo, evidencia: e.evidencia.length ? e.evidencia : [ficha], caso: c.code });
+      if (e.fecha)
+        items.push({
+          fecha: e.fecha,
+          texto: e.tipo,
+          evidencia: e.evidencia.length ? e.evidencia : [ficha],
+          caso: c.code,
+        });
     }
     for (const ev of data.evidence.filter((x) => x.case_id === c.id && x.captured_at)) {
-      items.push({ fecha: ev.captured_at!, texto: `Evidencia de tipo ${ev.tipo}`, evidencia: [ev.label], caso: c.code });
+      items.push({
+        fecha: ev.captured_at!,
+        texto: `Evidencia de tipo ${ev.tipo}`,
+        evidencia: [ev.label],
+        caso: c.code,
+      });
     }
   }
   for (const l of data.links) {
     if (l.reviewed_at) {
-      items.push({ fecha: l.reviewed_at, texto: `Vínculo ${l.label} confirmado por una persona revisora`, evidencia: [l.label], caso: `${caseCodeOf(data, l.case_a)}, ${caseCodeOf(data, l.case_b)}` });
+      items.push({
+        fecha: l.reviewed_at,
+        texto: `Vínculo ${l.label} confirmado por una persona revisora`,
+        evidencia: [l.label],
+        caso: `${caseCodeOf(data, l.case_a)}, ${caseCodeOf(data, l.case_b)}`,
+      });
     }
   }
   return items.sort((a, b) => timeOf(a.fecha) - timeOf(b.fecha) || a.caso.localeCompare(b.caso));
@@ -597,7 +698,10 @@ export const OTHER_ZONES = "Otras zonas (agregado)";
  * Conteos por zona. Vacío si la red tiene menos de 5 casos o menos de 3 víctimas distintas.
  * Además, cada zona listada cumple el mismo umbral; el resto se suma en "Otras zonas".
  */
-export function territorialStats(cases: Array<Pick<NetCase, "device_id" | "zona">>, nivel: TerritorialLevel): TerritorialStats {
+export function territorialStats(
+  cases: Array<Pick<NetCase, "device_id" | "zona">>,
+  nivel: TerritorialLevel,
+): TerritorialStats {
   if (!canShowTerritorialStats(cases.length, distinctVictims(cases))) return { disponible: false, nivel, zonas: [] };
   const byZone = new Map<string, Array<Pick<NetCase, "device_id">>>();
   let other = 0;
@@ -610,7 +714,9 @@ export function territorialStats(cases: Array<Pick<NetCase, "device_id" | "zona"
     byZone.set(z, [...(byZone.get(z) ?? []), c]);
   }
   const zonas: Array<{ zona: string; casos: number }> = [];
-  for (const [zona, list] of [...byZone.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))) {
+  for (const [zona, list] of [...byZone.entries()].sort(
+    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
+  )) {
     if (canShowTerritorialStats(list.length, distinctVictims(list))) zonas.push({ zona, casos: list.length });
     else other += list.length;
   }
@@ -621,7 +727,9 @@ export function territorialStats(cases: Array<Pick<NetCase, "device_id" | "zona"
 export function sectorCounts(cases: Array<Pick<NetCase, "sector">>): Array<{ sector: string; casos: number }> {
   const m = new Map<string, number>();
   for (const c of cases) m.set(c.sector ?? "sin_dato", (m.get(c.sector ?? "sin_dato") ?? 0) + 1);
-  return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([sector, casos]) => ({ sector, casos }));
+  return [...m.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([sector, casos]) => ({ sector, casos }));
 }
 
 export function activityPeriod(cases: Array<Pick<NetCase, "primer_contacto" | "created_at">>): string | null {

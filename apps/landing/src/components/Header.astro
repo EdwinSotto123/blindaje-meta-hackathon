@@ -35,36 +35,48 @@ const exitUrl = "https://www.google.com/";
     </p>
     <p class="help__item">
       <span class="help__lead">{d.help.report}</span>
-      <a class="help__call" href="tel:1818">{d.help.reportCta}</a>
+      <a class="help__call" href="tel:1818">
+        {d.help.reportCta}
+      </a>
     </p>
     <a class="help__exit" href={exitUrl} rel="noreferrer" aria-describedby="exit-hint" data-quick-exit>
       <Icon name="exit" />
       <span class="wide">{d.help.exit}</span>
-      <span class="narrow" aria-hidden="true">{d.help.exitShort}</span>
+      <span class="narrow" aria-hidden="true">
+        {d.help.exitShort}
+      </span>
     </a>
-    <span class="sr-only" id="exit-hint">{d.help.exitHint}</span>
+    <span class="sr-only" id="exit-hint">
+      {d.help.exitHint}
+    </span>
   </div>
 </div>
 
 <header class="top">
   <div class="wrap top__in">
-    <a class="brand" href={home} translate="no" aria-label="Blindaje">blindaje</a>
+    <a class="brand" href={home} translate="no" aria-label="Blindaje">
+      blindaje
+    </a>
     <nav class="nav" aria-label={d.nav.ariaLabel}>
       <ul>
-        {
-          links.map((l) => (
-            <li>
-              <a href={l.href} data-spy>{l.label}</a>
-            </li>
-          ))
-        }
+        {links.map((l) => (
+          <li>
+            <a href={l.href} data-spy>
+              {l.label}
+            </a>
+          </li>
+        ))}
       </ul>
     </nav>
     <a class="lang" href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>
       <span class="lang__long">{d.nav.switchName}</span>
-      <span class="lang__short" aria-hidden="true">{d.nav.switchShort}</span>
+      <span class="lang__short" aria-hidden="true">
+        {d.nav.switchShort}
+      </span>
     </a>
-    <a class="btn btn--mark top__pilot" href={`${PORTAL_URL}/mapa`}>{d.lp.hero.ctaMapShort}</a>
+    <a class="btn btn--mark top__pilot" href={`${PORTAL_URL}/mapa`}>
+      {d.lp.hero.ctaMapShort}
+    </a>
     <details class="menu" data-menu>
       <summary class="menu__btn">
         <Icon name="menu" />
@@ -72,13 +84,11 @@ const exitUrl = "https://www.google.com/";
       </summary>
       <nav class="menu__panel" aria-label={d.nav.ariaLabel}>
         <ul>
-          {
-            links.map((l) => (
-              <li>
-                <a href={l.href}>{l.label}</a>
-              </li>
-            ))
-          }
+          {links.map((l) => (
+            <li>
+              <a href={l.href}>{l.label}</a>
+            </li>
+          ))}
           <li>
             <a href={`${prefix}#preguntas`}>{d.lp.menu.faq}</a>
           </li>
@@ -86,7 +96,9 @@ const exitUrl = "https://www.google.com/";
             <a href={`${prefix}#piloto`}>{d.nav.pilot}</a>
           </li>
           <li>
-            <a href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>{d.nav.switchName}</a>
+            <a href={d.nav.switchHref} hreflang={d.nav.switchLang} lang={d.nav.switchLang}>
+              {d.nav.switchName}
+            </a>
           </li>
         </ul>
       </nav>
@@ -222,8 +234,10 @@ const exitUrl = "https://www.google.com/";
     margin-right: 0.14em;
     vertical-align: -0.04em;
     background: var(--terracota);
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 28'%3E%3Cpath d='M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
   }
 
   .nav {

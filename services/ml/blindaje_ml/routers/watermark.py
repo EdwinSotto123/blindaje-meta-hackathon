@@ -99,11 +99,15 @@ def _image_detect(request: Request, data: bytes) -> dict[str, Any]:
 async def watermark_audio_embed(request: Request, message: int = Query(..., ge=0, le=65535)) -> Response:
     data = await read_body(request)
     wav, duration_ms = await run_in_threadpool(_audio_embed, request, data, message)
-    return Response(wav, media_type="audio/wav", headers={
-        "x-watermark-model": AUDIOSEAL_NAME,
-        "x-watermark-message": str(message),
-        "x-duration-ms": str(duration_ms),
-    })
+    return Response(
+        wav,
+        media_type="audio/wav",
+        headers={
+            "x-watermark-model": AUDIOSEAL_NAME,
+            "x-watermark-message": str(message),
+            "x-duration-ms": str(duration_ms),
+        },
+    )
 
 
 @router.post("/watermark/audio/detect")
@@ -113,17 +117,19 @@ async def watermark_audio_detect(request: Request) -> dict:
 
 
 @router.post("/watermark/image/embed")
-async def watermark_image_embed(
-    request: Request, message: str = Query(..., min_length=1, max_length=1024)
-) -> Response:
+async def watermark_image_embed(request: Request, message: str = Query(..., min_length=1, max_length=1024)) -> Response:
     data = await read_body(request)
     jpg, nbits, (w, h) = await run_in_threadpool(_image_embed, request, data, message)
-    return Response(jpg, media_type="image/jpeg", headers={
-        "x-watermark-model": VIDEOSEAL_NAME,
-        "x-watermark-nbits": str(nbits),
-        "x-width": str(w),
-        "x-height": str(h),
-    })
+    return Response(
+        jpg,
+        media_type="image/jpeg",
+        headers={
+            "x-watermark-model": VIDEOSEAL_NAME,
+            "x-watermark-nbits": str(nbits),
+            "x-width": str(w),
+            "x-height": str(h),
+        },
+    )
 
 
 @router.post("/watermark/image/detect")

@@ -68,9 +68,7 @@ def resolve_box(box: dict, width: int, height: int) -> Box | None:
         y1, y2 = y1 * height, y2 * height
     x1, x2 = sorted((x1, x2))
     y1, y2 = sorted((y1, y2))
-    bx = Box(
-        max(0, math.floor(x1)), max(0, math.floor(y1)), min(width, math.ceil(x2)), min(height, math.ceil(y2))
-    )
+    bx = Box(max(0, math.floor(x1)), max(0, math.floor(y1)), min(width, math.ceil(x2)), min(height, math.ceil(y2)))
     if bx.x2 - bx.x1 < 2 or bx.y2 - bx.y1 < 2:
         return None
     return bx
@@ -101,8 +99,9 @@ def _box_from_mask(content, k: float, w: int, h: int) -> Box | None:
     cols = _longest_run(cols_on, max_gap=max(2, len(cols_on) // 50))
     if cols is None:
         return None
-    box = Box(math.floor(cols[0] / k), math.floor(rows[0] / k), min(w, math.ceil(cols[1] / k)),
-              min(h, math.ceil(rows[1] / k)))
+    box = Box(
+        math.floor(cols[0] / k), math.floor(rows[0] / k), min(w, math.ceil(cols[1] / k)), min(h, math.ceil(rows[1] / k))
+    )
     bw, bh = box.x2 - box.x1, box.y2 - box.y1
     if bw * bh > 0.95 * w * h or bw < 64 or bh < 64:
         return None
@@ -143,8 +142,9 @@ def content_boxes(img: Image.Image, flat_std: float = 4.0, bg_diff: float = 30.0
     out: list[Box] = []
     for content in (flat_only, flat_or_color):
         box = _box_from_mask(content, k, w, h)
-        if box is not None and all(max(abs(box.x1 - b.x1), abs(box.y1 - b.y1), abs(box.x2 - b.x2),
-                                       abs(box.y2 - b.y2)) > 8 for b in out):
+        if box is not None and all(
+            max(abs(box.x1 - b.x1), abs(box.y1 - b.y1), abs(box.x2 - b.x2), abs(box.y2 - b.y2)) > 8 for b in out
+        ):
             out.append(box)
     return out
 

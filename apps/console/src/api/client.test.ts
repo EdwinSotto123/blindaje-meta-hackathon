@@ -39,15 +39,21 @@ function fakeApi(opts: { refreshOk?: boolean; refreshDelay?: number } = {}) {
     if (headers.get("authorization") !== "Bearer valid") {
       return json(401, { error: { code: "unauthorized", message: "Token vencido" } });
     }
-    if (path === "/v1/console/me") return json(200, { id: "u1", email: "a@b.pe", display_name: "A", role: "analyst", org: { id: "o", name: "O" } });
-    if (path === "/v1/console/links/x") return json(404, { error: { code: "not_found", message: "No existe ese vínculo." } });
+    if (path === "/v1/console/me")
+      return json(200, { id: "u1", email: "a@b.pe", display_name: "A", role: "analyst", org: { id: "o", name: "O" } });
+    if (path === "/v1/console/links/x")
+      return json(404, { error: { code: "not_found", message: "No existe ese vínculo." } });
     if (path.startsWith("/v1/console/evidence/")) {
       const marked = new URL(url).searchParams.get("start_ms") !== "1";
       return new Response(new Uint8Array([1, 2, 3]), {
         status: 200,
         headers: marked
           ? { "content-type": "audio/wav", "x-blindaje-marca": "aplicada" }
-          : { "content-type": "audio/wav", "x-blindaje-marca": "no_aplicada", "x-blindaje-marca-motivo": "servicio_no_disponible" },
+          : {
+              "content-type": "audio/wav",
+              "x-blindaje-marca": "no_aplicada",
+              "x-blindaje-marca-motivo": "servicio_no_disponible",
+            },
       });
     }
     return json(200, { ok: true, path });
@@ -59,7 +65,13 @@ const NOW = 1_800_000_000_000;
 const fresh = (accessToken: string | null): Session => ({ accessToken, refreshToken: "r1", expiresAt: NOW + 600_000 });
 
 function client(store: MemoryTokenStore, fetchImpl: typeof fetch, onSessionExpired?: () => void) {
-  return new HttpClient({ baseUrl: BASE, store, fetch: fetchImpl, now: () => NOW, ...(onSessionExpired ? { onSessionExpired } : {}) });
+  return new HttpClient({
+    baseUrl: BASE,
+    store,
+    fetch: fetchImpl,
+    now: () => NOW,
+    ...(onSessionExpired ? { onSessionExpired } : {}),
+  });
 }
 
 describe("HttpClient", () => {
@@ -77,7 +89,11 @@ describe("HttpClient", () => {
     const c = client(store, api.fetchImpl);
     const res = await c.json<{ ok: boolean }>("GET", "/v1/console/costs");
     expect(res.ok).toBe(true);
-    expect(api.calls.map((x) => new URL(x.url).pathname)).toEqual(["/v1/console/costs", "/v1/auth/console/refresh", "/v1/console/costs"]);
+    expect(api.calls.map((x) => new URL(x.url).pathname)).toEqual([
+      "/v1/console/costs",
+      "/v1/auth/console/refresh",
+      "/v1/console/costs",
+    ]);
     expect(api.calls[1]!.body).toEqual({ refresh_token: "r1" });
     expect(api.calls[2]!.auth).toBe("Bearer valid");
     expect(store.get()?.refreshToken).toBe("r2");
@@ -110,14 +126,18 @@ describe("HttpClient", () => {
 
   it("renueva por adelantado si el token está por vencer", async () => {
     const api = fakeApi();
-    const c = client(new MemoryTokenStore({ accessToken: "valid", refreshToken: "r1", expiresAt: NOW + 2_000 }), api.fetchImpl);
+    const c = client(
+      new MemoryTokenStore({ accessToken: "valid", refreshToken: "r1", expiresAt: NOW + 2_000 }),
+      api.fetchImpl,
+    );
     await c.json("GET", "/v1/console/me");
     expect(api.refreshes()).toBe(1);
   });
 
   it("no reintenta en bucle: un 401 después del refresh termina en error", async () => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
-      if (String(input).endsWith("/refresh")) return json(200, { access_token: "otro", refresh_token: "r2", expires_in: 900 });
+      if (String(input).endsWith("/refresh"))
+        return json(200, { access_token: "otro", refresh_token: "r2", expires_in: 900 });
       return json(401, { error: { code: "unauthorized", message: "No" } });
     });
     const expired = vi.fn();
@@ -139,7 +159,9 @@ describe("HttpClient", () => {
   it("nunca envía la credencial a otro origen", async () => {
     const api = fakeApi();
     const c = client(new MemoryTokenStore(fresh("valid")), api.fetchImpl);
-    await expect(c.blob("https://evil.example/v1/console/evidence/1/media")).rejects.toMatchObject({ code: "bad_request" });
+    await expect(c.blob("https://evil.example/v1/console/evidence/1/media")).rejects.toMatchObject({
+      code: "bad_request",
+    });
     expect(api.calls).toHaveLength(0);
   });
 
@@ -156,13 +178,24 @@ describe("HttpApi", () => {
     const calls: Call[] = [];
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const headers = new Headers(init?.headers);
-      calls.push({ url: String(input), method: init?.method ?? "GET", auth: headers.get("authorization"), body: init?.body ? JSON.parse(String(init.body)) : undefined });
+      calls.push({
+        url: String(input),
+        method: init?.method ?? "GET",
+        auth: headers.get("authorization"),
+        body: init?.body ? JSON.parse(String(init.body)) : undefined,
+      });
       if (String(input).endsWith("/v1/auth/console/login")) {
         return json(200, {
           access_token: "valid",
           refresh_token: "r1",
           expires_in: 900,
-          user: { id: "u1", email: "analista@demo.pe", display_name: "Analista", role: "analyst", org: { id: "o", name: "O" } },
+          user: {
+            id: "u1",
+            email: "analista@demo.pe",
+            display_name: "Analista",
+            role: "analyst",
+            org: { id: "o", name: "O" },
+          },
         });
       }
       return json(200, { links: [{ status: "confirmado" }, { status: "descartado" }, { status: "probable" }] });
@@ -193,8 +226,14 @@ describe("HttpApi", () => {
     expect(media.blob.size).toBe(3);
     // La marca de la copia viene en x-blindaje-marca (expuesto por CORS en la API).
     expect(media).toMatchObject({ marca: "aplicada", motivo: null });
-    expect(api.calls[0]).toMatchObject({ url: `${BASE}/v1/console/evidence/ev-a1/media?start_ms=3200&end_ms=9800`, auth: "Bearer valid" });
-    const unmarked = await http.fetchMedia(`${BASE}/v1/console/evidence/ev-a1/media?start_ms=1&end_ms=2`, { start_ms: 3200, end_ms: 9800 });
+    expect(api.calls[0]).toMatchObject({
+      url: `${BASE}/v1/console/evidence/ev-a1/media?start_ms=3200&end_ms=9800`,
+      auth: "Bearer valid",
+    });
+    const unmarked = await http.fetchMedia(`${BASE}/v1/console/evidence/ev-a1/media?start_ms=1&end_ms=2`, {
+      start_ms: 3200,
+      end_ms: 9800,
+    });
     expect(api.calls[1]!.url).toBe(`${BASE}/v1/console/evidence/ev-a1/media?start_ms=1&end_ms=2`);
     expect(unmarked).toMatchObject({ marca: "no_aplicada", motivo: "servicio_no_disponible" });
   });

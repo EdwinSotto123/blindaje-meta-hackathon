@@ -37,7 +37,10 @@ describe("validador de citas", () => {
   });
 
   it("revisa los arrays de evidencia de objetos sin texto (alertas)", () => {
-    const check = validateCitations({ titulo: "Alerta", cuerpo: "Sin datos de víctimas", evidencia: ["VIN-1", "VIN-99"] }, known);
+    const check = validateCitations(
+      { titulo: "Alerta", cuerpo: "Sin datos de víctimas", evidencia: ["VIN-1", "VIN-99"] },
+      known,
+    );
     expect(check.ok).toBe(false);
     expect(check.citas_inexistentes).toEqual(["VIN-99"]);
   });

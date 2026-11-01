@@ -51,6 +51,8 @@ export default function Grabar() {
     if (!state.isRecording) return;
     const db = state.metering ?? -60;
     const lvl = Math.max(0.05, Math.min(1, (db + 60) / 60));
+    // Historial de niveles a partir del estado que publica la grabadora cada 80 ms (sistema externo).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLevels((l) => [...l.slice(1), lvl]);
   }, [state.durationMillis, state.isRecording, state.metering]);
 
@@ -144,7 +146,12 @@ export default function Grabar() {
         ))}
       </View>
 
-      <T variant="amount" style={{ textAlign: "center" }} accessibilityLabel={`Tiempo ${duration(state.durationMillis)}`} testID="tiempo">
+      <T
+        variant="amount"
+        style={{ textAlign: "center" }}
+        accessibilityLabel={`Tiempo ${duration(state.durationMillis)}`}
+        testID="tiempo"
+      >
         {duration(recording ? state.durationMillis : phase === "idle" ? 0 : state.durationMillis)}
       </T>
 

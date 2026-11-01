@@ -22,8 +22,14 @@ MAX_FIELDS = 40
 MAX_VALUE = 160
 
 AI_SOURCE_TYPES = {"trainedAlgorithmicMedia", "compositeWithTrainedAlgorithmicMedia"}
-SYNTHETIC_SOURCE_TYPES = {"algorithmicMedia", "compositeSynthetic", "digitalCreation", "digitalArt",
-                          "virtualRecording", "dataDrivenMedia"}
+SYNTHETIC_SOURCE_TYPES = {
+    "algorithmicMedia",
+    "compositeSynthetic",
+    "digitalCreation",
+    "digitalArt",
+    "virtualRecording",
+    "dataDrivenMedia",
+}
 _DST_RE = re.compile(r"digitalsourcetype/([A-Za-z]+)")
 
 # Generadores de IA conocidos (imagen, video, voz y música). Se buscan en software, codificador,
@@ -205,8 +211,12 @@ def read_c2pa(data: bytes, mime: str | None) -> dict[str, Any] | None:
     except ImportError:
         return None
     if mime is None:
-        return {"present": False, "ai_generated": None, "generator": None,
-                "claims": ["formato sin soporte para credenciales C2PA incrustadas"]}
+        return {
+            "present": False,
+            "ai_generated": None,
+            "generator": None,
+            "claims": ["formato sin soporte para credenciales C2PA incrustadas"],
+        }
     try:
         ctx = _c2pa_context(c2pa)
         kwargs = {"context": ctx} if ctx is not None else {}
@@ -226,8 +236,12 @@ def read_c2pa(data: bytes, mime: str | None) -> dict[str, Any] | None:
     except Exception as e:  # manifiesto dañado o formato que la librería no entiende
         log("c2pa_read_failed", error=type(e).__name__)
         has_jumbf = b"c2pa" in data or b"jumb" in data
-        return {"present": has_jumbf, "ai_generated": None, "generator": None,
-                "claims": ["manifiesto C2PA presente pero ilegible o dañado"] if has_jumbf else []}
+        return {
+            "present": has_jumbf,
+            "ai_generated": None,
+            "generator": None,
+            "claims": ["manifiesto C2PA presente pero ilegible o dañado"] if has_jumbf else [],
+        }
 
 
 # --- metadatos ----------------------------------------------------------------------------------
@@ -297,8 +311,22 @@ class _Meta:
 
 
 _XMP_PACKET = re.compile(rb"<x:xmpmeta[\s\S]{0,524288}?</x:xmpmeta>")
-_XMP_PROPS = ("CreatorTool", "Software", "Credit", "Source", "Make", "Model", "DateTimeOriginal", "CreateDate",
-              "ModifyDate", "History", "Description", "description", "Label", "ContentProducer")
+_XMP_PROPS = (
+    "CreatorTool",
+    "Software",
+    "Credit",
+    "Source",
+    "Make",
+    "Model",
+    "DateTimeOriginal",
+    "CreateDate",
+    "ModifyDate",
+    "History",
+    "Description",
+    "description",
+    "Label",
+    "ContentProducer",
+)
 
 
 def _xmp_value(xmp: str, prop: str) -> str | None:
@@ -335,14 +363,46 @@ def _scan_xmp(data: bytes, meta: _Meta) -> None:
             meta.add("xmp.gps", "presente", scan=False)
 
 
-_EXIF_BASE = {271: "Make", 272: "Model", 305: "Software", 306: "DateTime", 270: "ImageDescription",
-              315: "Artist", 33432: "Copyright", 42016: "ImageUniqueID", 11: "ProcessingSoftware"}
-_EXIF_IFD = {36867: "DateTimeOriginal", 36868: "DateTimeDigitized", 37510: "UserComment", 42035: "LensMake",
-             42036: "LensModel", 42033: "BodySerialNumber", 36880: "OffsetTime", 37500: "MakerNote"}
-_IPTC = {(2, 65): "OriginatingProgram", (2, 70): "ProgramVersion", (2, 110): "Credit", (2, 115): "Source",
-         (2, 120): "Caption", (2, 80): "By-line", (2, 116): "CopyrightNotice"}
-_PNG_GEN_KEYS = {"parameters", "prompt", "workflow", "invokeai_metadata", "sd-metadata", "dream",
-                 "generation_data", "aigc"}
+_EXIF_BASE = {
+    271: "Make",
+    272: "Model",
+    305: "Software",
+    306: "DateTime",
+    270: "ImageDescription",
+    315: "Artist",
+    33432: "Copyright",
+    42016: "ImageUniqueID",
+    11: "ProcessingSoftware",
+}
+_EXIF_IFD = {
+    36867: "DateTimeOriginal",
+    36868: "DateTimeDigitized",
+    37510: "UserComment",
+    42035: "LensMake",
+    42036: "LensModel",
+    42033: "BodySerialNumber",
+    36880: "OffsetTime",
+    37500: "MakerNote",
+}
+_IPTC = {
+    (2, 65): "OriginatingProgram",
+    (2, 70): "ProgramVersion",
+    (2, 110): "Credit",
+    (2, 115): "Source",
+    (2, 120): "Caption",
+    (2, 80): "By-line",
+    (2, 116): "CopyrightNotice",
+}
+_PNG_GEN_KEYS = {
+    "parameters",
+    "prompt",
+    "workflow",
+    "invokeai_metadata",
+    "sd-metadata",
+    "dream",
+    "generation_data",
+    "aigc",
+}
 
 
 def image_metadata(data: bytes, kind: str) -> dict[str, Any]:
@@ -410,8 +470,16 @@ def image_metadata(data: bytes, kind: str) -> dict[str, Any]:
     return out
 
 
-_TAG_ORDER = ("software", "com.apple.quicktime.software", "encoder", "encoded_by", "encoded-by", "tool",
-              "creation_tool", "writing_application")
+_TAG_ORDER = (
+    "software",
+    "com.apple.quicktime.software",
+    "encoder",
+    "encoded_by",
+    "encoded-by",
+    "tool",
+    "creation_tool",
+    "writing_application",
+)
 
 
 def container_metadata(info: dict | None, data: bytes, kind: str) -> dict[str, Any] | None:
@@ -443,8 +511,10 @@ def container_metadata(info: dict | None, data: bytes, kind: str) -> dict[str, A
         prefix = f"{kind_s}{st.get('index', '')}"
         desc = [st.get("codec_name"), st.get("profile")]
         if kind_s == "audio":
-            desc += [f"{st.get('sample_rate')} Hz" if st.get("sample_rate") else None,
-                     f"{st.get('channels')} canales" if st.get("channels") else None]
+            desc += [
+                f"{st.get('sample_rate')} Hz" if st.get("sample_rate") else None,
+                f"{st.get('channels')} canales" if st.get("channels") else None,
+            ]
         else:
             if st.get("width") and st.get("height"):
                 desc.append(f"{st['width']}x{st['height']}")

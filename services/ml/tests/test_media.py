@@ -59,10 +59,30 @@ def test_wav_to_array_resamples_other_formats():
 def sample_video(tmp_path_factory) -> bytes:
     out = tmp_path_factory.mktemp("v") / "in.mp4"
     subprocess.run(
-        ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i",
-         "testsrc=size=321x241:rate=30:duration=3", "-f", "lavfi", "-i", "sine=frequency=500:duration=3",
-         # yuv444p admite dimensiones impares: el servicio debe devolver dimensiones pares.
-         "-c:v", "libx264", "-pix_fmt", "yuv444p", "-c:a", "aac", "-shortest", str(out)],
+        [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "testsrc=size=321x241:rate=30:duration=3",
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=frequency=500:duration=3",
+            # yuv444p admite dimensiones impares: el servicio debe devolver dimensiones pares.
+            "-c:v",
+            "libx264",
+            "-pix_fmt",
+            "yuv444p",
+            "-c:a",
+            "aac",
+            "-shortest",
+            str(out),
+        ],
         check=True,
     )
     return out.read_bytes()

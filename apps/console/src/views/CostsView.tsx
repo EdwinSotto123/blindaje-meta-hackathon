@@ -21,7 +21,9 @@ export function fmtUnits(units: Record<string, number>): string {
   return LISTA.format(
     Object.entries(units)
       .filter(([, v]) => v > 0)
-      .map(([k, v]) => (k === "audio_seconds" ? `${fmtInt(v / 60)} ${UNIT_LABEL[k]}` : `${fmtInt(v)} ${UNIT_LABEL[k] ?? k}`)),
+      .map(([k, v]) =>
+        k === "audio_seconds" ? `${fmtInt(v / 60)} ${UNIT_LABEL[k]}` : `${fmtInt(v)} ${UNIT_LABEL[k] ?? k}`,
+      ),
   );
 }
 
@@ -45,8 +47,8 @@ export function CostsView() {
           </button>
         }
       >
-        Cada llamada registra el modelo, las unidades y el costo estimado. Al llegar al {NONESSENTIAL_BLOCK_PCT}% del presupuesto se bloquean las llamadas no
-        esenciales (Muse Wonder y Muse Image).
+        Cada llamada registra el modelo, las unidades y el costo estimado. Al llegar al {NONESSENTIAL_BLOCK_PCT}% del
+        presupuesto se bloquean las llamadas no esenciales (Muse Wonder y Muse Image).
       </PageHead>
       {costs.error ? <ErrorBox error={costs.error} onRetry={costs.reload} /> : null}
       {!costs.data && costs.loading ? <Loading /> : null}
@@ -99,7 +101,10 @@ function CostsBody({ c }: { c: CostsResponse }) {
           <span style={{ left: "100%", transform: "translateX(-100%)" }}>{fmtUsd(c.budget_usd, 0)}</span>
         </div>
         {c.nonessential_blocked ? (
-          <Notice kind="warn">Se superó el {NONESSENTIAL_BLOCK_PCT}% del presupuesto: Muse Wonder y Muse Image quedan bloqueados. Las llamadas esenciales siguen.</Notice>
+          <Notice kind="warn">
+            Se superó el {NONESSENTIAL_BLOCK_PCT}% del presupuesto: Muse Wonder y Muse Image quedan bloqueados. Las
+            llamadas esenciales siguen.
+          </Notice>
         ) : (
           <p className="small muted">
             Quedan {fmtUsd(remaining)}. Faltan {fmtUsd(toBlock)} para el bloqueo de llamadas no esenciales.
@@ -123,7 +128,12 @@ function CostsBody({ c }: { c: CostsResponse }) {
               </div>
             ))}
           </div>
-          <div className="table-wrap" tabIndex={0} role="region" aria-label="Gasto por modelo (se desplaza a los lados)">
+          <div
+            className="table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label="Gasto por modelo (se desplaza a los lados)"
+          >
             <table className="table">
               <caption className="sr-only">Gasto por modelo</caption>
               <thead>
@@ -174,7 +184,12 @@ function CostsBody({ c }: { c: CostsResponse }) {
 
       <section className="stack-sm" aria-labelledby="recientes-titulo">
         <h2 id="recientes-titulo">Llamadas recientes</h2>
-        <div className="table-wrap" tabIndex={0} role="region" aria-label="Llamadas recientes (se desplaza a los lados)">
+        <div
+          className="table-wrap"
+          tabIndex={0}
+          role="region"
+          aria-label="Llamadas recientes (se desplaza a los lados)"
+        >
           <table className="table">
             <thead>
               <tr>

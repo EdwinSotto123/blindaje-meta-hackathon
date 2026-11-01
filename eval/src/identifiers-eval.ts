@@ -70,13 +70,19 @@ export function randomEvalKey(): string {
 export async function runIdentifiersEval(): Promise<IdentifiersReport> {
   const key = await importAllianceKey(randomEvalKey());
   const { esc, pares, invalidos, total, ok } = await hmacIndex(key);
-  const esperados = new Set(esc.pares_vinculados.filter((p) => p.por.includes("identificador")).map((p) => pairKey(p.a, p.b)));
+  const esperados = new Set(
+    esc.pares_vinculados.filter((p) => p.por.includes("identificador")).map((p) => pairKey(p.a, p.b)),
+  );
   const detectados = new Set(pares.keys());
   const verdaderos = [...detectados].filter((k) => esperados.has(k));
   const falsos = [...detectados].filter((k) => !esperados.has(k));
   const faltantes = [...esperados].filter((k) => !detectados.has(k));
   const e13 = [...detectados].some((k) => k.includes("E13"));
-  const formatos = [...new Set(esc.casos.flatMap((c) => c.identificadores.map((i) => i.valor.replace(/\d/g, "9").replace(/[a-z]/gi, "Z"))))];
+  const formatos = [
+    ...new Set(
+      esc.casos.flatMap((c) => c.identificadores.map((i) => i.valor.replace(/\d/g, "9").replace(/[a-z]/gi, "Z"))),
+    ),
+  ];
   return {
     estado: "ok",
     identificadores: total,

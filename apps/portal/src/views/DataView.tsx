@@ -28,7 +28,8 @@ const PUNTOS: { id: string; titulo: string; texto: string }[] = [
   {
     id: "buscador",
     titulo: "No hay buscador de números",
-    texto: "Si existiera, alguien que extorsiona podría usarlo para saber si su número ya está marcado. Por eso no lo hay, ni para ti ni para nadie.",
+    texto:
+      "Si existiera, alguien que extorsiona podría usarlo para saber si su número ya está marcado. Por eso no lo hay, ni para ti ni para nadie.",
   },
   {
     id: "revision",
@@ -72,11 +73,14 @@ export function DataView() {
       <Section id="nivel" title="Cómo se calcula el nivel">
         <div className="measure stack-sm">
           <p>
-            Cuentan los casos de los últimos 28 días. Si el distrito no llega al mínimo, el nivel es “sin datos”. Si llega, suma un punto por 8 casos o
-            más, otro por 15 o más, uno si hubo intimidación en persona y uno si hay una modalidad activa. Sin puntos es bajo; con 1 o 2, medio; con 3 o
-            más, alto.
+            Cuentan los casos de los últimos 28 días. Si el distrito no llega al mínimo, el nivel es “sin datos”. Si
+            llega, suma un punto por 8 casos o más, otro por 15 o más, uno si hubo intimidación en persona y uno si hay
+            una modalidad activa. Sin puntos es bajo; con 1 o 2, medio; con 3 o más, alto.
           </p>
-          <p>Los avisos y consejos los aprueba el equipo de Blindaje para cada distrito. No hace falta pertenecer a ninguna organización para verlos.</p>
+          <p>
+            Los avisos y consejos los aprueba el equipo de Blindaje para cada distrito. No hace falta pertenecer a
+            ninguna organización para verlos.
+          </p>
         </div>
       </Section>
 
@@ -90,8 +94,8 @@ export function DataView() {
 
       <Section id="demo" title="Datos de esta demostración">
         <p className="measure">
-          Blindaje es un prototipo. Los distritos son reales, pero todo lo demás es ficticio: los casos, los rangos, “Los X”, los negocios, los avisos y
-          los consejos.
+          Blindaje es un prototipo. Los distritos son reales, pero todo lo demás es ficticio: los casos, los rangos,
+          “Los X”, los negocios, los avisos y los consejos.
         </p>
       </Section>
     </>

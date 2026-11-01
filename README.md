@@ -227,8 +227,9 @@ pnpm --filter @blindaje/portal exec vite --mode mock
 # Landing
 pnpm --filter @blindaje/landing dev
 
-# Checks
-pnpm typecheck && pnpm lint && pnpm test
+# Checks (Turborepo caches each task and only reruns the packages that changed)
+pnpm check          # typecheck, lint and tests
+pnpm format         # Prettier (pnpm format:check in CI)
 ```
 
 ML container (see [`services/ml/README.md`](services/ml/README.md)):

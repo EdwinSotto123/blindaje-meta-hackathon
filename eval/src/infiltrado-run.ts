@@ -9,9 +9,12 @@ import { demoApi } from "./demo-data";
 async function main() {
   const t = Date.now();
   const r = await runInfiltrado(demoApi(), Number(process.env.DEMO_WAIT_SECONDS ?? 300));
-  for (const c of r.chequeos) console.log(`${c.ok ? "ok   " : "FALLA"} ${c.nombre}${c.detalle ? ` (${c.detalle})` : ""}`);
+  for (const c of r.chequeos)
+    console.log(`${c.ok ? "ok   " : "FALLA"} ${c.nombre}${c.detalle ? ` (${c.detalle})` : ""}`);
   for (const a of r.advertencias ?? []) console.log(`aviso ${a}`);
-  console.log(`${r.pasa ? "Pasa" : "No pasa"}: ${r.estado}${r.motivo ? `, ${r.motivo}` : ""}. ${Math.round((Date.now() - t) / 1000)} s.`);
+  console.log(
+    `${r.pasa ? "Pasa" : "No pasa"}: ${r.estado}${r.motivo ? `, ${r.motivo}` : ""}. ${Math.round((Date.now() - t) / 1000)} s.`,
+  );
   if (!r.pasa) process.exitCode = 1;
 }
 

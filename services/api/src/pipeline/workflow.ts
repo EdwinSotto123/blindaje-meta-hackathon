@@ -8,8 +8,14 @@ import { isPermanentPipelineError } from "./errors";
 import { buildFicha, ensureTextEmbedding, processEvidence, storeIdentifiers } from "./steps";
 import type { EvidenceProcessResult, ProcesarCasoOutput, ProcesarCasoParams } from "./types";
 
-const RETRY: WorkflowStepConfig = { retries: { limit: 3, delay: "10 seconds", backoff: "exponential" }, timeout: "10 minutes" };
-const RETRY_LIGHT: WorkflowStepConfig = { retries: { limit: 5, delay: "2 seconds", backoff: "exponential" }, timeout: "1 minute" };
+const RETRY: WorkflowStepConfig = {
+  retries: { limit: 3, delay: "10 seconds", backoff: "exponential" },
+  timeout: "10 minutes",
+};
+const RETRY_LIGHT: WorkflowStepConfig = {
+  retries: { limit: 5, delay: "2 seconds", backoff: "exponential" },
+  timeout: "1 minute",
+};
 /** Cuánto espera el Workflow a que la cola termine una evidencia antes de tomarla él. */
 const WAIT_FOR_QUEUE_MS = 6 * 60_000;
 const POLL_MS = 3_000;
@@ -19,7 +25,10 @@ const POLL_MS = 3_000;
  * plazo, la toma. Un error permanente (archivo ilegible, presupuesto) no tumba el caso: la
  * evidencia queda en `error` y el Workflow sigue.
  */
-async function processFromWorkflow(env: ProcesarCaso["env"], evidenceId: string): Promise<"processed" | "skipped" | "error"> {
+async function processFromWorkflow(
+  env: ProcesarCaso["env"],
+  evidenceId: string,
+): Promise<"processed" | "skipped" | "error"> {
   const deadline = Date.now() + WAIT_FOR_QUEUE_MS;
   for (;;) {
     let r: EvidenceProcessResult;
@@ -49,7 +58,10 @@ async function processFromWorkflow(env: ProcesarCaso["env"], evidenceId: string)
  * Si algo falla después de los reintentos: paso `marcar-error` y estado "error".
  */
 export class ProcesarCaso extends WorkflowEntrypoint<Env, ProcesarCasoParams> {
-  override async run(event: Readonly<WorkflowEvent<ProcesarCasoParams>>, step: WorkflowStep): Promise<ProcesarCasoOutput> {
+  override async run(
+    event: Readonly<WorkflowEvent<ProcesarCasoParams>>,
+    step: WorkflowStep,
+  ): Promise<ProcesarCasoOutput> {
     const { case_id: caseId, requested_by: requestedBy } = event.payload;
     const pending: string[] = [];
     try {
@@ -71,7 +83,9 @@ export class ProcesarCaso extends WorkflowEntrypoint<Env, ProcesarCasoParams> {
       });
 
       for (const evidenceId of evidenceIds) {
-        const res = await step.do(`ingesta:${evidenceId}`, RETRY, async () => processFromWorkflow(this.env, evidenceId));
+        const res = await step.do(`ingesta:${evidenceId}`, RETRY, async () =>
+          processFromWorkflow(this.env, evidenceId),
+        );
         if (res !== "processed" && !pending.includes("ingesta")) pending.push("ingesta");
       }
 
@@ -96,11 +110,16 @@ export class ProcesarCaso extends WorkflowEntrypoint<Env, ProcesarCasoParams> {
       if (ids.stub) pending.push("identificadores");
 
       const indexed = await step.do("indexar", RETRY, async () => {
-        const c = await this.env.DB.prepare("SELECT consent_mode FROM cases WHERE id = ?").bind(caseId).first<{ consent_mode: string }>();
+        const c = await this.env.DB.prepare("SELECT consent_mode FROM cases WHERE id = ?")
+          .bind(caseId)
+          .first<{ consent_mode: string }>();
         if (c?.consent_mode !== "comunitario") return { indexed: false, stub: false };
         await ensureTextEmbedding(this.env, caseId, null);
         const r = await indexCase(this.env, caseId);
-        if (r.indexed) await this.env.DB.prepare("UPDATE cases SET indexed = 1, updated_at = ? WHERE id = ?").bind(nowIso(), caseId).run();
+        if (r.indexed)
+          await this.env.DB.prepare("UPDATE cases SET indexed = 1, updated_at = ? WHERE id = ?")
+            .bind(nowIso(), caseId)
+            .run();
         return r;
       });
       if (indexed.stub) pending.push("indexar");
@@ -112,7 +131,9 @@ export class ProcesarCaso extends WorkflowEntrypoint<Env, ProcesarCasoParams> {
       });
 
       await step.do("finalizar", RETRY_LIGHT, async () => {
-        await this.env.DB.prepare("UPDATE cases SET estado = 'listo', error = NULL, updated_at = ? WHERE id = ?").bind(nowIso(), caseId).run();
+        await this.env.DB.prepare("UPDATE cases SET estado = 'listo', error = NULL, updated_at = ? WHERE id = ?")
+          .bind(nowIso(), caseId)
+          .run();
         await audit(this.env, {
           actor_type: "system",
           actor_id: "workflow:procesar-caso",
@@ -124,7 +145,13 @@ export class ProcesarCaso extends WorkflowEntrypoint<Env, ProcesarCasoParams> {
         return true;
       });
 
-      return { case_id: caseId, ficha: hasFicha, indexed: indexed.indexed, queued_linking: queued, pending_steps: pending };
+      return {
+        case_id: caseId,
+        ficha: hasFicha,
+        indexed: indexed.indexed,
+        queued_linking: queued,
+        pending_steps: pending,
+      };
     } catch (err) {
       log("error", "workflow_failed", { case_id: caseId, instance_id: event.instanceId, ...errorFields(err) });
       await step.do("marcar-error", RETRY_LIGHT, async () => {

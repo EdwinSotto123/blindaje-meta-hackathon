@@ -21,16 +21,25 @@ describe("registro de dispositivo", () => {
     const d = await registerDevice();
     expect(d.org).toEqual({ id: CENTRAL_ORG_ID, name: "Equipo Blindaje" });
     expect(d.pseudonym).toMatch(/^V-[A-Z0-9]{4}$/);
-    const row = await env.DB.prepare("SELECT org_id, invite_code, is_demo FROM devices WHERE id = ?").bind(d.device_id).first<{ org_id: string; invite_code: string | null; is_demo: number }>();
+    const row = await env.DB.prepare("SELECT org_id, invite_code, is_demo FROM devices WHERE id = ?")
+      .bind(d.device_id)
+      .first<{ org_id: string; invite_code: string | null; is_demo: number }>();
     expect(row).toEqual({ org_id: CENTRAL_ORG_ID, invite_code: null, is_demo: 0 });
     // Ya puede abrir un caso y la zona se guarda como id de distrito.
-    const created = await apiJson<{ id: string }>("/v1/cases", { token: d.access_token, json: { zona: "San Juan de Lurigancho - E12", consent_mode: "comunitario" } });
+    const created = await apiJson<{ id: string }>("/v1/cases", {
+      token: d.access_token,
+      json: { zona: "San Juan de Lurigancho - E12", consent_mode: "comunitario" },
+    });
     expect(created.status).toBe(201);
-    const zona = await env.DB.prepare("SELECT zona_cuadricula FROM cases WHERE id = ?").bind(created.body.id).first<{ zona_cuadricula: string }>();
+    const zona = await env.DB.prepare("SELECT zona_cuadricula FROM cases WHERE id = ?")
+      .bind(created.body.id)
+      .first<{ zona_cuadricula: string }>();
     expect(zona!.zona_cuadricula).toBe("san-juan-de-lurigancho");
     // Un texto que no es distrito se guarda tal cual (no cuenta en el mapa).
     const libre = await apiJson<{ id: string }>("/v1/cases", { token: d.access_token, json: { zona: "Lima Este" } });
-    const libreZona = await env.DB.prepare("SELECT zona_cuadricula FROM cases WHERE id = ?").bind(libre.body.id).first<{ zona_cuadricula: string }>();
+    const libreZona = await env.DB.prepare("SELECT zona_cuadricula FROM cases WHERE id = ?")
+      .bind(libre.body.id)
+      .first<{ zona_cuadricula: string }>();
     expect(libreZona!.zona_cuadricula).toBe("Lima Este");
 
     // Las apps antiguas siguen mandando su código: el canal de difusión sigue funcionando.
@@ -40,12 +49,16 @@ describe("registro de dispositivo", () => {
 
   it("rechaza invitaciones inexistentes, agotadas o llaves inválidas", async () => {
     const { jwk } = await newDeviceKeys();
-    const bad = await apiJson("/v1/auth/device/register", { json: { invite_code: "NO-EXISTE", public_key: jwk, platform: "android" } });
+    const bad = await apiJson("/v1/auth/device/register", {
+      json: { invite_code: "NO-EXISTE", public_key: jwk, platform: "android" },
+    });
     expect(bad.status).toBe(400);
 
     const { invite } = await seedOrg({ maxUses: 1 });
     await registerDevice(invite);
-    const exhausted = await apiJson("/v1/auth/device/register", { json: { invite_code: invite, public_key: jwk, platform: "android" } });
+    const exhausted = await apiJson("/v1/auth/device/register", {
+      json: { invite_code: invite, public_key: jwk, platform: "android" },
+    });
     expect(exhausted.status).toBe(400);
     expect((exhausted.body as { error: { code: string } }).error.code).toBe("bad_request");
 
@@ -65,7 +78,11 @@ describe("tokens de acceso", () => {
     const tampered = d.access_token.slice(0, -2) + (d.access_token.endsWith("A") ? "BB" : "AA");
     expect((await api("/v1/cases", { token: tampered })).status).toBe(401);
     const past = Math.floor(Date.now() / 1000) - 3600;
-    const expired = await signAccessToken(env.JWT_SECRET, { sub: d.device_id, role: "victim", org: d.org.id, pse: d.pseudonym }, past);
+    const expired = await signAccessToken(
+      env.JWT_SECRET,
+      { sub: d.device_id, role: "victim", org: d.org.id, pse: d.pseudonym },
+      past,
+    );
     expect((await api("/v1/cases", { token: expired })).status).toBe(401);
     const otherSecret = await signAccessToken("otro-secreto-que-no-es-el-del-worker-0123456789", {
       sub: d.device_id,
@@ -85,7 +102,12 @@ describe("refresh de dispositivo con firma ECDSA", () => {
     const d = await registerDevice(invite);
     const ts = Date.now();
     const ok = await apiJson<{ access_token: string; refresh_token: string }>("/v1/auth/device/refresh", {
-      json: { device_id: d.device_id, refresh_token: d.refresh_token, timestamp: ts, signature: await signRefresh(d.keys.privateKey, d.device_id, ts) },
+      json: {
+        device_id: d.device_id,
+        refresh_token: d.refresh_token,
+        timestamp: ts,
+        signature: await signRefresh(d.keys.privateKey, d.device_id, ts),
+      },
     });
     expect(ok.status).toBe(200);
     expect(ok.body.refresh_token).not.toBe(d.refresh_token);
@@ -93,12 +115,22 @@ describe("refresh de dispositivo con firma ECDSA", () => {
     // Reusar el token viejo revoca toda la familia, incluido el nuevo.
     const ts2 = Date.now();
     const reuse = await apiJson("/v1/auth/device/refresh", {
-      json: { device_id: d.device_id, refresh_token: d.refresh_token, timestamp: ts2, signature: await signRefresh(d.keys.privateKey, d.device_id, ts2) },
+      json: {
+        device_id: d.device_id,
+        refresh_token: d.refresh_token,
+        timestamp: ts2,
+        signature: await signRefresh(d.keys.privateKey, d.device_id, ts2),
+      },
     });
     expect(reuse.status).toBe(401);
     const ts3 = Date.now();
     const afterReuse = await apiJson("/v1/auth/device/refresh", {
-      json: { device_id: d.device_id, refresh_token: ok.body.refresh_token, timestamp: ts3, signature: await signRefresh(d.keys.privateKey, d.device_id, ts3) },
+      json: {
+        device_id: d.device_id,
+        refresh_token: ok.body.refresh_token,
+        timestamp: ts3,
+        signature: await signRefresh(d.keys.privateKey, d.device_id, ts3),
+      },
     });
     expect(afterReuse.status).toBe(401);
   });
@@ -109,7 +141,12 @@ describe("refresh de dispositivo con firma ECDSA", () => {
     const other = await newDeviceKeys();
     const ts = Date.now();
     const wrongKey = await apiJson("/v1/auth/device/refresh", {
-      json: { device_id: d.device_id, refresh_token: d.refresh_token, timestamp: ts, signature: await signRefresh(other.keys.privateKey, d.device_id, ts) },
+      json: {
+        device_id: d.device_id,
+        refresh_token: d.refresh_token,
+        timestamp: ts,
+        signature: await signRefresh(other.keys.privateKey, d.device_id, ts),
+      },
     });
     expect(wrongKey.status).toBe(401);
     const garbage = await apiJson("/v1/auth/device/refresh", {
@@ -118,13 +155,23 @@ describe("refresh de dispositivo con firma ECDSA", () => {
     expect(garbage.status).toBe(401);
     const old = Date.now() - 6 * 60 * 1000;
     const skew = await apiJson("/v1/auth/device/refresh", {
-      json: { device_id: d.device_id, refresh_token: d.refresh_token, timestamp: old, signature: await signRefresh(d.keys.privateKey, d.device_id, old) },
+      json: {
+        device_id: d.device_id,
+        refresh_token: d.refresh_token,
+        timestamp: old,
+        signature: await signRefresh(d.keys.privateKey, d.device_id, old),
+      },
     });
     expect(skew.status).toBe(401);
     // El refresh token sigue sirviendo con una firma correcta: los intentos fallidos no lo consumieron.
     const ts2 = Date.now();
     const good = await apiJson("/v1/auth/device/refresh", {
-      json: { device_id: d.device_id, refresh_token: d.refresh_token, timestamp: ts2, signature: await signRefresh(d.keys.privateKey, d.device_id, ts2) },
+      json: {
+        device_id: d.device_id,
+        refresh_token: d.refresh_token,
+        timestamp: ts2,
+        signature: await signRefresh(d.keys.privateKey, d.device_id, ts2),
+      },
     });
     expect(good.status).toBe(200);
   });
@@ -144,13 +191,16 @@ describe("consola", () => {
     const u = await createUser("reviewer", orgId);
     const bad = await apiJson("/v1/auth/console/login", { json: { email: u.email, password: "incorrecta-123" } });
     expect(bad.status).toBe(401);
-    const unknown = await apiJson("/v1/auth/console/login", { json: { email: "nadie@prueba.blindaje.test", password: "incorrecta-123" } });
+    const unknown = await apiJson("/v1/auth/console/login", {
+      json: { email: "nadie@prueba.blindaje.test", password: "incorrecta-123" },
+    });
     expect(unknown.status).toBe(401);
 
-    const login = await apiJson<{ access_token: string; refresh_token: string; user: { role: string; org: { id: string } } }>(
-      "/v1/auth/console/login",
-      { json: { email: u.email.toUpperCase(), password: u.password } },
-    );
+    const login = await apiJson<{
+      access_token: string;
+      refresh_token: string;
+      user: { role: string; org: { id: string } };
+    }>("/v1/auth/console/login", { json: { email: u.email.toUpperCase(), password: u.password } });
     expect(login.status).toBe(200);
     expect(login.body.user.role).toBe("reviewer");
     expect(login.body.user.org.id).toBe(orgId);
@@ -159,7 +209,9 @@ describe("consola", () => {
     expect(me.status).toBe(200);
     expect(me.body.email).toBe(u.email);
 
-    const ref = await apiJson<{ refresh_token: string }>("/v1/auth/console/refresh", { json: { refresh_token: login.body.refresh_token } });
+    const ref = await apiJson<{ refresh_token: string }>("/v1/auth/console/refresh", {
+      json: { refresh_token: login.body.refresh_token },
+    });
     expect(ref.status).toBe(200);
     const again = await apiJson("/v1/auth/console/refresh", { json: { refresh_token: login.body.refresh_token } });
     expect(again.status).toBe(401);
@@ -167,9 +219,14 @@ describe("consola", () => {
     const login2 = await apiJson<{ access_token: string; refresh_token: string }>("/v1/auth/console/login", {
       json: { email: u.email, password: u.password },
     });
-    const out = await api("/v1/auth/logout", { token: login2.body.access_token, json: { refresh_token: login2.body.refresh_token } });
+    const out = await api("/v1/auth/logout", {
+      token: login2.body.access_token,
+      json: { refresh_token: login2.body.refresh_token },
+    });
     expect(out.status).toBe(204);
-    const afterLogout = await apiJson("/v1/auth/console/refresh", { json: { refresh_token: login2.body.refresh_token } });
+    const afterLogout = await apiJson("/v1/auth/console/refresh", {
+      json: { refresh_token: login2.body.refresh_token },
+    });
     expect(afterLogout.status).toBe(401);
   });
 

@@ -67,11 +67,15 @@ if (all) {
   await step("SAM imagen", async () => {
     const res = await client.segmentImage({ image: circleAndSquarePng(), concept: "circle", includeConfidence: true });
     return res.objects
-      .map((o) => `id=${o.id} caja=${o.box.x1},${o.box.y1}-${o.box.x2},${o.box.y2} c=${o.confidence?.toFixed(2)} máscara=${decodeMask(o).data.length}px`)
+      .map(
+        (o) =>
+          `id=${o.id} caja=${o.box.x1},${o.box.y1}-${o.box.x2},${o.box.y2} c=${o.confidence?.toFixed(2)} máscara=${decodeMask(o).data.length}px`,
+      )
       .join("; ");
   });
 }
 
 const total = usage.reduce((n, e) => n + e.cost_usd, 0);
 console.log(`\n${usage.length} llamadas facturables, costo estimado ${total.toFixed(6)} USD`);
-for (const e of usage) console.log(`  ${e.model} ${e.operation} ${e.status} ${e.cost_usd.toFixed(6)} USD ${JSON.stringify(e.units)}`);
+for (const e of usage)
+  console.log(`  ${e.model} ${e.operation} ${e.status} ${e.cost_usd.toFixed(6)} USD ${JSON.stringify(e.units)}`);

@@ -20,14 +20,18 @@ export function daysAgo(n: number, hour = 10): string {
 
 export async function seedOrgRow(name = "Gremio ficticio de prueba"): Promise<string> {
   const id = `org-${newId().slice(0, 8)}`;
-  await env.DB.prepare("INSERT INTO organizations (id, name, kind, is_demo, created_at) VALUES (?, ?, 'gremio', 0, ?)").bind(id, name, nowIso()).run();
+  await env.DB.prepare("INSERT INTO organizations (id, name, kind, is_demo, created_at) VALUES (?, ?, 'gremio', 0, ?)")
+    .bind(id, name, nowIso())
+    .run();
   return id;
 }
 
 export async function seedDevice(orgId: string): Promise<{ id: string; pseudonym: string }> {
   const id = newId();
   const pse = pseudonym();
-  await env.DB.prepare("INSERT INTO devices (id, org_id, pseudonym, public_key_jwk, platform, created_at) VALUES (?, ?, ?, '{}', 'android', ?)")
+  await env.DB.prepare(
+    "INSERT INTO devices (id, org_id, pseudonym, public_key_jwk, platform, created_at) VALUES (?, ?, ?, '{}', 'android', ?)",
+  )
     .bind(id, orgId, pse, nowIso())
     .run();
   return { id, pseudonym: pse };
@@ -61,7 +65,11 @@ export async function seedCase(o: SeedCaseOpts): Promise<SeededCase> {
   const now = nowIso();
   const evidence: SeededCase["evidence"] = [];
   for (let i = 1; i <= (o.evidence ?? 2); i++) {
-    evidence.push({ id: newId(), label: evidenceLabel(code, i), sha256: (newId() + newId()).replace(/-/g, "").slice(0, 64) });
+    evidence.push({
+      id: newId(),
+      label: evidenceLabel(code, i),
+      sha256: (newId() + newId()).replace(/-/g, "").slice(0, 64),
+    });
   }
   const ev = evidence.map((e) => e.label);
   const ficha: FichaStored = {
@@ -88,7 +96,20 @@ export async function seedCase(o: SeedCaseOpts): Promise<SeededCase> {
        ficha_json, indexed, is_demo, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'listo', ?, ?, 1, 0, ?, ?)`,
   )
-    .bind(id, code, o.orgId, o.device.id, o.device.pseudonym, o.sector ?? "bodega", o.zona ?? null, ficha.primer_contacto, o.consent ?? "comunitario", JSON.stringify(ficha), now, now)
+    .bind(
+      id,
+      code,
+      o.orgId,
+      o.device.id,
+      o.device.pseudonym,
+      o.sector ?? "bodega",
+      o.zona ?? null,
+      ficha.primer_contacto,
+      o.consent ?? "comunitario",
+      JSON.stringify(ficha),
+      now,
+      now,
+    )
     .run();
   let seq = 0;
   for (const e of evidence) {
@@ -97,7 +118,20 @@ export async function seedCase(o: SeedCaseOpts): Promise<SeededCase> {
       `INSERT INTO evidence (id, case_id, label, seq, tipo, mime, size_bytes, sha256, sha256_client, received_utc, captured_at, r2_key, uploader_pseudonym, status)
        VALUES (?, ?, ?, ?, ?, ?, 1000, ?, ?, ?, ?, ?, ?, 'procesado')`,
     )
-      .bind(e.id, id, e.label, seq, seq === 1 ? "audio" : "imagen", seq === 1 ? "audio/ogg" : "image/jpeg", e.sha256, e.sha256, now, ficha.primer_contacto, `evidence/${e.id}`, o.device.pseudonym)
+      .bind(
+        e.id,
+        id,
+        e.label,
+        seq,
+        seq === 1 ? "audio" : "imagen",
+        seq === 1 ? "audio/ogg" : "image/jpeg",
+        e.sha256,
+        e.sha256,
+        now,
+        ficha.primer_contacto,
+        `evidence/${e.id}`,
+        o.device.pseudonym,
+      )
       .run();
   }
   return { id, code, evidence };
@@ -119,9 +153,15 @@ export async function addVoice(c: SeededCase, num?: number): Promise<number> {
 export async function addIdentifier(cases: SeededCase[], ultimos3 = "488"): Promise<string> {
   const hmac = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
   const ref = `ID-${hmac.slice(0, 6)}`;
-  await env.DB.prepare("INSERT INTO identifiers (hmac, ref, tipo, ultimos_3, first_seen) VALUES (?, ?, 'cuenta_yape', ?, ?)").bind(hmac, ref, ultimos3, nowIso()).run();
+  await env.DB.prepare(
+    "INSERT INTO identifiers (hmac, ref, tipo, ultimos_3, first_seen) VALUES (?, ?, 'cuenta_yape', ?, ?)",
+  )
+    .bind(hmac, ref, ultimos3, nowIso())
+    .run();
   for (const c of cases) {
-    await env.DB.prepare("INSERT INTO case_identifiers (case_id, hmac, rol, evidence_json, indexed, created_at) VALUES (?, ?, 'cobro', ?, 1, ?)")
+    await env.DB.prepare(
+      "INSERT INTO case_identifiers (case_id, hmac, rol, evidence_json, indexed, created_at) VALUES (?, ?, 'cobro', ?, 1, ?)",
+    )
       .bind(c.id, hmac, JSON.stringify([c.evidence[c.evidence.length - 1]!.label]), nowIso())
       .run();
   }
@@ -178,20 +218,57 @@ export async function seedNetwork(opts: { n?: number; victims?: number; zona?: s
   const identifier = await addIdentifier(cases.slice(0, 2));
   const crop = await addCrop(cases[0]!);
   const links = [];
-  for (let i = 1; i < cases.length; i++) links.push(await insertLink(cases[i - 1]!.id, cases[i]!.id, "confirmado", 0.9 + i / 100));
+  for (let i = 1; i < cases.length; i++)
+    links.push(await insertLink(cases[i - 1]!.id, cases[i]!.id, "confirmado", 0.9 + i / 100));
   for (let i = 1; i < cases.length; i++) {
     const [a, b] = [cases[i - 1]!, cases[i]!];
     const signals = {
-      voz: { p: 0.8, similitud: 0.82, z: null, segmentos: 3, segmentos_total: 4, huellas: [`V-${voices[i - 1]}`, `V-${voices[i]}`], evidencia: [a.evidence[0]!.label, b.evidence[0]!.label] },
-      ...(i === 1 ? { identificador: { p: 0.95, compartidos: [{ ref: identifier, tipo: "cuenta_yape", ultimos_3: "488", evidencia: [a.evidence[1]!.label, b.evidence[1]!.label] }] } } : {}),
+      voz: {
+        p: 0.8,
+        similitud: 0.82,
+        z: null,
+        segmentos: 3,
+        segmentos_total: 4,
+        huellas: [`V-${voices[i - 1]}`, `V-${voices[i]}`],
+        evidencia: [a.evidence[0]!.label, b.evidence[0]!.label],
+      },
+      ...(i === 1
+        ? {
+            identificador: {
+              p: 0.95,
+              compartidos: [
+                {
+                  ref: identifier,
+                  tipo: "cuenta_yape",
+                  ultimos_3: "488",
+                  evidencia: [a.evidence[1]!.label, b.evidence[1]!.label],
+                },
+              ],
+            },
+          }
+        : {}),
     };
-    await env.DB.prepare("UPDATE links SET reviewed_at = ?, signals_json = ? WHERE id = ?").bind(nowIso(), JSON.stringify(signals), links[i - 1]!.id).run();
+    await env.DB.prepare("UPDATE links SET reviewed_at = ?, signals_json = ? WHERE id = ?")
+      .bind(nowIso(), JSON.stringify(signals), links[i - 1]!.id)
+      .run();
   }
   await recomputeNetworks(env);
-  const net = await env.DB.prepare("SELECT n.id, n.num FROM networks n JOIN network_cases nc ON nc.network_id = n.id WHERE nc.case_id = ?")
+  const net = await env.DB.prepare(
+    "SELECT n.id, n.num FROM networks n JOIN network_cases nc ON nc.network_id = n.id WHERE nc.case_id = ?",
+  )
     .bind(cases[0]!.id)
     .first<{ id: string; num: number }>();
-  return { networkId: net!.id, label: `R-${String(net!.num).padStart(3, "0")}`, orgId, cases, devices, links, voices, identifier, crop };
+  return {
+    networkId: net!.id,
+    label: `R-${String(net!.num).padStart(3, "0")}`,
+    orgId,
+    cases,
+    devices,
+    links,
+    voices,
+    identifier,
+    crop,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -206,18 +283,33 @@ export interface RecordedRequest {
 }
 
 export function call(name: string, args: Record<string, unknown>): OutputItem {
-  return { type: "function_call", id: `fc_${newId().slice(0, 8)}`, call_id: `call_${newId().slice(0, 8)}`, name, arguments: JSON.stringify(args), status: "completed" };
+  return {
+    type: "function_call",
+    id: `fc_${newId().slice(0, 8)}`,
+    call_id: `call_${newId().slice(0, 8)}`,
+    name,
+    arguments: JSON.stringify(args),
+    status: "completed",
+  };
 }
 
 export function final(value: unknown): OutputItem {
-  return { type: "message", id: `msg_${newId().slice(0, 8)}`, role: "assistant", status: "completed", content: [{ type: "output_text", text: JSON.stringify(value), annotations: [] }] };
+  return {
+    type: "message",
+    id: `msg_${newId().slice(0, 8)}`,
+    role: "assistant",
+    status: "completed",
+    content: [{ type: "output_text", text: JSON.stringify(value), annotations: [] }],
+  };
 }
 
 /** Salidas de herramientas que el Worker le mandó al modelo en una petición. */
 export function toolOutputs(req: RecordedRequest): string[] {
   const input = req.body.input;
   if (!Array.isArray(input)) return [];
-  return input.filter((i: { type?: string }) => i.type === "function_call_output").map((i: { output: string }) => i.output);
+  return input
+    .filter((i: { type?: string }) => i.type === "function_call_output")
+    .map((i: { output: string }) => i.output);
 }
 
 const PNG_1PX = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
@@ -230,7 +322,10 @@ const metaSeam = (agentsCommon as unknown as { setMetaFetchForTests?: FetchSeam 
 
 /** Lo mismo que instala test/setup.ts por defecto: ningún test habla con la Meta API real. */
 const metaOff: MetaFetch = async () =>
-  Response.json({ error: { message: "Meta API no simulada en este test", type: "invalid_request_error", code: "unauthorized" } }, { status: 401 });
+  Response.json(
+    { error: { message: "Meta API no simulada en este test", type: "invalid_request_error", code: "unauthorized" } },
+    { status: 401 },
+  );
 
 /** Deja la Meta API simulada apagada (401) y quita los espías de `fetch`. Para `afterEach`. */
 export function restoreMeta(): void {
@@ -254,7 +349,10 @@ export function fakeMeta(script: MetaStep[], fallback?: MetaStep) {
     const req = { url, body };
     requests.push(req);
     if (url.endsWith("/images/generations")) {
-      return Response.json({ created: 1, data: [{ b64_json: PNG_1PX }], output_format: "png" }, { headers: { "x-request-id": "req-img" } });
+      return Response.json(
+        { created: 1, data: [{ b64_json: PNG_1PX }], output_format: "png" },
+        { headers: { "x-request-id": "req-img" } },
+      );
     }
     const step = queue.shift() ?? fallback;
     if (!step) return Response.json({ error: { message: "guion agotado" } }, { status: 400 });
@@ -267,7 +365,12 @@ export function fakeMeta(script: MetaStep[], fallback?: MetaStep) {
         model: String(body.model),
         status: "completed",
         output,
-        usage: { input_tokens: 2000, output_tokens: 300, input_tokens_details: { cached_tokens: 0 }, output_tokens_details: { reasoning_tokens: 100 } },
+        usage: {
+          input_tokens: 2000,
+          output_tokens: 300,
+          input_tokens_details: { cached_tokens: 0 },
+          output_tokens_details: { reasoning_tokens: 100 },
+        },
       },
       { headers: { "x-request-id": `req-${requests.length}` } },
     );

@@ -66,8 +66,10 @@ def scene(w: int, h: int, seed: int) -> Image.Image:
     rng = np.random.default_rng(seed)
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     s = max(w, h) / 640
-    base = np.stack([120 + 60 * np.sin(xx / (37 * s)), 110 + 50 * np.cos(yy / (23 * s)),
-                     90 + 40 * np.sin((xx + yy) / (51 * s))], axis=-1)
+    base = np.stack(
+        [120 + 60 * np.sin(xx / (37 * s)), 110 + 50 * np.cos(yy / (23 * s)), 90 + 40 * np.sin((xx + yy) / (51 * s))],
+        axis=-1,
+    )
     base += rng.normal(0, 14, base.shape).astype(np.float32)
     img = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2 * s))
     d = ImageDraw.Draw(img)
@@ -100,11 +102,17 @@ def audio_media(rng: np.random.Generator) -> list[dict]:
     out = []
     for p in sorted((REPO / "eval" / "demo" / "audio").glob("*.ogg")):
         wav, _ = media.normalize_audio(p.read_bytes())
-        out.append({"id": f"demo/{p.stem}", "tipo": "voz sintética del demo (MMS-TTS)",
-                    "samples": media.wav_to_array(wav)})
+        out.append(
+            {"id": f"demo/{p.stem}", "tipo": "voz sintética del demo (MMS-TTS)", "samples": media.wav_to_array(wav)}
+        )
     for i in range(12):
-        out.append({"id": f"sintetico/voz-{i:02d}", "tipo": "señal parecida a voz",
-                    "samples": speechlike(float(rng.uniform(8, 20)), SEED + i)})
+        out.append(
+            {
+                "id": f"sintetico/voz-{i:02d}",
+                "tipo": "señal parecida a voz",
+                "samples": speechlike(float(rng.uniform(8, 20)), SEED + i),
+            }
+        )
     return out
 
 
@@ -112,8 +120,16 @@ def image_media() -> list[dict]:
     out = []
     for p in sorted((REPO / "eval" / "demo").glob("foto-*.jpg")):
         out.append({"id": f"demo/{p.stem}", "tipo": "foto del demo (Muse Image)", "img": Image.open(p).convert("RGB")})
-    sizes = [(1280, 960), (2000, 1500), (1080, 1920), (4000, 3000), (1600, 1200), (960, 1280), (3000, 4000),
-             (1920, 1080)]
+    sizes = [
+        (1280, 960),
+        (2000, 1500),
+        (1080, 1920),
+        (4000, 3000),
+        (1600, 1200),
+        (960, 1280),
+        (3000, 4000),
+        (1920, 1080),
+    ]
     for i, (w, h) in enumerate(sizes):
         out.append({"id": f"sintetico/escena-{w}x{h}", "tipo": "escena sintética", "img": scene(w, h, SEED + i)})
     for i, (w, h) in enumerate([(1200, 1600), (1600, 1200), (2448, 3264), (900, 1200)]):
@@ -269,8 +285,9 @@ def run_audio(client, rng: np.random.Generator, reps: int) -> dict:
         clean_wav = media.array_to_wav(x)
         for rep in range(reps if item["id"].startswith("demo/") else 1):
             msg = int(rng.integers(0, 65536))
-            issued = np.stack([_bits_of_int(msg, 16)] + [_bits_of_int(int(v), 16)
-                                                          for v in rng.integers(0, 65536, N_ISSUED - 1)])
+            issued = np.stack(
+                [_bits_of_int(msg, 16)] + [_bits_of_int(int(v), 16) for v in rng.integers(0, 65536, N_ISSUED - 1)]
+            )
             t0 = time.perf_counter()
             r = client.post(f"/watermark/audio/embed?message={msg}", content=clean_wav)
             embed_ms.append((time.perf_counter() - t0) * 1000)
@@ -290,11 +307,18 @@ def run_audio(client, rng: np.random.Generator, reps: int) -> dict:
                 d = client.post("/watermark/audio/detect", content=body).json()
                 bits = (np.array(d["bits"]) > 0.5).astype(np.uint8)
                 who, dist, unique = _attribute(bits, issued, AUDIO_MAX_HAMMING, d["detected"])
-                marked_rows[v].append({"id": item["id"], "detected": d["detected"], "score": d["score"],
-                                       "bit_acc": float(np.mean(bits == issued[0])),
-                                       "exact": d["message"] == msg, "hamming": int((bits != issued[0]).sum()),
-                                       "nn_ok": unique and int((issued != bits).sum(axis=1).argmin()) == 0,
-                                       "rule_ok": who == 0})
+                marked_rows[v].append(
+                    {
+                        "id": item["id"],
+                        "detected": d["detected"],
+                        "score": d["score"],
+                        "bit_acc": float(np.mean(bits == issued[0])),
+                        "exact": d["message"] == msg,
+                        "hamming": int((bits != issued[0]).sum()),
+                        "nn_ok": unique and int((issued != bits).sum(axis=1).argmin()) == 0,
+                        "rule_ok": who == 0,
+                    }
+                )
             if rep == 0:  # sin marca: una vez por archivo
                 frag_rng = np.random.default_rng(SEED + 99)
                 clean_bodies = {
@@ -307,8 +331,9 @@ def run_audio(client, rng: np.random.Generator, reps: int) -> dict:
                     d = client.post("/watermark/audio/detect", content=body).json()
                     bits = (np.array(d["bits"]) > 0.5).astype(np.uint8)
                     who, dist, _ = _attribute(bits, issued, AUDIO_MAX_HAMMING, d["detected"])
-                    clean_rows[v].append({"detected": d["detected"], "score": d["score"], "rule_hit": who is not None,
-                                          "min_d": dist})
+                    clean_rows[v].append(
+                        {"detected": d["detected"], "score": d["score"], "rule_hit": who is not None, "min_d": dist}
+                    )
         print(f"  audio {item['id']} listo", flush=True)
     return {
         "medios": [{"id": i["id"], "tipo": i["tipo"], "segundos": round(i["samples"].size / SR, 2)} for i in items],
@@ -320,8 +345,14 @@ def run_audio(client, rng: np.random.Generator, reps: int) -> dict:
 
 
 def run_images(client, rng: np.random.Generator, reps: int) -> dict:
-    variants = ["sin_cambios", "whatsapp", "recorte_10_whatsapp", "captura_png", "captura_png_recortada",
-                "captura_whatsapp"]
+    variants = [
+        "sin_cambios",
+        "whatsapp",
+        "recorte_10_whatsapp",
+        "captura_png",
+        "captura_png_recortada",
+        "captura_whatsapp",
+    ]
     marked_rows: dict[str, list] = {v: [] for v in variants}
     clean_rows: dict[str, list] = {v: [] for v in variants}
     psnr, embed_ms, mpix = [], [], 0.0
@@ -346,18 +377,26 @@ def run_images(client, rng: np.random.Generator, reps: int) -> dict:
                 d = client.post("/watermark/image/detect", content=body).json()
                 dec = (np.array(d["bits"]) > 0.5).astype(np.uint8)
                 who, dist, unique = _attribute(dec, issued, IMAGE_MAX_HAMMING, True)
-                marked_rows[v].append({"id": item["id"], "detected": d["detected"], "score": d["score"],
-                                       "bit_acc": float(np.mean(dec == bits)), "exact": d["message_hex"] == hexmsg,
-                                       "hamming": int((dec != bits).sum()),
-                                       "nn_ok": unique and int((issued != dec).sum(axis=1).argmin()) == 0,
-                                       "rule_ok": who == 0})
+                marked_rows[v].append(
+                    {
+                        "id": item["id"],
+                        "detected": d["detected"],
+                        "score": d["score"],
+                        "bit_acc": float(np.mean(dec == bits)),
+                        "exact": d["message_hex"] == hexmsg,
+                        "hamming": int((dec != bits).sum()),
+                        "nn_ok": unique and int((issued != dec).sum(axis=1).argmin()) == 0,
+                        "rule_ok": who == 0,
+                    }
+                )
             if rep == 0:
                 for v, body in image_variants(src).items():
                     d = client.post("/watermark/image/detect", content=body).json()
                     dec = (np.array(d["bits"]) > 0.5).astype(np.uint8)
                     who, dist, _ = _attribute(dec, issued, IMAGE_MAX_HAMMING, True)
-                    clean_rows[v].append({"detected": d["detected"], "score": d["score"], "rule_hit": who is not None,
-                                          "min_d": dist})
+                    clean_rows[v].append(
+                        {"detected": d["detected"], "score": d["score"], "rule_hit": who is not None, "min_d": dist}
+                    )
         print(f"  imagen {item['id']} lista", flush=True)
     return {
         "medios": [{"id": i["id"], "tipo": i["tipo"], "tamano": list(i["img"].size)} for i in items],
@@ -372,8 +411,11 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(REPO / "eval" / "results" / "watermark.json"))
     ap.add_argument("--reps", type=int, default=3, help="mensajes distintos por cada medio del demo")
-    ap.add_argument("--only", choices=["audio", "imagen"],
-                    help="corre solo esa parte y conserva la otra del archivo de salida (cada parte tiene su semilla)")
+    ap.add_argument(
+        "--only",
+        choices=["audio", "imagen"],
+        help="corre solo esa parte y conserva la otra del archivo de salida (cada parte tiene su semilla)",
+    )
     args = ap.parse_args()
 
     os.environ.setdefault("ML_MODELS_DIR", str(ML / "models"))
@@ -410,8 +452,10 @@ def main() -> None:
         "hilos_torch": get_settings().threads,
         "plataforma": f"{platform.system()} {platform.machine()}, Python {platform.python_version()}",
         "duracion_s": round(time.perf_counter() - t0, 1),
-        "modelos": {"audio": "audioseal-16bits (generador y detector de 16 bits)",
-                    "imagen": "videoseal-1.0 (y_256b_img: embebedor y extractor, 256 bits)"},
+        "modelos": {
+            "audio": "audioseal-16bits (generador y detector de 16 bits)",
+            "imagen": "videoseal-1.0 (y_256b_img: embebedor y extractor, 256 bits)",
+        },
         "destinatarios_simulados": N_ISSUED,
         "regla_de_atribucion": {
             "audio": f"detected y distancia de Hamming <= {AUDIO_MAX_HAMMING} de 16 bits al mensaje emitido, único",
@@ -442,14 +486,18 @@ def main() -> None:
     for kind in ("audio", "imagen"):
         print(f"\n{kind}: con marca")
         for v, m in report[kind]["con_marca"].items():
-            print(f"  {v:24s} n={m['n']:3d} det={m['deteccion']:.3f} bits={m['precision_bits_media']:.4f} "
-                  f"exacto={m['mensaje_exacto']:.3f} atrib={m['atribucion_con_regla']:.3f} "
-                  f"hamming_max={m['hamming_max']}")
+            print(
+                f"  {v:24s} n={m['n']:3d} det={m['deteccion']:.3f} bits={m['precision_bits_media']:.4f} "
+                f"exacto={m['mensaje_exacto']:.3f} atrib={m['atribucion_con_regla']:.3f} "
+                f"hamming_max={m['hamming_max']}"
+            )
         print(f"{kind}: sin marca")
         for v, m in report[kind]["sin_marca"].items():
-            print(f"  {v:24s} n={m['n']:3d} fp={m['falsos_positivos']:.3f} "
-                  f"falsa_atrib={m['falsa_atribucion_con_regla']:.3f} score_max={m['puntaje_max']:.3f} "
-                  f"d_min={m['hamming_min_a_emitidos']}")
+            print(
+                f"  {v:24s} n={m['n']:3d} fp={m['falsos_positivos']:.3f} "
+                f"falsa_atrib={m['falsa_atribucion_con_regla']:.3f} score_max={m['puntaje_max']:.3f} "
+                f"d_min={m['hamming_min_a_emitidos']}"
+            )
     print(json.dumps({"audio": audio["calidad"] | audio["costo"], "imagen": images["calidad"] | images["costo"]}))
     sys.stdout.flush()
 

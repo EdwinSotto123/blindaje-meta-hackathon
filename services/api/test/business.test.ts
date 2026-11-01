@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
-import { CENTRAL_ORG_ID, type AsesorOutput, type BusinessRecommendationView, type ConsoleRecommendationView, type RiskOverview, type VictimReport } from "@blindaje/shared";
+import {
+  CENTRAL_ORG_ID,
+  type AsesorOutput,
+  type BusinessRecommendationView,
+  type ConsoleRecommendationView,
+  type RiskOverview,
+  type VictimReport,
+} from "@blindaje/shared";
 import { finalizeAsesor } from "../src/agents/asesor";
 import { consejosParaVictima } from "../src/business/consejos";
 import { AVISO_RUBRO, OTROS_RUBROS, VARIOS_RUBROS } from "../src/business/risk";
@@ -9,7 +16,17 @@ import { newId, nowIso } from "../src/lib/ids";
 import { hashPassword } from "../src/lib/password";
 import { DEMO_BUSINESS } from "../src/routes/demo";
 import { api, apiJson, createCase, insertLink, loginAs, registerDevice, seedOrg } from "./helpers";
-import { call, daysAgo, fakeMeta, final, restoreMeta, seedCase, seedDevice, toolOutputs, type RecordedRequest } from "./agents-helpers";
+import {
+  call,
+  daysAgo,
+  fakeMeta,
+  final,
+  restoreMeta,
+  seedCase,
+  seedDevice,
+  toolOutputs,
+  type RecordedRequest,
+} from "./agents-helpers";
 
 /**
  * Inteligencia para negocios (rol business): guardas de rol, umbral de agregación, nada de números
@@ -27,20 +44,44 @@ async function createBusiness(orgId: string, opts: { sector?: string; zona?: str
     `INSERT INTO business_accounts (id, org_id, email, password_hash, business_name, sector, zona, disabled, is_demo, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
   )
-    .bind(id, orgId, email, await hashPassword(password), "Bodega de prueba (ficticia)", opts.sector ?? "bodega", opts.zona ?? "Lima Este", opts.disabled ? 1 : 0, nowIso())
+    .bind(
+      id,
+      orgId,
+      email,
+      await hashPassword(password),
+      "Bodega de prueba (ficticia)",
+      opts.sector ?? "bodega",
+      opts.zona ?? "Lima Este",
+      opts.disabled ? 1 : 0,
+      nowIso(),
+    )
     .run();
   return { id, email, password };
 }
 
 async function loginBusiness(orgId: string, opts: { sector?: string; zona?: string } = {}) {
   const b = await createBusiness(orgId, opts);
-  const res = await apiJson<{ access_token: string; refresh_token: string }>("/v1/auth/business/login", { json: { email: b.email, password: b.password } });
+  const res = await apiJson<{ access_token: string; refresh_token: string }>("/v1/auth/business/login", {
+    json: { email: b.email, password: b.password },
+  });
   if (res.status !== 200) throw new Error(`business login failed ${res.status}`);
   return { ...b, token: res.body.access_token, refresh: res.body.refresh_token };
 }
 
 /** Siembra `n` casos comunitarios en una zona, repartidos entre `victims` dispositivos. */
-async function seedZone(orgId: string, zona: string, n: number, victims: number, opts: { sector?: (i: number) => string; days?: (i: number) => number; consent?: (i: number) => "comunitario" | "solo_denuncia"; frases?: string[]; escalamiento?: boolean } = {}) {
+async function seedZone(
+  orgId: string,
+  zona: string,
+  n: number,
+  victims: number,
+  opts: {
+    sector?: (i: number) => string;
+    days?: (i: number) => number;
+    consent?: (i: number) => "comunitario" | "solo_denuncia";
+    frases?: string[];
+    escalamiento?: boolean;
+  } = {},
+) {
   const devices = [];
   for (let i = 0; i < victims; i++) devices.push(await seedDevice(orgId));
   const cases = [];
@@ -57,7 +98,10 @@ async function seedZone(orgId: string, zona: string, n: number, victims: number,
         canal: "yape",
         frases: opts.frases ?? ["habla con el jefe", "no llames a la policía"],
         consent: opts.consent?.(i) ?? "comunitario",
-        escalamiento: opts.escalamiento && i === 0 ? [{ fecha: daysAgo(d - 4).slice(0, 10), tipo: "Foto del local con una bala" }] : [],
+        escalamiento:
+          opts.escalamiento && i === 0
+            ? [{ fecha: daysAgo(d - 4).slice(0, 10), tipo: "Foto del local con una bala" }]
+            : [],
       }),
     );
   }
@@ -72,12 +116,19 @@ function leaks(value: unknown, key: string | null = null): string[] {
     return /\d(?:[\s.,-]?\d){5,}/.test(value) || /ID-/.test(value) ? [value] : [];
   }
   if (Array.isArray(value)) return value.flatMap((v) => leaks(v, key));
-  if (value && typeof value === "object") return Object.entries(value as Record<string, unknown>).flatMap(([k, v]) => leaks(v, k));
+  if (value && typeof value === "object")
+    return Object.entries(value as Record<string, unknown>).flatMap(([k, v]) => leaks(v, k));
   return [];
 }
 
 function allTexts(o: AsesorOutput): string[] {
-  return [o.resumen, ...o.recomendaciones.flatMap((r) => [r.titulo, r.detalle]), ...o.que_hacer_si_te_pasa, ...o.advertencias, ...o.modalidades.map((m) => m.descripcion)];
+  return [
+    o.resumen,
+    ...o.recomendaciones.flatMap((r) => [r.titulo, r.detalle]),
+    ...o.que_hacer_si_te_pasa,
+    ...o.advertencias,
+    ...o.modalidades.map((m) => m.descripcion),
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -121,7 +172,9 @@ describe("detector de consejos inseguros", () => {
   });
 
   it("los textos públicos no llevan números de 6 dígitos o más ni ID-…", () => {
-    const s = sanitizePublicText("Te escriben desde el +51 987 654 321 y piden yapear al 900000202 (ID-3fa9c1, FICHA-A) el 2026-10-12.");
+    const s = sanitizePublicText(
+      "Te escriben desde el +51 987 654 321 y piden yapear al 900000202 (ID-3fa9c1, FICHA-A) el 2026-10-12.",
+    );
     expect(s).not.toMatch(/\d(?:[\s.,-]?\d){5,}/);
     expect(s).not.toContain("ID-");
     expect(s).not.toContain("FICHA-");
@@ -133,16 +186,27 @@ describe("autenticación del rol business", () => {
   it("login, refresh rotativo, /me y logout; sesiones separadas de la consola", async () => {
     const { orgId } = await seedOrg();
     const b = await createBusiness(orgId);
-    expect((await apiJson("/v1/auth/business/login", { json: { email: b.email, password: "incorrecta-123" } })).status).toBe(401);
-    expect((await apiJson("/v1/auth/business/login", { json: { email: "nadie@prueba.blindaje.test", password: "incorrecta-123" } })).status).toBe(401);
+    expect(
+      (await apiJson("/v1/auth/business/login", { json: { email: b.email, password: "incorrecta-123" } })).status,
+    ).toBe(401);
+    expect(
+      (
+        await apiJson("/v1/auth/business/login", {
+          json: { email: "nadie@prueba.blindaje.test", password: "incorrecta-123" },
+        })
+      ).status,
+    ).toBe(401);
 
-    const login = await apiJson<{ access_token: string; refresh_token: string; business: { id: string; org: { id: string }; sector: string } }>(
-      "/v1/auth/business/login",
-      { json: { email: b.email.toUpperCase(), password: b.password } },
-    );
+    const login = await apiJson<{
+      access_token: string;
+      refresh_token: string;
+      business: { id: string; org: { id: string }; sector: string };
+    }>("/v1/auth/business/login", { json: { email: b.email.toUpperCase(), password: b.password } });
     expect(login.status).toBe(200);
     expect(login.body.business).toMatchObject({ id: b.id, sector: "bodega", org: { id: orgId } });
-    const claims = JSON.parse(atob(login.body.access_token.split(".")[1]!.replace(/-/g, "+").replace(/_/g, "/"))) as { role: string };
+    const claims = JSON.parse(atob(login.body.access_token.split(".")[1]!.replace(/-/g, "+").replace(/_/g, "/"))) as {
+      role: string;
+    };
     expect(claims.role).toBe("business");
 
     const me = await apiJson<{ email: string }>("/v1/business/me", { token: login.body.access_token });
@@ -150,21 +214,42 @@ describe("autenticación del rol business", () => {
     expect(me.body.email).toBe(b.email);
 
     // Un refresh de negocio no sirve en la consola, y uno de consola no sirve en el portal.
-    expect((await apiJson("/v1/auth/console/refresh", { json: { refresh_token: login.body.refresh_token } })).status).toBe(401);
+    expect(
+      (await apiJson("/v1/auth/console/refresh", { json: { refresh_token: login.body.refresh_token } })).status,
+    ).toBe(401);
     const reviewer = await loginAs("reviewer", orgId);
-    expect((await apiJson("/v1/auth/business/refresh", { json: { refresh_token: reviewer.refresh } })).status).toBe(401);
+    expect((await apiJson("/v1/auth/business/refresh", { json: { refresh_token: reviewer.refresh } })).status).toBe(
+      401,
+    );
 
-    const ref = await apiJson<{ access_token: string; refresh_token: string }>("/v1/auth/business/refresh", { json: { refresh_token: login.body.refresh_token } });
+    const ref = await apiJson<{ access_token: string; refresh_token: string }>("/v1/auth/business/refresh", {
+      json: { refresh_token: login.body.refresh_token },
+    });
     expect(ref.status).toBe(200);
-    expect((await apiJson("/v1/auth/business/refresh", { json: { refresh_token: login.body.refresh_token } })).status).toBe(401);
+    expect(
+      (await apiJson("/v1/auth/business/refresh", { json: { refresh_token: login.body.refresh_token } })).status,
+    ).toBe(401);
 
-    const login2 = await apiJson<{ access_token: string; refresh_token: string }>("/v1/auth/business/login", { json: { email: b.email, password: b.password } });
-    expect((await api("/v1/auth/logout", { token: login2.body.access_token, json: { refresh_token: login2.body.refresh_token } })).status).toBe(204);
-    expect((await apiJson("/v1/auth/business/refresh", { json: { refresh_token: login2.body.refresh_token } })).status).toBe(401);
+    const login2 = await apiJson<{ access_token: string; refresh_token: string }>("/v1/auth/business/login", {
+      json: { email: b.email, password: b.password },
+    });
+    expect(
+      (
+        await api("/v1/auth/logout", {
+          token: login2.body.access_token,
+          json: { refresh_token: login2.body.refresh_token },
+        })
+      ).status,
+    ).toBe(204);
+    expect(
+      (await apiJson("/v1/auth/business/refresh", { json: { refresh_token: login2.body.refresh_token } })).status,
+    ).toBe(401);
 
     // Cuenta deshabilitada: no entra y su token deja de servir.
     await env.DB.prepare("UPDATE business_accounts SET disabled = 1 WHERE id = ?").bind(b.id).run();
-    expect((await apiJson("/v1/auth/business/login", { json: { email: b.email, password: b.password } })).status).toBe(401);
+    expect((await apiJson("/v1/auth/business/login", { json: { email: b.email, password: b.password } })).status).toBe(
+      401,
+    );
     expect((await apiJson("/v1/business/me", { token: ref.body.access_token })).status).toBe(401);
   });
 
@@ -195,7 +280,12 @@ describe("autenticación del rol business", () => {
       const res = await api(path, { method, token: biz.token, ...(method === "POST" ? { json: {} } : {}) });
       expect(res.status, `${method} ${path}`).toBe(403);
     }
-    for (const path of ["/v1/business/me", "/v1/business/risk", "/v1/business/recommendations", "/v1/business/alerts"]) {
+    for (const path of [
+      "/v1/business/me",
+      "/v1/business/risk",
+      "/v1/business/recommendations",
+      "/v1/business/alerts",
+    ]) {
       expect((await api(path, { token: victim.access_token })).status, `víctima ${path}`).toBe(403);
       expect((await api(path, { token: analyst.token })).status, `consola ${path}`).toBe(403);
       expect((await api(path)).status, `sin token ${path}`).toBe(401);
@@ -222,7 +312,15 @@ describe("panorama de riesgo agregado", () => {
     expect(low.body.sesgo).toMatch(/se denuncia más/);
 
     // Quinto caso de una de las mismas 3 víctimas, en la misma semana que los demás.
-    await seedCase({ orgId, device: devices[0]!, zona: "Zona Umbral", sector: "bodega", primer_contacto: daysAgo(3), grupo: "Los Ficticios del Cerro", canal: "yape" });
+    await seedCase({
+      orgId,
+      device: devices[0]!,
+      zona: "Zona Umbral",
+      sector: "bodega",
+      primer_contacto: daysAgo(3),
+      grupo: "Los Ficticios del Cerro",
+      canal: "yape",
+    });
     const ok = await apiJson<RiskOverview>("/v1/business/risk", { token: biz.token });
     expect(ok.body.nivel_riesgo).not.toBe("sin_datos");
     expect(ok.body.casos_periodo).toBe(5);
@@ -250,17 +348,23 @@ describe("panorama de riesgo agregado", () => {
   it("solo cuentan los casos con consentimiento comunitario (y del mismo mundo: nada del demo)", async () => {
     const orgId = (await seedOrg()).orgId;
     const biz = await loginBusiness(orgId, { zona: "Zona Consentimiento" });
-    const { cases } = await seedZone(orgId, "Zona Consentimiento", 6, 3, { consent: (i) => (i < 2 ? "solo_denuncia" : "comunitario") });
+    const { cases } = await seedZone(orgId, "Zona Consentimiento", 6, 3, {
+      consent: (i) => (i < 2 ? "solo_denuncia" : "comunitario"),
+    });
     let res = await apiJson<RiskOverview>("/v1/business/risk", { token: biz.token });
     expect(res.body.nivel_riesgo).toBe("sin_datos");
     expect(res.body.casos_periodo).toBeNull();
 
     // Casos del demo en la misma zona no cuentan para una cuenta real.
-    await env.DB.prepare("UPDATE cases SET consent_mode = 'comunitario', is_demo = 1 WHERE id = ?").bind(cases[0]!.id).run();
+    await env.DB.prepare("UPDATE cases SET consent_mode = 'comunitario', is_demo = 1 WHERE id = ?")
+      .bind(cases[0]!.id)
+      .run();
     res = await apiJson<RiskOverview>("/v1/business/risk", { token: biz.token });
     expect(res.body.casos_periodo).toBeNull();
 
-    await env.DB.prepare("UPDATE cases SET consent_mode = 'comunitario', is_demo = 0 WHERE id = ?").bind(cases[0]!.id).run();
+    await env.DB.prepare("UPDATE cases SET consent_mode = 'comunitario', is_demo = 0 WHERE id = ?")
+      .bind(cases[0]!.id)
+      .run();
     res = await apiJson<RiskOverview>("/v1/business/risk", { token: biz.token });
     expect(res.body.casos_periodo).toBe(5);
   });
@@ -268,7 +372,11 @@ describe("panorama de riesgo agregado", () => {
   it("si el rubro no llega al umbral, las cifras son de toda la zona; ninguna cifra exacta deja despejar un resto chico", async () => {
     const orgId = (await seedOrg()).orgId;
     const biz = await loginBusiness(orgId, { zona: "Zona Rubros", sector: "bodega" });
-    await seedZone(orgId, "Zona Rubros", 7, 4, { sector: (i) => (i < 2 ? "bodega" : i < 6 ? "mototaxi" : "mercado"), escalamiento: true, days: (i) => 9 - i });
+    await seedZone(orgId, "Zona Rubros", 7, 4, {
+      sector: (i) => (i < 2 ? "bodega" : i < 6 ? "mototaxi" : "mercado"),
+      escalamiento: true,
+      days: (i) => 9 - i,
+    });
     const res = await apiJson<RiskOverview>("/v1/business/risk", { token: biz.token });
     expect(res.body.sector).toBeNull();
     expect(res.body.casos_periodo).toBe(7);
@@ -303,7 +411,9 @@ describe("panorama de riesgo agregado", () => {
     const biz = await loginBusiness(orgId, { zona: "Zona Numeros" });
     await seedZone(orgId, "Zona Numeros", 5, 3, { frases: ["yapea al 900 000 202", "habla con el jefe"] });
     const now = nowIso();
-    await env.DB.prepare("INSERT INTO alerts (id, org_id, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, 'aprobada', ?, ?)")
+    await env.DB.prepare(
+      "INSERT INTO alerts (id, org_id, draft_json, status, approved_at, created_at) VALUES (?, ?, ?, 'aprobada', ?, ?)",
+    )
       .bind(
         newId(),
         CENTRAL_ORG_ID,
@@ -331,8 +441,16 @@ describe("panorama de riesgo agregado", () => {
           zona: "Zona Numeros",
           nivel_riesgo: "medio",
           resumen: "Llaman desde el 900-000-202 (FICHA-A, ID-abc123).",
-          modalidades: [{ descripcion: "Cobros al 900000202", senales_de_alerta: ["yapea al 900 000 202"], evidencia: ["FICHA-A"] }],
-          recomendaciones: [{ titulo: "No pagues ni negocies", detalle: "Bloquea el 987654321 después de guardar la evidencia.", prioridad: "alta" }],
+          modalidades: [
+            { descripcion: "Cobros al 900000202", senales_de_alerta: ["yapea al 900 000 202"], evidencia: ["FICHA-A"] },
+          ],
+          recomendaciones: [
+            {
+              titulo: "No pagues ni negocies",
+              detalle: "Bloquea el 987654321 después de guardar la evidencia.",
+              prioridad: "alta",
+            },
+          ],
           que_hacer_si_te_pasa: ["Denuncia en la Línea 1818"],
           advertencias: ["Datos ficticios ID-abc123"],
         }),
@@ -342,16 +460,24 @@ describe("panorama de riesgo agregado", () => {
       )
       .run();
 
-    for (const path of ["/v1/business/me", "/v1/business/risk", "/v1/business/alerts", "/v1/business/recommendations"]) {
+    for (const path of [
+      "/v1/business/me",
+      "/v1/business/risk",
+      "/v1/business/alerts",
+      "/v1/business/recommendations",
+    ]) {
       const res = await apiJson(path, { token: biz.token });
       expect(res.status, path).toBe(200);
-      if (path.endsWith("alerts") || path.endsWith("recommendations")) expect(JSON.stringify(res.body), path).toContain("Zona Numeros");
+      if (path.endsWith("alerts") || path.endsWith("recommendations"))
+        expect(JSON.stringify(res.body), path).toContain("Zona Numeros");
       expect(leaks(res.body), path).toEqual([]);
       expect(JSON.stringify(res.body), path).not.toMatch(/FICHA-|VIN-|"evidencia"/);
     }
     const risk = await apiJson<RiskOverview>("/v1/business/risk", { token: biz.token });
     // La frase con un número nunca llega como señal.
-    expect(risk.body.modalidades_activas.flatMap((m) => m.senales_de_alerta).some((s) => s.includes("yapea"))).toBe(false);
+    expect(risk.body.modalidades_activas.flatMap((m) => m.senales_de_alerta).some((s) => s.includes("yapea"))).toBe(
+      false,
+    );
   });
 });
 
@@ -366,17 +492,34 @@ function parsedToolOutputs(req: RecordedRequest): Array<Record<string, unknown>>
 /** Salida simulada del modelo que intenta aconsejar pagar y negociar, con números y un ID-…. */
 function maliciousOutput(req: RecordedRequest): AsesorOutput {
   const outs = parsedToolOutputs(req);
-  const mods = (outs.find((o) => "modalidades" in o)?.modalidades as Array<{ descripcion: string; senales_de_alerta: string[]; evidencia: string[] }>) ?? [];
+  const mods =
+    (outs.find((o) => "modalidades" in o)?.modalidades as Array<{
+      descripcion: string;
+      senales_de_alerta: string[];
+      evidencia: string[];
+    }>) ?? [];
   return {
     sector: "lo que sea",
     zona: "otra zona",
     nivel_riesgo: "alto",
     resumen: "En la zona hay cobros por Yape. Si te amenazan, paga y evita problemas. Guarda la evidencia en Blindaje.",
-    modalidades: mods.map((m) => ({ descripcion: `${m.descripcion} (llaman del 987 654 321)`, senales_de_alerta: m.senales_de_alerta, evidencia: m.evidencia })),
+    modalidades: mods.map((m) => ({
+      descripcion: `${m.descripcion} (llaman del 987 654 321)`,
+      senales_de_alerta: m.senales_de_alerta,
+      evidencia: m.evidencia,
+    })),
     recomendaciones: [
       { titulo: "Paga la cuota a tiempo", detalle: "Es mejor pagar para evitar problemas.", prioridad: "alta" },
-      { titulo: "Negocia un monto menor", detalle: "Intenta negociar un plazo más largo con ellos.", prioridad: "media" },
-      { titulo: "Cuida tus redes", detalle: "No publiques horarios ni fotos de la caja. Bloquea el ID-abc123.", prioridad: "media" },
+      {
+        titulo: "Negocia un monto menor",
+        detalle: "Intenta negociar un plazo más largo con ellos.",
+        prioridad: "media",
+      },
+      {
+        titulo: "Cuida tus redes",
+        detalle: "No publiques horarios ni fotos de la caja. Bloquea el ID-abc123.",
+        prioridad: "media",
+      },
       { titulo: "Enfrenta al cobrador", detalle: "Identifica a quien viene a cobrar y síguelo.", prioridad: "baja" },
     ],
     que_hacer_si_te_pasa: ["Págales por Yape al 900000202", "Negocia un plazo mayor", "Guarda los audios en Blindaje"],
@@ -386,7 +529,12 @@ function maliciousOutput(req: RecordedRequest): AsesorOutput {
 
 function asesorScript(finalFrom: (req: RecordedRequest) => AsesorOutput, zona: string) {
   return fakeMeta([
-    () => [call("panorama_riesgo", { zona }), call("modalidades_activas", { zona }), call("escalamiento", { zona }), call("alertas_aprobadas", { zona })],
+    () => [
+      call("panorama_riesgo", { zona }),
+      call("modalidades_activas", { zona }),
+      call("escalamiento", { zona }),
+      call("alertas_aprobadas", { zona }),
+    ],
     (req) => [final(finalFrom(req))],
   ]);
 }
@@ -399,7 +547,10 @@ describe("Asesor", () => {
     const analyst = await loginAs("analyst", orgId);
     const meta = asesorScript(maliciousOutput, "Carabayllo");
 
-    const res = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/asesor/run", { token: analyst.token, json: { sector: "bodega" } });
+    const res = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/asesor/run", {
+      token: analyst.token,
+      json: { sector: "bodega" },
+    });
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(meta.responses()).toHaveLength(2);
     // Las herramientas nunca le pasan números ni ID-… al modelo.
@@ -432,12 +583,18 @@ describe("Asesor", () => {
     expect(c.advertencias.join(" ")).toMatch(/se denuncia más/);
     expect(allTexts(c).join(" ")).not.toMatch(/gremio/i);
     expect(c.modalidades.length).toBeGreaterThan(0);
-    expect(c.modalidades[0]!.evidencia.every((e) => e.startsWith("FICHA-") || e.startsWith("VIN-") || e.startsWith("R-"))).toBe(true);
+    expect(
+      c.modalidades[0]!.evidencia.every((e) => e.startsWith("FICHA-") || e.startsWith("VIN-") || e.startsWith("R-")),
+    ).toBe(true);
     expect(rec.citation_check.ok).toBe(true);
 
-    const run = await env.DB.prepare("SELECT agent, status, target_type FROM agent_runs WHERE agent = 'asesor' ORDER BY created_at DESC LIMIT 1").first<{ agent: string; status: string; target_type: string }>();
+    const run = await env.DB.prepare(
+      "SELECT agent, status, target_type FROM agent_runs WHERE agent = 'asesor' ORDER BY created_at DESC LIMIT 1",
+    ).first<{ agent: string; status: string; target_type: string }>();
     expect(run).toMatchObject({ agent: "asesor", status: "ok", target_type: "distrito" });
-    const actions = (await env.DB.prepare("SELECT action FROM audit_log WHERE action LIKE 'agent.asesor.%'").all<{ action: string }>()).results.map((r) => r.action);
+    const actions = (
+      await env.DB.prepare("SELECT action FROM audit_log WHERE action LIKE 'agent.asesor.%'").all<{ action: string }>()
+    ).results.map((r) => r.action);
     expect(actions).toEqual(expect.arrayContaining(["agent.asesor.run", "agent.asesor.result"]));
   });
 
@@ -446,7 +603,9 @@ describe("Asesor", () => {
     await seedZone(orgId, "carmen-de-la-legua-reynoso", 3, 3);
     const analyst = await loginAs("analyst", orgId);
     // Una zona que no es distrito no se acepta.
-    expect((await apiJson("/v1/console/asesor/run", { token: analyst.token, json: { zona: "Lima Este" } })).status).toBe(400);
+    expect(
+      (await apiJson("/v1/console/asesor/run", { token: analyst.token, json: { zona: "Lima Este" } })).status,
+    ).toBe(400);
     asesorScript(
       () => ({
         sector: "bodega",
@@ -454,7 +613,13 @@ describe("Asesor", () => {
         nivel_riesgo: "alto",
         resumen: "Hay mucho riesgo en la zona.",
         modalidades: [{ descripcion: "Una modalidad inventada", senales_de_alerta: ["algo"], evidencia: [] }],
-        recomendaciones: [{ titulo: "Acuerda un protocolo con tu personal", detalle: "Que nadie responda ni entregue nada.", prioridad: "alta" }],
+        recomendaciones: [
+          {
+            titulo: "Acuerda un protocolo con tu personal",
+            detalle: "Que nadie responda ni entregue nada.",
+            prioridad: "alta",
+          },
+        ],
         que_hacer_si_te_pasa: ["Guarda la evidencia en Blindaje"],
         advertencias: [],
       }),
@@ -514,40 +679,85 @@ describe("Asesor", () => {
     expect(run.body.recommendations[0]!.org_id).toBe(CENTRAL_ORG_ID);
 
     // En borrador no la ve nadie fuera de la consola.
-    expect((await apiJson<{ recommendations: unknown[] }>("/v1/recommendations", { token: victim.access_token })).body.recommendations).toEqual([]);
-    expect((await apiJson<{ recommendations: unknown[] }>("/v1/business/recommendations", { token: biz.token })).body.recommendations).toEqual([]);
-    expect((await apiJson<{ recommendations: unknown[] }>("/v1/public/recommendations?zona=el-agustino")).body.recommendations).toEqual([]);
+    expect(
+      (await apiJson<{ recommendations: unknown[] }>("/v1/recommendations", { token: victim.access_token })).body
+        .recommendations,
+    ).toEqual([]);
+    expect(
+      (await apiJson<{ recommendations: unknown[] }>("/v1/business/recommendations", { token: biz.token })).body
+        .recommendations,
+    ).toEqual([]);
+    expect(
+      (await apiJson<{ recommendations: unknown[] }>("/v1/public/recommendations?zona=el-agustino")).body
+        .recommendations,
+    ).toEqual([]);
 
     // Toda revisora del equipo central la ve, sin importar su organización.
-    const list = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/recommendations?status=borrador", { token: otherReviewer.token });
+    const list = await apiJson<{ recommendations: ConsoleRecommendationView[] }>(
+      "/v1/console/recommendations?status=borrador",
+      { token: otherReviewer.token },
+    );
     expect(list.body.recommendations.map((r) => r.id)).toContain(id);
-    const ok = await apiJson<ConsoleRecommendationView>(`/v1/console/recommendations/${id}/decision`, { token: reviewer.token, json: { decision: "aprobar" } });
+    const ok = await apiJson<ConsoleRecommendationView>(`/v1/console/recommendations/${id}/decision`, {
+      token: reviewer.token,
+      json: { decision: "aprobar" },
+    });
     expect(ok.status).toBe(200);
     expect(ok.body.status).toBe("aprobada");
     expect(ok.body.approved_at).toBeTruthy();
-    const audited = await env.DB.prepare("SELECT details_json FROM audit_log WHERE action = 'recommendation.decision' AND target_id = ?").bind(id).first<{ details_json: string }>();
+    const audited = await env.DB.prepare(
+      "SELECT details_json FROM audit_log WHERE action = 'recommendation.decision' AND target_id = ?",
+    )
+      .bind(id)
+      .first<{ details_json: string }>();
     expect(JSON.parse(audited!.details_json)).toMatchObject({ decision: "aprobar", previous: "borrador" });
 
-    const mine = await apiJson<{ recommendations: BusinessRecommendationView[] }>("/v1/recommendations", { token: victim.access_token });
+    const mine = await apiJson<{ recommendations: BusinessRecommendationView[] }>("/v1/recommendations", {
+      token: victim.access_token,
+    });
     expect(mine.status).toBe(200);
     expect(mine.body.recommendations.map((r) => r.id)).toEqual([id]);
-    expect(mine.body.recommendations[0]).toMatchObject({ zona: "El Agustino", distrito: "el-agustino", sector: "bodega" });
+    expect(mine.body.recommendations[0]).toMatchObject({
+      zona: "El Agustino",
+      distrito: "el-agustino",
+      sector: "bodega",
+    });
     expect(JSON.stringify(mine.body)).not.toMatch(/FICHA-|VIN-|R-\d|"evidencia"/);
     expect(leaks(mine.body)).toEqual([]);
     // Fuera del distrito no aparece; con el distrito elegido en el celular, sí (y filtra por rubro).
-    expect((await apiJson<{ recommendations: unknown[] }>("/v1/recommendations", { token: outsider.access_token })).body.recommendations).toEqual([]);
-    const elegido = await apiJson<{ recommendations: Array<{ id: string }> }>("/v1/recommendations?zona=el-agustino&sector=bodega", { token: outsider.access_token });
+    expect(
+      (await apiJson<{ recommendations: unknown[] }>("/v1/recommendations", { token: outsider.access_token })).body
+        .recommendations,
+    ).toEqual([]);
+    const elegido = await apiJson<{ recommendations: Array<{ id: string }> }>(
+      "/v1/recommendations?zona=el-agustino&sector=bodega",
+      { token: outsider.access_token },
+    );
     expect(elegido.body.recommendations.map((r) => r.id)).toEqual([id]);
-    expect((await apiJson<{ recommendations: unknown[] }>("/v1/recommendations?zona=el-agustino&sector=mototaxi", { token: outsider.access_token })).body.recommendations).toEqual([]);
+    expect(
+      (
+        await apiJson<{ recommendations: unknown[] }>("/v1/recommendations?zona=el-agustino&sector=mototaxi", {
+          token: outsider.access_token,
+        })
+      ).body.recommendations,
+    ).toEqual([]);
 
-    const forBiz = await apiJson<{ recommendations: BusinessRecommendationView[] }>("/v1/business/recommendations", { token: biz.token });
+    const forBiz = await apiJson<{ recommendations: BusinessRecommendationView[] }>("/v1/business/recommendations", {
+      token: biz.token,
+    });
     expect(forBiz.body.recommendations.map((r) => r.id)).toEqual([id]);
     expect(leaks(forBiz.body)).toEqual([]);
 
     // Rechazada (la analista también decide): deja de verse.
-    const rejected = await apiJson(`/v1/console/recommendations/${id}/decision`, { token: analyst.token, json: { decision: "rechazar" } });
+    const rejected = await apiJson(`/v1/console/recommendations/${id}/decision`, {
+      token: analyst.token,
+      json: { decision: "rechazar" },
+    });
     expect(rejected.status).toBe(200);
-    expect((await apiJson<{ recommendations: unknown[] }>("/v1/recommendations", { token: victim.access_token })).body.recommendations).toEqual([]);
+    expect(
+      (await apiJson<{ recommendations: unknown[] }>("/v1/recommendations", { token: victim.access_token })).body
+        .recommendations,
+    ).toEqual([]);
   });
 
   it("una recomendación que no pasó el validador de citas no se puede aprobar", async () => {
@@ -558,9 +768,15 @@ describe("Asesor", () => {
     // Cita una ficha que no existe en las dos vueltas (la segunda, después de la lista de problemas).
     const bad = (): AsesorOutput => ({
       ...maliciousOutput({ url: "", body: {} }),
-      modalidades: [{ descripcion: "Cobros por Yape con un plazo corto", senales_de_alerta: [], evidencia: ["FICHA-ZZZZ"] }],
+      modalidades: [
+        { descripcion: "Cobros por Yape con un plazo corto", senales_de_alerta: [], evidencia: ["FICHA-ZZZZ"] },
+      ],
     });
-    fakeMeta([() => [call("modalidades_activas", { zona: "Independencia" })], () => [final(bad())], () => [final(bad())]]);
+    fakeMeta([
+      () => [call("modalidades_activas", { zona: "Independencia" })],
+      () => [final(bad())],
+      () => [final(bad())],
+    ]);
     const run = await apiJson<{ recommendations: ConsoleRecommendationView[] }>("/v1/console/asesor/run", {
       token: analyst.token,
       json: { zona: "independencia", sector: "bodega" },
@@ -569,7 +785,14 @@ describe("Asesor", () => {
     const rec = run.body.recommendations[0]!;
     expect(rec.citation_check.ok).toBe(false);
     expect(rec.status).toBe("borrador");
-    expect((await apiJson(`/v1/console/recommendations/${rec.id}/decision`, { token: reviewer.token, json: { decision: "aprobar" } })).status).toBe(409);
+    expect(
+      (
+        await apiJson(`/v1/console/recommendations/${rec.id}/decision`, {
+          token: reviewer.token,
+          json: { decision: "aprobar" },
+        })
+      ).status,
+    ).toBe(409);
   });
 });
 
@@ -611,8 +834,12 @@ describe("consejos para la víctima", () => {
       resumen_mo: "Mensajes por WhatsApp (ficticio)",
       fuentes: [],
     };
-    await env.DB.prepare("UPDATE cases SET ficha_json = ?, estado = 'listo', indexed = 1 WHERE id = ?").bind(JSON.stringify(ficha), mine.id).run();
-    await env.DB.prepare("UPDATE cases SET ficha_json = ?, estado = 'listo', indexed = 1 WHERE id = ?").bind(JSON.stringify({ ...ficha, caso: theirs.code }), theirs.id).run();
+    await env.DB.prepare("UPDATE cases SET ficha_json = ?, estado = 'listo', indexed = 1 WHERE id = ?")
+      .bind(JSON.stringify(ficha), mine.id)
+      .run();
+    await env.DB.prepare("UPDATE cases SET ficha_json = ?, estado = 'listo', indexed = 1 WHERE id = ?")
+      .bind(JSON.stringify({ ...ficha, caso: theirs.code }), theirs.id)
+      .run();
     const link = await insertLink(mine.id, theirs.id, "confirmado", 0.97);
 
     const res = await api(`/v1/cases/${mine.id}/report`, { token: real.access_token });
@@ -640,11 +867,19 @@ describe("consejos para la víctima", () => {
 describe("demo: cuenta de negocio ficticia", () => {
   it("seed la crea (idempotente) y reset la borra", async () => {
     const secret = { "x-demo-secret": "demo-secret-de-prueba" };
-    const seed = await apiJson<{ business_accounts: Array<{ email: string; business_name: string }> }>("/v1/demo/seed", { method: "POST", headers: secret });
+    const seed = await apiJson<{ business_accounts: Array<{ email: string; business_name: string }> }>(
+      "/v1/demo/seed",
+      { method: "POST", headers: secret },
+    );
     expect(seed.status).toBe(201);
-    expect(seed.body.business_accounts[0]).toMatchObject({ email: DEMO_BUSINESS.email, business_name: "Bodega Don Lucho (ficticia)" });
+    expect(seed.body.business_accounts[0]).toMatchObject({
+      email: DEMO_BUSINESS.email,
+      business_name: "Bodega Don Lucho (ficticia)",
+    });
     expect((await apiJson("/v1/demo/seed", { method: "POST", headers: secret })).status).toBe(201);
-    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM business_accounts WHERE is_demo = 1").first<{ n: number }>())!.n).toBe(1);
+    expect(
+      (await env.DB.prepare("SELECT COUNT(*) AS n FROM business_accounts WHERE is_demo = 1").first<{ n: number }>())!.n,
+    ).toBe(1);
 
     const login = await apiJson<{ business: { zona: string; sector: string } }>("/v1/auth/business/login", {
       json: { email: DEMO_BUSINESS.email, password: DEMO_BUSINESS.password },
@@ -652,10 +887,21 @@ describe("demo: cuenta de negocio ficticia", () => {
     expect(login.status).toBe(200);
     expect(login.body.business).toMatchObject({ zona: "san-juan-de-lurigancho", sector: "bodega" });
 
-    const reset = await apiJson<{ deleted: { business_accounts: number } }>("/v1/demo/reset", { method: "POST", headers: secret });
+    const reset = await apiJson<{ deleted: { business_accounts: number } }>("/v1/demo/reset", {
+      method: "POST",
+      headers: secret,
+    });
     expect(reset.status).toBe(200);
     expect(reset.body.deleted.business_accounts).toBe(1);
-    expect(await env.DB.prepare("SELECT 1 FROM business_accounts WHERE id = ?").bind(DEMO_BUSINESS.id).first()).toBeNull();
-    expect((await apiJson("/v1/auth/business/login", { json: { email: DEMO_BUSINESS.email, password: DEMO_BUSINESS.password } })).status).toBe(401);
+    expect(
+      await env.DB.prepare("SELECT 1 FROM business_accounts WHERE id = ?").bind(DEMO_BUSINESS.id).first(),
+    ).toBeNull();
+    expect(
+      (
+        await apiJson("/v1/auth/business/login", {
+          json: { email: DEMO_BUSINESS.email, password: DEMO_BUSINESS.password },
+        })
+      ).status,
+    ).toBe(401);
   });
 });

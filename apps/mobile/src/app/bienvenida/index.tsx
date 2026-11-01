@@ -27,10 +27,15 @@ export default function Bienvenida() {
   };
 
   return (
-    <Step n={0} title="Un lugar seguro para guardar lo que recibes" testID="bienvenida" footer={<Button label="Empezar" onPress={empezar} loading={busy} testID="empezar" />}>
+    <Step
+      n={0}
+      title="Un lugar seguro para guardar lo que recibes"
+      testID="bienvenida"
+      footer={<Button label="Empezar" onPress={empezar} loading={busy} testID="empezar" />}
+    >
       <T variant="body">
-        Por fuera, esta app se ve como una app común de tu negocio, y tú eliges cuál. Todas funcionan de verdad. Por dentro tiene tus notas privadas:
-        ahí guardas audios, mensajes y fotos que te mandaron, y preparas tu denuncia.
+        Por fuera, esta app se ve como una app común de tu negocio, y tú eliges cuál. Todas funcionan de verdad. Por
+        dentro tiene tus notas privadas: ahí guardas audios, mensajes y fotos que te mandaron, y preparas tu denuncia.
       </T>
       <Card>
         <T variant="bodyBold">Cómo te protege</T>

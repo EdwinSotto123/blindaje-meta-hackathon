@@ -54,8 +54,12 @@ def calibrate(benign: np.ndarray, max_fpr: float = MAX_FPR) -> float:
 def rates(scores: np.ndarray, labels: np.ndarray, t: float) -> dict:
     pred = scores >= t
     pos, neg = labels == 1, labels == 0
-    return {"recall": round(float(pred[pos].mean()), 4), "fpr": round(float(pred[neg].mean()), 4),
-            "tp": int(pred[pos].sum()), "fp": int(pred[neg].sum())}
+    return {
+        "recall": round(float(pred[pos].mean()), 4),
+        "fpr": round(float(pred[neg].mean()), 4),
+        "tp": int(pred[pos].sum()),
+        "fp": int(pred[neg].sum()),
+    }
 
 
 def auc(scores: np.ndarray, labels: np.ndarray) -> float:
@@ -81,8 +85,11 @@ def cross_validated(scores: np.ndarray, labels: np.ndarray, k: int = 5) -> dict:
         pred = scores[test] >= t
         tp += int(pred[labels[test] == 1].sum())
         fp += int(pred[labels[test] == 0].sum())
-    return {"recall": round(tp / int((labels == 1).sum()), 4), "fpr": round(fp / int((labels == 0).sum()), 4),
-            "umbrales": [round(t, 6) for t in thresholds]}
+    return {
+        "recall": round(tp / int((labels == 1).sum()), 4),
+        "fpr": round(fp / int((labels == 0).sum()), 4),
+        "umbrales": [round(t, 6) for t in thresholds],
+    }
 
 
 def long_texts(rows: list[dict]) -> tuple[list[str], list[str]]:
@@ -169,7 +176,8 @@ def evaluate(model_id: str, rows: list[dict], threads: int) -> dict:
         "validacion_cruzada_5": cross_validated(scores_arr, labels),
         "por_tipo": {k: {**v, "tasa": round(v["marcados"] / v["n"], 4)} for k, v in sorted(by_type.items())},
         "textos_largos": {
-            "ataques": len(attacks), "controles": len(controls),
+            "ataques": len(attacks),
+            "controles": len(controls),
             "ventanas_por_texto": round(float(np.mean([x["chunks"] for x in long_scored])), 1),
             "recall_umbral_calibrado": round(float((la >= t_cal).mean()), 4),
             "fpr_umbral_calibrado": round(float((lc >= t_cal).mean()), 4),
@@ -200,9 +208,12 @@ def main() -> None:
         r = results[m]
         if r["disponible"]:
             cv, lg = r["validacion_cruzada_5"], r["textos_largos"]
-            print(f"  auc={r['auc']} 0.5: {r['umbral_0_5']} calibrado: {r['umbral_calibrado']} "
-                  f"cv: {cv['recall']}/{cv['fpr']} largos: {lg['recall_umbral_calibrado']}/"
-                  f"{lg['fpr_umbral_calibrado']} ms={r['ms_por_texto_mediana']}", flush=True)
+            print(
+                f"  auc={r['auc']} 0.5: {r['umbral_0_5']} calibrado: {r['umbral_calibrado']} "
+                f"cv: {cv['recall']}/{cv['fpr']} largos: {lg['recall_umbral_calibrado']}/"
+                f"{lg['fpr_umbral_calibrado']} ms={r['ms_por_texto_mediana']}",
+                flush=True,
+            )
         else:
             print(f"  {r['motivo']}", flush=True)
     if not any(r["disponible"] for r in results.values()):
@@ -220,7 +231,7 @@ def main() -> None:
             "inyecciones": sum(r["etiqueta"] == "inyeccion" for r in rows),
         },
         "criterio": f"recall de ataques con falsos positivos <= {MAX_FPR:.0%} en extorsión benigna; "
-                    "luego tamaño de la imagen y latencia en CPU",
+        "luego tamaño de la imagen y latencia en CPU",
         "ventanas": {"tokens": 512, "solape": 64, "puntaje": "máximo de probabilidad de malicioso entre ventanas"},
         "modelos": results,
     }

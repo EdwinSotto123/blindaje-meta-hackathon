@@ -10,7 +10,8 @@ export function NetworksView() {
   return (
     <>
       <PageHead title="Redes">
-        Grupos de casos unidos por vínculos confirmados por una persona. Abre una red para ver su grafo, su línea de tiempo y su perfil.
+        Grupos de casos unidos por vínculos confirmados por una persona. Abre una red para ver su grafo, su línea de
+        tiempo y su perfil.
       </PageHead>
       {nets.error ? <ErrorBox error={nets.error} onRetry={nets.reload} /> : null}
       {nets.loading && !nets.data ? <Loading /> : null}
@@ -43,7 +44,13 @@ export function NetworksView() {
                   <td className="num">{n.n_cases}</td>
                   <td>{n.sectores.map((s) => SECTOR_LABEL[s] ?? s).join(", ")}</td>
                   <td className="nowrap">{fmtPeriod(n.periodo)}</td>
-                  <td>{n.profile_status ? <StatusBadge status={n.profile_status} /> : <span className="muted">Sin perfil</span>}</td>
+                  <td>
+                    {n.profile_status ? (
+                      <StatusBadge status={n.profile_status} />
+                    ) : (
+                      <span className="muted">Sin perfil</span>
+                    )}
+                  </td>
                   <td className="nowrap">{fmtDateTime(n.updated_at)}</td>
                 </tr>
               ))}

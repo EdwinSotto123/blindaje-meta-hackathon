@@ -27,11 +27,21 @@ import { colors, fonts, layout, MAX_FONT_SCALE, radius } from "@/theme/tokens";
 
 export function GridPaper() {
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <View
+      style={StyleSheet.absoluteFill}
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
       <Svg width="100%" height="100%">
         <Defs>
           <Pattern id="cuadricula" width={layout.grid} height={layout.grid} patternUnits="userSpaceOnUse">
-            <Path d={`M ${layout.grid} 0 L 0 0 0 ${layout.grid}`} stroke={colors.cuadricula} strokeWidth={1} fill="none" />
+            <Path
+              d={`M ${layout.grid} 0 L 0 0 0 ${layout.grid}`}
+              stroke={colors.cuadricula}
+              strokeWidth={1}
+              fill="none"
+            />
           </Pattern>
         </Defs>
         <Rect x={0} y={0} width="100%" height="100%" fill={colors.papel} />
@@ -46,7 +56,8 @@ export function GridPaper() {
  * Con edge-to-edge (Android 15+) el sistema ya no achica la ventana al abrir el teclado: hay que
  * apartar el contenido a mano. En versiones anteriores lo hace adjustResize.
  */
-const KEYBOARD_BEHAVIOR = Platform.OS === "ios" || (Platform.OS === "android" && Number(Platform.Version) >= 35) ? "padding" : undefined;
+const KEYBOARD_BEHAVIOR =
+  Platform.OS === "ios" || (Platform.OS === "android" && Number(Platform.Version) >= 35) ? "padding" : undefined;
 
 type PaperProps = {
   children: ReactNode;
@@ -65,19 +76,21 @@ export function Paper({ children, scroll = true, header, footer, contentStyle, t
       <GridPaper />
       <SafeAreaView style={styles.flex} edges={["top", "bottom"]}>
         <KeyboardAvoidingView style={styles.flex} behavior={KEYBOARD_BEHAVIOR}>
-        {header ? <View style={styles.header}>{header}</View> : null}
-        {scroll ? (
-          <ScrollView
-            style={styles.flex}
-            contentContainerStyle={[styles.content, header ? styles.contentUnderHeader : null, contentStyle]}
-            keyboardShouldPersistTaps="handled"
-          >
-            {children}
-          </ScrollView>
-        ) : (
-          <View style={[styles.flex, styles.content, header ? styles.contentUnderHeader : null, contentStyle]}>{children}</View>
-        )}
-        {footer ? <View style={styles.footer}>{footer}</View> : null}
+          {header ? <View style={styles.header}>{header}</View> : null}
+          {scroll ? (
+            <ScrollView
+              style={styles.flex}
+              contentContainerStyle={[styles.content, header ? styles.contentUnderHeader : null, contentStyle]}
+              keyboardShouldPersistTaps="handled"
+            >
+              {children}
+            </ScrollView>
+          ) : (
+            <View style={[styles.flex, styles.content, header ? styles.contentUnderHeader : null, contentStyle]}>
+              {children}
+            </View>
+          )}
+          {footer ? <View style={styles.footer}>{footer}</View> : null}
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
@@ -88,7 +101,18 @@ export function Paper({ children, scroll = true, header, footer, contentStyle, t
 // Texto
 // ---------------------------------------------------------------------------
 
-type Variant = "title" | "titleSmall" | "h2" | "body" | "bodyBold" | "small" | "secondary" | "amount" | "hand" | "handSmall" | "button";
+type Variant =
+  | "title"
+  | "titleSmall"
+  | "h2"
+  | "body"
+  | "bodyBold"
+  | "small"
+  | "secondary"
+  | "amount"
+  | "hand"
+  | "handSmall"
+  | "button";
 
 const variantStyle: Record<Variant, object> = {
   title: { fontFamily: fonts.manoBold, fontSize: 32, lineHeight: 38, color: colors.tinta },
@@ -112,7 +136,15 @@ export function T({ variant = "body", style, ...rest }: TextProps & { variant?: 
  * Mensaje de error o de resultado: el lector de pantalla lo anuncia sin mover el foco.
  * Un error va sobre resaltador rosado (DESIGN.md, Forms), nunca en rojo; un resultado, en tinta.
  */
-export function Notice({ children, testID, tone = "error" }: { children: ReactNode; testID?: string; tone?: "error" | "info" }) {
+export function Notice({
+  children,
+  testID,
+  tone = "error",
+}: {
+  children: ReactNode;
+  testID?: string;
+  tone?: "error" | "info";
+}) {
   if (!children) return null;
   return (
     <T
@@ -171,7 +203,17 @@ export function Button({ label, kind = "primary", icon, loading, disabled, style
 }
 
 /** Botón grande de acción (Grabar, Foto, Pegar mensaje). */
-export function ActionTile({ label, icon, onPress, testID }: { label: string; icon: IconName; onPress: () => void; testID?: string }) {
+export function ActionTile({
+  label,
+  icon,
+  onPress,
+  testID,
+}: {
+  label: string;
+  icon: IconName;
+  onPress: () => void;
+  testID?: string;
+}) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -192,7 +234,17 @@ export function ActionTile({ label, icon, onPress, testID }: { label: string; ic
 // Chips y marcas
 // ---------------------------------------------------------------------------
 
-export function Chip({ label, icon, color = colors.resaltador, testID }: { label: string; icon?: IconName; color?: string; testID?: string }) {
+export function Chip({
+  label,
+  icon,
+  color = colors.resaltador,
+  testID,
+}: {
+  label: string;
+  icon?: IconName;
+  color?: string;
+  testID?: string;
+}) {
   return (
     <View style={[styles.chip, { backgroundColor: color }]} testID={testID} accessible accessibilityLabel={label}>
       {icon ? <Icon name={icon} size={16} /> : null}
@@ -226,21 +278,21 @@ type FieldProps = TextInputProps & {
 };
 
 export function Field({ label, hint, hand, style, inputRef, ...rest }: FieldProps) {
-    return (
-      <View style={{ gap: 6 }}>
-        <T variant="h2">{label}</T>
-        <TextInput
-          ref={inputRef}
-          accessibilityLabel={label}
-          accessibilityHint={hint}
-          placeholderTextColor={colors.lapiz}
-          maxFontSizeMultiplier={MAX_FONT_SCALE}
-          style={[styles.input, hand && styles.inputHand, rest.multiline && styles.inputMulti, style]}
-          {...rest}
-        />
-        {hint ? <T variant="small">{hint}</T> : null}
-      </View>
-    );
+  return (
+    <View style={{ gap: 6 }}>
+      <T variant="h2">{label}</T>
+      <TextInput
+        ref={inputRef}
+        accessibilityLabel={label}
+        accessibilityHint={hint}
+        placeholderTextColor={colors.lapiz}
+        maxFontSizeMultiplier={MAX_FONT_SCALE}
+        style={[styles.input, hand && styles.inputHand, rest.multiline && styles.inputMulti, style]}
+        {...rest}
+      />
+      {hint ? <T variant="small">{hint}</T> : null}
+    </View>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -286,7 +338,10 @@ export function Segmented<K extends string>({
             onPress={() => onChange(o.key)}
             style={[styles.segment, on ? styles.segmentOn : styles.segmentOff]}
           >
-            <Text maxFontSizeMultiplier={1.4} style={[styles.segmentText, { color: on ? colors.blanco : colors.tinta }]}>
+            <Text
+              maxFontSizeMultiplier={1.4}
+              style={[styles.segmentText, { color: on ? colors.blanco : colors.tinta }]}
+            >
               {o.label}
             </Text>
           </Pressable>
@@ -296,7 +351,17 @@ export function Segmented<K extends string>({
   );
 }
 
-export function IconButton({ icon, label, onPress, testID }: { icon: IconName; label: string; onPress: () => void; testID?: string }) {
+export function IconButton({
+  icon,
+  label,
+  onPress,
+  testID,
+}: {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+  testID?: string;
+}) {
   return (
     <Pressable
       accessibilityRole="button"

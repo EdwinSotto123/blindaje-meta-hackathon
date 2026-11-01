@@ -61,19 +61,27 @@ export default function NotasPrivadas() {
   const held = decoy ? [] : queueItems.filter((q) => q.status === "retenido");
   const safety = overallSafety(decoy ? [] : queueItems, online, (report?.evidencia.length ?? 0) > 0);
   const hallazgos = decoy ? [] : (report?.hallazgos ?? []);
-  const processing = !decoy && (rows.some((r) => r.state === "procesando" || r.state === "subiendo") || queueItems.some((q) => q.status === "pendiente"));
+  const processing =
+    !decoy &&
+    (rows.some((r) => r.state === "procesando" || r.state === "subiendo") ||
+      queueItems.some((q) => q.status === "pendiente"));
 
-  usePolling(async () => {
-    await syncNow();
-    await refreshReport();
-  }, processing ? 4000 : null);
+  usePolling(
+    async () => {
+      await syncNow();
+      await refreshReport();
+    },
+    processing ? 4000 : null,
+  );
 
   return (
     <PrivateScreen
       title="Notas privadas"
       home
       testID="notas-privadas"
-      footer={<Button label="Preparar mi denuncia" onPress={() => router.push("/privado/denuncia")} testID="preparar" />}
+      footer={
+        <Button label="Preparar mi denuncia" onPress={() => router.push("/privado/denuncia")} testID="preparar" />
+      }
     >
       <Chip
         label={safetyLabel(safety)}
@@ -86,7 +94,16 @@ export default function NotasPrivadas() {
         <Pressable
           onPress={() => router.push("/privado/recibido")}
           accessibilityRole="button"
-          style={{ borderWidth: 2, borderColor: colors.tinta, borderRadius: 12, padding: 12, flexDirection: "row", gap: 10, alignItems: "center", backgroundColor: colors.blanco }}
+          style={{
+            borderWidth: 2,
+            borderColor: colors.tinta,
+            borderRadius: 12,
+            padding: 12,
+            flexDirection: "row",
+            gap: 10,
+            alignItems: "center",
+            backgroundColor: colors.blanco,
+          }}
         >
           <Icon name="file" />
           <View style={{ flex: 1 }}>
@@ -101,7 +118,16 @@ export default function NotasPrivadas() {
         <Pressable
           onPress={() => router.push("/privado/llamadas")}
           accessibilityRole="button"
-          style={{ borderWidth: 2, borderColor: colors.tinta, borderRadius: 12, padding: 12, flexDirection: "row", gap: 10, alignItems: "center", backgroundColor: colors.blanco }}
+          style={{
+            borderWidth: 2,
+            borderColor: colors.tinta,
+            borderRadius: 12,
+            padding: 12,
+            flexDirection: "row",
+            gap: 10,
+            alignItems: "center",
+            backgroundColor: colors.blanco,
+          }}
           testID="aviso-llamadas"
         >
           <Icon name="phone" />
@@ -117,7 +143,11 @@ export default function NotasPrivadas() {
         <T variant="h2">Lo que recibiste</T>
         {rows.length === 0 ? (
           <T variant="secondary" style={{ paddingVertical: 8 }}>
-            {reportState === "loading" ? "Cargando…" : reportState === "offline" ? "Sin conexión. Lo que ya subiste está a salvo en la nube y se verá cuando vuelva la señal." : "Todavía no guardas nada. Graba un audio, toma una foto o pega un mensaje."}
+            {reportState === "loading"
+              ? "Cargando…"
+              : reportState === "offline"
+                ? "Sin conexión. Lo que ya subiste está a salvo en la nube y se verá cuando vuelva la señal."
+                : "Todavía no guardas nada. Graba un audio, toma una foto o pega un mensaje."}
           </T>
         ) : (
           rows.map((r) => (
@@ -148,7 +178,9 @@ export default function NotasPrivadas() {
           </View>
         ) : (
           <T variant="secondary">
-            {processing ? "Estamos revisando lo que subiste…" : "Aquí verás los datos que detectemos: montos, plazos, números y nombres de grupos."}
+            {processing
+              ? "Estamos revisando lo que subiste…"
+              : "Aquí verás los datos que detectemos: montos, plazos, números y nombres de grupos."}
           </T>
         )}
       </Card>
@@ -156,7 +188,12 @@ export default function NotasPrivadas() {
       <View style={{ flexDirection: "row", gap: 8 }}>
         <ActionTile label="Grabar" icon="mic" onPress={() => router.push("/privado/grabar")} testID="accion-grabar" />
         <ActionTile label="Foto" icon="camera" onPress={() => router.push("/privado/foto")} testID="accion-foto" />
-        <ActionTile label="Pegar mensaje" icon="clipboard" onPress={() => router.push("/privado/pegar")} testID="accion-pegar" />
+        <ActionTile
+          label="Pegar mensaje"
+          icon="clipboard"
+          onPress={() => router.push("/privado/pegar")}
+          testID="accion-pegar"
+        />
       </View>
 
       <View style={{ flexDirection: "row", gap: 8 }}>

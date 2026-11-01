@@ -17,13 +17,21 @@ describe("subida de evidencia", () => {
     const plain = new TextEncoder().encode("Audio ficticio: habla con el jefe, tienes 48 horas.");
     const res = await upload(d.access_token, c.id, plain, { capturedAt: "2026-10-03T19:40:00-05:00" });
     expect(res.status).toBe(201);
-    const item = (await res.json()) as { id: string; label: string; sha256: string; size_bytes: number; status: string };
+    const item = (await res.json()) as {
+      id: string;
+      label: string;
+      sha256: string;
+      size_bytes: number;
+      status: string;
+    };
     expect(item.label).toBe(`EV-${c.code}-1`);
     expect(item.sha256).toBe(await sha256Hex(plain));
     expect(item.size_bytes).toBe(plain.byteLength);
     expect(item.status).toBe("recibido");
 
-    const row = await env.DB.prepare("SELECT * FROM evidence WHERE id = ?").bind(item.id).first<{ r2_key: string; uploader_pseudonym: string }>();
+    const row = await env.DB.prepare("SELECT * FROM evidence WHERE id = ?")
+      .bind(item.id)
+      .first<{ r2_key: string; uploader_pseudonym: string }>();
     expect(row!.uploader_pseudonym).toBe(d.pseudonym);
     const obj = await env.EVIDENCE.get(row!.r2_key);
     const stored = await obj!.arrayBuffer();
@@ -34,12 +42,21 @@ describe("subida de evidencia", () => {
     // El AAD ata el objeto a su evidencia: con otro id no descifra.
     await expect(decryptSealed(env.EVIDENCE_ENCRYPTION_KEY, stored, "otro-id")).rejects.toThrow();
 
-    const audit = await env.DB.prepare("SELECT details_json FROM audit_log WHERE action = 'evidence.upload' AND target_id = ?")
+    const audit = await env.DB.prepare(
+      "SELECT details_json FROM audit_log WHERE action = 'evidence.upload' AND target_id = ?",
+    )
       .bind(item.id)
       .first<{ details_json: string }>();
-    expect(JSON.parse(audit!.details_json)).toMatchObject({ sha256: item.sha256, label: item.label, uploader: d.pseudonym });
+    expect(JSON.parse(audit!.details_json)).toMatchObject({
+      sha256: item.sha256,
+      label: item.label,
+      uploader: d.pseudonym,
+    });
 
-    const second = await upload(d.access_token, c.id, new TextEncoder().encode("segunda pieza"), { tipo: "texto", mime: "text/plain" });
+    const second = await upload(d.access_token, c.id, new TextEncoder().encode("segunda pieza"), {
+      tipo: "texto",
+      mime: "text/plain",
+    });
     expect(((await second.json()) as { label: string }).label).toBe(`EV-${c.code}-2`);
   });
 
@@ -51,7 +68,9 @@ describe("subida de evidencia", () => {
     expect(res.status).toBe(422);
     const body = (await res.json()) as { error: { code: string } };
     expect(body.error.code).toBe("integrity_mismatch");
-    const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?").bind(c.id).first<{ n: number }>();
+    const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM evidence WHERE case_id = ?")
+      .bind(c.id)
+      .first<{ n: number }>();
     expect(n!.n).toBe(0);
     const listed = await env.EVIDENCE.list({ prefix: `cases/${c.id}/` });
     expect(listed.objects).toHaveLength(0);
@@ -82,13 +101,27 @@ describe("subida de evidencia", () => {
     const { invite } = await seedOrg();
     const d = await registerDevice(invite);
     const c = await createCase(d.access_token);
-    const nota = new TextEncoder().encode("Llamada recibida el 28 oct 2026, 2:32 p. m. desde el número +51 900 000 303. La marqué como extorsión.");
-    const res = await upload(d.access_token, c.id, nota, { tipo: "texto", mime: "text/plain", source: "llamada", capturedAt: "2026-10-28T19:32:00.000Z" });
+    const nota = new TextEncoder().encode(
+      "Llamada recibida el 28 oct 2026, 2:32 p. m. desde el número +51 900 000 303. La marqué como extorsión.",
+    );
+    const res = await upload(d.access_token, c.id, nota, {
+      tipo: "texto",
+      mime: "text/plain",
+      source: "llamada",
+      capturedAt: "2026-10-28T19:32:00.000Z",
+    });
     expect(res.status).toBe(201);
-    const otra = await upload(d.access_token, c.id, new TextEncoder().encode("x"), { tipo: "texto", mime: "text/plain", source: "otra-cosa" });
+    const otra = await upload(d.access_token, c.id, new TextEncoder().encode("x"), {
+      tipo: "texto",
+      mime: "text/plain",
+      source: "otra-cosa",
+    });
     expect(otra.status).toBe(400);
 
-    const { body: report } = await apiJson<{ evidencia: Array<{ origen: string | null }>; cronologia: Array<{ texto: string }> }>(`/v1/cases/${c.id}/report`, {
+    const { body: report } = await apiJson<{
+      evidencia: Array<{ origen: string | null }>;
+      cronologia: Array<{ texto: string }>;
+    }>(`/v1/cases/${c.id}/report`, {
       token: d.access_token,
     });
     expect(report.evidencia.map((e) => e.origen)).toEqual(["llamada"]);
@@ -99,7 +132,11 @@ describe("subida de evidencia", () => {
     const { invite } = await seedOrg();
     const d = await registerDevice(invite);
     const big = new Uint8Array(5 * 1024 * 1024 + 1);
-    const res = await api("/v1/me/voice-sample", { token: d.access_token, body: big, headers: { "content-type": "audio/wav" } });
+    const res = await api("/v1/me/voice-sample", {
+      token: d.access_token,
+      body: big,
+      headers: { "content-type": "audio/wav" },
+    });
     expect(res.status).toBe(413);
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe("payload_too_large");
   });
@@ -126,9 +163,13 @@ describe("Preparar mi denuncia", () => {
     const out = (await instances[0]!.getOutput()) as { pending_steps: string[] };
     expect(out.pending_steps).toContain("ficha");
 
-    const relato = await env.DB.prepare("SELECT tipo, source, mime FROM evidence WHERE case_id = ?").bind(c.id).first<{ tipo: string; source: string }>();
+    const relato = await env.DB.prepare("SELECT tipo, source, mime FROM evidence WHERE case_id = ?")
+      .bind(c.id)
+      .first<{ tipo: string; source: string }>();
     expect(relato).toMatchObject({ tipo: "texto", source: "relato" });
-    const report = await apiJson<{ status: string; ficha: unknown; evidencia: unknown[] }>(`/v1/cases/${c.id}/report`, { token: d.access_token });
+    const report = await apiJson<{ status: string; ficha: unknown; evidencia: unknown[] }>(`/v1/cases/${c.id}/report`, {
+      token: d.access_token,
+    });
     expect(report.body.status).toBe("listo");
     expect(report.body.ficha).toBeNull();
     expect(report.body.evidencia).toHaveLength(1);
@@ -138,7 +179,9 @@ describe("Preparar mi denuncia", () => {
     const { invite } = await seedOrg();
     const d = await registerDevice(invite);
     const c = await createCase(d.access_token);
-    const noMl = await apiJson<{ error: { code: string; message: string } }>(`/v1/cases/${c.id}/report.pdf`, { token: d.access_token });
+    const noMl = await apiJson<{ error: { code: string; message: string } }>(`/v1/cases/${c.id}/report.pdf`, {
+      token: d.access_token,
+    });
     expect(noMl.status).toBe(503);
     expect(noMl.body.error.code).toBe("upstream_error");
 
@@ -178,7 +221,9 @@ describe("medios para la consola", () => {
     expect(wavDurationMs(parseWav(await res.arrayBuffer())!)).toBe(1000);
     const full = await api(`/v1/console/evidence/${ev.id}/media`, { token: reviewer.token });
     expect((await full.arrayBuffer()).byteLength).toBe(wav.byteLength);
-    const audited = await env.DB.prepare("SELECT COUNT(*) AS n FROM audit_log WHERE action = 'evidence.media' AND target_id = ?")
+    const audited = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM audit_log WHERE action = 'evidence.media' AND target_id = ?",
+    )
       .bind(ev.id)
       .first<{ n: number }>();
     expect(audited!.n).toBe(2);
@@ -186,7 +231,9 @@ describe("medios para la consola", () => {
     // Un caso "solo mi denuncia" no se ve desde la consola. La organización ya no filtra: el equipo
     // central (revisión o análisis) ve los casos comunitarios de todas.
     const solo = await createCase(d.access_token, "solo_denuncia");
-    const soloEv = (await (await upload(d.access_token, solo.id, new Uint8Array(makeWav(500)), { mime: "audio/wav" })).json()) as { id: string };
+    const soloEv = (await (
+      await upload(d.access_token, solo.id, new Uint8Array(makeWav(500)), { mime: "audio/wav" })
+    ).json()) as { id: string };
     expect((await api(`/v1/console/evidence/${soloEv.id}/media`, { token: reviewer.token })).status).toBe(404);
     const other = await seedOrg();
     const otherReviewer = await loginAs("reviewer", other.orgId);

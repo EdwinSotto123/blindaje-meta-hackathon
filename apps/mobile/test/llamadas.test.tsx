@@ -4,7 +4,14 @@
  */
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 
-const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true, canDismiss: () => true, dismissAll: jest.fn() };
+const mockRouter = {
+  push: jest.fn(),
+  replace: jest.fn(),
+  back: jest.fn(),
+  canGoBack: () => true,
+  canDismiss: () => true,
+  dismissAll: jest.fn(),
+};
 
 jest.mock("expo-router", () => {
   const React = require("react") as typeof import("react");
@@ -22,7 +29,11 @@ jest.mock("@/services", () => {
   const { EvidenceQueue, MemoryBlobStore, MemoryQueueRepo } = require("@/sync/queue") as typeof import("@/sync/queue");
   const server = createMockServer({ processMs: 0 });
   let auth: import("@/api/client").AuthState | null = null;
-  const authStore = { get: async () => auth, set: async (a: typeof auth) => void (auth = a), clear: async () => void (auth = null) };
+  const authStore = {
+    get: async () => auth,
+    set: async (a: typeof auth) => void (auth = a),
+    clear: async () => void (auth = null),
+  };
   const api = new BlindajeApi({
     baseUrl: "https://mock.local",
     fetcher: server.fetcher,
@@ -32,7 +43,8 @@ jest.mock("@/services", () => {
   });
   let caseId: string | null = null;
   const ensureCase = async () => {
-    if (!caseId) caseId = (await api.createCase({ consent_mode: "solo_denuncia", sector: null, zona: null } as never)).id;
+    if (!caseId)
+      caseId = (await api.createCase({ consent_mode: "solo_denuncia", sector: null, zona: null } as never)).id;
     return caseId;
   };
   const key = new Uint8Array(32).fill(7);
@@ -42,13 +54,32 @@ jest.mock("@/services", () => {
     key: async () => key,
     uploader: {
       upload: async (i, body) =>
-        api.uploadEvidence(await ensureCase(), body, { tipo: i.tipo, mime: i.mime, sha256: i.sha256, source: i.source, durationMs: i.duration_ms }),
+        api.uploadEvidence(await ensureCase(), body, {
+          tipo: i.tipo,
+          mime: i.mime,
+          sha256: i.sha256,
+          source: i.source,
+          durationMs: i.duration_ms,
+        }),
     },
   });
-  return { api, queue, authStore, mockServer: server, platform: "android", isOnline: async () => false, ensureCase, currentCaseId: async () => caseId, forgetCase: async () => void (caseId = null) };
+  return {
+    api,
+    queue,
+    authStore,
+    mockServer: server,
+    platform: "android",
+    isOnline: async () => false,
+    ensureCase,
+    currentCaseId: async () => caseId,
+    forgetCase: async () => void (caseId = null),
+  };
 });
 
-jest.mock("@/storage/db", () => ({ privateDb: async () => ({ getAllAsync: async () => [], runAsync: async () => ({ changes: 1 }) }), deletePrivateDb: async () => undefined }));
+jest.mock("@/storage/db", () => ({
+  privateDb: async () => ({ getAllAsync: async () => [], runAsync: async () => ({ changes: 1 }) }),
+  deletePrivateDb: async () => undefined,
+}));
 jest.mock("@/storage/queueStorage", () => ({ deleteQueueFiles: () => undefined }));
 jest.mock("expo-file-system", () => ({
   Paths: { cache: { list: () => [] }, document: {} },
@@ -66,12 +97,20 @@ jest.mock("expo-file-system", () => ({
   },
 }));
 jest.mock("expo-document-picker", () => ({
-  getDocumentAsync: jest.fn(async () => ({ canceled: false, assets: [{ uri: "file:///cache/llamada.m4a", name: "llamada.m4a", mimeType: "audio/mp4", lastModified: 0 }] })),
+  getDocumentAsync: jest.fn(async () => ({
+    canceled: false,
+    assets: [{ uri: "file:///cache/llamada.m4a", name: "llamada.m4a", mimeType: "audio/mp4", lastModified: 0 }],
+  })),
 }));
 
 import Llamadas from "@/app/privado/llamadas";
 import NotasPrivadas from "@/app/privado/index";
-import { type AjustesLlamadas, type CuadernoNativo, type LlamadaAnotada, setCuadernoNativoForTests } from "@/native/cuaderno";
+import {
+  type AjustesLlamadas,
+  type CuadernoNativo,
+  type LlamadaAnotada,
+  setCuadernoNativoForTests,
+} from "@/native/cuaderno";
 import { activarBurbuja, leerEstado, mostrarNumero, normalizarNumero, textoDeLlamada } from "@/private/llamadas";
 import { titleFor } from "@/private/rows";
 import { emergencyWipe } from "@/security/wipe";
@@ -81,7 +120,13 @@ import { lock, sessionStore, unlock } from "@/state/session";
 
 jest.setTimeout(30_000);
 
-const AJUSTES_VACIOS: AjustesLlamadas = { activo: false, modo: "desconocidos", accion: "sonar", marcados: [], burbuja: false };
+const AJUSTES_VACIOS: AjustesLlamadas = {
+  activo: false,
+  modo: "desconocidos",
+  accion: "sonar",
+  marcados: [],
+  burbuja: false,
+};
 
 /** Módulo nativo falso: guarda en memoria lo que guardaría el Kotlin. */
 function fakeNativo(
@@ -114,7 +159,9 @@ function fakeNativo(
     leerAjustes: jest.fn(() => ({ ...state.ajustes, marcados: [...state.ajustes.marcados] })),
     guardarAjustes: jest.fn((a: AjustesLlamadas) => void (state.ajustes = { ...a })),
     listarLlamadas: jest.fn(() => [...state.llamadas]),
-    borrarLlamadas: jest.fn((ids: string[]) => void (state.llamadas = state.llamadas.filter((l) => !ids.includes(l.id)))),
+    borrarLlamadas: jest.fn(
+      (ids: string[]) => void (state.llamadas = state.llamadas.filter((l) => !ids.includes(l.id))),
+    ),
     borrarTodo: jest.fn(() => {
       state.llamadas = [];
       state.ajustes = { ...AJUSTES_VACIOS };
@@ -170,7 +217,10 @@ describe("números", () => {
   });
 
   it("la nota de la denuncia lleva la hora, el número con +51 y lo que la persona escribió", () => {
-    const t = textoDeLlamada(llamada("a", "+51987654321", { accion: "silenciar" }), "  Pidieron S/ 500 por Yape (ficticio) ");
+    const t = textoDeLlamada(
+      llamada("a", "+51987654321", { accion: "silenciar" }),
+      "  Pidieron S/ 500 por Yape (ficticio) ",
+    );
     expect(t).toContain("28 oct 2026, 2:32 p. m.");
     expect(t).toContain("+51 987 654 321");
     expect(t).toContain("La marqué como extorsión.");
@@ -180,7 +230,9 @@ describe("números", () => {
   });
 
   it("si la anotó con la burbuja, la nota lo dice", () => {
-    expect(textoDeLlamada(llamada("a", "+51987654321", { durante: true }), "")).toContain("La anoté en el momento, durante la llamada.");
+    expect(textoDeLlamada(llamada("a", "+51987654321", { durante: true }), "")).toContain(
+      "La anoté en el momento, durante la llamada.",
+    );
     expect(textoDeLlamada(llamada("b", "+51987654321"), "")).not.toContain("durante la llamada");
   });
 
@@ -228,7 +280,11 @@ describe("pantalla Llamadas", () => {
   });
 
   it("'No era' borra la llamada del celular sin subir nada", async () => {
-    const { n, state } = fakeNativo({ rol: true, ajustes: { activo: true }, llamadas: [llamada("a", "+51987654321"), llamada("b", null)] });
+    const { n, state } = fakeNativo({
+      rol: true,
+      ajustes: { activo: true },
+      llamadas: [llamada("a", "+51987654321"), llamada("b", null)],
+    });
     setCuadernoNativoForTests(n);
     const antes = (await queue.list()).length;
     await render(<Llamadas />);
@@ -344,7 +400,11 @@ describe("burbuja durante la llamada", () => {
   });
 
   it("la llamada anotada con la burbuja se reconoce en la lista", async () => {
-    const { n } = fakeNativo({ rol: true, ajustes: { activo: true }, llamadas: [llamada("a", "+51987654321", { durante: true }), llamada("b", null)] });
+    const { n } = fakeNativo({
+      rol: true,
+      ajustes: { activo: true },
+      llamadas: [llamada("a", "+51987654321", { durante: true }), llamada("b", null)],
+    });
     setCuadernoNativoForTests(n);
     await render(<Llamadas />);
     expect(screen.getAllByTestId("anotada-durante")).toHaveLength(1);
@@ -364,7 +424,11 @@ describe("burbuja durante la llamada", () => {
 
 describe("notas privadas y seguridad", () => {
   it("las notas avisan cuántas llamadas esperan revisión", async () => {
-    const { n } = fakeNativo({ rol: true, ajustes: { activo: true }, llamadas: [llamada("a", "+51987654321"), llamada("b", null)] });
+    const { n } = fakeNativo({
+      rol: true,
+      ajustes: { activo: true },
+      llamadas: [llamada("a", "+51987654321"), llamada("b", null)],
+    });
     setCuadernoNativoForTests(n);
     await render(<NotasPrivadas />);
     await waitFor(() => expect(screen.getByText("2 llamadas por revisar")).toBeTruthy());

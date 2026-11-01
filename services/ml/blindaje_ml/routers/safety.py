@@ -31,6 +31,10 @@ def prompt_guard(body: PromptGuardRequest, request: Request) -> dict:
         for r in scored
     ]
     # Solo conteos: nunca el texto.
-    log("prompt_guard", textos=len(results), ventanas=sum(r["chunks"] for r in results),
-        inyecciones=sum(r["label"] == "inyeccion" for r in results))
+    log(
+        "prompt_guard",
+        textos=len(results),
+        ventanas=sum(r["chunks"] for r in results),
+        inyecciones=sum(r["label"] == "inyeccion" for r in results),
+    )
     return {"model": guard.name, "threshold": threshold, "results": results}

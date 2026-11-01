@@ -12,7 +12,14 @@ import { errorFields, log } from "../lib/log";
 import { parseWav, wavDurationMs } from "../lib/wav";
 import type { VoiceEmbedSpeaker } from "../ml/client";
 import { requireMl, type EvidenceCtx } from "./context";
-import { binaryDerivative, commitWrites, embeddingStatement, emptyWrites, jsonDerivative, previousOutputs } from "./store";
+import {
+  binaryDerivative,
+  commitWrites,
+  embeddingStatement,
+  emptyWrites,
+  jsonDerivative,
+  previousOutputs,
+} from "./store";
 import type { TranscripcionContent, WavContent } from "./types";
 
 /**
@@ -49,7 +56,9 @@ export async function transcribeKeywords(env: Env, caseId: string): Promise<stri
 
 /** Vector de la muestra de voz de la víctima (descifrado solo en memoria). */
 export async function victimVoiceVector(env: Env, deviceId: string): Promise<number[] | null> {
-  const row = await env.DB.prepare("SELECT vector_enc FROM victim_voice_samples WHERE device_id = ?").bind(deviceId).first<{ vector_enc: string }>();
+  const row = await env.DB.prepare("SELECT vector_enc FROM victim_voice_samples WHERE device_id = ?")
+    .bind(deviceId)
+    .first<{ vector_enc: string }>();
   if (!row) return null;
   try {
     const v = JSON.parse(await openString(env.EVIDENCE_ENCRYPTION_KEY, row.vector_enc, `voice:${deviceId}`)) as unknown;
@@ -78,7 +87,9 @@ function overlap(a: Span, b: Span): number {
 export function markVictimTurns(turns: TranscriptTurn[], speakers: VoiceEmbedSpeaker[]): TranscripcionContent["turns"] {
   const excludedSpeakers = new Set(speakers.filter((s) => s.excluded).map((s) => s.speaker));
   const excludedSpans: Span[] = speakers.flatMap((s) =>
-    (s.segments as EmbedSegment[]).filter((g) => s.excluded || g.excluded).map((g) => ({ start_ms: g.start_ms, end_ms: g.end_ms })),
+    (s.segments as EmbedSegment[])
+      .filter((g) => s.excluded || g.excluded)
+      .map((g) => ({ start_ms: g.start_ms, end_ms: g.end_ms })),
   );
   return turns.map((t) => {
     const span = { start_ms: t.startMs, end_ms: t.endMs };
@@ -95,7 +106,9 @@ export async function processAudio(ctx: EvidenceCtx): Promise<void> {
   const w = emptyWrites();
 
   // 1. WAV normalizado (se reutiliza si una corrida anterior ya lo guardó).
-  const prevWav = await env.DB.prepare("SELECT id, r2_key, content_json FROM derivatives WHERE evidence_id = ? AND tipo = 'wav' LIMIT 1")
+  const prevWav = await env.DB.prepare(
+    "SELECT id, r2_key, content_json FROM derivatives WHERE evidence_id = ? AND tipo = 'wav' LIMIT 1",
+  )
     .bind(ev.id)
     .first<{ id: string; r2_key: string | null; content_json: string | null }>();
   let wav: ArrayBuffer | null = null;
@@ -134,12 +147,22 @@ export async function processAudio(ctx: EvidenceCtx): Promise<void> {
   );
   let turns = tr.turns;
   if (!turns.length && tr.transcript.trim()) {
-    turns = [{ turnId: null, speaker: null, startMs: 0, endMs: tr.audioDurationMs || durationMs || 0, transcript: tr.transcript }];
+    turns = [
+      {
+        turnId: null,
+        speaker: null,
+        startMs: 0,
+        endMs: tr.audioDurationMs || durationMs || 0,
+        transcript: tr.transcript,
+      },
+    ];
   }
 
   // 3. Huella de voz sin la víctima.
   const victim = await victimVoiceVector(env, caso.device_id);
-  const diarized = turns.filter((t) => t.speaker && t.endMs > t.startMs).map((t) => ({ speaker: t.speaker!, start_ms: t.startMs, end_ms: t.endMs }));
+  const diarized = turns
+    .filter((t) => t.speaker && t.endMs > t.startMs)
+    .map((t) => ({ speaker: t.speaker!, start_ms: t.startMs, end_ms: t.endMs }));
   const emb = await ml.voiceEmbed({
     wav_b64: bytesToB64(wavBytes),
     turns: diarized.length ? diarized : null,
@@ -154,12 +177,22 @@ export async function processAudio(ctx: EvidenceCtx): Promise<void> {
     .filter((k) => k.segs.length > 0);
   const huellas: Record<string, string> = {};
   if (kept.length) {
-    let nextFaiss = await reserveCounter(env, "faiss", kept.reduce((n, k) => n + 1 + k.segs.length, 0));
+    let nextFaiss = await reserveCounter(
+      env,
+      "faiss",
+      kept.reduce((n, k) => n + 1 + k.segs.length, 0),
+    );
     for (const k of kept) {
       const num = await nextCounter(env, "voice");
       const printId = newId();
       const centroidId = nextFaiss++;
-      const segRows = k.segs.map((g, i) => ({ i, faiss_id: nextFaiss++, start_ms: g.start_ms, end_ms: g.end_ms, vector: g.vector }));
+      const segRows = k.segs.map((g, i) => ({
+        i,
+        faiss_id: nextFaiss++,
+        start_ms: g.start_ms,
+        end_ms: g.end_ms,
+        vector: g.vector,
+      }));
       w.statements.push(
         env.DB.prepare(
           `INSERT INTO voice_prints (id, num, case_id, evidence_id, speaker, faiss_id, segmentos, duracion_seg, segments_json, model, created_at)
@@ -179,7 +212,15 @@ export async function processAudio(ctx: EvidenceCtx): Promise<void> {
         ),
       );
       w.statements.push(
-        embeddingStatement(env, { faiss_id: centroidId, index_name: "voz", case_id: caso.id, ref_type: "voice_print", ref_id: printId, vector: k.s.centroid, model: emb.model }),
+        embeddingStatement(env, {
+          faiss_id: centroidId,
+          index_name: "voz",
+          case_id: caso.id,
+          ref_type: "voice_print",
+          ref_id: printId,
+          vector: k.s.centroid,
+          model: emb.model,
+        }),
       );
       for (const r of segRows) {
         w.statements.push(
@@ -207,7 +248,9 @@ export async function processAudio(ctx: EvidenceCtx): Promise<void> {
   };
   jsonDerivative(env, w, ev, "transcripcion", content);
   if (durationMs != null) {
-    w.statements.push(env.DB.prepare("UPDATE evidence SET duration_ms = COALESCE(duration_ms, ?) WHERE id = ?").bind(durationMs, ev.id));
+    w.statements.push(
+      env.DB.prepare("UPDATE evidence SET duration_ms = COALESCE(duration_ms, ?) WHERE id = ?").bind(durationMs, ev.id),
+    );
   }
 
   const prev = await previousOutputs(env, ev.id, keepWav ? ["wav"] : []);

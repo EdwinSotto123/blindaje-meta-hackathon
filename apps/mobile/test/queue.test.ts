@@ -31,7 +31,13 @@ function setup(upload: EvidenceUploader["upload"]) {
   return { q, repo, blobs, advance: (ms: number) => (t += ms) };
 }
 
-const audio = () => ({ bytes: utf8("audio ficticio de prueba ".repeat(50)), tipo: "audio" as const, mime: "audio/mp4", source: "grabacion" as const, durationMs: 42000 });
+const audio = () => ({
+  bytes: utf8("audio ficticio de prueba ".repeat(50)),
+  tipo: "audio" as const,
+  mime: "audio/mp4",
+  source: "grabacion" as const,
+  durationMs: 42000,
+});
 
 describe("Cola sin conexión", () => {
   it("guarda cifrado: el archivo en disco no es el original", async () => {
@@ -128,7 +134,13 @@ describe("Cola sin conexión", () => {
     await api.registerDevice({ kty: "EC", crv: "P-256", x: "x", y: "y" }, "android");
     const c = await api.createCase({ consent_mode: "solo_denuncia" });
     const { q, blobs } = setup((i, body) =>
-      api.uploadEvidence(c.id, body, { tipo: i.tipo, mime: i.mime, sha256: i.sha256, source: i.source, durationMs: i.duration_ms }),
+      api.uploadEvidence(c.id, body, {
+        tipo: i.tipo,
+        mime: i.mime,
+        sha256: i.sha256,
+        source: i.source,
+        durationMs: i.duration_ms,
+      }),
     );
     const item = await q.add(audio());
     expect((await q.flush()).uploaded).toBe(1);

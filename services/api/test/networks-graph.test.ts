@@ -12,7 +12,9 @@ describe("grafo de redes", () => {
   it("tiene nodos de los cinco tipos, aristas caso–señal y vínculo, y evidencia en voz e imagen", async () => {
     const net = await seedNetwork({ n: 3 });
     const graph = await buildGraph(await loadNetworkData(env, net.networkId));
-    expect(new Set(graph.nodes.map((n) => n.type))).toEqual(new Set(["caso", "voz", "identificador", "imagen", "frase"]));
+    expect(new Set(graph.nodes.map((n) => n.type))).toEqual(
+      new Set(["caso", "voz", "identificador", "imagen", "frase"]),
+    );
     expect(graph.edges.filter((e) => e.type === "vinculo")).toHaveLength(2);
     const voz = graph.nodes.find((n) => n.label === `V-${net.voices[0]}`)!;
     expect(voz.data).toMatchObject({ evidencia: [net.cases[0]!.evidence[0]!.label] });
@@ -41,7 +43,12 @@ describe("grafo de redes", () => {
       kind: "http",
       raw: async (path: string, init: RequestInit) => {
         calls.push({ path, body: JSON.parse(String(init.body)) });
-        return Response.json({ communities: [graph.nodes.filter((n) => n.type === "caso").map((n) => n.id)], centrality: { [caseB]: 0.5 }, degree: { [caseB]: 7 }, membership: {} });
+        return Response.json({
+          communities: [graph.nodes.filter((n) => n.type === "caso").map((n) => n.id)],
+          centrality: { [caseB]: 0.5 },
+          degree: { [caseB]: 7 },
+          membership: {},
+        });
       },
     } as unknown as MlClient);
     const ml = await analyzeGraph(env, graph);
@@ -61,7 +68,8 @@ describe("grafo de redes", () => {
     ]);
     expect(betweenness(adj)).toEqual({ a: 0, b: 1, c: 0 });
 
-    const mk = (n: number, victims: number, zona = "Lima Este - E12") => Array.from({ length: n }, (_, i) => ({ device_id: `d${i % victims}`, zona }));
+    const mk = (n: number, victims: number, zona = "Lima Este - E12") =>
+      Array.from({ length: n }, (_, i) => ({ device_id: `d${i % victims}`, zona }));
     expect(territorialStats(mk(4, 4), "cuadricula")).toEqual({ disponible: false, nivel: "cuadricula", zonas: [] });
     expect(territorialStats(mk(5, 2), "cuadricula").zonas).toEqual([]);
     expect(territorialStats(mk(5, 3), "cuadricula").zonas).toEqual([{ zona: "Lima Este - E12", casos: 5 }]);
@@ -90,7 +98,9 @@ describe("grafo de redes", () => {
     expect(textos.some((t) => t.startsWith("Vence el plazo de 48 horas"))).toBe(true);
     expect(textos).toContain("Foto del local con una bala");
     expect(textos.some((t) => t.startsWith(`Vínculo VIN-${net.links[0]!.num} confirmado`))).toBe(true);
-    const fechas = v.timeline.map((t) => Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(t.fecha) ? `${t.fecha}T12:00:00-05:00` : t.fecha));
+    const fechas = v.timeline.map((t) =>
+      Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(t.fecha) ? `${t.fecha}T12:00:00-05:00` : t.fecha),
+    );
     expect([...fechas].sort((a, b) => a - b)).toEqual(fechas);
   });
 });

@@ -77,8 +77,14 @@ export function AlertsView() {
   };
 
   const onDecided = (a: AlertView) => {
-    showFlash(a.status === "aprobada" ? `Alerta aprobada. Ya la ven ${audience(alertZone(a))}.` : "Alerta rechazada. No llega a nadie.");
-    alerts.setData((prev) => (prev ?? []).map((x) => (x.id === a.id ? a : x)).filter((x) => filter === "todas" || x.status === filter));
+    showFlash(
+      a.status === "aprobada"
+        ? `Alerta aprobada. Ya la ven ${audience(alertZone(a))}.`
+        : "Alerta rechazada. No llega a nadie.",
+    );
+    alerts.setData((prev) =>
+      (prev ?? []).map((x) => (x.id === a.id ? a : x)).filter((x) => filter === "todas" || x.status === filter),
+    );
   };
 
   return (
@@ -96,8 +102,9 @@ export function AlertsView() {
           ) : null
         }
       >
-        El Vigía redacta un borrador por modalidad y distrito cuando un patrón aparece en al menos 5 casos de 3 víctimas distintas en 14 días. Alguien del
-        equipo lo revisa y lo aprueba antes de que llegue a la app de las personas de ese distrito.
+        El Vigía redacta un borrador por modalidad y distrito cuando un patrón aparece en al menos 5 casos de 3 víctimas
+        distintas en 14 días. Alguien del equipo lo revisa y lo aprueba antes de que llegue a la app de las personas de
+        ese distrito.
       </PageHead>
       {flash}
       <div className="segmented" role="group" aria-label="Filtrar alertas">
@@ -159,7 +166,8 @@ function AlertCard({
     setBusy(true);
     setError(null);
     try {
-      const req = decision === "aprobar" && edited ? { decision, titulo: titulo.trim(), cuerpo: cuerpo.trim() } : { decision };
+      const req =
+        decision === "aprobar" && edited ? { decision, titulo: titulo.trim(), cuerpo: cuerpo.trim() } : { decision };
       onDecided(await api.decideAlert(alert.id, req));
     } catch (e) {
       setError(errorMessage(e));
@@ -180,7 +188,9 @@ function AlertCard({
           </h2>
           <span className="small muted">
             {district ? `${district.area}. ` : ""}Creada el {fmtDateTime(alert.created_at)}
-            {alert.approved_at ? `. ${alert.status === "aprobada" ? "Aprobada" : "Revisada"} por ${alert.approved_by ?? "—"} el ${fmtDateTime(alert.approved_at)}` : ""}
+            {alert.approved_at
+              ? `. ${alert.status === "aprobada" ? "Aprobada" : "Revisada"} por ${alert.approved_by ?? "—"} el ${fmtDateTime(alert.approved_at)}`
+              : ""}
           </span>
         </div>
         <div className="grid-2">
@@ -195,19 +205,41 @@ function AlertCard({
             </dl>
             <div className="field">
               <label htmlFor={`${tid}-t`}>Título</label>
-              <input id={`${tid}-t`} type="text" value={titulo} readOnly={!editable} onChange={(e) => setTitulo(e.target.value)} />
+              <input
+                id={`${tid}-t`}
+                type="text"
+                value={titulo}
+                readOnly={!editable}
+                onChange={(e) => setTitulo(e.target.value)}
+              />
             </div>
             <div className="field">
               <label htmlFor={`${tid}-c`}>Texto</label>
-              <textarea id={`${tid}-c`} rows={6} value={cuerpo} readOnly={!editable} onChange={(e) => setCuerpo(e.target.value)} />
-              {editable ? <span className="hint">Puedes editar el texto antes de aprobar. Sin datos de víctimas, números completos ni ubicaciones exactas.</span> : null}
+              <textarea
+                id={`${tid}-c`}
+                rows={6}
+                value={cuerpo}
+                readOnly={!editable}
+                onChange={(e) => setCuerpo(e.target.value)}
+              />
+              {editable ? (
+                <span className="hint">
+                  Puedes editar el texto antes de aprobar. Sin datos de víctimas, números completos ni ubicaciones
+                  exactas.
+                </span>
+              ) : null}
             </div>
             {titleWords.length ? (
               <Notice kind="warn">
-                El título incluye {titleWords.map((w) => `“${w}”`).join(", ")}. En el celular de la persona, la app parece una app común: usa un título neutro.
+                El título incluye {titleWords.map((w) => `“${w}”`).join(", ")}. En el celular de la persona, la app
+                parece una app común: usa un título neutro.
               </Notice>
             ) : null}
-            {fullNumber ? <Notice kind="warn">El texto parece incluir un número o una cuenta completa. Las alertas nunca los llevan.</Notice> : null}
+            {fullNumber ? (
+              <Notice kind="warn">
+                El texto parece incluir un número o una cuenta completa. Las alertas nunca los llevan.
+              </Notice>
+            ) : null}
             {editable && ask === "aprobar" ? (
               <InlineConfirm
                 id={`${tid}-aprobar`}
@@ -234,7 +266,12 @@ function AlertCard({
               />
             ) : editable ? (
               <Acciones className="row">
-                <button type="button" className="btn btn-primary" disabled={!titulo.trim() || !cuerpo.trim()} onClick={() => setAsk("aprobar")}>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={!titulo.trim() || !cuerpo.trim()}
+                  onClick={() => setAsk("aprobar")}
+                >
                   <Icon name="check" size={16} />
                   {edited ? "Aprobar con cambios" : "Aprobar alerta"}
                 </button>
@@ -250,7 +287,8 @@ function AlertCard({
             <span className="small strong">Vista previa en la app de la persona</span>
             <AlertPreview titulo={titulo} cuerpo={cuerpo} queHacer={alert.borrador.que_hacer} />
             <span className="small muted">
-              Así la verán {audience(zona)}, dentro de sus notas privadas y detrás de su PIN. Nunca llega como notificación.
+              Así la verán {audience(zona)}, dentro de sus notas privadas y detrás de su PIN. Nunca llega como
+              notificación.
             </span>
           </div>
         </div>
@@ -269,7 +307,9 @@ export function AlertPreview({ titulo, cuerpo, queHacer }: { titulo: string; cue
     <div className="phone" role="img" aria-label={`Vista previa: Avisos del proveedor. ${titulo}. ${cuerpo}`}>
       <div className="phone-screen" aria-hidden="true">
         <div className="phone-title">Avisos del proveedor</div>
-        <div className="phone-lead">Avisos de tu zona, revisados antes de llegar aquí. Nunca te llegan como notificación.</div>
+        <div className="phone-lead">
+          Avisos de tu zona, revisados antes de llegar aquí. Nunca te llegan como notificación.
+        </div>
         <div className="phone-card">
           <strong>{titulo || "Sin título"}</strong>
           <span style={{ fontSize: "0.95rem", lineHeight: 1.5 }}>{cuerpo || "Sin texto"}</span>

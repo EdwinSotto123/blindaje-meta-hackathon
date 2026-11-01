@@ -73,8 +73,23 @@ def normalize_audio(data: bytes, timeout: float = 180) -> tuple[bytes, int]:
         dst = Path(tmp) / "out.wav"
         src.write_bytes(data)
         _run_ffmpeg(
-            ["-i", str(src), "-map", "0:a:0", "-vn", "-ac", "1", "-ar", str(SAMPLE_RATE),
-             "-c:a", "pcm_s16le", "-f", "wav", "-bitexact", str(dst)],
+            [
+                "-i",
+                str(src),
+                "-map",
+                "0:a:0",
+                "-vn",
+                "-ac",
+                "1",
+                "-ar",
+                str(SAMPLE_RATE),
+                "-c:a",
+                "pcm_s16le",
+                "-f",
+                "wav",
+                "-bitexact",
+                str(dst),
+            ],
             timeout,
         )
         if not dst.exists():
@@ -118,10 +133,7 @@ _SHOWINFO_RE = re.compile(rb"\bn:\s*(\d+)\b.*?\bs:(\d+)x(\d+)")
 def _video_filters(fps: float, max_side: int) -> str:
     # Escala solo si el lado mayor supera max_side; dimensiones pares para H.264 yuv420p.
     m = int(max_side)
-    scale = (
-        f"scale='if(gt(iw,ih),trunc(min({m},iw)/2)*2,-2)'"
-        f":'if(gt(iw,ih),-2,trunc(min({m},ih)/2)*2)'"
-    )
+    scale = f"scale='if(gt(iw,ih),trunc(min({m},iw)/2)*2,-2)':'if(gt(iw,ih),-2,trunc(min({m},ih)/2)*2)'"
     return f"fps={fps:g},{scale}"
 
 
@@ -149,10 +161,34 @@ def sample_video(
         src.write_bytes(data)
         vf = f"{_video_filters(fps, max_side)},trim=end_frame={int(max_frames)},showinfo"
         proc = _run_ffmpeg(
-            ["-loglevel", "info", "-i", str(src), "-map", "0:v:0", "-an", "-sn", "-dn",
-             "-vf", vf, "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
-             "-pix_fmt", "yuv420p", "-r", f"{fps:g}", "-movflags", "+faststart",
-             "-map_metadata", "-1", str(dst)],
+            [
+                "-loglevel",
+                "info",
+                "-i",
+                str(src),
+                "-map",
+                "0:v:0",
+                "-an",
+                "-sn",
+                "-dn",
+                "-vf",
+                vf,
+                "-c:v",
+                "libx264",
+                "-preset",
+                "veryfast",
+                "-crf",
+                "23",
+                "-pix_fmt",
+                "yuv420p",
+                "-r",
+                f"{fps:g}",
+                "-movflags",
+                "+faststart",
+                "-map_metadata",
+                "-1",
+                str(dst),
+            ],
             timeout,
         )
         frames, width, height = _parse_showinfo(proc.stderr)
@@ -161,9 +197,7 @@ def sample_video(
         return dst.read_bytes(), VideoInfo(frames=frames, fps=float(fps), width=width, height=height)
 
 
-def video_frame(
-    data: bytes, index: int, fps: float = 5, max_side: int = 1920, timeout: float = 300
-) -> bytes:
+def video_frame(data: bytes, index: int, fps: float = 5, max_side: int = 1920, timeout: float = 300) -> bytes:
     """JPEG del cuadro `index` (desde 0) del video muestreado con los mismos parámetros que sample_video."""
     if not data:
         raise MediaError("empty_body")
@@ -175,8 +209,26 @@ def video_frame(
         src.write_bytes(data)
         vf = f"{_video_filters(fps, max_side)},trim=start_frame={index}:end_frame={index + 1}"
         proc = _run_ffmpeg(
-            ["-loglevel", "warning", "-i", str(src), "-map", "0:v:0", "-an", "-vf", vf,
-             "-frames:v", "1", "-q:v", "2", "-map_metadata", "-1", "-f", "image2", str(dst)],
+            [
+                "-loglevel",
+                "warning",
+                "-i",
+                str(src),
+                "-map",
+                "0:v:0",
+                "-an",
+                "-vf",
+                vf,
+                "-frames:v",
+                "1",
+                "-q:v",
+                "2",
+                "-map_metadata",
+                "-1",
+                "-f",
+                "image2",
+                str(dst),
+            ],
             timeout,
             check=False,
         )
@@ -204,7 +256,9 @@ def probe(data: bytes, timeout: float = 30) -> dict | None:
         try:
             proc = subprocess.run(
                 [s.ffprobe, "-v", "error", "-print_format", "json", "-show_format", "-show_streams", str(src)],
-                capture_output=True, timeout=timeout, check=False,
+                capture_output=True,
+                timeout=timeout,
+                check=False,
             )
         except (OSError, subprocess.SubprocessError):
             return None
@@ -229,8 +283,12 @@ def ffprobe_version() -> str | None:
 
 
 def sample_frames(
-    data: bytes, n: int, duration_s: float | None = None, max_side: int = 1280,
-    size: tuple[int, int] | None = None, timeout: float = 300,
+    data: bytes,
+    n: int,
+    duration_s: float | None = None,
+    max_side: int = 1280,
+    size: tuple[int, int] | None = None,
+    timeout: float = 300,
 ) -> list:
     """Hasta `n` cuadros repartidos a lo largo del video, como imágenes PIL RGB.
 
@@ -251,9 +309,24 @@ def sample_frames(
         src = Path(tmp) / "in"
         src.write_bytes(data)
         _run_ffmpeg(
-            ["-loglevel", "error", "-i", str(src), "-map", "0:v:0", "-an", "-sn", "-dn",
-             "-vf", f"{rate},{scale}", "-frames:v", str(n), "-map_metadata", "-1",
-             str(Path(tmp) / "f%04d.png")],
+            [
+                "-loglevel",
+                "error",
+                "-i",
+                str(src),
+                "-map",
+                "0:v:0",
+                "-an",
+                "-sn",
+                "-dn",
+                "-vf",
+                f"{rate},{scale}",
+                "-frames:v",
+                str(n),
+                "-map_metadata",
+                "-1",
+                str(Path(tmp) / "f%04d.png"),
+            ],
             timeout,
         )
         frames = []

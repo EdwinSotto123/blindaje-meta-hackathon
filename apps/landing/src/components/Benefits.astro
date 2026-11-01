@@ -27,43 +27,54 @@ const bodegaImg = await getImage({ src: bodega, widths: [360, 540, 768], format:
 const portal = productShot("portal-mapa-movil");
 const profile = productShot("consola-perfil-cartografo");
 const portalImg = portal
-  ? await getImage({ src: portal, widths: [280, 420, 560].filter((w) => w <= portal.width), format: "webp", quality: 80 })
+  ? await getImage({
+      src: portal,
+      widths: [280, 420, 560].filter((w) => w <= portal.width),
+      format: "webp",
+      quality: 80,
+    })
   : null;
 const profileImg = profile
-  ? await getImage({ src: profile, widths: [560, 840, 1120].filter((w) => w <= profile.width), format: "webp", quality: 80 })
+  ? await getImage({
+      src: profile,
+      widths: [560, 840, 1120].filter((w) => w <= profile.width),
+      format: "webp",
+      quality: 80,
+    })
   : null;
 ---
 
 <section class="section on-paper-2" id="beneficios" aria-labelledby="beneficios-title">
   <div class="wrap">
     <div class="sec-head" data-reveal>
-      <h2 id="beneficios-title" class="head">{b.title}</h2>
+      <h2 id="beneficios-title" class="head">
+        {b.title}
+      </h2>
       <p class="lead soft">{b.lead}</p>
     </div>
 
     <div class="rows">
-      {
-        b.audiences.map((a, i) => (
-          <article class:list={["row", i % 2 === 1 && "row--flip"]} aria-labelledby={`aud-${a.id}`} data-reveal>
-            <div class="row__text">
-              <h3 id={`aud-${a.id}`} class="head row__name">
-                {a.name}
-              </h3>
-              <p class="lead row__title">{a.title}</p>
-              <ul class="checks" role="list">
-                {a.points.map((p) => (
-                  <li>
-                    <Icon name="check" />
-                    <span>{p}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      {b.audiences.map((a, i) => (
+        <article class:list={["row", i % 2 === 1 && "row--flip"]} aria-labelledby={`aud-${a.id}`} data-reveal>
+          <div class="row__text">
+            <h3 id={`aud-${a.id}`} class="head row__name">
+              {a.name}
+            </h3>
+            <p class="lead row__title">{a.title}</p>
+            <ul class="checks" role="list">
+              {a.points.map((p) => (
+                <li>
+                  <Icon name="check" />
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            <div class="row__visual">
-              {a.id === "victim" && (
-                <figure class="ill" aria-label={il.label}>
-                  <div class="ill__stage">
+          <div class="row__visual">
+            {a.id === "victim" && (
+              <figure class="ill" aria-label={il.label}>
+                <div class="ill__stage">
                   <div class="foto ill__photo">
                     <img
                       src={bodegaImg.src}
@@ -119,74 +130,73 @@ const profileImg = profile
                       </p>
                     </div>
                   </div>
-                  </div>
-                  <figcaption class="cap">
-                    {b.illustration} {b.victimPhotoCredit}
-                  </figcaption>
-                </figure>
-              )}
+                </div>
+                <figcaption class="cap">
+                  {b.illustration} {b.victimPhotoCredit}
+                </figcaption>
+              </figure>
+            )}
 
-              {a.id === "community" && portal && portalImg && (
-                <figure class="duo">
-                  <div class="duo__phone">
-                    <img
-                      src={portalImg.src}
-                      srcset={portalImg.srcSet.attribute}
-                      sizes="(min-width: 960px) 280px, 60vw"
-                      width={portal.width}
-                      height={portal.height}
-                      alt={d.actors.community.shot.alt}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-                  <div class="alert-card" data-ui>
-                    <p class="alert-card__title">
-                      <Icon name="alert" />
-                      {d.intel.alert.cardTitle}
-                    </p>
-                    <p>{d.intel.alert.card}</p>
-                    <p class="alert-card__meta">{d.intel.alert.cardMeta}</p>
-                  </div>
-                  <figcaption class="cap duo__cap">{d.actors.community.shot.caption}</figcaption>
-                </figure>
-              )}
+            {a.id === "community" && portal && portalImg && (
+              <figure class="duo">
+                <div class="duo__phone">
+                  <img
+                    src={portalImg.src}
+                    srcset={portalImg.srcSet.attribute}
+                    sizes="(min-width: 960px) 280px, 60vw"
+                    width={portal.width}
+                    height={portal.height}
+                    alt={d.actors.community.shot.alt}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="alert-card" data-ui>
+                  <p class="alert-card__title">
+                    <Icon name="alert" />
+                    {d.intel.alert.cardTitle}
+                  </p>
+                  <p>{d.intel.alert.card}</p>
+                  <p class="alert-card__meta">{d.intel.alert.cardMeta}</p>
+                </div>
+                <figcaption class="cap duo__cap">{d.actors.community.shot.caption}</figcaption>
+              </figure>
+            )}
 
-              {a.id === "authority" && profile && profileImg && (
-                <figure class="duo duo--doc">
-                  <div class="duo__win">
-                    <img
-                      src={profileImg.src}
-                      srcset={profileImg.srcSet.attribute}
-                      sizes="(min-width: 960px) 560px, 92vw"
-                      width={profile.width}
-                      height={profile.height}
-                      alt={d.actors.authority.shot.alt}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-                  <div class="doc-card" data-ui>
-                    <p class="doc-card__title">
-                      <Icon name="file" />
-                      {d.lang === "es" ? "Expediente R-001.pdf" : "Case file R-001.pdf"}
-                    </p>
-                    <ul role="list">
-                      {d.actors.authority.dossier.map((x) => (
-                        <li>
-                          <Icon name="check" />
-                          {x.title}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <figcaption class="cap duo__cap">{d.actors.authority.shot.caption}</figcaption>
-                </figure>
-              )}
-            </div>
-          </article>
-        ))
-      }
+            {a.id === "authority" && profile && profileImg && (
+              <figure class="duo duo--doc">
+                <div class="duo__win">
+                  <img
+                    src={profileImg.src}
+                    srcset={profileImg.srcSet.attribute}
+                    sizes="(min-width: 960px) 560px, 92vw"
+                    width={profile.width}
+                    height={profile.height}
+                    alt={d.actors.authority.shot.alt}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="doc-card" data-ui>
+                  <p class="doc-card__title">
+                    <Icon name="file" />
+                    {d.lang === "es" ? "Expediente R-001.pdf" : "Case file R-001.pdf"}
+                  </p>
+                  <ul role="list">
+                    {d.actors.authority.dossier.map((x) => (
+                      <li>
+                        <Icon name="check" />
+                        {x.title}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <figcaption class="cap duo__cap">{d.actors.authority.shot.caption}</figcaption>
+              </figure>
+            )}
+          </div>
+        </article>
+      ))}
     </div>
   </div>
 </section>

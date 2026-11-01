@@ -20,16 +20,23 @@ import { mockVectorOverview, mockVectorTrace, MockVectorsApi } from "../mock/vec
 import { CollectionsTable, StoreStrip, syncText, WalkStage } from "./VectorsView";
 
 const BASE = "https://api.blindaje.test";
-const text = (h: string) => h.replace(/<[^>]+>/g, " ").replace(/&quot;/g, '"').replace(/\s+/g, " ");
+const text = (h: string) =>
+  h
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, " ");
 const ov = mockVectorOverview();
 const caseOf = (code: string) => ov.casos.find((c) => c.caso === code)!;
 const A = caseOf("A");
 const traceA = mockVectorTrace(A.case_id);
 const stepsA = buildSteps(A);
-const at = (kind: string, indice?: string) => stepsA.findIndex((s) => s.kind === kind && (!indice || s.indice === indice));
+const at = (kind: string, indice?: string) =>
+  stepsA.findIndex((s) => s.kind === kind && (!indice || s.indice === indice));
 
 function stage(stepIdx: number, trace: S.VectorTrace | null, loading = false) {
-  return renderToStaticMarkup(<WalkStage overview={ov} c={A} steps={stepsA} stepIdx={stepIdx} trace={trace} loading={loading} />);
+  return renderToStaticMarkup(
+    <WalkStage overview={ov} c={A} steps={stepsA} stepIdx={stepIdx} trace={trace} loading={loading} />,
+  );
 }
 
 describe("datos simulados del motor vectorial", () => {
@@ -44,9 +51,19 @@ describe("datos simulados del motor vectorial", () => {
       }
     }
     // Los mismos conteos que los datos en vivo: 4 huellas, 13 segmentos, 7 fichas y 3 recortes.
-    expect(Object.fromEntries(ov.colecciones.map((k) => [k.indice, k.en_d1]))).toEqual({ voz: 4, voz_segmento: 13, texto: 7, imagen: 3 });
+    expect(Object.fromEntries(ov.colecciones.map((k) => [k.indice, k.en_d1]))).toEqual({
+      voz: 4,
+      voz_segmento: 13,
+      texto: 7,
+      imagen: 3,
+    });
     expect(A.vectores).toEqual({ voz: 2, voz_segmento: 7, texto: 1, imagen: 3 });
-    expect(ov.mapas.flatMap((m) => m.puntos).filter((p) => p.caso === "A").map((p) => p.ref)).toContain("V-1 (0:04–0:07)");
+    expect(
+      ov.mapas
+        .flatMap((m) => m.puntos)
+        .filter((p) => p.caso === "A")
+        .map((p) => p.ref),
+    ).toContain("V-1 (0:04–0:07)");
   });
 
   it("cada recorrido es coherente: puntaje combinado, estado por umbral y sin vecinos del mismo caso", () => {
@@ -62,12 +79,26 @@ describe("datos simulados del motor vectorial", () => {
     }
     // Como en vivo: A y B comparten la voz (0.85) y el modus operandi (0.40) y quedan en 0.91,
     // probable; los demás llegan por la ficha (todas se parecen) y se quedan en 0.40, descartados.
-    expect(traceA.candidatos[0]).toMatchObject({ caso: "B", estado: "probable", puntaje: 0.91, senales: { voz: 0.85, modus_operandi: 0.4 } });
+    expect(traceA.candidatos[0]).toMatchObject({
+      caso: "B",
+      estado: "probable",
+      puntaje: 0.91,
+      senales: { voz: 0.85, modus_operandi: 0.4 },
+    });
     expect(traceA.candidatos[0]!.fuentes).toEqual(expect.arrayContaining(["voz", "voz_segmento", "texto"]));
     expect(traceA.candidatos.slice(1).every((k) => k.estado === "descartado_auto")).toBe(true);
-    expect(traceA.consultas.map((q) => q.indice)).toEqual([...Array(2).fill("voz"), ...Array(7).fill("voz_segmento"), "texto", ...Array(3).fill("imagen")]);
+    expect(traceA.consultas.map((q) => q.indice)).toEqual([
+      ...Array(2).fill("voz"),
+      ...Array(7).fill("voz_segmento"),
+      "texto",
+      ...Array(3).fill("imagen"),
+    ]);
     expect(queriesOf(traceA, "texto")[0]!.vecinos.every((n) => n.score >= 0.93 && n.score <= 0.97)).toBe(true);
-    expect(queriesOf(traceA, "voz_segmento").some((q) => q.vecinos.some((n) => !n.pasa && n.case_id === caseOf("B").case_id))).toBe(true);
+    expect(
+      queriesOf(traceA, "voz_segmento").some((q) =>
+        q.vecinos.some((n) => !n.pasa && n.case_id === caseOf("B").case_id),
+      ),
+    ).toBe(true);
     expect(queriesOf(traceA, "imagen").every((q) => q.vecinos.length === 0)).toBe(true);
   });
 
@@ -76,7 +107,9 @@ describe("datos simulados del motor vectorial", () => {
     for (const role of ["reviewer", "analyst"] as const) {
       expect(can(role, "vectors.view")).toBe(false);
       expect(NAV.filter((n) => can(role, n.cap)).map((n) => n.to)).not.toContain("/vectores");
-      await expect(new MockVectorsApi({ id: "u", role }, { latency: 0 }).overview()).rejects.toMatchObject({ status: 403 });
+      await expect(new MockVectorsApi({ id: "u", role }, { latency: 0 }).overview()).rejects.toMatchObject({
+        status: 403,
+      });
     }
     expect(NAV.filter((n) => can("admin", n.cap)).map((n) => n.to)).toContain("/vectores");
     const admin = new MockVectorsApi({ id: "u", role: "admin" }, { latency: 0 });
@@ -94,10 +127,18 @@ describe("datos simulados del motor vectorial", () => {
       const url = String(input);
       calls.push({ url, method: init?.method ?? "GET", body: init?.body ? JSON.parse(String(init.body)) : undefined });
       const path = new URL(url).pathname;
-      const body = path.endsWith("/consulta") ? traceA : path.endsWith("/sincronizar") ? { proveedor: "chroma-cloud", sincronizados: { voz: 4 }, borrados: 0, ms: 900 } : ov;
+      const body = path.endsWith("/consulta")
+        ? traceA
+        : path.endsWith("/sincronizar")
+          ? { proveedor: "chroma-cloud", sincronizados: { voz: 4 }, borrados: 0, ms: 900 }
+          : ov;
       return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
     });
-    const client = new HttpClient({ baseUrl: BASE, store: new MemoryTokenStore({ accessToken: "t", refreshToken: "r", expiresAt: Date.now() + 600_000 }), fetch: fetchImpl });
+    const client = new HttpClient({
+      baseUrl: BASE,
+      store: new MemoryTokenStore({ accessToken: "t", refreshToken: "r", expiresAt: Date.now() + 600_000 }),
+      fetch: fetchImpl,
+    });
     const api = new HttpVectorsApi(client);
     expect((await api.overview()).almacen.base).toBe("blindaje");
     expect((await api.trace(A.case_id)).caso).toBe("A");
@@ -124,18 +165,32 @@ describe("piezas del recorrido", () => {
       "Señales",
       "Revisión humana",
     ]);
-    expect(buildSteps(caseOf("D")).map((s) => s.kind)).toEqual(["evidencia", "modelos", "vectores", "base", "busqueda", "senales", "revision"]);
+    expect(buildSteps(caseOf("D")).map((s) => s.kind)).toEqual([
+      "evidencia",
+      "modelos",
+      "vectores",
+      "base",
+      "busqueda",
+      "senales",
+      "revision",
+    ]);
   });
 
   it("describe cada paso en palabras, con los tiempos reales de la base", () => {
     const d = (i: number, t: S.VectorTrace | null, loading = false) => stepDescription(stepsA[i]!, A, ov, t, loading);
-    expect(d(at("evidencia"), null)).toBe("El caso A trae 5 evidencias: 2 audios, 2 textos y 1 imagen. Todo es ficticio.");
-    expect(d(at("base"), null)).toContain("Chroma Cloud, base blindaje: 2 en blindaje-voz, 7 en blindaje-voz-segmento, 1 en blindaje-texto y 3 en blindaje-imagen");
+    expect(d(at("evidencia"), null)).toBe(
+      "El caso A trae 5 evidencias: 2 audios, 2 textos y 1 imagen. Todo es ficticio.",
+    );
+    expect(d(at("base"), null)).toContain(
+      "Chroma Cloud, base blindaje: 2 en blindaje-voz, 7 en blindaje-voz-segmento, 1 en blindaje-texto y 3 en blindaje-imagen",
+    );
     expect(d(at("busqueda", "voz"), null, true)).toMatch(/^Consultando Chroma Cloud/);
     const voz = d(at("busqueda", "voz"), traceA);
     expect(voz).toMatch(/^En blindaje-voz, Chroma respondió 2 consultas en (entre \d+ y )?\d+ ms\./);
     expect(voz).toContain("Los 2 vectores del mismo caso no cuentan.");
-    expect(searchSummary("imagen", queriesOf(traceA, "imagen"), "chroma-cloud")).toContain("No hay vectores de otros casos en esta colección.");
+    expect(searchSummary("imagen", queriesOf(traceA, "imagen"), "chroma-cloud")).toContain(
+      "No hay vectores de otros casos en esta colección.",
+    );
     expect(d(at("revision"), traceA)).toContain("Ningún vínculo se crea solo");
   });
 
@@ -165,9 +220,16 @@ describe("piezas del recorrido", () => {
   });
 
   it("la fórmula del puntaje usa las señales del candidato", () => {
-    expect(combineFormula({ case_id: "x", caso: "B", fuentes: ["voz"], senales: { identificador: 0.95, voz: 0.85 }, puntaje: 0.9925, estado: "probable" })).toBe(
-      "1 − (1 − 0.95) × (1 − 0.85) = 0.99",
-    );
+    expect(
+      combineFormula({
+        case_id: "x",
+        caso: "B",
+        fuentes: ["voz"],
+        senales: { identificador: 0.95, voz: 0.85 },
+        puntaje: 0.9925,
+        estado: "probable",
+      }),
+    ).toBe("1 − (1 − 0.95) × (1 − 0.85) = 0.99");
     const agg = aggregateNeighbors(queriesOf(traceA, "voz_segmento"));
     expect(new Set(agg.map((n) => n.id)).size).toBe(agg.length);
   });
@@ -229,12 +291,17 @@ describe("estado y colecciones", () => {
     expect(html).toMatch(/Chroma Cloud \(base blindaje\s*\)/);
     expect(html).toContain("Conectada, respondió en 132 ms. Índice SPANN con coseno");
     expect(html).toContain("Solo casos ficticios del demo");
-    const off = text(renderToStaticMarkup(<StoreStrip store={{ ...ov.almacen, conectado: false, latencia_ms: null }} />));
+    const off = text(
+      renderToStaticMarkup(<StoreStrip store={{ ...ov.almacen, conectado: false, latencia_ms: null }} />),
+    );
     expect(off).toContain("No responde");
   });
 
   it("marca las colecciones que no están al día con D1", () => {
-    const stale: S.VectorOverview = { ...ov, colecciones: ov.colecciones.map((k) => (k.indice === "texto" ? { ...k, en_base: 6 } : k)) };
+    const stale: S.VectorOverview = {
+      ...ov,
+      colecciones: ov.colecciones.map((k) => (k.indice === "texto" ? { ...k, en_base: 6 } : k)),
+    };
     const html = text(renderToStaticMarkup(<CollectionsTable overview={stale} />));
     expect(html).toContain("6: faltan 1, sincroniza");
     expect(html).toContain("DINOv2 de Meta");

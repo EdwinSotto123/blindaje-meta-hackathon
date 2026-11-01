@@ -1,4 +1,10 @@
-import { districtById, type BusinessRecommendationView, type PublicRiskOverview, type PublicZoneMap, type VictimAlert } from "@blindaje/shared";
+import {
+  districtById,
+  type BusinessRecommendationView,
+  type PublicRiskOverview,
+  type PublicZoneMap,
+  type VictimAlert,
+} from "@blindaje/shared";
 import type { HealthResponse, PortalApi, ZoneQuery } from "../api/api";
 import { ApiRequestError } from "../api/client";
 import { RUBROS } from "../lib/choice";
@@ -29,9 +35,11 @@ export class MockPortalApi implements PortalApi {
 
   /** Como la API: el distrito tiene que ser uno de la lista y el rubro, uno del enum. */
   private check(q: { zona: string; sector?: string | null }): { zona: string; sector: string | null } {
-    if (!districtById(q.zona)) throw new ApiRequestError(400, "bad_request", "Ese distrito no está en la lista. Elige uno de Lima o el Callao.");
+    if (!districtById(q.zona))
+      throw new ApiRequestError(400, "bad_request", "Ese distrito no está en la lista. Elige uno de Lima o el Callao.");
     const sector = q.sector || null;
-    if (sector && !(RUBROS as readonly string[]).includes(sector)) throw new ApiRequestError(400, "bad_request", "Ese rubro no está en la lista.");
+    if (sector && !(RUBROS as readonly string[]).includes(sector))
+      throw new ApiRequestError(400, "bad_request", "Ese rubro no está en la lista.");
     return { zona: q.zona, sector };
   }
 

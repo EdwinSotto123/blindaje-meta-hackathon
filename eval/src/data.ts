@@ -67,9 +67,16 @@ export const EscenariosFile = z.object({
   ficticio: z.literal(true),
   version: z.string(),
   casos: z.array(CasoEscenario),
-  escenarios: z.array(z.object({ id: z.string(), tipo: z.string(), descripcion: z.string(), casos: z.array(z.string()) })),
+  escenarios: z.array(
+    z.object({ id: z.string(), tipo: z.string(), descripcion: z.string(), casos: z.array(z.string()) }),
+  ),
   pares_vinculados: z.array(
-    z.object({ a: z.string(), b: z.string(), por: z.array(z.enum(["voz", "identificador", "imagen"])), escenario: z.string() }),
+    z.object({
+      a: z.string(),
+      b: z.string(),
+      por: z.array(z.enum(["voz", "identificador", "imagen"])),
+      escenario: z.string(),
+    }),
   ),
 });
 export type EscenariosFile = z.infer<typeof EscenariosFile>;

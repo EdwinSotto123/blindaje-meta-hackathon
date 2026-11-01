@@ -16,22 +16,22 @@ const f = d.lp.faq;
 <section class="section" id="preguntas" aria-labelledby="preguntas-title">
   <div class="wrap faq">
     <div class="faq__head" data-reveal>
-      <h2 id="preguntas-title" class="head">{f.title}</h2>
+      <h2 id="preguntas-title" class="head">
+        {f.title}
+      </h2>
       <p class="lead soft">{f.lead}</p>
     </div>
 
     <div class="faq__list" data-reveal>
-      {
-        f.items.map((it) => (
-          <details class="qa">
-            <summary>
-              <span>{it.q}</span>
-              <span class="qa__sign" aria-hidden="true" />
-            </summary>
-            <p class="soft">{it.a}</p>
-          </details>
-        ))
-      }
+      {f.items.map((it) => (
+        <details class="qa">
+          <summary>
+            <span>{it.q}</span>
+            <span class="qa__sign" aria-hidden="true" />
+          </summary>
+          <p class="soft">{it.a}</p>
+        </details>
+      ))}
     </div>
   </div>
 </section>

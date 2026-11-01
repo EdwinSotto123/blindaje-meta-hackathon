@@ -7,7 +7,16 @@ import { api, apiJson, createCase, insertLink, loginAs, markIndexed, registerDev
 
 describe("redes por union-find", () => {
   it("calcula componentes conexos", () => {
-    expect(connectedComponents([["a", "b"], ["b", "c"], ["x", "y"]])).toEqual([["a", "b", "c"], ["x", "y"]]);
+    expect(
+      connectedComponents([
+        ["a", "b"],
+        ["b", "c"],
+        ["x", "y"],
+      ]),
+    ).toEqual([
+      ["a", "b", "c"],
+      ["x", "y"],
+    ]);
     const uf = new UnionFind();
     uf.add("solo");
     expect(uf.components()).toEqual([]);
@@ -16,18 +25,28 @@ describe("redes por union-find", () => {
   it("solo los vínculos confirmados forman redes y los ids se conservan", async () => {
     const { invite, orgId } = await seedOrg();
     const d = await registerDevice(invite);
-    const [a, b, c] = [await createCase(d.access_token), await createCase(d.access_token), await createCase(d.access_token)];
+    const [a, b, c] = [
+      await createCase(d.access_token),
+      await createCase(d.access_token),
+      await createCase(d.access_token),
+    ];
     for (const x of [a, b, c]) await markIndexed(x.id);
     const ab = await insertLink(a.id, b.id, "confirmado");
     await insertLink(b.id, c.id, "probable");
     await recomputeNetworks(env);
-    const net1 = await env.DB.prepare("SELECT network_id FROM network_cases WHERE case_id = ?").bind(a.id).first<{ network_id: string }>();
+    const net1 = await env.DB.prepare("SELECT network_id FROM network_cases WHERE case_id = ?")
+      .bind(a.id)
+      .first<{ network_id: string }>();
     expect(net1).toBeTruthy();
-    expect(await env.DB.prepare("SELECT network_id FROM network_cases WHERE case_id = ?").bind(c.id).first()).toBeNull();
+    expect(
+      await env.DB.prepare("SELECT network_id FROM network_cases WHERE case_id = ?").bind(c.id).first(),
+    ).toBeNull();
 
     // La revisora confirma B–C desde la consola: la red crece y conserva su id.
     const reviewer = await loginAs("reviewer", orgId);
-    const queue = await apiJson<{ links: Array<{ id: string; status: string }> }>("/v1/console/links", { token: reviewer.token });
+    const queue = await apiJson<{ links: Array<{ id: string; status: string }> }>("/v1/console/links", {
+      token: reviewer.token,
+    });
     const pending = queue.body.links.find((l) => l.status === "probable")!;
     const decided = await apiJson<{ status: string; reviewed_by: string }>(`/v1/console/links/${pending.id}/decision`, {
       token: reviewer.token,
@@ -35,12 +54,16 @@ describe("redes por union-find", () => {
     });
     expect(decided.status).toBe(200);
     expect(decided.body.status).toBe("confirmado");
-    const members = await env.DB.prepare("SELECT case_id FROM network_cases WHERE network_id = ?").bind(net1!.network_id).all();
+    const members = await env.DB.prepare("SELECT case_id FROM network_cases WHERE network_id = ?")
+      .bind(net1!.network_id)
+      .all();
     expect(members.results).toHaveLength(3);
 
     // Descartar A–B parte la red: A queda fuera.
     await apiJson(`/v1/console/links/${ab.id}/decision`, { token: reviewer.token, json: { decision: "descartar" } });
-    const after = await env.DB.prepare("SELECT case_id FROM network_cases WHERE network_id = ?").bind(net1!.network_id).all<{ case_id: string }>();
+    const after = await env.DB.prepare("SELECT case_id FROM network_cases WHERE network_id = ?")
+      .bind(net1!.network_id)
+      .all<{ case_id: string }>();
     expect(after.results.map((r) => r.case_id).sort()).toEqual([b.id, c.id].sort());
   });
 });
@@ -64,22 +87,38 @@ describe("consentimiento", () => {
     });
     expect(res.status).toBe(200);
     expect(res.body.consent_mode).toBe("solo_denuncia");
-    const row = await env.DB.prepare("SELECT indexed, consent_mode FROM cases WHERE id = ?").bind(a.id).first<{ indexed: number }>();
+    const row = await env.DB.prepare("SELECT indexed, consent_mode FROM cases WHERE id = ?")
+      .bind(a.id)
+      .first<{ indexed: number }>();
     expect(row!.indexed).toBe(0);
-    const links = await env.DB.prepare("SELECT COUNT(*) AS n FROM links WHERE case_a = ? OR case_b = ?").bind(a.id, a.id).first<{ n: number }>();
+    const links = await env.DB.prepare("SELECT COUNT(*) AS n FROM links WHERE case_a = ? OR case_b = ?")
+      .bind(a.id, a.id)
+      .first<{ n: number }>();
     expect(links!.n).toBe(0);
-    expect(await env.DB.prepare("SELECT 1 FROM network_cases WHERE case_id IN (?, ?)").bind(a.id, b.id).first()).toBeNull();
-    const consents = await env.DB.prepare("SELECT mode, revoked_at FROM consents WHERE case_id = ? ORDER BY granted_at").bind(a.id).all<{
-      mode: string;
-      revoked_at: string | null;
-    }>();
+    expect(
+      await env.DB.prepare("SELECT 1 FROM network_cases WHERE case_id IN (?, ?)").bind(a.id, b.id).first(),
+    ).toBeNull();
+    const consents = await env.DB.prepare("SELECT mode, revoked_at FROM consents WHERE case_id = ? ORDER BY granted_at")
+      .bind(a.id)
+      .all<{
+        mode: string;
+        revoked_at: string | null;
+      }>();
     expect(consents.results.map((c) => c.mode)).toEqual(["comunitario", "solo_denuncia"]);
     expect(consents.results[0]!.revoked_at).not.toBeNull();
     expect(consents.results[1]!.revoked_at).toBeNull();
-    const audited = await env.DB.prepare("SELECT details_json FROM audit_log WHERE action = 'case.consent' AND target_id = ?").bind(a.id).first<{
-      details_json: string;
-    }>();
-    expect(JSON.parse(audited!.details_json)).toMatchObject({ mode: "solo_denuncia", deindexed: true, links_removed: 1 });
+    const audited = await env.DB.prepare(
+      "SELECT details_json FROM audit_log WHERE action = 'case.consent' AND target_id = ?",
+    )
+      .bind(a.id)
+      .first<{
+        details_json: string;
+      }>();
+    expect(JSON.parse(audited!.details_json)).toMatchObject({
+      mode: "solo_denuncia",
+      deindexed: true,
+      links_removed: 1,
+    });
   });
 });
 
@@ -116,14 +155,20 @@ describe("borrado del caso", () => {
       ["consents", "case_id"],
       ["network_cases", "case_id"],
     ] as const) {
-      const n = await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE ${col} = ?`).bind(a.id).first<{ n: number }>();
+      const n = await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE ${col} = ?`)
+        .bind(a.id)
+        .first<{ n: number }>();
       expect(n!.n, table).toBe(0);
     }
     expect(await env.DB.prepare("SELECT 1 FROM network_cases WHERE case_id = ?").bind(b.id).first()).toBeNull();
     expect((await api(`/v1/cases/${a.id}/report`, { token: d.access_token })).status).toBe(404);
-    const audited = await env.DB.prepare("SELECT COUNT(*) AS n FROM audit_log WHERE action = 'case.delete' AND target_id = ?").bind(a.id).first<{
-      n: number;
-    }>();
+    const audited = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM audit_log WHERE action = 'case.delete' AND target_id = ?",
+    )
+      .bind(a.id)
+      .first<{
+        n: number;
+      }>();
     expect(audited!.n).toBe(1);
   });
 });

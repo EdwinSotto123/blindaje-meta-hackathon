@@ -73,8 +73,13 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        log("startup", version=__version__, threads=settings.threads, token_required=bool(settings.token),
-            preload=list(settings.preload))
+        log(
+            "startup",
+            version=__version__,
+            threads=settings.threads,
+            token_required=bool(settings.token),
+            preload=list(settings.preload),
+        )
         if settings.preload:
             threading.Thread(target=state.registry.preload, args=(settings.preload,), daemon=True).start()
         yield

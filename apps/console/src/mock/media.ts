@@ -51,7 +51,8 @@ export function synthVoiceWav(voiceLabel: string, durationMs: number, seed = 1):
 }
 
 export function synthImageSvg(title: string, caption: string): Blob {
-  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
+  const esc = (s: string) =>
+    s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300" viewBox="0 0 480 300">
 <rect width="480" height="300" fill="#FAFAF9"/>
 <rect x="40" y="40" width="400" height="170" rx="12" fill="#F2F1EF" stroke="#CFCBC4"/>

@@ -5,7 +5,15 @@ import { listProfiles } from "../console/views";
 import { nextCounter } from "../lib/db";
 import { ApiError } from "../lib/errors";
 import { newId, nowIso } from "../lib/ids";
-import { activityPeriod, analyzeGraph, buildGraph, loadNetworkData, normalizePhrase, sectorCounts, territorialStats } from "../networks/graph";
+import {
+  activityPeriod,
+  analyzeGraph,
+  buildGraph,
+  loadNetworkData,
+  normalizePhrase,
+  sectorCounts,
+  territorialStats,
+} from "../networks/graph";
 import type { Actor } from "../types";
 import { metaClientFor, runCheckedAgent } from "./common";
 import { NetworkToolbox, type RegisteredHypothesis } from "./tools/network";
@@ -132,7 +140,16 @@ export async function runCartografo(env: Env, networkId: string, opts: Cartograf
     env.DB.prepare(
       `INSERT INTO network_profiles (id, network_id, profile_json, citation_check_json, status, model, agent_run_id, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    ).bind(profileId, networkId, JSON.stringify(result.output), JSON.stringify(result.check), status, opts.model, result.run_id, now),
+    ).bind(
+      profileId,
+      networkId,
+      JSON.stringify(result.output),
+      JSON.stringify(result.check),
+      status,
+      opts.model,
+      result.run_id,
+      now,
+    ),
   ];
   const hypIds: string[] = [];
   for (const h of result.output.hipotesis) {

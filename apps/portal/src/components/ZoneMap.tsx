@@ -1,4 +1,11 @@
-import { DISTRICT_GRID, DISTRICTS, type District, type PublicZoneCell, type PublicZoneMap, type ZoneLevel } from "@blindaje/shared";
+import {
+  DISTRICT_GRID,
+  DISTRICTS,
+  type District,
+  type PublicZoneCell,
+  type PublicZoneMap,
+  type ZoneLevel,
+} from "@blindaje/shared";
 import { useState, type CSSProperties } from "react";
 import { Link } from "react-router";
 import { bandLabel, bandPhrase } from "../lib/bands";
@@ -85,7 +92,15 @@ export function rankedCells(map: PublicZoneMap): { d: District; c: PublicZoneCel
  * distrito. Al lado (abajo en el celular), el detalle del distrito bajo el puntero o el foco y la
  * lista de los distritos con datos; pasar por la lista marca el cuadro en el mapa.
  */
-export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected: District | null; rubro: Rubro | null }) {
+export function ZoneMap({
+  map,
+  selected,
+  rubro,
+}: {
+  map: PublicZoneMap;
+  selected: District | null;
+  rubro: Rubro | null;
+}) {
   const [focus, setFocus] = useState<string | null>(null);
   const shown = DISTRICTS.find((d) => d.id === (focus ?? selected?.id)) ?? null;
   const shownCell = shown ? cellOf(map, shown.id) : null;
@@ -102,7 +117,12 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
         <span className="zmap-north" aria-hidden="true">
           Norte
         </span>
-        <ul className="zmap-grid" style={gridStyle} aria-label="Distritos de Lima y el Callao, de norte a sur" onMouseLeave={() => setFocus(null)}>
+        <ul
+          className="zmap-grid"
+          style={gridStyle}
+          aria-label="Distritos de Lima y el Callao, de norte a sur"
+          onMouseLeave={() => setFocus(null)}
+        >
           {DISTRICTS.map((d) => {
             const c = cellOf(map, d.id);
             const mine = d.id === selected?.id;
@@ -163,7 +183,9 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
         {ranked.length ? (
           <div className="zrank">
             <p className="zrank-title">Dónde hay datos</p>
-            <p className="muted small">Distritos con al menos 5 casos de 3 personas, del riesgo más alto al más bajo.</p>
+            <p className="muted small">
+              Distritos con al menos 5 casos de 3 personas, del riesgo más alto al más bajo.
+            </p>
             <ol className="zrank-list" onMouseLeave={() => setFocus(null)}>
               {ranked.map(({ d, c }) => (
                 <li key={d.id}>
@@ -188,8 +210,8 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
         ) : null}
       </div>
       <figcaption className="muted small">
-        Es un esquema, no un mapa a escala: cada cuadro es un distrito en su posición aproximada, con el norte arriba. No muestra calles,
-        límites ni lugares dentro del distrito.
+        Es un esquema, no un mapa a escala: cada cuadro es un distrito en su posición aproximada, con el norte arriba.
+        No muestra calles, límites ni lugares dentro del distrito.
       </figcaption>
     </figure>
   );
@@ -200,7 +222,15 @@ export function ZoneMap({ map, selected, rubro }: { map: PublicZoneMap; selected
  * elegir. Por área, cada distrito con datos en su fila; los que no llegan al umbral, juntos en una
  * fila de enlaces (la mayoría de los 50: una fila por cada uno alargaba la página sin decir nada).
  */
-export function ZoneTable({ map, selected, rubro }: { map: PublicZoneMap; selected: District | null; rubro: Rubro | null }) {
+export function ZoneTable({
+  map,
+  selected,
+  rubro,
+}: {
+  map: PublicZoneMap;
+  selected: District | null;
+  rubro: Rubro | null;
+}) {
   const groups = filterDistricts("").map((g) => ({
     ...g,
     withData: g.districts.filter((d) => cellOf(map, d.id).casos),
@@ -209,7 +239,9 @@ export function ZoneTable({ map, selected, rubro }: { map: PublicZoneMap; select
   return (
     <div className="table-scroll ztable-wrap" role="region" aria-labelledby="ztable-caption" tabIndex={0}>
       <table className="ztable">
-        <caption id="ztable-caption">Nivel y rango de casos de cada distrito en los últimos {map.periodo_dias} días</caption>
+        <caption id="ztable-caption">
+          Nivel y rango de casos de cada distrito en los últimos {map.periodo_dias} días
+        </caption>
         <thead>
           <tr>
             <th scope="col">Distrito</th>
@@ -231,7 +263,10 @@ export function ZoneTable({ map, selected, rubro }: { map: PublicZoneMap; select
               return (
                 <tr key={d.id} data-mine={mine ? "" : undefined}>
                   <th scope="row">
-                    <Link to={{ pathname: "/", search: choiceSearch({ distrito: d.id, rubro }) }} aria-current={mine ? "true" : undefined}>
+                    <Link
+                      to={{ pathname: "/", search: choiceSearch({ distrito: d.id, rubro }) }}
+                      aria-current={mine ? "true" : undefined}
+                    >
                       {d.name}
                     </Link>
                     {mine ? <span className="ztable-mine"> (tu distrito)</span> : null}
@@ -258,7 +293,10 @@ export function ZoneTable({ map, selected, rubro }: { map: PublicZoneMap; select
                       const mine = d.id === selected?.id;
                       return (
                         <li key={d.id}>
-                          <Link to={{ pathname: "/", search: choiceSearch({ distrito: d.id, rubro }) }} aria-current={mine ? "true" : undefined}>
+                          <Link
+                            to={{ pathname: "/", search: choiceSearch({ distrito: d.id, rubro }) }}
+                            aria-current={mine ? "true" : undefined}
+                          >
                             {d.name}
                           </Link>
                           {mine ? <span className="ztable-mine"> (tu distrito)</span> : null}

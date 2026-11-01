@@ -60,7 +60,10 @@ export function isEssentialModel(model: string): boolean {
 /** Precio de un modelo; acepta versiones nuevas de una familia conocida (p. ej. muse-spark-1.4). */
 export function priceFor(model: string): ModelPrice {
   if (/contributor/i.test(model)) {
-    throw new MetaGuardError("contributor_model_forbidden", `El modelo ${model} es de Contributor mode y está prohibido`);
+    throw new MetaGuardError(
+      "contributor_model_forbidden",
+      `El modelo ${model} es de Contributor mode y está prohibido`,
+    );
   }
   const exact = PRICING[model];
   if (exact) return exact;

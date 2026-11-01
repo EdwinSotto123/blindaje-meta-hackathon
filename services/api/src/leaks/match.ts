@@ -1,4 +1,9 @@
-import { LEAK_AUDIO_MAX_HAMMING, LEAK_IMAGE_MIN_ACCURACY, LEAK_IMAGE_MIN_MARGIN, LEAK_TAG_MIN_DISTANCE } from "@blindaje/shared";
+import {
+  LEAK_AUDIO_MAX_HAMMING,
+  LEAK_IMAGE_MIN_ACCURACY,
+  LEAK_IMAGE_MIN_MARGIN,
+  LEAK_TAG_MIN_DISTANCE,
+} from "@blindaje/shared";
 
 /**
  * Aritmética de las marcas (funciones puras, con tests en test/leaks.test.ts).
@@ -45,7 +50,11 @@ export function randomU16(): number {
  * código máximo con distancia 5 en 16 bits tiene del orden de 256 palabras; la búsqueda voraz llega
  * a menos).
  */
-export function pickTag(taken: readonly number[], random: () => number = randomU16, minDistance = LEAK_TAG_MIN_DISTANCE): number | null {
+export function pickTag(
+  taken: readonly number[],
+  random: () => number = randomU16,
+  minDistance = LEAK_TAG_MIN_DISTANCE,
+): number | null {
   for (let i = 0; i < 256; i++) {
     const t = random() & 0xffff;
     if (farEnough(t, taken, minDistance)) return t;
@@ -88,7 +97,11 @@ export interface AudioMatch<T extends TagRow> {
 }
 
 /** Atribución de un audio: distancia de Hamming entre los bits leídos y la marca de cada cuenta. */
-export function matchAudio<T extends TagRow>(bits: readonly number[], tags: readonly T[], maxDistance = LEAK_AUDIO_MAX_HAMMING): AudioMatch<T> {
+export function matchAudio<T extends TagRow>(
+  bits: readonly number[],
+  tags: readonly T[],
+  maxDistance = LEAK_AUDIO_MAX_HAMMING,
+): AudioMatch<T> {
   const leido = bitsToInt16(bits);
   const dudosos = uncertainMask16(bits);
   const seguros = ~dudosos & 0xffff;
@@ -101,7 +114,10 @@ export function matchAudio<T extends TagRow>(bits: readonly number[], tags: read
   const matches = scored
     .filter((s) => s.distance <= maxDistance)
     .sort((a, b) => a.distance - b.distance || a.user_id.localeCompare(b.user_id))
-    .map(({ optimista: _o, ...m }) => ({ ...m, bit_accuracy: (16 - m.distance) / 16 }) as T & { distance: number; bit_accuracy: number });
+    .map(
+      ({ optimista: _o, ...m }) =>
+        ({ ...m, bit_accuracy: (16 - m.distance) / 16 }) as T & { distance: number; bit_accuracy: number },
+    );
   const otras = scored.filter((s) => s.distance > maxDistance && s.optimista <= maxDistance).length;
   return { matches, otras_posibles: otras, ambiguo: matches.length > 1 || (matches.length > 0 && otras > 0), leido };
 }
@@ -165,10 +181,14 @@ export function matchImage<T extends IssueRow>(
   }
   ranked.sort((a, b) => b.bit_accuracy - a.bit_accuracy);
   const best = ranked[0];
-  if (!best || best.bit_accuracy < minAccuracy) return { matches: [], ambiguo: false, mejor: best?.bit_accuracy ?? null, comparadas: ranked.length };
+  if (!best || best.bit_accuracy < minAccuracy)
+    return { matches: [], ambiguo: false, mejor: best?.bit_accuracy ?? null, comparadas: ranked.length };
   const second = ranked[1]?.bit_accuracy ?? 0;
-  if (best.bit_accuracy - second >= minMargin) return { matches: [best], ambiguo: false, mejor: best.bit_accuracy, comparadas: ranked.length };
-  const close = ranked.filter((r) => r.bit_accuracy >= minAccuracy || best.bit_accuracy - r.bit_accuracy < minMargin).slice(0, 5);
+  if (best.bit_accuracy - second >= minMargin)
+    return { matches: [best], ambiguo: false, mejor: best.bit_accuracy, comparadas: ranked.length };
+  const close = ranked
+    .filter((r) => r.bit_accuracy >= minAccuracy || best.bit_accuracy - r.bit_accuracy < minMargin)
+    .slice(0, 5);
   return { matches: close, ambiguo: true, mejor: best.bit_accuracy, comparadas: ranked.length };
 }
 

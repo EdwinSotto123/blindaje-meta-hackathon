@@ -85,8 +85,19 @@ describe("Llave del dispositivo (P-256)", () => {
     const sigB64 = signRefresh(secret, "dev_1", 1_761_600_000_000);
     const sig = Uint8Array.from(Buffer.from(sigB64.replace(/-/g, "+").replace(/_/g, "/"), "base64"));
     expect(sig.length).toBe(64);
-    const pub = await webcrypto.subtle.importKey("jwk", { ...jwk, ext: true }, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
-    const ok = await webcrypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, pub, sig, utf8(refreshMessage("dev_1", 1_761_600_000_000)));
+    const pub = await webcrypto.subtle.importKey(
+      "jwk",
+      { ...jwk, ext: true },
+      { name: "ECDSA", namedCurve: "P-256" },
+      false,
+      ["verify"],
+    );
+    const ok = await webcrypto.subtle.verify(
+      { name: "ECDSA", hash: "SHA-256" },
+      pub,
+      sig,
+      utf8(refreshMessage("dev_1", 1_761_600_000_000)),
+    );
     expect(ok).toBe(true);
     expect(p256.verify(sig, utf8(refreshMessage("dev_1", 1_761_600_000_000)), p256.getPublicKey(secret))).toBe(true);
   });

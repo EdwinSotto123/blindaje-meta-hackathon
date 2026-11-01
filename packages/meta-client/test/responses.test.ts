@@ -59,7 +59,13 @@ describe("zodTextFormat", () => {
 describe("lectura de respuestas", () => {
   const response = responseBody(
     "resp_1",
-    [reasoning(), message("Voy a consultar.", "commentary"), functionCall("c1", "f", { a: 1 }), message('{"ok":'), message("true}")],
+    [
+      reasoning(),
+      message("Voy a consultar.", "commentary"),
+      functionCall("c1", "f", { a: 1 }),
+      message('{"ok":'),
+      message("true}"),
+    ],
     { input: 10, output: 20, cached: 4, reasoning: 12 },
   ) as unknown as MetaResponse;
 
@@ -70,15 +76,29 @@ describe("lectura de respuestas", () => {
     expect(getFunctionCalls(response).map((f) => f.call_id)).toEqual(["c1"]);
   });
   it("extractUsage con razonamiento y caché", () => {
-    expect(extractUsage(response)).toEqual({ input_tokens: 10, output_tokens: 20, cached_tokens: 4, reasoning_tokens: 12, total_tokens: 30 });
-    expect(extractUsage({ usage: null })).toEqual({ input_tokens: 0, output_tokens: 0, cached_tokens: 0, reasoning_tokens: 0, total_tokens: 0 });
+    expect(extractUsage(response)).toEqual({
+      input_tokens: 10,
+      output_tokens: 20,
+      cached_tokens: 4,
+      reasoning_tokens: 12,
+      total_tokens: 30,
+    });
+    expect(extractUsage({ usage: null })).toEqual({
+      input_tokens: 0,
+      output_tokens: 0,
+      cached_tokens: 0,
+      reasoning_tokens: 0,
+      total_tokens: 0,
+    });
   });
   it("parseStructuredText: JSON válido, cerca de código, JSON roto y esquema incumplido", () => {
     const ok = { resumen: "r", monto: null, canal: "yape", frases: [] };
     expect(parseStructuredText(JSON.stringify(ok), Ficha)).toEqual(ok);
     expect(parseStructuredText("```json\n" + JSON.stringify(ok) + "\n```", Ficha)).toEqual(ok);
     expect(() => parseStructuredText("{roto", Ficha)).toThrow(expect.objectContaining({ code: "invalid_json" }));
-    expect(() => parseStructuredText('{"resumen":1}', Ficha)).toThrow(expect.objectContaining({ code: "schema_mismatch" }));
+    expect(() => parseStructuredText('{"resumen":1}', Ficha)).toThrow(
+      expect.objectContaining({ code: "schema_mismatch" }),
+    );
     expect(() => parseStructuredText("  ", Ficha)).toThrow(expect.objectContaining({ code: "empty_output" }));
   });
 });
@@ -86,7 +106,9 @@ describe("lectura de respuestas", () => {
 describe("responses.parse", () => {
   it("manda text.format strict, store false y reasoning.effort; valida con Zod", async () => {
     const out = { resumen: "Piden cupo semanal", monto: 500, canal: "yape", frases: [{ texto: "habla con el jefe" }] };
-    const fetch = mockFetch(() => jsonResponse(responseBody("resp_p", [reasoning(), message(JSON.stringify(out))], { input: 1000, output: 100 })));
+    const fetch = mockFetch(() =>
+      jsonResponse(responseBody("resp_p", [reasoning(), message(JSON.stringify(out))], { input: 1000, output: 100 })),
+    );
     const c = new MetaClient({ apiKey: "k", fetch });
     const res = await c.responses.parse({
       model: "muse-spark-1.3",
@@ -106,10 +128,16 @@ describe("responses.parse", () => {
 
   it("una respuesta incompleta lanza MetaOutputError", async () => {
     const fetch = mockFetch(() =>
-      jsonResponse({ ...responseBody("resp_i", [message('{"resumen":"a')]), status: "incomplete", incomplete_details: { reason: "max_output_tokens" } }),
+      jsonResponse({
+        ...responseBody("resp_i", [message('{"resumen":"a')]),
+        status: "incomplete",
+        incomplete_details: { reason: "max_output_tokens" },
+      }),
     );
     const c = new MetaClient({ apiKey: "k", fetch });
-    const error = await c.responses.parse({ model: "muse-spark-1.3", input: "x", schema: Ficha, schemaName: "ficha" }).catch((e: unknown) => e);
+    const error = await c.responses
+      .parse({ model: "muse-spark-1.3", input: "x", schema: Ficha, schemaName: "ficha" })
+      .catch((e: unknown) => e);
     expect(error).toBeInstanceOf(MetaOutputError);
     expect((error as MetaOutputError).code).toBe("incomplete");
   });

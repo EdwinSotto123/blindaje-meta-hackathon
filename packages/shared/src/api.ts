@@ -390,7 +390,9 @@ export const NetworkView = NetworkSummary.extend({
   nodes: z.array(GraphNode),
   edges: z.array(GraphEdge),
   timeline: z.array(TimelineEvent.extend({ caso: z.string() })),
-  links: z.array(z.object({ id: z.string(), label: z.string(), case_a: z.string(), case_b: z.string(), score: z.number() })),
+  links: z.array(
+    z.object({ id: z.string(), label: z.string(), case_a: z.string(), case_b: z.string(), score: z.number() }),
+  ),
 });
 export type NetworkView = z.infer<typeof NetworkView>;
 
@@ -481,7 +483,9 @@ export const CostsResponse = z.object({
   budget_usd: z.number(),
   pct: z.number(),
   nonessential_blocked: z.boolean(),
-  by_model: z.array(z.object({ model: z.string(), calls: z.number(), cost_usd: z.number(), units: z.record(z.string(), z.number()) })),
+  by_model: z.array(
+    z.object({ model: z.string(), calls: z.number(), cost_usd: z.number(), units: z.record(z.string(), z.number()) }),
+  ),
   by_day: z.array(z.object({ day: z.string(), cost_usd: z.number() })),
   recent: z.array(
     z.object({ ts: z.string(), model: z.string(), operation: z.string(), cost_usd: z.number(), status: z.string() }),

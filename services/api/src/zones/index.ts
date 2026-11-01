@@ -104,13 +104,19 @@ export async function publicZoneMap(env: Env, opts: { isDemo: boolean; now?: Dat
 }
 
 /** GET /v1/console/zones: cifras exactas por distrito para el equipo central. */
-export async function consoleZones(env: Env, opts: { dias: number; isDemo: boolean; now?: Date }): Promise<ConsoleZones> {
+export async function consoleZones(
+  env: Env,
+  opts: { dias: number; isDemo: boolean; now?: Date },
+): Promise<ConsoleZones> {
   const now = (opts.now ?? new Date()).getTime();
   const period = opts.dias * DAY_MS;
   const [cases, alertas, miembros] = await Promise.all([
     loadCommunityCases(env, { isDemo: opts.isDemo, since: now - 2 * period, until: now + DAY_MS }),
     approvedAlerts(env, { isDemo: opts.isDemo, since: new Date(now - period).toISOString() }),
-    env.DB.prepare("SELECT nc.case_id, n.num FROM network_cases nc JOIN networks n ON n.id = nc.network_id").all<{ case_id: string; num: number }>(),
+    env.DB.prepare("SELECT nc.case_id, n.num FROM network_cases nc JOIN networks n ON n.id = nc.network_id").all<{
+      case_id: string;
+      num: number;
+    }>(),
   ]);
   // Redes por su etiqueta (R-001), como las muestra la consola.
   const redesDe = new Map<string, string[]>();
@@ -128,7 +134,9 @@ export async function consoleZones(env: Env, opts: { dias: number; isDemo: boole
       victimas,
       casos_previos: previo.get(d.id)?.length ?? 0,
       redes: sobre ? [...new Set(list.flatMap((c) => redesDe.get(c.id) ?? []))].sort() : [],
-      modalidades: sobre ? [...new Set([...alertModalities(delDistrito, 5), ...fichaModalities(list)])].slice(0, 5) : [],
+      modalidades: sobre
+        ? [...new Set([...alertModalities(delDistrito, 5), ...fichaModalities(list)])].slice(0, 5)
+        : [],
       sobre_umbral: sobre,
     };
   });

@@ -377,8 +377,11 @@ class VideoSealDetector:
     def detect(self, images: list[Any]) -> dict[str, Any]:
         logits = self.logits(images)
         score = bit_confidence(logits.mean(axis=0)) if len(logits) else 0.0
-        return {"score": round(score, 4), "detected": bool(len(logits) and score >= self.threshold),
-                "frames": len(logits)}
+        return {
+            "score": round(score, 4),
+            "detected": bool(len(logits) and score >= self.threshold),
+            "frames": len(logits),
+        }
 
     def decode(self, images: list[Any]) -> dict[str, Any]:
         """Lo de `detect` más la probabilidad de cada bit y el mensaje en hex (siempre: con o sin marca;
@@ -423,8 +426,9 @@ class VideoSealEmbedder:
         if not extra["blindaje.json"] or not extra["jnd.jit"]:
             raise ModelUnavailable("videoseal_embedder_incomplete")
         jnd = extra["jnd.jit"]
-        self._jnd = torch.jit.load(io.BytesIO(jnd if isinstance(jnd, bytes) else jnd.encode("latin-1")),
-                                   map_location="cpu").eval()
+        self._jnd = torch.jit.load(
+            io.BytesIO(jnd if isinstance(jnd, bytes) else jnd.encode("latin-1")), map_location="cpu"
+        ).eval()
         cfg = json.loads(extra["blindaje.json"])
         self.nbits = int(cfg["nbits"])
         self.dim = self.nbits

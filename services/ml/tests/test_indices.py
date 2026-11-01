@@ -108,11 +108,9 @@ def test_snapshot_roundtrip_and_checksum():
 def test_index_routes(client):
     rng = np.random.default_rng(4)
     v = _unit(rng, 3, 384)
-    r = client.post("/index/add", json={"index": "texto", "ids": [1, 2, 3], "vectors": v.tolist(),
-                                        "version": "abc"})
+    r = client.post("/index/add", json={"index": "texto", "ids": [1, 2, 3], "vectors": v.tolist(), "version": "abc"})
     assert r.json() == {"ok": True, "size": 3}
-    r = client.post("/index/search", json={"index": "texto", "vector": v[0].tolist(), "k": 2,
-                                           "exclude_ids": [1]})
+    r = client.post("/index/search", json={"index": "texto", "vector": v[0].tolist(), "k": 2, "exclude_ids": [1]})
     assert r.status_code == 200
     assert [x["id"] for x in r.json()["results"]] in ([2, 3], [3, 2])
     assert client.post("/index/remove", json={"index": "texto", "ids": [3]}).json()["size"] == 2

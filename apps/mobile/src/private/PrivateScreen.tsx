@@ -58,7 +58,16 @@ type Props = {
 };
 
 /** Pantalla privada: exige sesión abierta, bloquea capturas y siempre muestra "Salir rápido". */
-export function PrivateScreen({ title, children, footer, back = true, scroll = true, kind = "private", home = false, testID }: Props) {
+export function PrivateScreen({
+  title,
+  children,
+  footer,
+  back = true,
+  scroll = true,
+  kind = "private",
+  home = false,
+  testID,
+}: Props) {
   useNoCapture();
   const router = useRouter();
   const mode = useSessionMode();

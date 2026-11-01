@@ -6,7 +6,18 @@ import { useApi, useUser } from "../app/context";
 import { CiteList, CitedText } from "../components/Citations";
 import { Icon } from "../components/Icons";
 import { Acciones } from "../components/SoloLectura";
-import { Confidence, Empty, ErrorBox, InlineConfirm, Loading, Modal, Notice, StatusBadge, statusLabel, useFlash } from "../components/ui";
+import {
+  Confidence,
+  Empty,
+  ErrorBox,
+  InlineConfirm,
+  Loading,
+  Modal,
+  Notice,
+  StatusBadge,
+  statusLabel,
+  useFlash,
+} from "../components/ui";
 import { NONESSENTIAL_BLOCK_PCT } from "../config";
 import { SECTOR_LABEL, fmtDateTime, fmtPct, fmtPeriod, fmtUsd } from "../lib/format";
 import { can } from "../lib/permissions";
@@ -57,7 +68,11 @@ export function ProfileTab({ net, onChanged }: { net: NetworkView; onChanged: ()
         if (!p.hypotheses.some((x) => x.id === h.id)) return p;
         const hypotheses = p.hypotheses.map((x) => (x.id === h.id ? h : x));
         const allDone = hypotheses.every((x) => x.status !== "borrador");
-        return { ...p, hypotheses, status: allDone ? (hypotheses.some((x) => x.status === "aprobada") ? "aprobado" : "rechazado") : p.status };
+        return {
+          ...p,
+          hypotheses,
+          status: allDone ? (hypotheses.some((x) => x.status === "aprobada") ? "aprobado" : "rechazado") : p.status,
+        };
       }),
     );
     onChanged();
@@ -66,12 +81,16 @@ export function ProfileTab({ net, onChanged }: { net: NetworkView; onChanged: ()
   return (
     <div className="stack">
       {flash}
-      {can(user.role, "cartografo.run") ? <CartografoRunner net={net} onDone={onRun} collapsed={list.length > 0} /> : null}
+      {can(user.role, "cartografo.run") ? (
+        <CartografoRunner net={net} onDone={onRun} collapsed={list.length > 0} />
+      ) : null}
       {profiles.error ? <ErrorBox error={profiles.error} onRetry={profiles.reload} /> : null}
       {profiles.loading && !profiles.data ? <Loading label="Cargando perfiles…" /> : null}
       {profiles.data && list.length === 0 ? (
         <Empty title="Esta red aún no tiene perfil">
-          {can(user.role, "cartografo.run") ? "Ejecuta el Cartógrafo para generar hechos e hipótesis citados." : "Un analista debe ejecutar el Cartógrafo."}
+          {can(user.role, "cartografo.run")
+            ? "Ejecuta el Cartógrafo para generar hechos e hipótesis citados."
+            : "Un analista debe ejecutar el Cartógrafo."}
         </Empty>
       ) : null}
       {list.length > 1 ? (
@@ -98,7 +117,15 @@ export function ProfileTab({ net, onChanged }: { net: NetworkView; onChanged: ()
   );
 }
 
-function CartografoRunner({ net, onDone, collapsed }: { net: NetworkView; onDone: (p: ProfileView) => void; collapsed: boolean }) {
+function CartografoRunner({
+  net,
+  onDone,
+  collapsed,
+}: {
+  net: NetworkView;
+  onDone: (p: ProfileView) => void;
+  collapsed: boolean;
+}) {
   const api = useApi();
   const costs = useAsync(() => api.costs(), "costs:cartografo");
   const [model, setModel] = useState<CartografoModel>("muse-spark-1.3");
@@ -151,12 +178,14 @@ function CartografoRunner({ net, onDone, collapsed }: { net: NetworkView; onDone
         </h2>
         {costs.data ? (
           <span className="small muted">
-            Gasto acumulado {fmtUsd(costs.data.total_usd)} de {fmtUsd(costs.data.budget_usd, 0)} ({fmtPct(costs.data.pct)})
+            Gasto acumulado {fmtUsd(costs.data.total_usd)} de {fmtUsd(costs.data.budget_usd, 0)} (
+            {fmtPct(costs.data.pct)})
           </span>
         ) : null}
       </div>
       <p className="small muted" style={{ marginBottom: 10 }}>
-        Analiza la red con las herramientas de la base de casos (sin búsqueda web) y propone hechos e hipótesis citados. Nada sale sin tu aprobación.
+        Analiza la red con las herramientas de la base de casos (sin búsqueda web) y propone hechos e hipótesis citados.
+        Nada sale sin tu aprobación.
       </p>
       <fieldset>
         <legend>Modelo</legend>
@@ -164,7 +193,11 @@ function CartografoRunner({ net, onDone, collapsed }: { net: NetworkView; onDone
           {MODELS.map((m) => {
             const disabled = !m.essential && blocked;
             return (
-              <label key={m.id} className="row" style={{ alignItems: "flex-start", gap: 10, cursor: disabled ? "not-allowed" : "pointer" }}>
+              <label
+                key={m.id}
+                className="row"
+                style={{ alignItems: "flex-start", gap: 10, cursor: disabled ? "not-allowed" : "pointer" }}
+              >
                 <input
                   type="radio"
                   name="modelo"
@@ -176,10 +209,17 @@ function CartografoRunner({ net, onDone, collapsed }: { net: NetworkView; onDone
                 />
                 <span className="stack-sm" style={{ gap: 0 }}>
                   <span>
-                    <span className="strong">{m.name}</span> <code>{m.id}</code>, costo estimado <strong>{fmtUsd(m.estimate)}</strong>
-                    {!m.essential ? <span className="chip chip-outline" style={{ marginLeft: 6 }}>No esencial</span> : null}
+                    <span className="strong">{m.name}</span> <code>{m.id}</code>, costo estimado{" "}
+                    <strong>{fmtUsd(m.estimate)}</strong>
+                    {!m.essential ? (
+                      <span className="chip chip-outline" style={{ marginLeft: 6 }}>
+                        No esencial
+                      </span>
+                    ) : null}
                   </span>
-                  <span className="small muted">{disabled ? `Bloqueado: el gasto superó el ${NONESSENTIAL_BLOCK_PCT}% del presupuesto.` : m.note}</span>
+                  <span className="small muted">
+                    {disabled ? `Bloqueado: el gasto superó el ${NONESSENTIAL_BLOCK_PCT}% del presupuesto.` : m.note}
+                  </span>
                 </span>
               </label>
             );
@@ -200,7 +240,12 @@ function CartografoRunner({ net, onDone, collapsed }: { net: NetworkView; onDone
           <Notice kind="error-box">{error}</Notice>
         </div>
       ) : null}
-      <Modal open={confirming} onClose={() => setConfirming(false)} title="¿Ejecutar el Cartógrafo?" labelledBy="carto-confirm">
+      <Modal
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title="¿Ejecutar el Cartógrafo?"
+        labelledBy="carto-confirm"
+      >
         <p>
           Se analizará la red <strong>{net.label}</strong> ({net.n_cases} casos) con <strong>{chosen.name}</strong>.
         </p>
@@ -238,7 +283,14 @@ function ProfileBody({
   const hypotheses: HypothesisView[] =
     profile.hypotheses.length > 0
       ? profile.hypotheses
-      : p.hipotesis.map((h, i) => ({ id: `${profile.id}-h${i}`, texto: h.texto, confianza: h.confianza, evidencia: h.evidencia, status: "borrador", reviewed_by: null }));
+      : p.hipotesis.map((h, i) => ({
+          id: `${profile.id}-h${i}`,
+          texto: h.texto,
+          confianza: h.confianza,
+          evidencia: h.evidencia,
+          status: "borrador",
+          reviewed_by: null,
+        }));
   const decidable = canDecide && profile.hypotheses.length > 0 && profile.status !== "invalido";
   const pendientes = hypotheses.filter((h) => h.status === "borrador").length;
   const aprobadas = hypotheses.filter((h) => h.status === "aprobada").length;
@@ -256,7 +308,8 @@ function ProfileBody({
         </div>
         {check.ok ? (
           <Notice kind="success-box">
-            <strong>Validador de citas: correcto.</strong> Cada afirmación cita evidencia que existe en la base de casos.
+            <strong>Validador de citas: correcto.</strong> Cada afirmación cita evidencia que existe en la base de
+            casos.
           </Notice>
         ) : (
           <Notice kind="error-box">
@@ -277,15 +330,15 @@ function ProfileBody({
                   Citas inexistentes: <CiteList refs={missing} missing={missing} label="Citas inexistentes" />
                 </div>
               ) : null}
-              <span className="small">Las hipótesis de un perfil inválido no se pueden aprobar. Vuelve a ejecutar el Cartógrafo.</span>
+              <span className="small">
+                Las hipótesis de un perfil inválido no se pueden aprobar. Vuelve a ejecutar el Cartógrafo.
+              </span>
             </div>
           </Notice>
         )}
         {decidable && pendientes > 0 ? (
           <p className="pending-line">
-            <strong>
-              {pendientes === 1 ? "1 hipótesis por decidir." : `${pendientes} hipótesis por decidir.`}
-            </strong>{" "}
+            <strong>{pendientes === 1 ? "1 hipótesis por decidir." : `${pendientes} hipótesis por decidir.`}</strong>{" "}
             Solo las que apruebes entran al expediente para la autoridad, siempre como hipótesis.
           </p>
         ) : null}
@@ -312,7 +365,9 @@ function ProfileBody({
           <h2 id="hipo-titulo">Hipótesis</h2>
           <p className="small muted">Interpretaciones con confianza. Cada una necesita tu aprobación.</p>
           {hypotheses.length ? (
-            hypotheses.map((h) => <HypothesisCard key={h.id} h={h} missing={missing} decidable={decidable} onDecided={onHypothesis} />)
+            hypotheses.map((h) => (
+              <HypothesisCard key={h.id} h={h} missing={missing} decidable={decidable} onDecided={onHypothesis} />
+            ))
           ) : (
             <span className="muted">Sin hipótesis.</span>
           )}
@@ -349,7 +404,9 @@ function ProfileBody({
             {p.territorio.length ? (
               p.territorio.map((t) => `${t.zona} (${t.casos})`).join(", ")
             ) : (
-              <span className="muted">Oculto por el umbral de agregación: hacen falta al menos 5 casos y 3 víctimas distintas.</span>
+              <span className="muted">
+                Oculto por el umbral de agregación: hacen falta al menos 5 casos y 3 víctimas distintas.
+              </span>
             )}
           </dd>
           <dt>Modus operandi</dt>
@@ -362,7 +419,13 @@ function ProfileBody({
       <div className="grid-3">
         <section className="panel stack-sm">
           <h3>Escalamiento</h3>
-          <p>{p.escalamiento ? <CitedText text={p.escalamiento} missing={missing} /> : <span className="muted">Sin datos.</span>}</p>
+          <p>
+            {p.escalamiento ? (
+              <CitedText text={p.escalamiento} missing={missing} />
+            ) : (
+              <span className="muted">Sin datos.</span>
+            )}
+          </p>
         </section>
         <section className="panel stack-sm">
           <h3>Brechas de información</h3>

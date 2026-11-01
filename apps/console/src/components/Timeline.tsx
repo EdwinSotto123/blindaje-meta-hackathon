@@ -56,7 +56,13 @@ export function Timeline({
                 {sorted
                   .filter((e) => e.caso === c)
                   .map((e, k) => (
-                    <circle key={k} cx={x(e.fecha)} cy={y} r={active ? 7 : 6} className={active ? "tl-dot active" : "tl-dot"} />
+                    <circle
+                      key={k}
+                      cx={x(e.fecha)}
+                      cy={y}
+                      r={active ? 7 : 6}
+                      className={active ? "tl-dot active" : "tl-dot"}
+                    />
                   ))}
               </g>
             );
@@ -80,7 +86,12 @@ export function Timeline({
           <li key={i} className={activeCase === e.caso ? "active" : undefined}>
             <span className="small muted">{fmtDateTime(e.fecha)}</span>
             <span>
-              <button type="button" className="btn btn-sm" onClick={() => onPickCase(e.caso)} aria-label={`Resaltar el caso ${e.caso} en el grafo`}>
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => onPickCase(e.caso)}
+                aria-label={`Resaltar el caso ${e.caso} en el grafo`}
+              >
                 Caso {e.caso}
               </button>
             </span>

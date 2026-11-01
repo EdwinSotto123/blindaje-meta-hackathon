@@ -58,11 +58,19 @@ export async function getConsoleCase(env: Env, caseId: string): Promise<CaseLite
 export async function buildCaseSide(env: Env, caseId: string, preloaded?: CaseLite): Promise<CaseSide> {
   // Caso, evidencia y análisis en una sola ida y vuelta a D1.
   const [evRes, authRes, caseRes] = await env.DB.batch([
-    env.DB.prepare("SELECT id, label, tipo, sha256, received_utc, duration_ms FROM evidence WHERE case_id = ? ORDER BY seq").bind(caseId),
-    env.DB.prepare("SELECT evidence_id, tipo, content_json FROM derivatives WHERE case_id = ? AND tipo IN ('autenticidad', 'prompt_guard')").bind(caseId),
+    env.DB.prepare(
+      "SELECT id, label, tipo, sha256, received_utc, duration_ms FROM evidence WHERE case_id = ? ORDER BY seq",
+    ).bind(caseId),
+    env.DB.prepare(
+      "SELECT evidence_id, tipo, content_json FROM derivatives WHERE case_id = ? AND tipo IN ('autenticidad', 'prompt_guard')",
+    ).bind(caseId),
     ...(preloaded
       ? []
-      : [env.DB.prepare("SELECT id, code, org_id, sector, zona_cuadricula, primer_contacto, ficha_json, consent_mode, created_at FROM cases WHERE id = ?").bind(caseId)]),
+      : [
+          env.DB.prepare(
+            "SELECT id, code, org_id, sector, zona_cuadricula, primer_contacto, ficha_json, consent_mode, created_at FROM cases WHERE id = ?",
+          ).bind(caseId),
+        ]),
   ]);
   const c = preloaded ?? (caseRes?.results[0] as CaseLite | undefined);
   if (!c) throw notFound("Caso");
@@ -77,13 +85,15 @@ export async function buildCaseSide(env: Env, caseId: string, preloaded?: CaseLi
     const parsed = ResultadoAutenticidad.safeParse(parseJsonColumn(r.content_json));
     if (parsed.success) auth.set(r.evidence_id, parsed.data);
   }
-  const evidencia = (evRes!.results as Array<Omit<CaseSide["evidencia"][number], "autenticidad" | "prompt_guard">>).map((e) => ({
-    ...e,
-    // Solo audio, imagen y video se analizan; null = no analizado (o todavía en proceso).
-    ...(e.tipo === "texto" ? {} : { autenticidad: auth.get(e.id) ?? null }),
-    // Llama Prompt Guard 2 sobre el texto que llega a los modelos; null = sin texto o sin revisar todavía.
-    prompt_guard: guard.get(e.id) ?? null,
-  }));
+  const evidencia = (evRes!.results as Array<Omit<CaseSide["evidencia"][number], "autenticidad" | "prompt_guard">>).map(
+    (e) => ({
+      ...e,
+      // Solo audio, imagen y video se analizan; null = no analizado (o todavía en proceso).
+      ...(e.tipo === "texto" ? {} : { autenticidad: auth.get(e.id) ?? null }),
+      // Llama Prompt Guard 2 sobre el texto que llega a los modelos; null = sin texto o sin revisar todavía.
+      prompt_guard: guard.get(e.id) ?? null,
+    }),
+  );
   return {
     id: c.id,
     code: c.code,
@@ -133,7 +143,9 @@ export interface LinkRow {
 
 /** Vínculo para la consola. El equipo central ve los vínculos de todas las organizaciones. */
 export async function getLinkRow(env: Env, linkId: string): Promise<LinkRow> {
-  const row = await env.DB.prepare("SELECT l.*, u.display_name AS reviewer_name FROM links l LEFT JOIN users u ON u.id = l.reviewer_id WHERE l.id = ?")
+  const row = await env.DB.prepare(
+    "SELECT l.*, u.display_name AS reviewer_name FROM links l LEFT JOIN users u ON u.id = l.reviewer_id WHERE l.id = ?",
+  )
     .bind(linkId)
     .first<LinkRow>();
   if (!row) throw notFound("Vínculo");
@@ -149,7 +161,10 @@ interface VoicePrintRow {
 }
 
 /** Transcripción de cada evidencia, en una sola consulta (antes era una por fragmento). */
-async function transcriptsByEvidence(env: Env, evidenceIds: string[]): Promise<Map<string, TranscripcionContent["turns"]>> {
+async function transcriptsByEvidence(
+  env: Env,
+  evidenceIds: string[],
+): Promise<Map<string, TranscripcionContent["turns"]>> {
   const ids = [...new Set(evidenceIds)];
   const out = new Map<string, TranscripcionContent["turns"]>();
   if (!ids.length) return out;
@@ -158,14 +173,18 @@ async function transcriptsByEvidence(env: Env, evidenceIds: string[]): Promise<M
   )
     .bind(...ids)
     .all<{ evidence_id: string; content_json: string | null }>();
-  for (const r of results) if (!out.has(r.evidence_id)) out.set(r.evidence_id, parseJsonColumn<TranscripcionContent>(r.content_json)?.turns ?? []);
+  for (const r of results)
+    if (!out.has(r.evidence_id))
+      out.set(r.evidence_id, parseJsonColumn<TranscripcionContent>(r.content_json)?.turns ?? []);
   return out;
 }
 
 async function evidenceLabels(env: Env, evidenceIds: string[]): Promise<Map<string, string>> {
   const ids = [...new Set(evidenceIds)];
   if (!ids.length) return new Map();
-  const { results } = await env.DB.prepare(`SELECT id, label FROM evidence WHERE id IN (${ids.map(() => "?").join(",")})`)
+  const { results } = await env.DB.prepare(
+    `SELECT id, label FROM evidence WHERE id IN (${ids.map(() => "?").join(",")})`,
+  )
     .bind(...ids)
     .all<{ id: string; label: string }>();
   return new Map(results.map((r) => [r.id, r.label]));
@@ -176,7 +195,10 @@ async function buildFragments(env: Env, row: LinkRow, signals: Signals): Promise
   const matched = signals.voz?.segmentos_coincidentes ?? [];
   if (matched.length) {
     const out: LinkView["fragments"] = [];
-    const transcripts = await transcriptsByEvidence(env, matched.map((m) => m.evidence_id));
+    const transcripts = await transcriptsByEvidence(
+      env,
+      matched.map((m) => m.evidence_id),
+    );
     for (const m of matched) {
       const text = (transcripts.get(m.evidence_id) ?? [])
         .filter((t) => !t.es_victima && t.end_ms > m.start_ms && t.start_ms < m.end_ms)
@@ -277,7 +299,10 @@ const NETWORK_SELECT = `SELECT n.id, n.num, n.n_casos, n.updated_at,
   FROM networks n`;
 
 function periodo(dates: Array<string | null>): string | null {
-  const ds = dates.filter((d): d is string => Boolean(d)).map((d) => d.slice(0, 10)).sort();
+  const ds = dates
+    .filter((d): d is string => Boolean(d))
+    .map((d) => d.slice(0, 10))
+    .sort();
   if (!ds.length) return null;
   return ds[0] === ds[ds.length - 1] ? ds[0]! : `${ds[0]} a ${ds[ds.length - 1]}`;
 }
@@ -290,13 +315,21 @@ export async function listNetworkSummaries(env: Env): Promise<NetworkSummary[]> 
     ),
   ]);
   const byNet = new Map<string, Array<{ sector: string | null; primer_contacto: string | null; created_at: string }>>();
-  for (const m of members!.results as Array<{ network_id: string; sector: string | null; primer_contacto: string | null; created_at: string }>) {
+  for (const m of members!.results as Array<{
+    network_id: string;
+    sector: string | null;
+    primer_contacto: string | null;
+    created_at: string;
+  }>) {
     byNet.set(m.network_id, [...(byNet.get(m.network_id) ?? []), m]);
   }
   return (nets!.results as unknown as NetworkRow[]).map((n) => summaryFrom(n, byNet.get(n.id) ?? []));
 }
 
-function summaryFrom(n: NetworkRow, cases: Array<{ sector: string | null; primer_contacto: string | null; created_at: string }>): NetworkSummary {
+function summaryFrom(
+  n: NetworkRow,
+  cases: Array<{ sector: string | null; primer_contacto: string | null; created_at: string }>,
+): NetworkSummary {
   return {
     id: n.id,
     label: networkLabel(n.num),
@@ -312,7 +345,13 @@ export async function buildNetworkView(env: Env, networkId: string): Promise<Net
   const data = await loadNetworkData(env, networkId);
   const graph = await buildGraph(data);
   const analysis = await analyzeGraph(env, graph);
-  const row: NetworkRow = { id: data.id, num: data.num, n_casos: data.n_casos, updated_at: data.updated_at, profile_status: data.profile_status };
+  const row: NetworkRow = {
+    id: data.id,
+    num: data.num,
+    n_casos: data.n_casos,
+    updated_at: data.updated_at,
+    profile_status: data.profile_status,
+  };
   return {
     ...summaryFrom(row, data.cases),
     nodes: annotateNodes(graph, analysis),
@@ -370,7 +409,9 @@ export async function listProfiles(env: Env, networkId: string): Promise<Profile
       created_at: string;
     }>
   ).map((p) => {
-    const cc = parseJsonColumn<{ ok?: boolean; sin_cita?: string[]; citas_inexistentes?: string[] }>(p.citation_check_json) ?? {};
+    const cc =
+      parseJsonColumn<{ ok?: boolean; sin_cita?: string[]; citas_inexistentes?: string[] }>(p.citation_check_json) ??
+      {};
     return {
       id: p.id,
       network_id: p.network_id,
@@ -378,7 +419,11 @@ export async function listProfiles(env: Env, networkId: string): Promise<Profile
       model: p.model,
       perfil: JSON.parse(p.profile_json) as ProfileView["perfil"],
       hypotheses: hypRows.filter((h) => h.profile_id === p.id).map(hypothesisView),
-      citation_check: { ok: Boolean(cc.ok), sin_cita: cc.sin_cita ?? [], citas_inexistentes: cc.citas_inexistentes ?? [] },
+      citation_check: {
+        ok: Boolean(cc.ok),
+        sin_cita: cc.sin_cita ?? [],
+        citas_inexistentes: cc.citas_inexistentes ?? [],
+      },
       created_at: p.created_at,
     };
   });

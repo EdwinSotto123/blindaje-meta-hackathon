@@ -79,11 +79,13 @@ export function ExpedientePanel({
         </Acciones>
       </div>
       <p className="small muted">
-        El Redactor arma el resumen de la red, la cronología unificada, la tabla de vínculos, las huellas SHA-256 de la evidencia y la cadena de custodia. Solo se
-        entrega a la autoridad por un canal formal.
+        El Redactor arma el resumen de la red, la cronología unificada, la tabla de vínculos, las huellas SHA-256 de la
+        evidencia y la cadena de custodia. Solo se entrega a la autoridad por un canal formal.
       </p>
       {profileStatus !== "aprobado" ? (
-        <Notice kind="warn">El perfil de esta red aún no está aprobado. Revisa sus hipótesis antes de entregar el expediente.</Notice>
+        <Notice kind="warn">
+          El perfil de esta red aún no está aprobado. Revisa sus hipótesis antes de entregar el expediente.
+        </Notice>
       ) : null}
       {error ? <Notice kind="error-box">{error}</Notice> : null}
       {ids.length ? (
@@ -161,13 +163,22 @@ function ExpedienteRow({ id, networkLabel }: { id: string; networkLabel: string 
           {exp ? <span className="small muted">{fmtDateTime(exp.created_at)}</span> : null}
         </span>
         {exp?.status === "listo" ? (
-          <button type="button" className="btn btn-sm btn-primary" disabled={downloading} onClick={() => void download()}>
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            disabled={downloading}
+            onClick={() => void download()}
+          >
             <Icon name="download" size={15} />
             {downloading ? "Descargando…" : "Descargar PDF"}
           </button>
         ) : null}
       </div>
-      {exp?.status === "generando" ? <span className="small muted" role="status">El Redactor está generando el PDF…</span> : null}
+      {exp?.status === "generando" ? (
+        <span className="small muted" role="status">
+          El Redactor está generando el PDF…
+        </span>
+      ) : null}
       {exp?.sha256 ? (
         <div className="stack-sm">
           <span className="small strong">SHA-256 del PDF</span>
@@ -184,7 +195,9 @@ function ExpedienteRow({ id, networkLabel }: { id: string; networkLabel: string 
             : `El archivo descargado no coincide: su SHA-256 es ${verify.hash}.`}
         </Notice>
       ) : null}
-      {exp?.status === "error" ? <Notice kind="error-box">El Redactor no pudo generar el PDF. Intenta de nuevo.</Notice> : null}
+      {exp?.status === "error" ? (
+        <Notice kind="error-box">El Redactor no pudo generar el PDF. Intenta de nuevo.</Notice>
+      ) : null}
       {error ? <Notice kind="error-box">{error}</Notice> : null}
     </div>
   );

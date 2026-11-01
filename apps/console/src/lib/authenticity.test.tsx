@@ -13,11 +13,17 @@ const visibleText = (html: string) => html.replace(/<[^>]+>/g, "");
 describe("advertencia de la cola", () => {
   it("marca los pares con evidencia con indicios fuertes, y solo esos", () => {
     expect(flaggedInLink(byLabel("VIN-1"))).toEqual([]);
-    expect(flaggedInLink(byLabel("VIN-2"))).toEqual([{ label: "EV-C2", tipo: "audio", caseCode: "C", nivel: "indicios_fuertes" }]);
+    expect(flaggedInLink(byLabel("VIN-2"))).toEqual([
+      { label: "EV-C2", tipo: "audio", caseCode: "C", nivel: "indicios_fuertes" },
+    ]);
     expect(flaggedInLink(byLabel("VIN-3")).map((f) => f.label)).toEqual(["EV-F2"]);
     // Indicios débiles (EV-B3, en VIN-1) no disparan la advertencia.
-    expect(byLabel("VIN-1").case_b.evidencia.find((e) => e.label === "EV-B3")!.autenticidad!.nivel).toBe("indicios_debiles");
-    const chip = visibleText(renderToStaticMarkup(<AuthenticityWarningChip flagged={flaggedInLink(byLabel("VIN-3"))} />));
+    expect(byLabel("VIN-1").case_b.evidencia.find((e) => e.label === "EV-B3")!.autenticidad!.nivel).toBe(
+      "indicios_debiles",
+    );
+    const chip = visibleText(
+      renderToStaticMarkup(<AuthenticityWarningChip flagged={flaggedInLink(byLabel("VIN-3"))} />),
+    );
     expect(chip).toBe("EV-F2: indicios de IA");
     expect(renderToStaticMarkup(<AuthenticityWarningChip flagged={[]} />)).toBe("");
   });
@@ -42,13 +48,23 @@ describe("señales por fuente", () => {
     expect(lines[0]).toEqual({ fuente: "Marca de agua (audioseal)", estado: "No detectada", alerta: false });
     expect(lines.at(-1)).toMatchObject({ estado: "Indicios fuertes de IA", alerta: true });
 
-    const sinMl = sourceLines({ ...AUTENTICIDAD["EV-F2"]!, tecnicas: { watermark: null, c2pa: null, metadata: null, synthetic_speech: null }, forense: null });
-    expect(sinMl.map((l) => l.estado)).toEqual(["No se pudo revisar", "No se pudieron revisar", "No se pudieron revisar", "No disponible"]);
+    const sinMl = sourceLines({
+      ...AUTENTICIDAD["EV-F2"]!,
+      tecnicas: { watermark: null, c2pa: null, metadata: null, synthetic_speech: null },
+      forense: null,
+    });
+    expect(sinMl.map((l) => l.estado)).toEqual([
+      "No se pudo revisar",
+      "No se pudieron revisar",
+      "No se pudieron revisar",
+      "No disponible",
+    ]);
   });
 
   it("solo la marca de agua o C2PA hablan de 'generado con IA'", () => {
     expect(NIVEL_META.generado_ia_confirmado.sentence).toMatch(/marca de agua|C2PA/);
-    for (const n of ["sin_senales", "indicios_debiles", "indicios_fuertes"] as const) expect(NIVEL_META[n].sentence).not.toMatch(/fue generado con IA\b/);
+    for (const n of ["sin_senales", "indicios_debiles", "indicios_fuertes"] as const)
+      expect(NIVEL_META[n].sentence).not.toMatch(/fue generado con IA\b/);
   });
 });
 
@@ -65,8 +81,12 @@ describe("panel de autenticidad", () => {
   });
 
   it("la nota aparece también sin análisis y con 'sin señales'", () => {
-    expect(visibleText(renderToStaticMarkup(<AuthenticityPanel result={null} tipo="audio" />))).toContain(NOTA_AUSENCIA);
-    const limpio = visibleText(renderToStaticMarkup(<AuthenticityPanel result={AUTENTICIDAD["EV-A1"]!} tipo="audio" />));
+    expect(visibleText(renderToStaticMarkup(<AuthenticityPanel result={null} tipo="audio" />))).toContain(
+      NOTA_AUSENCIA,
+    );
+    const limpio = visibleText(
+      renderToStaticMarkup(<AuthenticityPanel result={AUTENTICIDAD["EV-A1"]!} tipo="audio" />),
+    );
     expect(limpio).toContain("Sin señales de IA");
     expect(limpio).toContain(NOTA_AUSENCIA);
   });

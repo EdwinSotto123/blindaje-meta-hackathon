@@ -12,7 +12,10 @@ export function AlertsView() {
   return (
     <>
       <PageHead title={distrito ? `Alertas para ${distrito.name}` : "Alertas de tu zona"}>
-        <p>Los avisos que el equipo de Blindaje aprobó para tu distrito. Una persona del equipo revisa cada uno antes de publicarlo.</p>
+        <p>
+          Los avisos que el equipo de Blindaje aprobó para tu distrito. Una persona del equipo revisa cada uno antes de
+          publicarlo.
+        </p>
       </PageHead>
       {distrito ? <Alerts distrito={distrito} /> : <ChooseZone what="avisos" rubro={rubro} />}
     </>
@@ -39,7 +42,8 @@ export function AlertList({ alerts, district, now }: { alerts: VictimAlert[]; di
   if (sorted.length === 0) {
     return (
       <Empty title={`No hay alertas para ${district.name}`}>
-        Cuando el equipo de Blindaje apruebe una para tu distrito, la verás aquí. Que no haya alertas no quiere decir que no pase nada.
+        Cuando el equipo de Blindaje apruebe una para tu distrito, la verás aquí. Que no haya alertas no quiere decir
+        que no pase nada.
       </Empty>
     );
   }
@@ -54,7 +58,8 @@ export function AlertList({ alerts, district, now }: { alerts: VictimAlert[]; di
                 {a.titulo} {isRecent(a, now) ? <span className="tag">Nuevo</span> : null}
               </h2>
               <p className="muted small">
-                Aprobado por el equipo de Blindaje el <time dateTime={a.approved_at}>{fmtDate(a.approved_at)}</time>, para {districtOfZone(a.zona)?.name ?? a.zona}
+                Aprobado por el equipo de Blindaje el <time dateTime={a.approved_at}>{fmtDate(a.approved_at)}</time>,
+                para {districtOfZone(a.zona)?.name ?? a.zona}
               </p>
               <p className="measure">{a.cuerpo}</p>
               {a.que_hacer.length ? (
@@ -86,7 +91,13 @@ export function isRecent(a: VictimAlert, now = Date.now()): boolean {
 /** La respuesta a "¿hay algo nuevo?", en una frase. */
 export function alertsAnswer(sorted: VictimAlert[], districtName: string, now = Date.now()): string {
   const nuevos = sorted.filter((a) => isRecent(a, now)).length;
-  const total = sorted.length === 1 ? `Hay 1 aviso para ${districtName}.` : `Hay ${sorted.length} avisos para ${districtName}.`;
-  const recientes = nuevos === 0 ? " Ninguno es de esta semana." : nuevos === 1 ? " 1 es de esta semana." : ` ${nuevos} son de esta semana.`;
+  const total =
+    sorted.length === 1 ? `Hay 1 aviso para ${districtName}.` : `Hay ${sorted.length} avisos para ${districtName}.`;
+  const recientes =
+    nuevos === 0
+      ? " Ninguno es de esta semana."
+      : nuevos === 1
+        ? " 1 es de esta semana."
+        : ` ${nuevos} son de esta semana.`;
   return `${total}${recientes}`;
 }

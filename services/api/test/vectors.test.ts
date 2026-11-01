@@ -36,7 +36,14 @@ function near(base: number[], noise: string, scale: number): number[] {
   return normalize(base.map((x, i) => x + scale * n[i]!));
 }
 
-async function insertEmbedding(caseId: string, index: string, refType: string, refId: string, vector: number[], model: string): Promise<number> {
+async function insertEmbedding(
+  caseId: string,
+  index: string,
+  refType: string,
+  refId: string,
+  vector: number[],
+  model: string,
+): Promise<number> {
   const faissId = nextFaiss++;
   await env.DB.prepare(
     `INSERT INTO embeddings (faiss_id, index_name, case_id, ref_type, ref_id, dim, vector_b64, model, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -47,7 +54,10 @@ async function insertEmbedding(caseId: string, index: string, refType: string, r
 }
 
 /** Un caso indexado con una huella de voz (centroide y dos segmentos) y, si se pide, el vector de su ficha. */
-async function seedCase(key: string, opts: { demo: boolean; voice: number[]; text?: number[]; indexed?: boolean }): Promise<Seeded> {
+async function seedCase(
+  key: string,
+  opts: { demo: boolean; voice: number[]; text?: number[]; indexed?: boolean },
+): Promise<Seeded> {
   const device = await registerDevice(org.invite);
   const c = await createCase(device.access_token, "comunitario");
   await env.DB.prepare("UPDATE cases SET indexed = ?, is_demo = ?, estado = 'listo' WHERE id = ?")
@@ -125,15 +135,25 @@ describe("proyección del mapa", () => {
 describe("Chroma Cloud como base vectorial", () => {
   it("la sincronización sube solo casos ficticios indexados y borra lo que sobra", async () => {
     // Un vector viejo que ya no está en D1.
-    await chroma.fetch(`${FAKE_CHROMA_CONFIG.url}/api/v2/tenants/${FAKE_CHROMA_CONFIG.tenant}/databases/blindaje/collections`, {
-      method: "POST",
-      headers: { "x-chroma-token": FAKE_CHROMA_CONFIG.apiKey },
-      body: JSON.stringify({ name: "blindaje-voz", get_or_create: true, configuration: { spann: { space: "cosine" } } }),
-    });
+    await chroma.fetch(
+      `${FAKE_CHROMA_CONFIG.url}/api/v2/tenants/${FAKE_CHROMA_CONFIG.tenant}/databases/blindaje/collections`,
+      {
+        method: "POST",
+        headers: { "x-chroma-token": FAKE_CHROMA_CONFIG.apiKey },
+        body: JSON.stringify({
+          name: "blindaje-voz",
+          get_or_create: true,
+          configuration: { spann: { space: "cosine" } },
+        }),
+      },
+    );
     const col = chroma.byName("blindaje-voz")!;
     col.records.set("424242", { embedding: randomUnit("viejo", 192), metadata: {} });
 
-    const res = await apiJson<VectorSyncResult>("/v1/console/vectores/sincronizar", { method: "POST", token: admin.token });
+    const res = await apiJson<VectorSyncResult>("/v1/console/vectores/sincronizar", {
+      method: "POST",
+      token: admin.token,
+    });
     expect(res.status).toBe(200);
     const body = VectorSyncResult.parse(res.body);
     expect(body.proveedor).toBe("chroma-cloud");
@@ -153,7 +173,10 @@ describe("Chroma Cloud como base vectorial", () => {
     const queries: string[] = [];
     let provider = "";
     const before = chroma.calls.filter((c) => c.endsWith("/query")).length;
-    const pairs = await findCandidates(env, cases.A!.id, undefined, { provider: (p) => (provider = p), query: (q) => queries.push(q.index) });
+    const pairs = await findCandidates(env, cases.A!.id, undefined, {
+      provider: (p) => (provider = p),
+      query: (q) => queries.push(q.index),
+    });
     expect(provider).toBe("chroma-cloud");
     expect(queries).toEqual(["voz", "voz_segmento", "voz_segmento", "texto"]);
     // Una sola ida y vuelta por colección: los dos segmentos viajan en el mismo lote.
@@ -192,7 +215,10 @@ describe("consola: motor vectorial", () => {
     const voz = o.colecciones.find((c) => c.indice === "voz")!;
     expect(voz).toMatchObject({ coleccion: "blindaje-voz", dim: 192, modelo: MODEL_VOZ, en_d1: 3, en_base: 3 });
     expect(o.casos.map((c) => c.caso)).toEqual(expect.arrayContaining([cases.A!.code, cases.B!.code]));
-    expect(o.casos.find((c) => c.caso === cases.A!.code)).toMatchObject({ distrito: "San Juan de Lurigancho", vectores: { voz: 1, voz_segmento: 2, texto: 1 } });
+    expect(o.casos.find((c) => c.caso === cases.A!.code)).toMatchObject({
+      distrito: "San Juan de Lurigancho",
+      vectores: { voz: 1, voz_segmento: 2, texto: 1 },
+    });
     const mapa = o.mapas.find((m) => m.indice === "voz_segmento")!;
     const p = mapa.puntos.find((x) => x.case_id === cases.A!.id)!;
     expect(p.ref).toMatch(/^V-\d+ \(0:00–0:04\)$/);
@@ -204,12 +230,25 @@ describe("consola: motor vectorial", () => {
 
   it("la consulta en vivo devuelve cada búsqueda con sus vecinos y los candidatos, sin crear vínculos", async () => {
     const before = await env.DB.prepare("SELECT COUNT(*) AS n FROM links").first<{ n: number }>();
-    const res = await apiJson<VectorTrace>("/v1/console/vectores/consulta", { token: admin.token, json: { case_id: cases.A!.id } });
+    const res = await apiJson<VectorTrace>("/v1/console/vectores/consulta", {
+      token: admin.token,
+      json: { case_id: cases.A!.id },
+    });
     expect(res.status).toBe(200);
     const t = VectorTrace.parse(res.body);
-    expect(t).toMatchObject({ caso: cases.A!.code, proveedor: "chroma-cloud", umbrales: { probable: 0.9, revisar: 0.6 } });
+    expect(t).toMatchObject({
+      caso: cases.A!.code,
+      proveedor: "chroma-cloud",
+      umbrales: { probable: 0.9, revisar: 0.6 },
+    });
     const voz = t.consultas.find((q) => q.indice === "voz")!;
-    expect(voz).toMatchObject({ consulta: cases.A!.faiss[0], ref: expect.stringMatching(/^V-\d+$/), k: 10, umbral: null, excluidos: 1 });
+    expect(voz).toMatchObject({
+      consulta: cases.A!.faiss[0],
+      ref: expect.stringMatching(/^V-\d+$/),
+      k: 10,
+      umbral: null,
+      excluidos: 1,
+    });
     expect(voz.vecinos[0]).toMatchObject({ caso: cases.B!.code, pasa: true });
     expect(voz.vecinos[0]!.score).toBeGreaterThan(0.9);
     expect(voz.vecinos.some((v) => v.case_id === cases.A!.id)).toBe(false);
@@ -222,7 +261,9 @@ describe("consola: motor vectorial", () => {
     expect(["probable", "por_revisar"]).toContain(b.estado);
     const after = await env.DB.prepare("SELECT COUNT(*) AS n FROM links").first<{ n: number }>();
     expect(after!.n).toBe(before!.n);
-    const audit = await env.DB.prepare("SELECT actor_id, target_id, details_json FROM audit_log WHERE action = 'vectors.query' ORDER BY seq DESC LIMIT 1").first<{
+    const audit = await env.DB.prepare(
+      "SELECT actor_id, target_id, details_json FROM audit_log WHERE action = 'vectors.query' ORDER BY seq DESC LIMIT 1",
+    ).first<{
       actor_id: string;
       target_id: string;
       details_json: string;
@@ -234,19 +275,29 @@ describe("consola: motor vectorial", () => {
     for (const role of ["reviewer", "analyst"] as const) {
       const u = await loginAs(role, org.orgId);
       expect((await apiJson("/v1/console/vectores", { token: u.token })).status).toBe(403);
-      expect((await apiJson("/v1/console/vectores/consulta", { token: u.token, json: { case_id: cases.A!.id } })).status).toBe(403);
+      expect(
+        (await apiJson("/v1/console/vectores/consulta", { token: u.token, json: { case_id: cases.A!.id } })).status,
+      ).toBe(403);
     }
-    expect((await apiJson("/v1/console/vectores/consulta", { token: admin.token, json: { case_id: cases.N!.id } })).status).toBe(409);
-    expect((await apiJson("/v1/console/vectores/consulta", { token: admin.token, json: { case_id: "no-existe" } })).status).toBe(404);
+    expect(
+      (await apiJson("/v1/console/vectores/consulta", { token: admin.token, json: { case_id: cases.N!.id } })).status,
+    ).toBe(409);
+    expect(
+      (await apiJson("/v1/console/vectores/consulta", { token: admin.token, json: { case_id: "no-existe" } })).status,
+    ).toBe(404);
   });
 
   it("sin base vectorial, el estado lo dice y sincronizar responde 409", async () => {
     setChromaForTests({ cfg: null });
     try {
-      const o = VectorOverview.parse((await apiJson<VectorOverview>("/v1/console/vectores", { token: admin.token })).body);
+      const o = VectorOverview.parse(
+        (await apiJson<VectorOverview>("/v1/console/vectores", { token: admin.token })).body,
+      );
       expect(o.almacen).toMatchObject({ proveedor: "ninguno", conectado: false });
       expect(o.colecciones.every((c) => c.en_base === null && c.coleccion === null)).toBe(true);
-      expect((await apiJson("/v1/console/vectores/sincronizar", { method: "POST", token: admin.token })).status).toBe(409);
+      expect((await apiJson("/v1/console/vectores/sincronizar", { method: "POST", token: admin.token })).status).toBe(
+        409,
+      );
     } finally {
       setChromaForTests({ cfg: FAKE_CHROMA_CONFIG, fetch: chroma.fetch });
     }

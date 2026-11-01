@@ -54,7 +54,8 @@ export interface CuadernoNativo {
   actualizarWidget(disfraz: string): void;
 }
 
-let modulo: CuadernoNativo | null = Platform.OS === "android" ? requireOptionalNativeModule<CuadernoNativo>("CuadernoNativo") : null;
+let modulo: CuadernoNativo | null =
+  Platform.OS === "android" ? requireOptionalNativeModule<CuadernoNativo>("CuadernoNativo") : null;
 
 /** Solo para tests. */
 export function setCuadernoNativoForTests(m: CuadernoNativo | null): void {

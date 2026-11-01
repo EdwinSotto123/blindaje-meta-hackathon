@@ -100,7 +100,12 @@ export interface DetectedPattern {
   hasta: string;
 }
 
-const CANAL: Record<string, string> = { yape: "Yape", plin: "Plin", transferencia: "transferencia bancaria", efectivo: "pago en efectivo" };
+const CANAL: Record<string, string> = {
+  yape: "Yape",
+  plin: "Plin",
+  transferencia: "transferencia bancaria",
+  efectivo: "pago en efectivo",
+};
 
 /** La mejor ventana de 14 días (más casos; empate: la más reciente) que cumple el umbral. */
 function bestWindow(cases: VigiaCase[]): VigiaCase[] | null {
@@ -109,12 +114,16 @@ function bestWindow(cases: VigiaCase[]): VigiaCase[] | null {
   for (let i = 0; i < sorted.length; i++) {
     const win = sorted.filter((c) => c.t >= sorted[i]!.t && c.t <= sorted[i]!.t + WINDOW_DAYS * DAY_MS);
     if (win.length < MIN_CASES_FOR_STATS || distinctVictims(win) < MIN_VICTIMS_FOR_STATS) continue;
-    if (!best || win.length > best.length || (win.length === best.length && win.at(-1)!.t >= best.at(-1)!.t)) best = win;
+    if (!best || win.length > best.length || (win.length === best.length && win.at(-1)!.t >= best.at(-1)!.t))
+      best = win;
   }
   return best;
 }
 
-export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?: number } = {}): Promise<DetectedPattern[]> {
+export async function detectPatterns(
+  env: Env,
+  opts: { now?: Date; lookbackDays?: number } = {},
+): Promise<DetectedPattern[]> {
   const now = opts.now ?? new Date();
   const since = now.getTime() - (opts.lookbackDays ?? 30) * DAY_MS;
   const { results } = await env.DB.prepare(
@@ -138,7 +147,17 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
     const fecha = ficha?.primer_contacto ?? r.primer_contacto ?? r.created_at;
     const t = timeOf(fecha);
     if (!zona || !Number.isFinite(t) || t < since || t > now.getTime() + DAY_MS) continue;
-    cases.push({ id: r.id, code: r.code, device_id: r.device_id, zona, is_demo: r.is_demo === 1, fecha, t, sector: r.sector ?? ficha?.sector ?? null, ficha });
+    cases.push({
+      id: r.id,
+      code: r.code,
+      device_id: r.device_id,
+      zona,
+      is_demo: r.is_demo === 1,
+      fecha,
+      t,
+      sector: r.sector ?? ficha?.sector ?? null,
+      ficha,
+    });
   }
   if (!cases.length) return [];
   const ids = cases.map((c) => c.id);
@@ -151,7 +170,15 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
   // Agrupa por (mundo, distrito, rasgo): los casos del demo nunca se mezclan con los reales.
   const groups = new Map<
     string,
-    { kind: PatternKind; key: string; zona: string; is_demo: boolean; descripcion: string; extra: string[]; cases: Map<string, VigiaCase> }
+    {
+      kind: PatternKind;
+      key: string;
+      zona: string;
+      is_demo: boolean;
+      descripcion: string;
+      extra: string[];
+      cases: Map<string, VigiaCase>;
+    }
   >();
   const add = (c: VigiaCase, kind: PatternKind, key: string, descripcion: string, extra: string[] = []) => {
     const k = `${c.is_demo ? "demo" : "real"}|${c.zona}|${kind}|${key}`;
@@ -162,7 +189,12 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
   for (const c of cases) {
     const f = c.ficha;
     if (f?.grupo_que_dice_ser && normalizePhrase(f.grupo_que_dice_ser)) {
-      add(c, "grupo", normalizePhrase(f.grupo_que_dice_ser), `Quien extorsiona dice ser de "${f.grupo_que_dice_ser.trim()}"`);
+      add(
+        c,
+        "grupo",
+        normalizePhrase(f.grupo_que_dice_ser),
+        `Quien extorsiona dice ser de "${f.grupo_que_dice_ser.trim()}"`,
+      );
     }
     if (f?.canal_pago && CANAL[f.canal_pago]) add(c, "canal", f.canal_pago, `Exige el pago por ${CANAL[f.canal_pago]}`);
     for (const frase of new Set((f?.frases_firma ?? []).map((x) => x.trim()).filter((x) => normalizePhrase(x)))) {
@@ -191,7 +223,12 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
       win,
     });
   }
-  qualifying.sort((a, b) => KIND_PRIORITY.indexOf(a.kind) - KIND_PRIORITY.indexOf(b.kind) || b.win.length - a.win.length || a.key.localeCompare(b.key));
+  qualifying.sort(
+    (a, b) =>
+      KIND_PRIORITY.indexOf(a.kind) - KIND_PRIORITY.indexOf(b.kind) ||
+      b.win.length - a.win.length ||
+      a.key.localeCompare(b.key),
+  );
 
   // Agrupa rasgos del mismo distrito (y mundo) que comparten la mayoría de sus casos.
   const clusters: Array<{ zona: string; is_demo: boolean; features: typeof qualifying; caseIds: Set<string> }> = [];
@@ -213,13 +250,27 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
   for (const cl of clusters) {
     const primary = cl.features[0]!;
     const members = [...cl.caseIds].map((id) => byCase.get(id)!).sort((a, b) => a.t - b.t);
-    const hash = (await sha256Hex(`vigia:v2|${cl.is_demo ? "demo" : "real"}|${cl.zona}|${primary.kind}|${primary.key}`)).slice(0, 32);
+    const hash = (
+      await sha256Hex(`vigia:v2|${cl.is_demo ? "demo" : "real"}|${cl.zona}|${primary.kind}|${primary.key}`)
+    ).slice(0, 32);
     patterns.push({
       pattern_key: cl.is_demo ? `${DEMO_PATTERN_PREFIX}${hash}` : hash,
       zona: cl.zona,
       is_demo: cl.is_demo,
-      primary: { kind: primary.kind, key: primary.key, descripcion: primary.descripcion, citas: primary.citas, case_ids: primary.case_ids },
-      features: cl.features.map((f) => ({ kind: f.kind, key: f.key, descripcion: f.descripcion, citas: f.citas, case_ids: f.case_ids })),
+      primary: {
+        kind: primary.kind,
+        key: primary.key,
+        descripcion: primary.descripcion,
+        citas: primary.citas,
+        case_ids: primary.case_ids,
+      },
+      features: cl.features.map((f) => ({
+        kind: f.kind,
+        key: f.key,
+        descripcion: f.descripcion,
+        citas: f.citas,
+        case_ids: f.case_ids,
+      })),
       cases: members,
       n_victims: distinctVictims(members),
       desde: members[0]!.fecha,
@@ -232,7 +283,9 @@ export async function detectPatterns(env: Env, opts: { now?: Date; lookbackDays?
 async function confirmedLinkLabels(env: Env, caseIds: string[]): Promise<string[]> {
   if (caseIds.length < 2) return [];
   const ph = caseIds.map(() => "?").join(",");
-  const { results } = await env.DB.prepare(`SELECT num FROM links WHERE status = 'confirmado' AND case_a IN (${ph}) AND case_b IN (${ph}) ORDER BY num`)
+  const { results } = await env.DB.prepare(
+    `SELECT num FROM links WHERE status = 'confirmado' AND case_a IN (${ph}) AND case_b IN (${ph}) ORDER BY num`,
+  )
     .bind(...caseIds, ...caseIds)
     .all<{ num: number }>();
   return results.map((r) => linkLabel(r.num));
@@ -242,15 +295,25 @@ async function confirmedLinkLabels(env: Env, caseIds: string[]): Promise<string[
  * Lo que recibe el Vigía. Los rasgos citan frases y nombres casi literales de la evidencia: van
  * delimitados como dato y, si Prompt Guard marcó evidencia de alguna ficha, con un aviso delante.
  */
-export function patternBrief(p: DetectedPattern, links: string[], marcadas: Map<string, Array<{ label: string; score: number | null }>> = new Map()): string {
+export function patternBrief(
+  p: DetectedPattern,
+  links: string[],
+  marcadas: Map<string, Array<{ label: string; score: number | null }>> = new Map(),
+): string {
   const distrito = districtById(p.zona)?.name ?? p.zona;
   const sectores = new Map<string, number>();
   for (const c of p.cases) sectores.set(c.sector ?? "otro", (sectores.get(c.sector ?? "otro") ?? 0) + 1);
   const plazos = [...new Set(p.cases.map((c) => c.ficha?.plazo).filter((x): x is string => Boolean(x)))];
-  const amenazas = [...new Set(p.cases.map((c) => c.ficha?.tipo_amenaza).filter((x): x is NonNullable<typeof x> => Boolean(x)))];
+  const amenazas = [
+    ...new Set(p.cases.map((c) => c.ficha?.tipo_amenaza).filter((x): x is NonNullable<typeof x> => Boolean(x))),
+  ];
   const fichas = p.cases.map((c) => fichaLabel(c.code));
-  const avisos = p.cases.filter((c) => marcadas.get(c.id)?.length).map((c) => avisoFichaMarcada(fichaLabel(c.code), marcadas.get(c.id)!));
-  const rasgos = p.features.map((f) => `  - ${f.descripcion} (${f.case_ids.length} casos). Citas: ${f.citas.join(", ")}`).join("\n");
+  const avisos = p.cases
+    .filter((c) => marcadas.get(c.id)?.length)
+    .map((c) => avisoFichaMarcada(fichaLabel(c.code), marcadas.get(c.id)!));
+  const rasgos = p.features
+    .map((f) => `  - ${f.descripcion} (${f.case_ids.length} casos). Citas: ${f.citas.join(", ")}`)
+    .join("\n");
   return `Patrón detectado (datos agregados y ficticios, sin datos de víctimas):
 - Zona para la alerta: ${distrito}
 - Casos: ${p.cases.length}, de ${p.n_victims} personas distintas, en una ventana de ${WINDOW_DAYS} días.
@@ -274,8 +337,10 @@ export function sanitizeAlert(draft: AlertaBorrador, zona: string, citas: string
   const clean = (s: string) => redactLongNumbers(humanizeIsoDates(stripCitations(s)));
   const que_hacer = draft.que_hacer.map(clean).filter(Boolean);
   const all = `${draft.cuerpo} ${que_hacer.join(" ")}`;
-  if (!all.includes(LINEA_DENUNCIAS)) que_hacer.push(`Denuncia en la Línea ${LINEA_DENUNCIAS} o en la comisaría más cercana.`);
-  if (!new RegExp(`\\b${LINEA_EMERGENCIAS}\\b`).test(all)) que_hacer.push(`Si estás en peligro inmediato, llama al ${LINEA_EMERGENCIAS}.`);
+  if (!all.includes(LINEA_DENUNCIAS))
+    que_hacer.push(`Denuncia en la Línea ${LINEA_DENUNCIAS} o en la comisaría más cercana.`);
+  if (!new RegExp(`\\b${LINEA_EMERGENCIAS}\\b`).test(all))
+    que_hacer.push(`Si estás en peligro inmediato, llama al ${LINEA_EMERGENCIAS}.`);
   const out: AlertaBorrador = {
     titulo: clean(draft.titulo),
     cuerpo: clean(draft.cuerpo),
@@ -293,7 +358,10 @@ const IMAGE_PROMPT = (modalidad: string) =>
   "Ilustración plana y minimalista de un escudo junto a un teléfono celular, colores sobrios (azul tinta, blanco hueso y un acento ocre). " +
   "Sin texto, sin letras, sin números, sin personas, sin armas, sin logotipos, sin marcas.";
 
-async function generateCard(env: Env, modalidad: string): Promise<{ bytes: Uint8Array<ArrayBuffer>; mime: string } | null> {
+async function generateCard(
+  env: Env,
+  modalidad: string,
+): Promise<{ bytes: Uint8Array<ArrayBuffer>; mime: string } | null> {
   try {
     const res = await metaClientFor(env).images.generate(
       { prompt: IMAGE_PROMPT(modalidad), size: "1024x1024", outputFormat: "png", model: IMAGE_MODEL },
@@ -320,16 +388,30 @@ export async function runVigia(env: Env, opts: VigiaRunOptions): Promise<AlertVi
   for (const p of patterns) {
     // El pattern_key ya incluye el distrito y el mundo: la deduplicación es por distrito.
     const dedupSince = new Date(timeOf(p.hasta) - WINDOW_DAYS * DAY_MS).toISOString();
-    const dup = await env.DB.prepare("SELECT id FROM alerts WHERE pattern_key = ? AND created_at >= ? LIMIT 1").bind(p.pattern_key, dedupSince).first();
+    const dup = await env.DB.prepare("SELECT id FROM alerts WHERE pattern_key = ? AND created_at >= ? LIMIT 1")
+      .bind(p.pattern_key, dedupSince)
+      .first();
     if (dup) {
       skipped.push({ pattern: p.pattern_key, reason: "duplicada" });
       continue;
     }
 
-    const links = await confirmedLinkLabels(env, p.cases.map((c) => c.id));
-    const citas = [...new Set([...p.cases.map((c) => fichaLabel(c.code)), ...links, ...p.features.flatMap((f) => f.citas)])];
+    const links = await confirmedLinkLabels(
+      env,
+      p.cases.map((c) => c.id),
+    );
+    const citas = [
+      ...new Set([...p.cases.map((c) => fichaLabel(c.code)), ...links, ...p.features.flatMap((f) => f.citas)]),
+    ];
     const known = new Set(citas);
-    const brief = patternBrief(p, links, await flaggedByCase(env, p.cases.map((c) => c.id)));
+    const brief = patternBrief(
+      p,
+      links,
+      await flaggedByCase(
+        env,
+        p.cases.map((c) => c.id),
+      ),
+    );
     let previous: AlertaBorrador | null = null;
     let result;
     try {
@@ -340,7 +422,10 @@ export async function runVigia(env: Env, opts: VigiaRunOptions): Promise<AlertVi
         target_id: p.pattern_key,
         known,
         attempt: async (feedback) => {
-          const input = feedback && previous ? `${brief}\n\nTu respuesta anterior fue:\n${JSON.stringify(previous)}\n\n${feedback}` : brief;
+          const input =
+            feedback && previous
+              ? `${brief}\n\nTu respuesta anterior fue:\n${JSON.stringify(previous)}\n\n${feedback}`
+              : brief;
           const res = await client.responses.parse(
             {
               model: VIGIA_MODEL,
@@ -388,14 +473,26 @@ export async function runVigia(env: Env, opts: VigiaRunOptions): Promise<AlertVi
     const id = newId();
     let imageKey: string | null = null;
     if (card) {
-      imageKey = `alerts/${id}.${card.mime.includes("jpeg") ? "jpg" : card.mime.split("/")[1] ?? "png"}`;
-      await env.EVIDENCE.put(imageKey, card.bytes, { httpMetadata: { contentType: card.mime }, customMetadata: { kind: "alert_card" } });
+      imageKey = `alerts/${id}.${card.mime.includes("jpeg") ? "jpg" : (card.mime.split("/")[1] ?? "png")}`;
+      await env.EVIDENCE.put(imageKey, card.bytes, {
+        httpMetadata: { contentType: card.mime },
+        customMetadata: { kind: "alert_card" },
+      });
     }
     await env.DB.prepare(
       `INSERT INTO alerts (id, org_id, network_id, pattern_key, draft_json, citation_check_json, status, image_r2_key, created_at)
        VALUES (?, ?, ?, ?, ?, ?, 'borrador', ?, ?)`,
     )
-      .bind(id, CENTRAL_ORG_ID, networkId?.network_id ?? null, p.pattern_key, JSON.stringify(draft), JSON.stringify(result.check), imageKey, nowIso_)
+      .bind(
+        id,
+        CENTRAL_ORG_ID,
+        networkId?.network_id ?? null,
+        p.pattern_key,
+        JSON.stringify(draft),
+        JSON.stringify(result.check),
+        imageKey,
+        nowIso_,
+      )
       .run();
     created.push(id);
   }

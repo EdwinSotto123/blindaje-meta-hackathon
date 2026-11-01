@@ -113,9 +113,7 @@ class IndexStore:
             self._touch(version)
             return int(fresh.ntotal)
 
-    def search(
-        self, name: str, vector, k: int, exclude_ids: list[int] | None = None
-    ) -> list[tuple[int, float]]:
+    def search(self, name: str, vector, k: int, exclude_ids: list[int] | None = None) -> list[tuple[int, float]]:
         with self._lock:
             idx = self._get(name)
             q = _as_matrix(vector, self.dims[name])
@@ -127,9 +125,7 @@ class IndexStore:
                 return []
             fetch = min(n, k + len(excl))
             scores, ids = idx.search(q, fetch)
-        out = [
-            (int(i), float(s)) for i, s in zip(ids[0], scores[0], strict=True) if i >= 0 and int(i) not in excl
-        ]
+        out = [(int(i), float(s)) for i, s in zip(ids[0], scores[0], strict=True) if i >= 0 and int(i) not in excl]
         return out[:k]
 
     def vectors(self, name: str) -> tuple[np.ndarray, np.ndarray]:
@@ -145,9 +141,7 @@ class IndexStore:
 
     def snapshot(self, extra_files: dict[str, bytes] | None = None) -> bytes:
         with self._lock:
-            blobs = {
-                name: faiss.serialize_index(idx).tobytes() for name, idx in self._indices.items()
-            }
+            blobs = {name: faiss.serialize_index(idx).tobytes() for name, idx in self._indices.items()}
             manifest = {
                 "format": SNAPSHOT_FORMAT,
                 "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),

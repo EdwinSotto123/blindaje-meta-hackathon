@@ -11,10 +11,19 @@ import { caseCodeFromRef } from "./NetworkDetailView";
 
 describe("looksLikeEmail", () => {
   it("acepta correos reales", () => {
-    for (const e of ["revisora@demo.blindaje.pe", "nombre@gremio.pe", "  ana.p@mercado-sjl.org.pe "]) expect(looksLikeEmail(e)).toBe(true);
+    for (const e of ["revisora@demo.blindaje.pe", "nombre@gremio.pe", "  ana.p@mercado-sjl.org.pe "])
+      expect(looksLikeEmail(e)).toBe(true);
   });
   it("rechaza lo que no es un correo", () => {
-    for (const e of ["", "revisora", "revisora@", "revisora@gremio", "re visora@gremio.pe", "SSS@SSS.SSS".replace(/@/, "")]) expect(looksLikeEmail(e)).toBe(false);
+    for (const e of [
+      "",
+      "revisora",
+      "revisora@",
+      "revisora@gremio",
+      "re visora@gremio.pe",
+      "SSS@SSS.SSS".replace(/@/, ""),
+    ])
+      expect(looksLikeEmail(e)).toBe(false);
   });
 });
 
@@ -31,7 +40,8 @@ describe("caseCodeFromRef", () => {
 });
 
 describe("código de caso desde la etiqueta del nodo", () => {
-  const node = (label: string, data?: Record<string, unknown>): GraphNode => ({ id: `n-${label}`, type: "caso", label, ...(data ? { data } : {}) }) as GraphNode;
+  const node = (label: string, data?: Record<string, unknown>): GraphNode =>
+    ({ id: `n-${label}`, type: "caso", label, ...(data ? { data } : {}) }) as GraphNode;
 
   it("usa data.code si viene y, si no, quita el prefijo 'Caso '", () => {
     expect(caseCodeOf(node("Caso A", { code: "A" }))).toBe("A");

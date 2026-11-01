@@ -37,7 +37,15 @@ function endSentence(s: string): string {
 }
 
 /** El mapa ya cargado (sin llamadas a la API, para poder probarlo con un render estático). */
-export function MapPage({ map, selected, rubro }: { map: PublicZoneMap; selected: District | null; rubro: Rubro | null }) {
+export function MapPage({
+  map,
+  selected,
+  rubro,
+}: {
+  map: PublicZoneMap;
+  selected: District | null;
+  rubro: Rubro | null;
+}) {
   const mine = selected ? map.celdas.find((c) => c.distrito === selected.id) : undefined;
   return (
     <>
@@ -54,7 +62,9 @@ export function MapPage({ map, selected, rubro }: { map: PublicZoneMap; selected
           ) : (
             <>{selected.name}: sin datos. </>
           )}
-          <Link to={{ pathname: "/", search: choiceSearch({ distrito: selected.id, rubro }) }}>Ver {selected.name}</Link>
+          <Link to={{ pathname: "/", search: choiceSearch({ distrito: selected.id, rubro }) }}>
+            Ver {selected.name}
+          </Link>
         </p>
       ) : null}
 
@@ -67,7 +77,8 @@ export function MapPage({ map, selected, rubro }: { map: PublicZoneMap; selected
         </Note>
         <Note icon="lock" title="Qué se muestra y qué no">
           <p>
-            {THRESHOLD_RULE} Los casos van en rangos (5-9, 10-19, 20-49, 50+), nunca en cifras exactas, y no hay un total de la ciudad.
+            {THRESHOLD_RULE} Los casos van en rangos (5-9, 10-19, 20-49, 50+), nunca en cifras exactas, y no hay un
+            total de la ciudad.
           </p>
         </Note>
       </div>
@@ -83,11 +94,17 @@ export function MapPage({ map, selected, rubro }: { map: PublicZoneMap; selected
       <div className="next">
         <p className="next-title">¿Y ahora qué hago?</p>
         <div className="next-actions">
-          <Link className="btn btn-outline" to={{ pathname: "/si-te-pasa", search: choiceSearch({ distrito: selected?.id, rubro }) }}>
+          <Link
+            className="btn btn-outline"
+            to={{ pathname: "/si-te-pasa", search: choiceSearch({ distrito: selected?.id, rubro }) }}
+          >
             <Icon name="shield" size={18} />
             Qué hacer si te pasa
           </Link>
-          <Link className="btn btn-quiet" to={{ pathname: "/datos", search: choiceSearch({ distrito: selected?.id, rubro }) }}>
+          <Link
+            className="btn btn-quiet"
+            to={{ pathname: "/datos", search: choiceSearch({ distrito: selected?.id, rubro }) }}
+          >
             Cómo se calcula el mapa
           </Link>
         </div>

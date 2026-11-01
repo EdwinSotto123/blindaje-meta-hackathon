@@ -52,7 +52,8 @@ publicRoutes.post("/pilot-requests", rateLimit("pilot"), async (c) => {
   const body = await readJson(c, PilotRequest);
   const ip = clientIp(c);
   const ok = await verifyTurnstile(c.env.TURNSTILE_SECRET, body.turnstile_token, ip);
-  if (!ok) throw new ApiError("forbidden", "No pudimos verificar que seas una persona. Recarga la página e intenta de nuevo.");
+  if (!ok)
+    throw new ApiError("forbidden", "No pudimos verificar que seas una persona. Recarga la página e intenta de nuevo.");
   const id = newId();
   await c.env.DB.prepare(
     `INSERT INTO pilot_requests (id, org_name, contact_name, contact, sector, district, members, message, lang, ip_hash, created_at)
@@ -123,7 +124,15 @@ const DistrictParam = z
   });
 
 function alertForPublic(a: ZoneAlert): VictimAlert {
-  return { id: a.id, titulo: a.titulo, cuerpo: a.cuerpo, zona: a.zona, distrito: a.distrito, que_hacer: a.que_hacer, approved_at: a.approved_at };
+  return {
+    id: a.id,
+    titulo: a.titulo,
+    cuerpo: a.cuerpo,
+    zona: a.zona,
+    distrito: a.distrito,
+    que_hacer: a.que_hacer,
+    approved_at: a.approved_at,
+  };
 }
 
 publicRoutes.get("/zones", rateLimit("public"), async (c) => {
@@ -155,8 +164,8 @@ publicRoutes.get("/alerts", rateLimit("public"), async (c) => {
 publicRoutes.get("/recommendations", rateLimit("public"), async (c) => {
   const q = parseQuery(c, z.object({ zona: DistrictParam.optional(), sector: Sector.optional(), demo: DemoFlag }));
   const isDemo = publicIsDemo(c, q.demo);
-  const recommendations = (await approvedRecommendations(c.env, { isDemo, zonas: q.zona ? [q.zona] : null, sector: q.sector ?? null })).filter(
-    (r) => r.distrito,
-  );
+  const recommendations = (
+    await approvedRecommendations(c.env, { isDemo, zonas: q.zona ? [q.zona] : null, sector: q.sector ?? null })
+  ).filter((r) => r.distrito);
   return publicJson(c, PublicRecommendations, { recommendations, nota_sesgo: SESGO_TEXTO, demo: isDemo });
 });

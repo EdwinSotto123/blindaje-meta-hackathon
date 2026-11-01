@@ -159,7 +159,9 @@ describe("PIN y PIN señuelo en la calculadora", () => {
   it("la calculadora común sí guarda sus vueltos", async () => {
     const repo = new MemoryDisguiseRepo();
     setDisguiseRepo(repo);
-    await render(<VueltoCalculator initialTotalCents={1250} armed={false} tryAccess={tryAccess} onAccess={jest.fn()} />);
+    await render(
+      <VueltoCalculator initialTotalCents={1250} armed={false} tryAccess={tryAccess} onAccess={jest.fn()} />,
+    );
     await typeDigits("20");
     await fireEvent.press(screen.getByTestId("tecla-calcular"));
     await waitFor(() => expect(screen.getByTestId("resultado")).toBeTruthy());

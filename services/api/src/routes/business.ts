@@ -65,7 +65,11 @@ businessRoutes.get("/risk", async (c) => {
 /** Consejos aprobados por el equipo central para la zona de la cuenta (primero los de su rubro). */
 businessRoutes.get("/recommendations", async (c) => {
   const b = await currentAccount(c);
-  const recommendations = await approvedRecommendations(c.env, { isDemo: b.is_demo === 1, zonas: [zoneKey(b.zona)], sector: b.sector });
+  const recommendations = await approvedRecommendations(c.env, {
+    isDemo: b.is_demo === 1,
+    zonas: [zoneKey(b.zona)],
+    sector: b.sector,
+  });
   return businessJson(c, z.object({ recommendations: z.array(BusinessRecommendationView) }), { recommendations });
 });
 
@@ -76,6 +80,14 @@ businessRoutes.get("/alerts", async (c) => {
   const alerts = (await approvedAlerts(c.env, { isDemo: b.is_demo === 1 }))
     .filter((a) => key && a.key === key)
     .slice(0, 50)
-    .map((a) => ({ id: a.id, titulo: a.titulo, cuerpo: a.cuerpo, zona: a.zona, distrito: a.distrito, que_hacer: a.que_hacer, approved_at: a.approved_at }));
+    .map((a) => ({
+      id: a.id,
+      titulo: a.titulo,
+      cuerpo: a.cuerpo,
+      zona: a.zona,
+      distrito: a.distrito,
+      que_hacer: a.que_hacer,
+      approved_at: a.approved_at,
+    }));
   return businessJson(c, z.object({ alerts: z.array(VictimAlert) }), { alerts });
 });
