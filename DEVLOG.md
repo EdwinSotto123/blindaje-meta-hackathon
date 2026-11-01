@@ -539,3 +539,30 @@ mí". Se eligió que la administración vea todo y empiece en un panel nuevo de 
 - `pnpm eval:infiltrado` corre solo esa prueba; sirve para calentar el contenedor y comprobar el
   pipeline antes de grabar. README, PLAN, `services/api/README.md` y `docs/VIDEO.md` al día.
 - Tests: API 178.
+
+## 2026-10-31 18:00 – 21:30: auditoría del repositorio y TO BE
+
+- Auditoría medida con herramientas (conteo de líneas, knip, jscpd, vulture, ruff, audit y outdated,
+  peso de los builds). Estado: 62.500 líneas de código y 13.900 de tests, tipado estricto (1 `any`),
+  2,6 % de duplicación (casi toda la copia de `shared` en la app) y casi sin código muerto.
+- Hallazgo: el CI de GitHub nunca había corrido (`hashFiles()` en el `if` de los jobs). Corregido; los
+  jobs siguen sin arrancar por un bloqueo de facturación de la cuenta de GitHub.
+- Herramientas: Turborepo (`pnpm check` con caché: de 2 min 42 s a 0,08 s sin cambios), Prettier en
+  todo el código (capturas comparadas píxel a píxel), ESLint también en la landing y la app (8 errores
+  reales de hooks en la app), ruff format, knip en el CI (monorepo y app) y `@cloudflare/vitest-plugin`
+  en lugar del paquete obsoleto.
+- Entrega continua: `.github/workflows/deploy.yml` (migraciones de D1, cuatro Workers, prueba de humo)
+  y `docs/DEPLOY.md`. Falta el token de Cloudflare en GitHub.
+- `packages/ui` (tema, íconos y `useAsync` de la consola y el portal), CSS de la consola y el portal
+  partido por sección (build idéntico byte por byte) y `VectorsView` en `views/vectores/`.
+- API: OpenAPI 3.1 en `docs/openapi.json` generada desde zod, con un test que impide que se desfase;
+  sin SQL en las rutas (97 consultas a módulos de dominio) y la consola en 11 archivos por sección.
+- Pruebas de punta a punta con Playwright y axe (22, escritorio y celular) en un job propio del CI.
+- Bugs encontrados en el camino: la vista de Auditoría de la consola habría dejado de cargar con el
+  primer login de un negocio (contrato `AuditEntry` sin el actor "business"; en producción todavía no
+  había ninguno); cuatro problemas de accesibilidad (nombres de los logos y de las citas, contraste de
+  los pasos pendientes del motor vectorial, tablas desplazables sin teclado).
+- Desplegado (API, consola, portal y landing) y probado en vivo: las 38 rutas de la consola con la
+  cuenta de jurado (solo lectura sigue en 403), cadena de auditoría íntegra (699 entradas) y la prueba
+  del infiltrado de punta a punta (8 de 8, 52 s).
+- Tests: API 181, consola 137, portal 50, app 164, ML 150, e2e 22.
