@@ -121,9 +121,10 @@ export function Layout() {
   return (
     <div className="shell">
       <aside className="sidebar" aria-label="Navegación principal">
-        <NavLink to="/" className="brand" aria-label="Blindaje, inicio de la consola">
+        <NavLink to="/" className="brand">
           <span className="brand-name">blindaje</span>
           <span className="brand-sub">Consola</span>
+          <span className="sr-only">, ir al inicio</span>
         </NavLink>
         <nav className="nav">
           {items.map((n) => (

@@ -202,10 +202,16 @@ apps/landing         Landing page (Astro), Spanish and English
 services/api         Cloudflare Worker: Hono, D1, R2, Queues, Workflows, Durable Objects, Containers
 services/ml          ML container (Python): voiceprints, text and image vectors, FAISS, watermarks
 packages/shared      Zod contracts, identifier normalization and HMAC, agent prompts
+packages/ui          Shared theme (CSS tokens), icons and data hook for the console, portal and landing
 packages/meta-client Meta Model API client
 eval                 Evaluation, fictitious scripts, demo seed
 infra/migrations     D1 migrations
+docs/openapi.json    OpenAPI 3.1 spec of the API, generated from the zod contracts
 ```
+
+Tooling: pnpm workspaces with Turborepo (cached `pnpm check`), Prettier, ESLint, knip (unused code and
+dependencies) and ruff for Python, all enforced in CI. The mobile app is a separate npm project with its own
+lint, knip and tests in the same CI.
 
 ## Run it locally
 
@@ -231,8 +237,6 @@ pnpm --filter @blindaje/landing dev
 pnpm check          # typecheck, lint and tests
 pnpm format         # Prettier (pnpm format:check in CI)
 ```
-
-Deployment: GitHub Actions deploys the four Workers when CI passes on `main` (D1 migrations first, smoke test last). Setup, manual commands and rollback: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 ML container (see [`services/ml/README.md`](services/ml/README.md)):
 
@@ -260,20 +264,22 @@ pnpm demo:reset && pnpm demo:seed  # fictitious cases A to G against the API (AP
 
 ## Deploy
 
+GitHub Actions deploys the four Workers when CI passes on `main`: D1 migrations first, then the API,
+console, portal and landing, and a smoke test at the end. Setup (Cloudflare token and GitHub
+environment), manual commands and rollback are in [`docs/DEPLOY.md`](docs/DEPLOY.md).
+
+Worker secrets live in Cloudflare, never in the repository:
+
 ```bash
 cd services/api
-npx wrangler d1 migrations apply blindaje --remote
 npx wrangler secret put MODEL_API_KEY   # also HMAC_ALLIANCE_KEY, EVIDENCE_ENCRYPTION_KEY, JWT_SECRET,
                                         # DEMO_SECRET, DEMO_ADMIN_PASSWORD, TURNSTILE_SECRET and
                                         # optionally CHROMA_API_KEY, CHROMA_TENANT
-npx wrangler deploy --containers-rollout=none
-
-pnpm --filter @blindaje/console deploy
-pnpm --filter @blindaje/portal deploy
 ```
 
 The ML container image is defined in `services/ml/Dockerfile` and bound as a Cloudflare Container
-(`standard-2`, up to 3 instances); it needs the Workers Paid plan.
+(`standard-2`, up to 3 instances); it needs the Workers Paid plan. Its image is rebuilt by hand
+(it needs gated model weights), so CI deploys the API with `--containers-rollout=none`.
 
 ## Built during the hackathon
 

@@ -216,7 +216,7 @@ function Services({ m }: { m: ConsoleMonitor }) {
         </h2>
         <span className="small muted">{down ? `${down} sin respuesta` : "Meta y Chroma se miden cada 30 s"}</span>
       </div>
-      <div className="table-wrap">
+      <div className="table-wrap" tabIndex={0} role="region" aria-label="Servicios (se desplaza a los lados)">
         <table className="table mon-services">
           <thead>
             <tr>
@@ -292,7 +292,12 @@ function Speed({ m }: { m: ConsoleMonitor }) {
             Total es lo que esperaste desde tu navegador; servidor, lo que trabajó la API; la diferencia es el viaje por
             la red hasta Cloudflare.
           </p>
-          <div className="table-wrap">
+          <div
+            className="table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label="Velocidad de la consola (se desplaza a los lados)"
+          >
             <table className="table mon-speed">
               <thead>
                 <tr>

@@ -54,9 +54,9 @@ describe("citationText", () => {
   });
 
   it("describe la cita para lectores de pantalla", () => {
-    expect(citationAriaLabel("ID-3fa9c1", index)).toBe("Abrir cuenta de yape terminado en 488");
+    expect(citationAriaLabel("ID-3fa9c1", index)).toBe("Abrir Yape …488, cuenta de yape que termina en 488");
     expect(citationAriaLabel("EV-A1", index)).toBe("Abrir evidencia EV-A1");
-    expect(citationAriaLabel("FICHA-B", index)).toBe("Abrir ficha del caso B");
+    expect(citationAriaLabel("FICHA-B", index)).toBe("Abrir FICHA-B, ficha del caso B");
   });
 });
 
@@ -89,7 +89,7 @@ describe("render de citas", () => {
     expect(html).toContain(
       '<button type="button" class="cite" data-kind="evidencia" aria-label="Abrir evidencia EV-B1"',
     );
-    expect(html).toContain('aria-label="Abrir teléfono terminado en 131"');
+    expect(html).toContain('aria-label="Abrir Tel. …131, teléfono que termina en 131"');
     const text = visibleText(html);
     expect(text).toContain("Tel. …131");
     expect(text).toContain("Tel. …904");

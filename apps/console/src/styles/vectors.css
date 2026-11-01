@@ -376,9 +376,22 @@
   opacity: 0;
 }
 
+/* Antes de su paso, el modelo y las colecciones se ven punteados y sin relleno: marcan el camino sin
+   bajar el contraste del texto (WCAG 1.4.3), que una opacidad reducida sí bajaba. */
 .vx-model[data-phase="later"],
 .vx-dest[data-phase="later"] {
-  opacity: 0.42;
+  color: var(--tinta-2);
+}
+
+.vx-model[data-phase="later"] {
+  background: transparent;
+  outline: 1px dashed var(--linea-2);
+  outline-offset: -1px;
+}
+
+.vx-dest[data-phase="later"] .vx-col {
+  border-style: dashed;
+  background: transparent;
 }
 
 .vx-strips {

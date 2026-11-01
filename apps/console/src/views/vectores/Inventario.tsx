@@ -19,7 +19,7 @@ export function CollectionsTable({ overview }: { overview: VectorOverview }) {
           Una por tipo de vector. Las cifras de D1 son de casos indexados con consentimiento comunitario.
         </span>
       </div>
-      <div className="table-wrap">
+      <div className="table-wrap" tabIndex={0} role="region" aria-label="Colecciones (se desplaza a los lados)">
         <table className="table">
           <thead>
             <tr>

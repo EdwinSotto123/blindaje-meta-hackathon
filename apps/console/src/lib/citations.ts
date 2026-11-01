@@ -286,7 +286,10 @@ export function citationText(ref: string, index?: CitationIndex): string {
   return ref;
 }
 
-/** Descripción accesible (lector de pantalla) de una cita. */
+/**
+ * Descripción accesible (lector de pantalla) de una cita. Siempre incluye el texto visible de la cita
+ * (WCAG 2.5.3): quien usa control por voz dice lo que ve, por ejemplo "Abrir FICHA-B".
+ */
 export function citationAriaLabel(ref: string, index?: CitationIndex): string {
   const kind = citationKind(ref);
   const t = index?.get(ref);
@@ -294,7 +297,7 @@ export function citationAriaLabel(ref: string, index?: CitationIndex): string {
     case "evidencia":
       return `Abrir evidencia ${ref}`;
     case "ficha":
-      return `Abrir ficha del caso ${ref.slice(6)}`;
+      return `Abrir ${ref}, ficha del caso ${ref.slice(6)}`;
     case "vinculo":
       return `Abrir vínculo ${ref}`;
     case "voz":
@@ -305,7 +308,9 @@ export function citationAriaLabel(ref: string, index?: CitationIndex): string {
           ? (ID_TYPE_LABEL[t.tipo] ?? "Identificador").toLowerCase()
           : "identificador cifrado";
       const shown = citationText(ref, index);
-      return shown.includes("…") ? `Abrir ${tipo} terminado en ${shown.split("…")[1]}` : `Abrir ${tipo} ${ref}`;
+      return shown.includes("…")
+        ? `Abrir ${shown}, ${tipo} que termina en ${shown.split("…")[1]}`
+        : `Abrir ${tipo} ${ref}`;
     }
     case "imagen":
       return `Abrir recorte de imagen ${ref}`;

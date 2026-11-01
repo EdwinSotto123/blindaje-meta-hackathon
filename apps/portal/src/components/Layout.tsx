@@ -140,11 +140,12 @@ export function Layout() {
     <>
       <header className="top">
         <div className="top-in">
-          <Link to={{ pathname: "/", search }} className="brand" aria-label="Blindaje, ir a Mi zona">
+          <Link to={{ pathname: "/", search }} className="brand">
             <span className="brand-name" translate="no">
               blindaje
             </span>
             <span className="brand-sub">tu zona</span>
+            <span className="sr-only">, ir al inicio</span>
           </Link>
           <ZoneChip />
         </div>

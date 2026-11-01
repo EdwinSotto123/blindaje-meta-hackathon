@@ -201,7 +201,12 @@ export function TraceTable({ trace }: { trace: VectorTrace }) {
       <p className="small muted">
         {PROVIDER_LABEL[trace.proveedor]}: {fmtMs(trace.total_ms)} en total, contando el cálculo de las señales.
       </p>
-      <div className="table-wrap">
+      <div
+        className="table-wrap"
+        tabIndex={0}
+        role="region"
+        aria-label="Consultas de la búsqueda (se desplaza a los lados)"
+      >
         <table className="table">
           <thead>
             <tr>

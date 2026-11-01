@@ -5,3 +5,4 @@ packages:
   - "apps/portal"
   - "apps/landing"
   - "eval"
+  - "e2e"

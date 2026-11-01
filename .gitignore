@@ -59,3 +59,7 @@ docs/PROMPT.md
 
 # Herramientas de diseño locales (skill de diseño): capturas e informes de inspección.
 .taste-skill/
+
+# Pruebas de punta a punta (Playwright)
+e2e/test-results/
+e2e/playwright-report/
