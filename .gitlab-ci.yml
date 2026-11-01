@@ -1,12 +1,12 @@
 # CI en GitLab: los mismos controles que .github/workflows/ci.yml (formato, knip, typecheck, lint,
-# tests, e2e con Playwright y axe, la app móvil y el contenedor ML). El despliegue sigue en GitHub
-# Actions o a mano (docs/DEPLOY.md).
+# tests, e2e con Playwright y axe, la app móvil y el contenedor ML) y el APK de Android a pedido,
+# como .github/workflows/android.yml. El despliegue sigue en GitHub Actions o a mano (docs/DEPLOY.md).
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-stages: [check]
+stages: [check, apk]
 
 default:
   interruptible: true
@@ -82,3 +82,56 @@ ml:
     - uv run pytest -m "not heavy" -q
     # Scripts de evaluación en Python: solo estilo (sus dependencias incluyen torch).
     - cd ../../eval/py && uvx ruff@0.17.3 check . && uvx ruff@0.17.3 format --check .
+
+# APK de Android a pedido (botón de play en el pipeline de main): release firmado con la llave de
+# depuración de la plantilla de Expo, compilado aquí y no en la máquina del equipo.
+#   cuaderno.apk       prevención de capturas activa: así se usaría de verdad.
+#   cuaderno-demo.apk  permite capturas y grabar pantalla (solo para el video y la landing) y llena
+#                      el cuaderno con ventas ficticias. Nunca para personas reales.
+apk:
+  stage: apk
+  image: eclipse-temurin:21-jdk-noble
+  tags: [saas-linux-medium-amd64]
+  timeout: 90m
+  needs: []
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      allow_failure: true
+  parallel:
+    matrix:
+      - NOMBRE: cuaderno
+        EXPO_PUBLIC_ALLOW_SCREENSHOTS: "0"
+        EXPO_PUBLIC_DEMO_SEED: "0"
+      - NOMBRE: cuaderno-demo
+        EXPO_PUBLIC_ALLOW_SCREENSHOTS: "1"
+        EXPO_PUBLIC_DEMO_SEED: "1"
+  variables:
+    EXPO_NO_TELEMETRY: "1"
+    EXPO_PUBLIC_API_URL: https://blindaje-api.vigiaperu.workers.dev
+    ANDROID_HOME: /opt/android-sdk
+    NODE_VERSION: "22.23.4"
+  cache:
+    key:
+      files: [apps/mobile/package-lock.json]
+    paths: [apps/mobile/.npm]
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends curl git unzip xz-utils
+    - curl -fsSL https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz | tar -xJ -C /opt
+    - export PATH="/opt/node-v$NODE_VERSION-linux-x64/bin:$PATH"
+    - curl -fsSL -o /tmp/tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+    - mkdir -p $ANDROID_HOME/cmdline-tools && unzip -q /tmp/tools.zip -d $ANDROID_HOME/cmdline-tools
+    - mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+    # Con las licencias aceptadas, Gradle baja la plataforma, las build-tools, el NDK y CMake que pide
+    # React Native.
+    - (yes || true) | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null
+  script:
+    - cd apps/mobile
+    - npm ci --cache .npm --prefer-offline
+    - npx expo prebuild --platform android --no-install --clean
+    - cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a --no-daemon
+    - cp app/build/outputs/apk/release/app-release.apk ../$NOMBRE.apk
+  artifacts:
+    name: $NOMBRE
+    paths: [apps/mobile/$NOMBRE.apk]
+    expire_in: 30 days
