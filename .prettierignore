@@ -20,6 +20,8 @@ eval/data/
 eval/results/
 eval/report.json
 eval/demo/
+# Datos de la animación de la voz, generados por eval/py/blindaje_eval/voz_landing.py
+apps/landing/src/data/voz-demo.json
 services/ml/
 eval/py/
 infra/

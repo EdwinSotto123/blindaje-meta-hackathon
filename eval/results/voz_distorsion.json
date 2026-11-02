@@ -1,0 +1,59 @@
+{
+  "version": "v1",
+  "modelo": "speechbrain/spkrec-ecapa-voxceleb",
+  "dataset": "SLR73 (español de Perú), mismos audios que la evaluación de voz",
+  "hablantes": 28,
+  "disfraz": "torchaudio pitch_shift (tono y formantes) y luego WhatsApp canal 2",
+  "barrido_semitonos": [
+    -8,
+    8
+  ],
+  "umbral_revision": 0.6,
+  "limpio": {
+    "pruebas": 28,
+    "top1": 1.0,
+    "coseno_correcto_media": 0.759,
+    "coseno_distinto_p99": 0.5323,
+    "falsos_vinculos": 1,
+    "comparaciones": 784,
+    "falsos_por_100": 0.128,
+    "aciertos_sobre_revision": 1.0
+  },
+  "disfraces": [
+    {
+      "semitonos": 4,
+      "sin_revertir": {
+        "pruebas": 28,
+        "top1": 0.0714,
+        "coseno_correcto_media": 0.1414,
+        "coseno_distinto_p99": 0.3042,
+        "falsos_vinculos": 0,
+        "comparaciones": 784,
+        "falsos_por_100": 0.0,
+        "aciertos_sobre_revision": 0.0
+      },
+      "revertido": {
+        "pruebas": 28,
+        "top1": 0.6786,
+        "coseno_correcto_media": 0.3808,
+        "coseno_distinto_p99": 0.428,
+        "falsos_vinculos": 0,
+        "comparaciones": 784,
+        "falsos_por_100": 0.0,
+        "aciertos_sobre_revision": 0.0357
+      },
+      "k_exacto": 0.6071,
+      "k_a_1_semitono": 0.75,
+      "k_mediana": -4.0
+    }
+  ],
+  "ejemplo": {
+    "hablante": "pef_01208",
+    "disfraz_semitonos": 4,
+    "k_revertido": -4,
+    "coseno_limpio": 0.733,
+    "coseno_disfrazado": 0.0213,
+    "coseno_revertido": 0.4297
+  },
+  "segundos": 213.0
+}

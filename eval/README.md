@@ -46,6 +46,20 @@ Además: motor de vinculación sobre los escenarios (identificador, voz e imagen
 Las métricas que dependen de la API quedan **pendientes** con su motivo si la API, el demo o los
 agentes todavía no están listos: nunca se inventan.
 
+**Voz disfrazada** (02/11, aparte de `pnpm eval`): `uv run python -I -m blindaje_eval.voz_distorsion`.
+Toma los mismos audios de SLR73 y les aplica un cambiador de voz de +4 semitonos más WhatsApp. Después
+intenta revertirlo con un barrido de tono de −8 a +8 semitonos. Escribe `results/voz_distorsion.json`.
+- Resultado con 28 voces:
+
+  | | Primer lugar | Coseno medio | Falsos vínculos |
+  |---|---|---|---|
+  | Limpia | 100 % | 0.76 | 0.13 por 100 |
+  | Disfrazada | 7 % | 0.14 | 0 |
+  | Revertida | 68 % | 0.38 | 0 |
+
+- La reversión es un experimento: no corre en el pipeline, y el parecido revertido queda bajo el umbral de revisión.
+- `blindaje_eval.voz_landing` genera la animación de la landing: ondas, tono, huella y audios de la voz 1 ficticia del demo.
+
 ## Estructura de `report.json` (schema 1.1)
 
 El README del repo y la landing leen solo `resumen`. Cambios que rompan la forma suben

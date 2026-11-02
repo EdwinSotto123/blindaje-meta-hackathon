@@ -768,6 +768,54 @@ export const en: Dict = {
       agentsLead:
         "They run on Muse Spark 1.3 through the Responses API, with strict JSON schema output. Every claim cites evidence: without a citation, the output is rejected.",
     },
+    voice: {
+      title: "Even a disguised voice leaves a print",
+      lead: "A fictitious voice note takes the path it would take inside Blindaje: the disguise the extortionist adds, the pitch reversal, the 192-number print and its ID. The figures come from the evaluation with {speakers} real voices from SLR73, in Peruvian Spanish, sent over WhatsApp.",
+      steps: [
+        {
+          label: "The voice",
+          title: "Another number, the same voice",
+          text: "A fictitious voice, generated with Meta’s MMS-TTS, threatens over WhatsApp from a new SIM. That voice already threatened someone in another case.",
+        },
+        {
+          label: "Disguised",
+          title: "A voice changer, +{semitones} semitones",
+          text: "A disguise app raises the pitch and the timbre. The print stops recognizing the person: the similarity to their own voice drops from {cosClean} to {cosDisguised}.",
+        },
+        {
+          label: "Reversed",
+          title: "Trying every pitch from {sweepMin} to +{sweepMax}",
+          text: "Blindaje lowers and raises the pitch one semitone at a time and keeps the version closest to a stored print. It found the exact shift for {exact} voices.",
+        },
+        {
+          label: "Print and ID",
+          title: "192 numbers, one ID",
+          text: "ECAPA-TDNN turns each 3 to 6 second stretch into 192 numbers and averages them, leaving out the victim’s voice. That vector is the print, with an ID like V-3, and FAISS compares it with the prints from every case.",
+        },
+      ],
+      listen: "Listen",
+      pause: "Pause",
+      audioLabels: [
+        "Listen to the original voice, 7 seconds",
+        "Listen to the disguised voice, 7 seconds",
+        "Listen to the reversed voice, 7 seconds",
+      ],
+      similarity: "Similarity to their voice",
+      pitch: "Pitch",
+      dims: "192 numbers from ECAPA-TDNN",
+      replay: "Play again",
+      chart: {
+        caption: "Measured with {speakers} SLR73 voices",
+        rows: ["Clean", "Disguised", "Reversed"],
+        similarity: "Similarity to their own voice (mean cosine)",
+        top1: "Ranked first",
+        falseLinks: "False links per 100",
+        threshold: "Review threshold",
+      },
+      note: "The reversal is an evaluation experiment and does not run in the pipeline yet. It brings the right person back to first place in {top1Reverted} of cases, against {top1Disguised} without it, and adds no false links. But the similarity stays below the review threshold: it is a lead for a person, never an automatic link. A voice alone never reaches “probable” either, even undisguised.",
+      source:
+        "Example audio: fictitious MMS-TTS voice, disguised +4 and reversed −4 with the same method. Figures: eval/results/voz_distorsion.json.",
+    },
     inside: {
       title: "Every note shows what checked it",
       lead: "The victim’s app from the inside. Real screenshots on an Android emulator against the live API, with a fictitious voice note and photo: each note lists the steps that actually ran and the model behind each one.",

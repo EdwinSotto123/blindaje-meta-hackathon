@@ -768,6 +768,54 @@ export const es: Dict = {
       agentsLead:
         "Corren con Muse Spark 1.3 por la Responses API, con salida JSON de esquema estricto. Toda afirmación cita evidencia: sin cita, la salida no vale.",
     },
+    voice: {
+      title: "Aunque disfracen la voz, queda huella",
+      lead: "Una nota de voz ficticia hace el camino que haría dentro de Blindaje: el disfraz que le pone el extorsionador, la reversión del tono, la huella de 192 números y su ID. Las cifras salen de la evaluación con {speakers} voces reales de SLR73, en español de Perú, enviadas por WhatsApp.",
+      steps: [
+        {
+          label: "La voz",
+          title: "Otro número, la misma voz",
+          text: "Una voz ficticia, generada con MMS-TTS de Meta, amenaza por WhatsApp desde un chip nuevo. Esa voz ya amenazó en otro caso.",
+        },
+        {
+          label: "Disfrazada",
+          title: "Un cambiador de voz, +{semitones} semitonos",
+          text: "Una app de disfraz sube el tono y el timbre. La huella deja de reconocer a la persona: el parecido con su propia voz cae de {cosClean} a {cosDisguised}.",
+        },
+        {
+          label: "Revertida",
+          title: "Probar el tono de {sweepMin} a +{sweepMax}",
+          text: "Blindaje baja y sube el tono semitono por semitono y se queda con la versión que más se parece a alguna huella guardada. Dio con el tono exacto en {exact} voces.",
+        },
+        {
+          label: "Huella e ID",
+          title: "192 números, un ID",
+          text: "ECAPA-TDNN convierte cada tramo de 3 a 6 segundos en 192 números y los promedia, sin la voz de la víctima. Ese vector es la huella, con un ID como V-3, y FAISS la compara con las de todos los casos.",
+        },
+      ],
+      listen: "Escuchar",
+      pause: "Pausar",
+      audioLabels: [
+        "Escuchar la voz original, 7 segundos",
+        "Escuchar la voz disfrazada, 7 segundos",
+        "Escuchar la voz revertida, 7 segundos",
+      ],
+      similarity: "Parecido con su voz",
+      pitch: "Tono",
+      dims: "192 números de ECAPA-TDNN",
+      replay: "Ver de nuevo",
+      chart: {
+        caption: "Lo medido con {speakers} voces de SLR73",
+        rows: ["Limpia", "Disfrazada", "Revertida"],
+        similarity: "Parecido con su propia voz (coseno medio)",
+        top1: "Queda en primer lugar",
+        falseLinks: "Falsos vínculos por cada 100",
+        threshold: "Umbral de revisión",
+      },
+      note: "La reversión es un experimento de la evaluación y todavía no corre en el pipeline. Devuelve a la persona correcta al primer lugar en el {top1Reverted} de los casos, frente al {top1Disguised} sin revertir, y no suma falsos vínculos. Pero el parecido queda bajo el umbral de revisión: es una pista para una persona, nunca un vínculo automático. La voz sola tampoco llega nunca a «probable», ni siquiera sin disfraz.",
+      source:
+        "Audio del ejemplo: voz ficticia de MMS-TTS, disfrazada +4 y revertida −4 con el mismo método. Cifras: eval/results/voz_distorsion.json.",
+    },
     inside: {
       title: "Cada nota dice qué la revisó",
       lead: "Así se ve por dentro la app de la víctima. Capturas reales en un emulador Android, contra la API en vivo, con un audio y una foto ficticios: cada nota muestra los pasos que de verdad corrieron y el modelo que hizo cada uno.",

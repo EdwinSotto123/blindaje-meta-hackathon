@@ -1,0 +1,977 @@
+---
+/**
+ * Aunque disfracen la voz, queda huella: una nota de voz ficticia (voz 1 del demo, MMS-TTS) en
+ * cuatro pasos animados. 1) la onda, 2) disfrazada con +4 semitonos, 3) el barrido de tono que la
+ * revierte, 4) la huella de 192 números de ECAPA y su ID. Ondas, huella y audios salen de
+ * eval/py/blindaje_eval/voz_landing.py; las cifras, de eval/results/voz_distorsion.json (28 voces de
+ * SLR73). Sin ese reporte la sección no se muestra.
+ *
+ * Movimiento: sin JavaScript o con movimiento reducido se ve el estado final. Con JavaScript, al
+ * entrar a la vista se arma el estado inicial y los pasos se encienden en orden (unos 7 s).
+ */
+import type { Dict } from "../i18n";
+import { readVoiceReport } from "../lib/voice-report";
+import demo from "../data/voz-demo.json";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const v = d.lp.voice;
+const r = readVoiceReport();
+const es = d.lang === "es";
+
+const dec = (x: number) => x.toFixed(2);
+const pct = (x: number) => `${Math.round(x * 100)}${es ? " %" : "%"}`;
+const minus = (x: number) => (x < 0 ? `−${Math.abs(x)}` : String(x));
+const tokens: Record<string, string> = r
+  ? {
+      speakers: String(r.speakers),
+      semitones: String(r.semitones),
+      sweepMin: minus(r.sweep[0]),
+      sweepMax: String(r.sweep[1]),
+      cosClean: dec(r.clean.cosine),
+      cosDisguised: dec(r.disguised.cosine),
+      cosReverted: dec(r.reverted.cosine),
+      top1Disguised: pct(r.disguised.top1),
+      top1Reverted: pct(r.reverted.top1),
+      exact: `${Math.round(r.exactShift * r.speakers)} ${es ? "de" : "of"} ${r.speakers}`,
+    }
+  : {};
+const fill = (s: string) => s.replace(/\{(\w+)\}/g, (m, k: string) => tokens[k] ?? m);
+
+/** Barras de onda: 72 por versión, centradas, alto relativo al pico. */
+const W = 4;
+const waveBars = (a: number[], b: number[]) =>
+  a.map((x, i) => ({ x: i * W, a: Math.max(0.04, x), b: Math.max(0.04, b[i] ?? x) }));
+const ondas = demo.ondas;
+const waves = [
+  waveBars(ondas.limpia, ondas.limpia),
+  waveBars(ondas.limpia, ondas.disfrazada),
+  waveBars(ondas.disfrazada, ondas.revertida),
+];
+const waveW = ondas.limpia.length * W;
+
+/**
+ * El tono (F0) de cada versión: un punto por tramo con voz, en escala de semitonos entre el más grave
+ * y el más agudo de las tres. Al disfrazar, los puntos suben; al revertir, bajan.
+ */
+const tono = demo.tono;
+const hzAll = [tono.limpia, tono.disfrazada, tono.revertida].flatMap((t) =>
+  t.barras.filter((x): x is number => x !== null),
+);
+const lo = Math.min(...hzAll) * 0.94;
+const hi = Math.max(...hzAll) * 1.06;
+const LANE = 44;
+const yOf = (hz: number) => LANE - 4 - (Math.log(hz / lo) / Math.log(hi / lo)) * (LANE - 8);
+const dots = (t: { barras: (number | null)[] }) =>
+  t.barras.flatMap((hz, i) => (hz === null ? [] : [{ x: i * W + 1.2, y: yOf(hz) }]));
+const lanes = [dots(tono.limpia), dots(tono.disfrazada), dots(tono.revertida)];
+const hz = [tono.limpia.hz, tono.disfrazada.hz, tono.revertida.hz];
+/** Cuánto se mueven los puntos en el carril por los semitonos del disfraz (para armar la animación). */
+const semitonePx = r ? (r.semitones / (12 * Math.log2(hi / lo))) * (LANE - 8) : 0;
+const firstNumbers = demo.huella
+  .slice(0, 4)
+  .map((x) => (x < 0 ? `−${Math.abs(x).toFixed(3)}` : x.toFixed(3)))
+  .join(", ");
+
+/** La huella: 192 barras desde una línea base, hacia arriba o abajo según el signo. */
+const maxAbs = Math.max(...demo.huella.map(Math.abs));
+const huella = demo.huella.map((x, i) => {
+  const h = Math.max(0.6, (Math.abs(x) / maxAbs) * 26);
+  return { x: i * 2, y: x >= 0 ? 32 - h : 32, h, up: x >= 0 };
+});
+
+const sweep = r ? Array.from({ length: r.sweep[1] - r.sweep[0] + 1 }, (_, i) => r.sweep[0] + i) : [];
+const target = r ? -r.semitones : 0;
+const targetPos = r ? (target - r.sweep[0]) / (r.sweep[1] - r.sweep[0]) : 0;
+
+const clips = ["limpia", "disfrazada", "revertida"] as const;
+const rows = r
+  ? [
+      { label: v.chart.rows[0], c: r.clean },
+      { label: v.chart.rows[1], c: r.disguised },
+      { label: v.chart.rows[2], c: r.reverted },
+    ]
+  : [];
+const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
+---
+
+{r && (
+  <section class="section on-paper-2" id="voz" aria-labelledby="voz-title">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <h2 id="voz-title" class="head">
+          {v.title}
+        </h2>
+        <p class="lead soft">{fill(v.lead)}</p>
+      </div>
+
+      <div class="va" data-voz>
+        <ol class="va__steps" role="list">
+          {v.steps.map((s, i) => (
+            <li class="va__step" style={`--t0: ${[0.1, 1.6, 2.9, 5.4][i]}s`}>
+              <p class="va__label">
+                <span class="va__n num" aria-hidden="true">
+                  {i + 1}
+                </span>
+                {s.label}
+              </p>
+
+              <div class="va__visual">
+                {i < 3 && (
+                  <p class="va__hz">
+                    {v.pitch} <strong class="num">{hz[i]} Hz</strong>
+                  </p>
+                )}
+                {i < 3 && (
+                  <svg
+                    class={`tono tono--${i + 1}`}
+                    viewBox={`0 0 ${waveW} ${LANE}`}
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                    focusable="false"
+                    style={`--up:${semitonePx}px`}
+                  >
+                    <g>
+                      {lanes[i]!.map((p) => (
+                        <rect x={p.x - 1.5} y={p.y - 1.5} width="3" height="3" rx="1.5" />
+                      ))}
+                    </g>
+                  </svg>
+                )}
+                {i < 3 ? (
+                  <svg
+                    class={`wave wave--${i + 1}`}
+                    viewBox={`0 0 ${waveW} 64`}
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    {waves[i]!.map((b, j) => (
+                      <rect x={b.x} y="4" width="2.4" height="56" rx="1.2" style={`--a:${b.a};--b:${b.b};--i:${j}`} />
+                    ))}
+                  </svg>
+                ) : (
+                  <div class="emb">
+                    <svg
+                      class="emb__bars"
+                      viewBox="0 0 384 64"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <line x1="0" y1="32" x2="384" y2="32" />
+                      {huella.map((b, j) => (
+                        <rect
+                          class:list={[b.up ? "up" : "down"]}
+                          x={b.x}
+                          y={b.y}
+                          width="1.4"
+                          height={b.h}
+                          style={`--i:${j}`}
+                        />
+                      ))}
+                    </svg>
+                    <p class="emb__id">
+                      <span class="emb__chip">V-3</span>
+                      <span class="emb__dims">{v.dims}</span>
+                    </p>
+                    <code class="emb__nums" translate="no">
+                      [{firstNumbers}, …]
+                    </code>
+                  </div>
+                )}
+
+                {i === 2 && (
+                  <div class="dial" aria-hidden="true">
+                    <div class="dial__track">
+                      {sweep.map((k) => (
+                        <span class:list={["dial__tick", k === target && "is-target", k === 0 && "is-zero"]} />
+                      ))}
+                      <span class="dial__cursor" style={`--pos:${targetPos}`} />
+                    </div>
+                    <div class="dial__scale num">
+                      <span>{minus(sweep[0]!)}</span>
+                      <span class="dial__target" style={`--pos:${targetPos}`}>
+                        {minus(target)}
+                      </span>
+                      <span>0</span>
+                      <span>+{sweep[sweep.length - 1]}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <h3 class="va__title">{fill(s.title)}</h3>
+              <p class="soft va__text">{fill(s.text)}</p>
+
+              {i < 3 && (
+                <button
+                  type="button"
+                  class="va__play"
+                  data-clip={clips[i]}
+                  aria-label={v.audioLabels[i]}
+                  aria-pressed="false"
+                >
+                  <Icon name="play" class="icon va__icon va__icon--play" />
+                  <Icon name="pause" class="icon va__icon va__icon--pause" />
+                  <span data-listen={v.listen} data-pause={v.pause}>
+                    {v.listen}
+                  </span>
+                </button>
+              )}
+            </li>
+          ))}
+        </ol>
+
+        <button type="button" class="va__replay" data-replay hidden>
+          <Icon name="restart" />
+          {v.replay}
+        </button>
+
+        {clips.map((c) => (
+          <audio preload="none" src={`/voz/b1-${c}.m4a`} data-audio={c} />
+        ))}
+      </div>
+
+      <div class="vt-wrap" data-reveal>
+        <table class="vt">
+          <caption>{fill(v.chart.caption)}</caption>
+          <thead>
+            <tr>
+              <td />
+              <th scope="col">
+                {v.chart.similarity}
+                <span class="vt__legend">
+                  <span class="vt__legend-mark" aria-hidden="true" />
+                  {v.chart.threshold} {dec(r.thresholdCosine)}
+                </span>
+              </th>
+              <th scope="col" class="vt__stat">
+                {v.chart.top1}
+              </th>
+              <th scope="col" class="vt__stat">
+                {v.chart.falseLinks}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr>
+                <th scope="row">{row.label}</th>
+                <td>
+                  <span class="vt__bar">
+                    <span class="vt__track" aria-hidden="true">
+                      <span class="vt__fill" style={`--w:${row.c.cosine}`} />
+                      <span class="vt__thr" style={`--x:${r.thresholdCosine}`} />
+                    </span>
+                    <span class="vt__val num">{dec(row.c.cosine)}</span>
+                  </span>
+                </td>
+                <td class="vt__stat num" data-label={v.chart.top1}>
+                  {pct(row.c.top1)}
+                </td>
+                <td class="vt__stat num" data-label={v.chart.falseLinks}>
+                  {per100(row.c.falsePer100)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p class="vt__note">{fill(v.note)}</p>
+        <p class="cap">{v.source}</p>
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .va {
+    position: relative;
+    margin-bottom: 56px;
+  }
+
+  .va__steps {
+    display: grid;
+    gap: 40px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .va__step {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    min-width: 0;
+  }
+
+  .va__label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .va__n {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--terracota);
+    color: #fff;
+    font-family: var(--display);
+    font-weight: 700;
+  }
+
+  .va__visual {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--linea);
+    border-radius: var(--r-m, 12px);
+    background: var(--papel);
+  }
+
+  .va__title {
+    margin: 4px 0 0;
+    font-family: var(--display);
+    font-size: 1.3125rem;
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .va__text {
+    margin: 0;
+  }
+
+  /* ---------- Ondas ---------- */
+
+  .wave {
+    display: block;
+    width: 100%;
+    height: 72px;
+  }
+
+  .wave rect {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scaleY(var(--z));
+  }
+
+  .wave--1 rect {
+    --z: var(--a);
+    fill: var(--tinta);
+  }
+
+  .wave--2 rect {
+    --z: var(--b);
+    fill: var(--terracota);
+  }
+
+  .wave--3 rect {
+    --z: var(--b);
+    fill: var(--verde);
+  }
+
+  .tono {
+    display: block;
+    width: 100%;
+    height: 44px;
+  }
+
+  .tono g {
+    transition: none;
+  }
+
+  .tono--1 rect {
+    fill: var(--tinta);
+  }
+
+  .tono--2 rect {
+    fill: var(--terracota);
+  }
+
+  .tono--3 rect {
+    fill: var(--verde);
+  }
+
+  .va__hz {
+    margin: 0;
+    font-size: var(--step-small);
+    color: var(--ink-2);
+  }
+
+  .va__hz strong {
+    color: var(--tinta);
+  }
+
+  /* ---------- Dial de tono ---------- */
+
+  .dial {
+    display: grid;
+    gap: 4px;
+  }
+
+  .dial__track {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    height: 22px;
+    margin-inline: 6px;
+  }
+
+  .dial__tick {
+    width: 2px;
+    height: 10px;
+    border-radius: 1px;
+    background: var(--linea-2);
+  }
+
+  .dial__tick.is-zero {
+    height: 14px;
+    background: var(--tinta-2);
+  }
+
+  .dial__tick.is-target {
+    height: 18px;
+    background: var(--verde);
+  }
+
+  .dial__cursor {
+    position: absolute;
+    bottom: -4px;
+    left: calc(var(--pos) * 100%);
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    border-radius: 50%;
+    background: var(--verde);
+    box-shadow: 0 0 0 3px var(--papel);
+  }
+
+  .dial__scale {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--step-small);
+    color: var(--ink-2);
+  }
+
+  .dial__scale span:nth-child(3) {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .dial__target {
+    position: absolute;
+    left: calc(6px + var(--pos) * (100% - 12px));
+    transform: translateX(-50%);
+    color: var(--verde);
+    font-weight: 700;
+  }
+
+  /* ---------- Huella ---------- */
+
+  .emb {
+    display: grid;
+    gap: 10px;
+  }
+
+  .emb__bars {
+    display: block;
+    width: 100%;
+    height: 72px;
+  }
+
+  .emb__bars line {
+    stroke: var(--linea-2);
+    stroke-width: 1;
+  }
+
+  .emb__bars rect {
+    fill: #815d00;
+    transform-box: fill-box;
+  }
+
+  .emb__bars rect.up {
+    transform-origin: bottom;
+  }
+
+  .emb__bars rect.down {
+    transform-origin: top;
+  }
+
+  .emb__id {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0;
+  }
+
+  .emb__chip {
+    padding: 3px 12px;
+    border: 1.5px solid #815d00;
+    border-radius: 999px;
+    background: #f8eed8;
+    color: var(--tinta);
+    font-family: var(--display);
+    font-weight: 700;
+  }
+
+  .emb__nums {
+    overflow: hidden;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .emb__dims {
+    font-size: var(--step-small);
+    color: var(--ink-2);
+  }
+
+  /* ---------- Escuchar y repetir ---------- */
+
+  .va__play,
+  .va__replay {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-self: start;
+    min-height: 44px;
+    padding: 0 16px 0 12px;
+    border: 1.5px solid var(--linea-2);
+    border-radius: 999px;
+    background: var(--papel);
+    color: var(--tinta);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .va__play:hover,
+  .va__replay:hover {
+    border-color: var(--tinta);
+  }
+
+  .va__play:focus-visible,
+  .va__replay:focus-visible {
+    outline: 3px solid var(--terracota);
+    outline-offset: 2px;
+  }
+
+  .va__play :global(.icon),
+  .va__replay :global(.icon) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* El ícono viene de Icon.astro: sus clases no llevan el alcance de este componente. */
+  .va__play :global(.va__icon--pause),
+  .va__play[aria-pressed="true"] :global(.va__icon--play) {
+    display: none;
+  }
+
+  .va__play[aria-pressed="true"] :global(.va__icon--pause) {
+    display: block;
+  }
+
+  .va__replay {
+    margin-top: 28px;
+  }
+
+  /* ---------- Animación: estado inicial armado y encendido en orden ---------- */
+
+  .va.is-armed .va__step {
+    opacity: 0.35;
+  }
+
+  .va.is-armed .wave--1 rect {
+    --z: 0.04;
+  }
+
+  .va.is-armed .wave--2 rect {
+    --z: var(--a);
+    fill: var(--tinta);
+  }
+
+  .va.is-armed .wave--3 rect {
+    --z: var(--a);
+    fill: var(--terracota);
+  }
+
+  .va.is-armed .tono--1 g {
+    opacity: 0;
+  }
+
+  .va.is-armed .tono--2 g {
+    transform: translateY(var(--up));
+  }
+
+  .va.is-armed .tono--2 rect {
+    fill: var(--tinta);
+  }
+
+  .va.is-armed .tono--3 g {
+    transform: translateY(calc(var(--up) * -1));
+  }
+
+  .va.is-armed .tono--3 rect {
+    fill: var(--terracota);
+  }
+
+  .va.is-armed .va__hz strong {
+    opacity: 0;
+  }
+
+  .va.is-armed .dial__cursor {
+    left: 0;
+    background: var(--terracota);
+  }
+
+  .va.is-armed .dial__target,
+  .va.is-armed .emb__id {
+    opacity: 0;
+  }
+
+  .va.is-armed .emb__bars rect {
+    transform: scaleY(0);
+  }
+
+  .va.is-playing .va__step {
+    transition: opacity 0.4s ease var(--t0);
+  }
+
+  .va.is-playing .wave--1 rect {
+    transition: transform 0.5s var(--ease) calc(var(--t0) + var(--i) * 10ms);
+  }
+
+  .va.is-playing .wave--2 rect,
+  .va.is-playing .wave--3 rect {
+    transition:
+      transform 0.7s var(--ease) calc(var(--t0) + 0.5s + var(--i) * 6ms),
+      fill 0.7s ease calc(var(--t0) + 0.5s);
+  }
+
+  /* El barrido llega a +8, vuelve y se queda en el tono que revierte el disfraz. */
+  .va.is-playing .wave--3 rect {
+    transition-delay: calc(var(--t0) + 1.9s + var(--i) * 6ms), calc(var(--t0) + 1.9s);
+  }
+
+  .va.is-playing .tono--1 g {
+    transition: opacity 0.6s ease 0.4s;
+  }
+
+  .va.is-playing .tono--2 g,
+  .va.is-playing .tono--2 rect {
+    transition:
+      transform 0.8s var(--ease) calc(var(--t0) + 0.5s),
+      fill 0.7s ease calc(var(--t0) + 0.5s);
+  }
+
+  .va.is-playing .tono--3 g,
+  .va.is-playing .tono--3 rect {
+    transition:
+      transform 0.8s var(--ease) calc(var(--t0) + 1.9s),
+      fill 0.7s ease calc(var(--t0) + 1.9s);
+  }
+
+  .va.is-playing .va__step:nth-child(1) .va__hz strong {
+    transition: opacity 0.3s ease 0.8s;
+  }
+
+  .va.is-playing .va__step:nth-child(2) .va__hz strong {
+    transition: opacity 0.3s ease 2.6s;
+  }
+
+  .va.is-playing .va__step:nth-child(3) .va__hz strong {
+    transition: opacity 0.3s ease 5.3s;
+  }
+
+  .va.is-playing .dial__cursor {
+    animation: dial-sweep 1.8s var(--ease) calc(2.9s + 0.1s) both;
+  }
+
+  .va.is-playing .dial__target {
+    transition: opacity 0.3s ease 4.8s;
+  }
+
+  .va.is-playing .emb__bars rect {
+    transition: transform 0.45s var(--ease) calc(5.4s + 0.3s + var(--i) * 4ms);
+  }
+
+  .va.is-playing .emb__id {
+    transition: opacity 0.4s ease 6.7s;
+  }
+
+  @keyframes dial-sweep {
+    0% {
+      left: 0;
+      background: var(--terracota);
+    }
+
+    55% {
+      left: 100%;
+      background: var(--terracota);
+    }
+
+    100% {
+      left: calc(var(--pos) * 100%);
+      background: var(--verde);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .va__replay {
+      display: none;
+    }
+  }
+
+  /* ---------- La tabla de lo medido ---------- */
+
+  .vt-wrap {
+    display: grid;
+    gap: 14px;
+    max-width: 960px;
+  }
+
+  .vt {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .vt caption {
+    margin-bottom: 12px;
+    font-family: var(--display);
+    font-size: 1.3125rem;
+    font-weight: 650;
+    text-align: start;
+  }
+
+  .vt th,
+  .vt td {
+    padding: 12px 12px 12px 0;
+    border-bottom: 1px solid var(--linea);
+    text-align: start;
+    vertical-align: middle;
+  }
+
+  .vt thead th {
+    font-size: var(--step-small);
+    font-weight: 700;
+    color: var(--ink-2);
+    vertical-align: bottom;
+  }
+
+  .vt tbody th {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .vt__legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  .vt__legend-mark {
+    width: 0;
+    height: 14px;
+    border-left: 2px dashed var(--tinta);
+  }
+
+  .vt__bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .vt__track {
+    position: relative;
+    flex: 1;
+    min-width: 120px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--fondo);
+  }
+
+  .vt__fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--w) * 100%);
+    border: 1px solid #815d00;
+    border-radius: 4px;
+    background: #c59711;
+  }
+
+  .vt__thr {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    left: calc(var(--x) * 100%);
+    border-left: 2px dashed var(--tinta);
+  }
+
+  .vt__val {
+    min-width: 2.6em;
+    font-weight: 700;
+  }
+
+  .vt__stat {
+    width: 9em;
+    text-align: end !important;
+  }
+
+  .vt td.vt__stat {
+    font-weight: 700;
+  }
+
+  .vt__note {
+    max-width: 62ch;
+    margin: 6px 0 0;
+  }
+
+  @media (max-width: 639px) {
+    .vt,
+    .vt thead,
+    .vt tbody,
+    .vt thead tr,
+    .vt thead th {
+      display: block;
+    }
+
+    .vt caption {
+      display: block;
+    }
+
+    .vt thead td,
+    .vt thead .vt__stat {
+      display: none;
+    }
+
+    .vt thead th {
+      padding: 0 0 8px;
+    }
+
+    .vt tbody tr {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 12px;
+      border-bottom: 1px solid var(--linea);
+      padding-block: 10px;
+    }
+
+    .vt tbody th,
+    .vt tbody td {
+      border: 0;
+      padding: 4px 0;
+    }
+
+    .vt tbody th,
+    .vt tbody td:nth-child(2) {
+      grid-column: 1 / -1;
+    }
+
+    .vt td.vt__stat {
+      width: auto;
+      text-align: start !important;
+    }
+
+    .vt td.vt__stat::before {
+      content: attr(data-label) " ";
+      display: block;
+      font-size: var(--step-small);
+      font-weight: 400;
+      color: var(--ink-2);
+    }
+  }
+
+  @media (min-width: 720px) {
+    .va__steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 48px 32px;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .va__steps {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 28px;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-voz]").forEach((root) => {
+    // Audios: uno a la vez; el botón dice si suena.
+    const audios = new Map<string, HTMLAudioElement>();
+    root.querySelectorAll<HTMLAudioElement>("audio[data-audio]").forEach((a) => audios.set(a.dataset.audio!, a));
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>(".va__play")];
+    const setPressed = (b: HTMLButtonElement, on: boolean) => {
+      b.setAttribute("aria-pressed", String(on));
+      const label = b.querySelector<HTMLSpanElement>("span[data-listen]");
+      if (label) label.textContent = on ? label.dataset.pause! : label.dataset.listen!;
+    };
+    for (const b of buttons) {
+      const a = audios.get(b.dataset.clip!);
+      if (!a) continue;
+      a.addEventListener("ended", () => setPressed(b, false));
+      a.addEventListener("pause", () => setPressed(b, false));
+      a.addEventListener("play", () => setPressed(b, true));
+      b.addEventListener("click", () => {
+        if (!a.paused) {
+          a.pause();
+          return;
+        }
+        audios.forEach((o) => o !== a && o.pause());
+        a.currentTime = 0;
+        void a.play();
+      });
+    }
+
+    // Animación: con movimiento reducido o sin IntersectionObserver se queda el estado final.
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    const replay = root.querySelector<HTMLButtonElement>("[data-replay]");
+    const play = () => {
+      root.classList.remove("is-playing");
+      root.classList.add("is-armed");
+      void root.offsetWidth;
+      requestAnimationFrame(() => {
+        root.classList.remove("is-armed");
+        root.classList.add("is-playing");
+      });
+    };
+    root.classList.add("is-armed");
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          play();
+          if (replay) replay.hidden = false;
+        }
+      },
+      { threshold: 0.3 },
+    );
+    io.observe(root);
+    replay?.addEventListener("click", play);
+  });
+</script>

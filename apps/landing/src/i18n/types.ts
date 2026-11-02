@@ -324,6 +324,34 @@ export interface Dict {
       agentsTitle: string;
       agentsLead: string;
     };
+    /**
+     * Una voz disfrazada y su huella: animación paso a paso (la voz, disfrazada, revertida, huella e ID)
+     * con cifras de eval/results/voz_distorsion.json. Las llaves entre llaves se llenan en el build.
+     */
+    voice: {
+      title: string;
+      lead: string;
+      steps: { label: string; title: string; text: string }[];
+      listen: string;
+      pause: string;
+      /** Nombre accesible de cada audio: original, disfrazada y revertida. */
+      audioLabels: [string, string, string];
+      similarity: string;
+      /** Rótulo del tono medido (F0) de cada versión. */
+      pitch: string;
+      dims: string;
+      replay: string;
+      chart: {
+        caption: string;
+        rows: [string, string, string];
+        similarity: string;
+        top1: string;
+        falseLinks: string;
+        threshold: string;
+      };
+      note: string;
+      source: string;
+    };
     /** La app por dentro: capturas reales del celular, cada nota con los pasos que la revisaron. */
     inside: {
       title: string;
