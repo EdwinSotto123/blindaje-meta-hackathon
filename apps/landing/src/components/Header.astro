@@ -13,9 +13,8 @@ const { dict: d, onHome = true } = Astro.props;
 const home = d.lang === "es" ? "/" : "/en/";
 const prefix = onHome ? "" : home;
 const links = [
-  { href: `${prefix}#huellas`, label: d.nav.signals },
-  { href: `${prefix}#mapa`, label: d.nav.map },
   { href: `${prefix}#como-funciona`, label: d.nav.how },
+  { href: `${prefix}#mapa`, label: d.nav.map },
   { href: `${prefix}#producto`, label: d.nav.product },
   { href: `${prefix}#tecnologia`, label: d.nav.tech },
   { href: `${prefix}#resultados`, label: d.nav.results },

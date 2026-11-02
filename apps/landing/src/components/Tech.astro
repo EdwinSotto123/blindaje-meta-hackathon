@@ -1,12 +1,11 @@
 ---
 /**
- * Hecho con Meta AI: el diagrama del pipeline es la pieza central. Debajo, en dos columnas, los
- * modelos de Meta como una lista corta (nombre, id y su trabajo) y los seis agentes en una tabla con
- * quién aprueba. Al final, lo que no es de Meta, dicho claro.
+ * Hecho con Meta AI: los modelos de Meta como una lista corta (nombre, id y su trabajo), los seis
+ * agentes en una tabla con quién aprueba y, al final, lo que no es de Meta, dicho claro. El recorrido
+ * de la evidencia está animado en Cómo funciona.
  */
 import type { Dict } from "../i18n";
 import Icon from "./Icon.astro";
-import Pipeline from "./Pipeline.astro";
 
 interface Props {
   dict: Dict;
@@ -33,10 +32,6 @@ const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent:
         <span class="tech__line">{t.title[0]}</span> <span class="tech__line">{t.title[1]}</span>
       </h2>
       <p class="lead soft">{t.lead}</p>
-    </div>
-
-    <div class="tech__diagram">
-      <Pipeline dict={d} />
     </div>
 
     <div class="stack stack--models">
@@ -109,18 +104,6 @@ const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent:
 <style>
   .tech__line {
     display: block;
-  }
-
-  .tech__diagram {
-    padding: 8px 0;
-  }
-
-  @media (min-width: 960px) {
-    .tech__diagram {
-      padding: 32px 36px 24px;
-      border-radius: var(--radius);
-      background: var(--card);
-    }
   }
 
   .stack {

@@ -24,7 +24,6 @@ export const es: Dict = {
   nav: {
     ariaLabel: "Secciones",
     benefits: "Beneficios",
-    signals: "Señales",
     map: "Mapa",
     product: "Producto",
     how: "Cómo funciona",
@@ -119,14 +118,14 @@ export const es: Dict = {
       illo: {
         label: "La misma app, por fuera y por dentro",
         outside: "Por fuera: un cuaderno de ventas que funciona",
-        inside: "Por dentro: tus notas privadas",
+        inside: "Por dentro: cómo se revisó cada nota",
         key: "Entrada secreta y PIN",
         note: "Ilustración. El disfraz lo eliges tú: este es uno de ellos.",
       },
       shotOutsideAlt:
         "Captura de la app por fuera: el cuaderno de ventas, con las ventas del día y los fiados por cobrar",
       shotInsideAlt:
-        "Captura de la app por dentro: notas privadas con mensajes, una foto y una llamada, y lo que encontramos: pago por Yape, S/ 800 y un plazo",
+        "Captura de la app por dentro: cómo se revisó un audio, paso por paso, con Muse Voice Transcribe, SpeechBrain ECAPA y AudioSeal, C2PA y Muse Spark 1.2",
       cloud:
         "Sin señal, la evidencia espera cifrada en el celular y se borra de ahí cuando la subida se confirma. Solo la ven las personas autorizadas.",
     },
@@ -177,98 +176,9 @@ export const es: Dict = {
       },
     },
   },
-  intel: {
-    title: "Lo que ninguna víctima puede ver sola.",
-    lead: "Cada audio, mensaje y foto se convierte en señales comparables. Con ellas, los agentes de Blindaje vinculan casos, mapean redes, redactan alertas y consejos, y revisan si la evidencia es real. Ninguno decide solo.",
-    link: {
-      title: "Vincula casos aunque cambie el número",
-      text: "Compara la huella de voz, la cuenta de cobro, las fotos reutilizadas y el guion. El Vinculador explica cada posible vínculo citando la evidencia: lo que lo sostiene y lo que lo contradice. Una revisora del equipo lo confirma o lo descarta.",
-      shot: {
-        alt: "Captura de la consola: el Vinculador explica el vínculo entre el Caso A y el Caso B. La voz coincide en 4 de 5 segmentos, aunque los números de contacto y las cuentas son distintos.",
-        caption: "Misma voz, números distintos. Puntaje 0.91, citas verificadas.",
-      },
-    },
-    network: {
-      title: "Mapea la red detrás de los casos",
-      text: "Los vínculos confirmados forman redes. El Cartógrafo analiza cada una: periodo, modus operandi, escalamiento y la evidencia que falta.",
-      shot: {
-        alt: "Grafo de la red R-001: tres casos unidos por la huella de voz V-3 y la cuenta Yape …488, con sus números, frases firma e imagen.",
-        caption: "Red R-001: tres casos, una voz, una cuenta.",
-        mobileCaption: "Detalle de la red R-001: la voz V-3 une los casos A y B, aunque sus números son distintos.",
-      },
-    },
-    alert: {
-      title: "Avisa a la zona antes del próximo caso",
-      text: "El Vigía detecta una modalidad que se repite en al menos 5 casos de 3 víctimas distintas en 14 días y redacta la alerta. Una persona del equipo la aprueba y se publica para ese distrito.",
-      cardTitle: "Alerta aprobada por el equipo de Blindaje",
-      card: "Circulan audios que dicen ser de “Los X” y piden pago por Yape. No pagues ni negocies: denuncia en la Línea 1818 o en tu comisaría.",
-      cardMeta: "Ejemplo ficticio",
-    },
-    advice: {
-      title: "Aconseja a los negocios cómo prevenir",
-      text: "El Asesor redacta consejos por zona y rubro con datos agregados. Un validador revisa que cada afirmación cite evidencia, que no aparezcan números ni cuentas y que nunca aconseje pagar ni negociar. Una persona del equipo aprueba antes de que el negocio lo vea.",
-      shot: {
-        alt: "Captura de la consola: consejo del Asesor para mototaxis de Ate, en borrador. El validador encontró una afirmación sin cita y una cita que no existe.",
-        caption: "El validador atrapa una afirmación sin cita antes de que llegue al portal.",
-      },
-    },
-    agentsTitle: "Seis agentes, y siempre una persona que aprueba",
-    agentsLead:
-      "Corren con Muse Spark por la Responses API, con salida JSON de esquema estricto. Los que investigan usan llamadas a herramientas. Además de los cuatro de arriba:",
-    approvesLabel: "Aprueba",
-    agents: [
-      {
-        name: "Vinculador",
-        text: "Explica cada posible vínculo entre dos casos y ajusta el puntaje si ve contradicciones.",
-        approves: "Una revisora del equipo",
-      },
-      {
-        name: "Cartógrafo",
-        text: "Analiza una red: periodo, modus operandi, roles que sugiere el grafo y evidencia que falta.",
-        approves: "Un analista autorizado",
-      },
-      {
-        name: "Vigía",
-        text: "Detecta modalidades que se repiten en un distrito y redacta la alerta para esa zona.",
-        approves: "El equipo",
-      },
-      {
-        name: "Redactor",
-        text: "Convierte una red aprobada en un expediente PDF con cronología y cadena de custodia.",
-        approves: "Un analista autorizado",
-      },
-      {
-        name: "Asesor",
-        text: "Redacta consejos de prevención por zona y rubro, solo con cifras agregadas.",
-        approves: "Una persona del equipo",
-      },
-      {
-        name: "Autenticidad",
-        text: "Busca indicios de que un audio, una foto o un video fue generado con IA o manipulado.",
-        approves: "La revisora, al decidir el vínculo",
-      },
-    ],
-    rules:
-      "Toda afirmación cita evidencia: sin cita, la salida no vale. Nunca nombres de personas. Búsqueda web desactivada.",
-  },
   tech: {
     title: "Hecho con Meta AI, pieza por pieza",
     lead: "La evidencia pasa por un pipeline en Cloudflare y un contenedor de ML. Cada pieza se transcribe, se segmenta, se resume en una ficha y se convierte en señales que se pueden comparar.",
-    pipelineLabel: "Del archivo a la decisión",
-    pipeline: [
-      { stage: "Evidencia", items: ["Audio de WhatsApp", "Mensaje", "Foto", "Video"] },
-      {
-        stage: "Modelos",
-        items: ["Muse Voice Transcribe", "Muse Spark 1.3 y 1.2", "SAM 3.1", "DINOv2", "AudioSeal y Video Seal"],
-      },
-      {
-        stage: "Señales",
-        items: ["Huella de voz", "Ficha del caso", "Identificadores con HMAC", "Recortes y vectores", "Autenticidad"],
-      },
-      { stage: "Agentes", items: ["Vinculador", "Cartógrafo", "Vigía", "Redactor", "Asesor"] },
-      { stage: "Una persona aprueba", items: ["Vínculo", "Alerta", "Consejo", "Expediente"] },
-    ],
-    modelsTitle: "Qué usamos y para qué",
     groups: [
       {
         title: "Meta Model API",
@@ -355,9 +265,8 @@ export const es: Dict = {
       },
       {
         title: "No publica direcciones, viviendas ni cifras exactas.",
-        text: "El mapa es por distrito, en rangos, sin totales, y necesita al menos 5 casos de 3 víctimas distintas.",
+        text: "Solo distritos y rangos, como en el mapa de arriba.",
       },
-      { title: "No decide culpabilidad.", text: "Cada vínculo es una hipótesis con su puntaje y su evidencia." },
       { title: "No usa datos reales en el demo.", text: "Casos, voces, números, cuentas y fotos son ficticios." },
       { title: "No tiene contenido político.", text: "" },
     ],
@@ -528,61 +437,12 @@ export const es: Dict = {
         "React Native",
       ],
     },
-    signals: {
-      title: "Las huellas que deja una banda",
-      lead: "Cambiar de chip es fácil. Cambiar de voz, de fotos, de guion y de cuenta de cobro, no. Blindaje compara cada huella entre todos los casos.",
-      items: [
-        {
-          kind: "voz",
-          name: "Voz",
-          text: "La huella de voz de cada audio, segmento por segmento, aunque llamen desde otro número.",
-          example: "V-3 en los casos A y B, 4 de 5 segmentos",
-          how: "Muse Voice Transcribe, huella ECAPA y Muse Spark 1.2, que revisa si es sintética",
-        },
-        {
-          kind: "imagen",
-          name: "Fotos y video",
-          text: "Balas, notas escritas y placas recortadas de cada foto o video. Encuentra la misma imagen aunque la reenvíen o la recorten.",
-          example: "IMG-1: foto del local con una bala",
-          how: "SAM 3.1, DINOv2 y hash perceptual",
-        },
-        {
-          kind: "frase",
-          name: "Forma de hablar",
-          text: "El guion, las frases que repiten y a quién dicen representar.",
-          example: "“habla con el jefe”, “no llames a la policía”, “Los X”",
-          how: "Muse Spark 1.3 arma la ficha y los vectores de texto",
-        },
-        {
-          kind: "id",
-          name: "Números, cuentas y placas",
-          text: "Teléfonos, cuentas de Yape o Plin y placas, cifrados con HMAC: se comparan sin exponer el dato y sin buscador.",
-          example: "Yape …488 en los casos B y C",
-          how: "Muse Spark 1.3 los extrae y HMAC los cifra",
-        },
-        {
-          kind: "cobro",
-          name: "Cómo cobran",
-          text: "Cuánto piden, en qué plazo y por qué canal. Solo, nunca vincula: suma a las demás señales.",
-          example: "2,000 soles por Yape en 48 horas",
-          how: "Ficha del caso de Muse Spark 1.3",
-        },
-        {
-          kind: "zona",
-          name: "Zona y fechas",
-          text: "En qué distrito y cuándo pasa, nunca una dirección. El Vigía detecta la misma modalidad en la misma zona y el Cartógrafo ordena la red en el tiempo.",
-          example: "5 casos de 3 víctimas en 14 días",
-          how: "Vigía y Cartógrafo, con Muse Spark 1.3",
-        },
-      ],
-      note: "Ninguna señal decide sola: el motor las combina en un puntaje calibrado y una persona confirma cada vínculo.",
-    },
     problem: { gapsTitle: "Por qué no alcanza hoy" },
     benefits: {
       title: "Lo que gana cada uno",
       lead: "La víctima documenta sin exponerse, la comunidad sabe dónde pasa y qué hacer, y la autoridad recibe casos ya vinculados.",
       illustration:
-        "Capturas reales de la app en un emulador Android, con datos ficticios. Por fuera, un cuaderno de ventas que funciona; por dentro, las notas privadas. El disfraz lo eliges tú: también puede ser una lista de compras o una calculadora de vueltos.",
+        "Capturas reales de la app en un emulador Android, con datos ficticios. Por fuera, un cuaderno de ventas que funciona; por dentro, cada nota dice qué la revisó y con qué modelo. El disfraz lo eliges tú: también puede ser una lista de compras o una calculadora de vueltos.",
       victimPhotoAlt:
         "Interior de una bodega de Lima: estantes con productos, cajas rojas de cerveza apiladas y dos personas de espaldas en el mostrador.",
       victimPhotoCredit: "Foto ilustrativa: cemeiakano, CC BY-SA 2.0. No muestra víctimas.",
@@ -605,8 +465,6 @@ export const es: Dict = {
           points: [
             "Un mapa por distrito, público y sin cuenta.",
             "Alertas y consejos de prevención para su zona y su rubro, aprobados por una persona.",
-            "Rangos, no cifras exactas, y nada con menos de 5 casos de 3 víctimas.",
-            "Nunca una dirección, un número ni una cuenta.",
           ],
         },
         {
@@ -615,7 +473,6 @@ export const es: Dict = {
           title: "Reciben casos ya vinculados, con la evidencia citada",
           points: [
             "Expediente en PDF con la cronología de toda la red.",
-            "Cada vínculo explicado, con su puntaje y sus señales.",
             "Huella SHA-256 y cadena de custodia de cada archivo.",
             "En qué distritos opera la red y cuentas repetidas para pedirlas por canales legales.",
           ],
@@ -735,8 +592,6 @@ export const es: Dict = {
         },
         note: "Datos ficticios del demo. Las cifras son las del motor de vinculación con la calibración de la evaluación.",
       },
-      demoTitle: "Pruébalo: tú decides si es la misma banda",
-      demoLead: "Este vínculo acaba de llegar a la consola del equipo. Confírmalo o descártalo.",
     },
     tour: {
       title: "Todo lo que hace Blindaje",
@@ -762,15 +617,6 @@ export const es: Dict = {
           alt: "Captura de la consola: grafo de la red R-001, con tres casos unidos por la huella de voz V-3 y la cuenta Yape …488.",
           caption: "Red R-001: tres casos, una voz, una cuenta. Datos ficticios.",
           pen: "misma cuenta, otro caso",
-        },
-        {
-          tab: "Zonas",
-          title: "Ve en qué distritos pasa",
-          note: "Vista de zonas, con umbral de 5 casos de 3 víctimas",
-          text: "La consola junta los casos por distrito, los compara con el periodo anterior y muestra qué redes y modalidades se repiten en cada uno. Un distrito con pocos casos no muestra cifras.",
-          shot: "consola-zonas",
-          alt: "Captura de la consola: grilla de los distritos de Lima y el Callao con casos por distrito. San Juan de Lurigancho está seleccionado: 14 casos de 11 víctimas en 28 días, en aumento.",
-          caption: "Vista de zonas del equipo. Datos ficticios.",
         },
         {
           tab: "Aconseja",
@@ -810,15 +656,6 @@ export const es: Dict = {
           caption: "Rastrear filtración, solo para administración. Datos ficticios.",
           pen: "la copia salió de esta cuenta",
         },
-        {
-          tab: "Mapa público",
-          title: "Muestra el mapa a la comunidad",
-          note: "Portal público, sin cuenta",
-          text: "Cualquiera elige su distrito y su rubro y ve el nivel de riesgo, las alertas y los consejos aprobados por el equipo. Solo rangos, nunca cifras exactas ni direcciones.",
-          shot: "portal-mapa",
-          alt: "Captura del portal público: mapa de los 50 distritos de Lima y el Callao con niveles bajo, medio y alto, y al lado la lista de los distritos con datos, de San Juan de Lurigancho (alto, 20-49) a Villa El Salvador (bajo, 5-9). Ate está marcado como tu distrito.",
-          caption: "Portal público en modo simulado. Datos ficticios.",
-        },
       ],
     },
     tech: {
@@ -830,11 +667,11 @@ export const es: Dict = {
     },
     voice: {
       title: "Aunque disfracen la voz, queda huella",
-      lead: "Una nota de voz ficticia hace el camino que haría dentro de Blindaje: el disfraz que le pone el extorsionador, la reversión del tono, la huella de 192 números y su ID. Las cifras salen de la evaluación con {speakers} voces reales de SLR73, en español de Perú, enviadas por WhatsApp.",
+      lead: "Una nota de voz ficticia hace el camino que haría dentro de Blindaje: el disfraz que le pone el extorsionador y la reversión del tono. Las cifras salen de la evaluación con {speakers} voces reales de SLR73, en español de Perú, enviadas por WhatsApp.",
       steps: [
         {
           label: "La voz",
-          title: "Otro número, la misma voz",
+          title: "Una voz, un chip nuevo",
           text: "Una voz ficticia, generada con MMS-TTS de Meta, amenaza por WhatsApp desde un chip nuevo. Esa voz ya amenazó en otro caso.",
         },
         {
@@ -847,11 +684,6 @@ export const es: Dict = {
           title: "Probar el tono de {sweepMin} a +{sweepMax}",
           text: "Blindaje baja y sube el tono semitono por semitono y se queda con la versión que más se parece a alguna huella guardada. Dio con el tono exacto en {exact} voces.",
         },
-        {
-          label: "Huella e ID",
-          title: "192 números, un ID",
-          text: "ECAPA-TDNN convierte cada tramo de 3 a 6 segundos en 192 números y los promedia, sin la voz de la víctima. Ese vector es la huella, con un ID como V-3, y FAISS la compara con las de todos los casos.",
-        },
       ],
       listen: "Escuchar",
       audioLabels: [
@@ -861,7 +693,6 @@ export const es: Dict = {
       ],
       similarity: "Parecido con su voz",
       pitch: "Tono",
-      dims: "192 números de ECAPA-TDNN",
       replay: "Ver de nuevo",
       chart: {
         caption: "Lo medido con {speakers} voces de SLR73",
@@ -874,42 +705,6 @@ export const es: Dict = {
       note: "La reversión es un experimento de la evaluación y todavía no corre en el pipeline. Devuelve a la persona correcta al primer lugar en el {top1Reverted} de los casos, frente al {top1Disguised} sin revertir, y no suma falsos vínculos. Pero el parecido queda bajo el umbral de revisión: es una pista para una persona, nunca un vínculo automático. La voz sola tampoco llega nunca a «probable», ni siquiera sin disfraz.",
       source:
         "Audio del ejemplo: voz ficticia de MMS-TTS, disfrazada +4 y revertida −4 con el mismo método. Cifras: eval/results/voz_distorsion.json.",
-    },
-    inside: {
-      title: "Cada nota dice qué la revisó",
-      lead: "Así se ve por dentro la app de la víctima. Capturas reales en un emulador Android, contra la API en vivo, con un audio y una foto ficticios: cada nota muestra los pasos que de verdad corrieron y el modelo que hizo cada uno.",
-      listLabel: "Capturas de la app",
-      items: [
-        {
-          shot: "app-audio-texto",
-          title: "El audio, en texto",
-          text: "Muse Voice Transcribe pasó a texto 24 segundos de audio, separó los turnos y la app resaltó el monto.",
-          models: ["Muse Voice Transcribe 1.0"],
-          alt: "Captura de la app: nota de un audio de 24 segundos con su transcripción; «dos mil soles» aparece resaltado.",
-        },
-        {
-          shot: "app-audio-recorrido",
-          title: "Cómo se revisó",
-          text: "La huella de la voz de quien amenaza, nunca la de la víctima, y la revisión de si el audio fue hecho con IA.",
-          models: ["SpeechBrain ECAPA", "AudioSeal", "C2PA", "Muse Spark 1.2"],
-          alt: "Captura de la app: Cómo lo revisamos, con cuatro pasos y su tecnología: AES-256-GCM, Muse Voice Transcribe 1.0, SpeechBrain ECAPA y AudioSeal, C2PA y Muse Spark 1.2.",
-        },
-        {
-          shot: "app-foto-recorrido",
-          title: "La foto",
-          text: "SAM 3.1 encontró la bala, la nota escrita a mano y la fachada; Muse Spark 1.3 leyó «LOS X. 48 HORAS».",
-          models: ["SAM 3.1", "Muse Spark 1.3", "DINOv2"],
-          alt: "Captura de la app: nota de una foto. SAM 3.1 encontró bala, nota escrita a mano y fachada de tienda; Muse Spark 1.3 leyó LOS X. 48 HORAS.",
-        },
-        {
-          shot: "app-como-funciona",
-          title: "Cómo funciona",
-          text: "Una pantalla explica el recorrido completo en palabras simples, también lo que Blindaje nunca hace.",
-          models: ["AES-256-GCM", "PBKDF2-SHA256", "ECDSA P-256"],
-          alt: "Captura de la app: pantalla Cómo funciona, con lo que pasa en el celular: cifrado AES-256-GCM, el PIN como huella PBKDF2-SHA256 y una llave ECDSA P-256.",
-        },
-      ],
-      note: "La app no muestra puntajes, señales forenses ni datos de otros casos. Audio, foto y caso ficticios; capturas del 2 de noviembre de 2026.",
     },
     trust: {
       title: "Lo que Blindaje no hace",
@@ -941,20 +736,12 @@ export const es: Dict = {
           a: "Solo el equipo de análisis de Blindaje, según lo que la víctima permita. La evidencia viaja cifrada, se guarda cifrada y cada acceso queda en un registro de auditoría encadenado. Una víctima nunca ve datos de otros casos.",
         },
         {
-          q: "¿Qué muestra el mapa?",
-          a: "Distritos, nunca calles ni viviendas. Muestra rangos y no cifras exactas, y nada donde haya menos de 5 casos de 3 víctimas. Siempre advierte que más casos puede significar que ahí se denuncia más.",
-        },
-        {
           q: "¿Y si alguien revisa el celular de la víctima?",
           a: "Ve una app de ventas que funciona. Las notas privadas se abren con una entrada secreta y un PIN; un PIN señuelo abre notas vacías y creíbles, y un toque vuelve a la app de siempre. No hay notificaciones.",
         },
         {
           q: "¿Cómo se evitan los reportes falsos sin un gremio que verifique?",
           a: "Una persona del equipo revisa cada vínculo antes de que cuente, ninguna señal decide sola, hay un límite de registros por conexión y los dispositivos sospechosos se pueden marcar.",
-        },
-        {
-          q: "¿Blindaje acusa a alguien o reemplaza a la policía?",
-          a: "No. Vincula casos y señales, nunca le pone nombre a una voz ni busca a nadie en internet. Siempre deriva al 105, a la Línea 1818 y a la comisaría, y el expediente llega a la autoridad solo por un canal formal.",
         },
         {
           q: "¿Cómo se suma una institución?",
@@ -965,25 +752,9 @@ export const es: Dict = {
   },
   page: {
     problemTitle: ["Miles de denuncias", "que nadie conecta"],
-    review: {
-      title: "Una persona confirma cada vínculo",
-      states: ["Propuesto", "En revisión", "Confirmado"],
-      caseA: "Caso A, bodeguera",
-      caseB: "Caso B, mototaxista",
-      tie: "Misma voz",
-      score: "0.91",
-      detail: "La voz coincide en 4 de 5 segmentos, aunque los números y las cuentas son distintos.",
-      proposedBy: "Lo propone el Vinculador, con citas verificadas",
-      confirm: "Confirmar vínculo",
-      discard: "Descartar",
-      confirmed: "Confirmado por la revisora del equipo el 28 oct., 10:42",
-      undo: "Deshacer",
-      discarded: "Descartado por la revisora. No se usa para vincular.",
-    },
     tech: {
       title: ["Hecho con Meta AI,", "pieza por pieza"],
       lead: "Cada audio, mensaje, foto o video pasa por modelos de Meta, se vuelve señales que se pueden comparar y llega a agentes que proponen. Una persona aprueba.",
-      modelsLabel: "Modelos",
       groups: [
         {
           kind: "Meta Model API",
@@ -1009,9 +780,6 @@ export const es: Dict = {
           ],
         },
       ],
-      agentsLabel: "Agentes",
-      diagramNote:
-        "La línea punteada no pasa por un modelo de Meta: la huella de voz usa ECAPA, un modelo abierto de terceros. Las señales se juntan en una sola cuerda y de ahí las leen los agentes.",
       approves: "Aprueba",
       agents: [
         { name: "Vinculador", what: "Explica cada posible vínculo", approves: "Una revisora" },

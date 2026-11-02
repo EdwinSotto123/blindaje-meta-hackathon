@@ -32,7 +32,6 @@ export const en: Dict = {
   nav: {
     ariaLabel: "Sections",
     benefits: "Benefits",
-    signals: "Signals",
     map: "Map",
     product: "Product",
     how: "How it works",
@@ -126,14 +125,14 @@ export const en: Dict = {
       illo: {
         label: "The same app, outside and inside",
         outside: "Outside: a sales notebook that really works",
-        inside: "Inside: your private notes",
+        inside: "Inside: how each note was checked",
         key: "Secret entry and PIN",
         note: "Illustration. You choose the disguise; this is one of them.",
       },
       shotOutsideAlt:
         "Screenshot of the app from the outside: the sales notebook, with the day’s sales and the credit owed",
       shotInsideAlt:
-        "Screenshot of the app from the inside: private notes with messages, a photo and a call, and what was found: payment by Yape, S/ 800 and a deadline",
+        "Screenshot of the app from the inside: how a voice note was checked, step by step, with Muse Voice Transcribe, SpeechBrain ECAPA, and AudioSeal, C2PA and Muse Spark 1.2",
       cloud:
         "Without a signal, the evidence waits encrypted on the phone and is deleted from it once the upload is confirmed. Only authorized people can see it.",
     },
@@ -184,98 +183,9 @@ export const en: Dict = {
       },
     },
   },
-  intel: {
-    title: "What no victim can see alone.",
-    lead: "Every voice note, message and photo becomes comparable signals. With them, Blindaje’s agents link cases, map networks, draft alerts and advice, and check whether the evidence is real. None of them decides alone.",
-    link: {
-      title: "Links cases even when the number changes",
-      text: "It compares voiceprints, collection accounts, reused photos and scripts. The Linker explains each possible link citing the evidence: what supports it and what contradicts it. A team reviewer confirms or dismisses it.",
-      shot: {
-        alt: "Screenshot of the console: the Linker explains the link between Case A and Case B. The voice matches in 4 of 5 segments, even though the contact numbers and accounts differ.",
-        caption: "Same voice, different numbers. Score 0.91, citations verified.",
-      },
-    },
-    network: {
-      title: "Maps the network behind the cases",
-      text: "Confirmed links form networks. The Cartographer analyzes each one: period, modus operandi, escalation and the evidence still missing.",
-      shot: {
-        alt: "Graph of network R-001: three cases joined by voiceprint V-3 and Yape account …488, with their numbers, signature phrases and image.",
-        caption: "Network R-001: three cases, one voice, one account.",
-        mobileCaption: "Detail of network R-001: voiceprint V-3 joins cases A and B even though their numbers differ.",
-      },
-    },
-    alert: {
-      title: "Warns the area before the next case",
-      text: "The Lookout detects a pattern repeated in at least 5 cases from 3 different victims within 14 days and drafts the alert. A person on the team approves it and it is published for that district.",
-      cardTitle: "Alert approved by the Blindaje team",
-      card: "Voice notes claiming to be from “Los X” are demanding payment via Yape. Don’t pay or negotiate: report it to Línea 1818 or at your police station.",
-      cardMeta: "Fictitious example",
-    },
-    advice: {
-      title: "Advises businesses on prevention",
-      text: "The Advisor drafts advice by area and trade from aggregate data. A validator checks that every claim cites evidence, that no numbers or accounts appear and that it never advises paying or negotiating. A person on the team approves it before any business sees it.",
-      shot: {
-        alt: "Screenshot of the console: the Advisor’s draft for mototaxis in Lima Este. The validator found a claim without a citation and a citation that does not exist.",
-        caption: "The validator catches an uncited claim before it reaches the portal.",
-      },
-    },
-    agentsTitle: "Six agents, and always a person who approves",
-    agentsLead:
-      "They run on Muse Spark through the Responses API, with strict JSON schema output. The investigative ones use tool calling. Besides the four above:",
-    approvesLabel: "Approved by",
-    agents: [
-      {
-        name: "Linker",
-        text: "Explains each possible link between two cases and adjusts the score when it spots contradictions.",
-        approves: "A team reviewer",
-      },
-      {
-        name: "Cartographer",
-        text: "Analyzes a network: period, modus operandi, roles suggested by the graph and missing evidence.",
-        approves: "An authorized analyst",
-      },
-      {
-        name: "Lookout",
-        text: "Detects patterns repeating in a district and drafts the alert for that area.",
-        approves: "The team",
-      },
-      {
-        name: "Case writer",
-        text: "Turns an approved network into a PDF case file with a timeline and chain of custody.",
-        approves: "An authorized analyst",
-      },
-      {
-        name: "Advisor",
-        text: "Drafts prevention advice by area and trade, using aggregate figures only.",
-        approves: "A person on the team",
-      },
-      {
-        name: "Authenticity",
-        text: "Looks for signs that a voice note, photo or video was AI-generated or manipulated.",
-        approves: "The reviewer, when deciding the link",
-      },
-    ],
-    rules:
-      "Every claim cites evidence: without a citation, the output is invalid. Never names of people. Web search is off.",
-  },
   tech: {
     title: "Built with Meta AI, piece by piece",
     lead: "Evidence flows through a pipeline on Cloudflare and an ML container. Every piece is transcribed, segmented, summarized into a case record and turned into signals that can be compared.",
-    pipelineLabel: "From file to decision",
-    pipeline: [
-      { stage: "Evidence", items: ["WhatsApp voice note", "Message", "Photo", "Video"] },
-      {
-        stage: "Models",
-        items: ["Muse Voice Transcribe", "Muse Spark 1.3 and 1.2", "SAM 3.1", "DINOv2", "AudioSeal and Video Seal"],
-      },
-      {
-        stage: "Signals",
-        items: ["Voiceprint", "Case record", "HMAC identifiers", "Crops and vectors", "Authenticity"],
-      },
-      { stage: "Agents", items: ["Linker", "Cartographer", "Lookout", "Case writer", "Advisor"] },
-      { stage: "A person approves", items: ["Link", "Alert", "Advice", "Case file"] },
-    ],
-    modelsTitle: "What we use and what for",
     groups: [
       {
         title: "Meta Model API",
@@ -362,9 +272,8 @@ export const en: Dict = {
       },
       {
         title: "It publishes no addresses, homes or exact counts.",
-        text: "The map is by district, in ranges, with no totals, and needs at least 5 cases from 3 different victims.",
+        text: "Only districts and ranges, as in the map above.",
       },
-      { title: "It does not decide guilt.", text: "Every link is a hypothesis with its score and its evidence." },
       {
         title: "It uses no real data in the demo.",
         text: "Cases, voices, numbers, accounts and photos are fictitious.",
@@ -528,61 +437,12 @@ export const en: Dict = {
         "React Native",
       ],
     },
-    signals: {
-      title: "The traces a gang leaves behind",
-      lead: "Swapping a SIM card is easy. Changing your voice, your photos, your script and your collection account is not. Blindaje compares every trace across all cases.",
-      items: [
-        {
-          kind: "voz",
-          name: "Voice",
-          text: "The voiceprint of every voice note, segment by segment, even when they call from another number.",
-          example: "V-3 in cases A and B, 4 of 5 segments",
-          how: "Muse Voice Transcribe, ECAPA voiceprint and Muse Spark 1.2, which checks for synthetic voice",
-        },
-        {
-          kind: "imagen",
-          name: "Photos and video",
-          text: "Bullets, handwritten notes and license plates cropped from every photo or video. It finds the same image even after a forward or a crop.",
-          example: "IMG-1: photo of the shop with a bullet",
-          how: "SAM 3.1, DINOv2 and perceptual hash",
-        },
-        {
-          kind: "frase",
-          name: "Speech patterns",
-          text: "The script, the phrases they repeat and who they claim to represent.",
-          example: "“talk to the boss”, “don’t call the police”, “Los X”",
-          how: "Muse Spark 1.3 builds the case sheet and text vectors",
-        },
-        {
-          kind: "id",
-          name: "Numbers, accounts and plates",
-          text: "Phones, Yape or Plin accounts and plates, encrypted with HMAC: compared without exposing the data and with no search box.",
-          example: "Yape …488 in cases B and C",
-          how: "Muse Spark 1.3 extracts them and HMAC encrypts them",
-        },
-        {
-          kind: "cobro",
-          name: "How they collect",
-          text: "How much they ask for, the deadline and the payment channel. On its own it never links: it adds to the other signals.",
-          example: "2,000 soles by Yape within 48 hours",
-          how: "Case sheet by Muse Spark 1.3",
-        },
-        {
-          kind: "zona",
-          name: "Area and dates",
-          text: "Which district and when, never an address. The Lookout spots the same pattern in the same area and the Cartographer orders the network in time.",
-          example: "5 cases from 3 victims in 14 days",
-          how: "Lookout and Cartographer, with Muse Spark 1.3",
-        },
-      ],
-      note: "No signal decides alone: the engine combines them into a calibrated score and a person confirms every link.",
-    },
     problem: { gapsTitle: "Why today is not enough" },
     benefits: {
       title: "What each one gets",
       lead: "Victims document without exposing themselves, the community knows where it happens and what to do, and the authorities get cases already linked.",
       illustration:
-        "Real screenshots of the app on an Android emulator, with fictitious data. Outside, a working sales notebook; inside, the private notes. You choose the disguise: it can also be a shopping list or a change calculator.",
+        "Real screenshots of the app on an Android emulator, with fictitious data. Outside, a working sales notebook; inside, every note shows what checked it and with which model. You choose the disguise: it can also be a shopping list or a change calculator.",
       victimPhotoAlt:
         "Inside a corner shop in Lima: shelves of goods, stacked red beer crates and two people at the counter, seen from behind.",
       victimPhotoCredit: "Illustrative photo: cemeiakano, CC BY-SA 2.0. It shows no victims.",
@@ -605,8 +465,6 @@ export const en: Dict = {
           points: [
             "A district map, public and with no account.",
             "Alerts and prevention advice for their area and trade, approved by a person.",
-            "Ranges, not exact counts, and nothing with fewer than 5 cases from 3 victims.",
-            "Never an address, a number or an account.",
           ],
         },
         {
@@ -615,7 +473,6 @@ export const en: Dict = {
           title: "Get cases already linked, with the evidence cited",
           points: [
             "A PDF case file with the timeline of the whole network.",
-            "Every link explained, with its score and its signals.",
             "SHA-256 fingerprints and chain of custody for every file.",
             "Which districts the network works in, and repeated accounts to request through legal channels.",
           ],
@@ -735,8 +592,6 @@ export const en: Dict = {
         },
         note: "Fictitious demo data. The figures come from the linking engine with the evaluation’s calibration.",
       },
-      demoTitle: "Try it: you decide if it is the same gang",
-      demoLead: "This link just reached the team’s console. Confirm it or dismiss it.",
     },
     tour: {
       title: "Everything Blindaje does",
@@ -762,15 +617,6 @@ export const en: Dict = {
           alt: "Console screenshot: graph of network R-001, with three cases tied by voiceprint V-3 and Yape account …488.",
           caption: "Network R-001: three cases, one voice, one account. Fictitious data.",
           pen: "same account, another case",
-        },
-        {
-          tab: "Areas",
-          title: "Sees which districts it happens in",
-          note: "Area view, with a threshold of 5 cases from 3 victims",
-          text: "The console groups cases by district, compares them with the previous period and shows which networks and patterns repeat in each one. A district with few cases shows no figures.",
-          shot: "consola-zonas",
-          alt: "Console screenshot: grid of the districts of Lima and Callao with cases per district. San Juan de Lurigancho is selected: 14 cases from 11 victims in 28 days, rising.",
-          caption: "The team’s area view. Fictitious data.",
         },
         {
           tab: "Advise",
@@ -810,15 +656,6 @@ export const en: Dict = {
           caption: "Trace a leak, admins only. Fictitious data.",
           pen: "the copy came from this account",
         },
-        {
-          tab: "Public map",
-          title: "Shows the map to the community",
-          note: "Public portal, no account",
-          text: "Anyone picks their district and trade and sees the risk level, the alerts and the advice approved by the team. Ranges only, never exact counts or addresses.",
-          shot: "portal-mapa",
-          alt: "Public portal screenshot: map of the 50 districts of Lima and Callao with low, medium and high levels, and beside it the list of districts with data, from San Juan de Lurigancho (high, 20-49) to Villa El Salvador (low, 5-9). Ate is marked as your district.",
-          caption: "Public portal in simulated mode. Fictitious data.",
-        },
       ],
     },
     tech: {
@@ -830,11 +667,11 @@ export const en: Dict = {
     },
     voice: {
       title: "Even a disguised voice leaves a print",
-      lead: "A fictitious voice note takes the path it would take inside Blindaje: the disguise the extortionist adds, the pitch reversal, the 192-number print and its ID. The figures come from the evaluation with {speakers} real voices from SLR73, in Peruvian Spanish, sent over WhatsApp.",
+      lead: "A fictitious voice note takes the path it would take inside Blindaje: the disguise the extortionist adds and the pitch reversal. The figures come from the evaluation with {speakers} real voices from SLR73, in Peruvian Spanish, sent over WhatsApp.",
       steps: [
         {
           label: "The voice",
-          title: "Another number, the same voice",
+          title: "One voice, a new SIM",
           text: "A fictitious voice, generated with Meta’s MMS-TTS, threatens over WhatsApp from a new SIM. That voice already threatened someone in another case.",
         },
         {
@@ -847,11 +684,6 @@ export const en: Dict = {
           title: "Trying every pitch from {sweepMin} to +{sweepMax}",
           text: "Blindaje lowers and raises the pitch one semitone at a time and keeps the version closest to a stored print. It found the exact shift for {exact} voices.",
         },
-        {
-          label: "Print and ID",
-          title: "192 numbers, one ID",
-          text: "ECAPA-TDNN turns each 3 to 6 second stretch into 192 numbers and averages them, leaving out the victim’s voice. That vector is the print, with an ID like V-3, and FAISS compares it with the prints from every case.",
-        },
       ],
       listen: "Listen",
       audioLabels: [
@@ -861,7 +693,6 @@ export const en: Dict = {
       ],
       similarity: "Similarity to their voice",
       pitch: "Pitch",
-      dims: "192 numbers from ECAPA-TDNN",
       replay: "Play again",
       chart: {
         caption: "Measured with {speakers} SLR73 voices",
@@ -874,42 +705,6 @@ export const en: Dict = {
       note: "The reversal is an evaluation experiment and does not run in the pipeline yet. It brings the right person back to first place in {top1Reverted} of cases, against {top1Disguised} without it, and adds no false links. But the similarity stays below the review threshold: it is a lead for a person, never an automatic link. A voice alone never reaches “probable” either, even undisguised.",
       source:
         "Example audio: fictitious MMS-TTS voice, disguised +4 and reversed −4 with the same method. Figures: eval/results/voz_distorsion.json.",
-    },
-    inside: {
-      title: "Every note shows what checked it",
-      lead: "The victim’s app from the inside. Real screenshots on an Android emulator against the live API, with a fictitious voice note and photo: each note lists the steps that actually ran and the model behind each one.",
-      listLabel: "App screenshots",
-      items: [
-        {
-          shot: "app-audio-texto",
-          title: "The voice note, as text",
-          text: "Muse Voice Transcribe turned 24 seconds of audio into text, split the turns, and the app highlighted the amount.",
-          models: ["Muse Voice Transcribe 1.0"],
-          alt: "App screenshot in Spanish: a 24-second voice note with its transcript; «dos mil soles» (two thousand soles) is highlighted.",
-        },
-        {
-          shot: "app-audio-recorrido",
-          title: "How it was checked",
-          text: "A print of the voice making the threat, never the victim’s, and a check for whether the audio was made with AI.",
-          models: ["SpeechBrain ECAPA", "AudioSeal", "C2PA", "Muse Spark 1.2"],
-          alt: "App screenshot in Spanish: How we checked it, four steps with their technology: AES-256-GCM, Muse Voice Transcribe 1.0, SpeechBrain ECAPA, and AudioSeal, C2PA and Muse Spark 1.2.",
-        },
-        {
-          shot: "app-foto-recorrido",
-          title: "The photo",
-          text: "SAM 3.1 found the bullet, the handwritten note and the storefront; Muse Spark 1.3 read «LOS X. 48 HORAS» (THE X. 48 HOURS).",
-          models: ["SAM 3.1", "Muse Spark 1.3", "DINOv2"],
-          alt: "App screenshot in Spanish: a photo note. SAM 3.1 found a bullet, a handwritten note and a storefront; Muse Spark 1.3 read LOS X. 48 HORAS.",
-        },
-        {
-          shot: "app-como-funciona",
-          title: "How it works",
-          text: "One screen explains the whole path in plain words, including what Blindaje never does.",
-          models: ["AES-256-GCM", "PBKDF2-SHA256", "ECDSA P-256"],
-          alt: "App screenshot in Spanish: the How it works screen, with what happens on the phone: AES-256-GCM encryption, the PIN stored as a PBKDF2-SHA256 hash and an ECDSA P-256 key.",
-        },
-      ],
-      note: "The app shows no scores, forensic signals or data from other cases, and it is in Spanish. Fictitious voice note, photo and case; screenshots from November 2, 2026.",
     },
     trust: {
       title: "What Blindaje does not do",
@@ -941,20 +736,12 @@ export const en: Dict = {
           a: "Only the Blindaje analysis team, as far as the victim allows. Evidence travels encrypted, is stored encrypted and every access is written to a chained audit log. A victim never sees data from other cases.",
         },
         {
-          q: "What does the map show?",
-          a: "Districts, never streets or homes. It shows ranges, not exact counts, and nothing where there are fewer than 5 cases from 3 victims. It always warns that more cases can mean more reporting there.",
-        },
-        {
           q: "What if someone checks the victim’s phone?",
           a: "They see a working sales app. The private notes open with a secret entrance and a PIN; a decoy PIN opens empty, believable notes, and one tap goes back to the usual app. There are no notifications.",
         },
         {
           q: "How are fake reports stopped without a guild vetting members?",
           a: "A person on the team reviews every link before it counts, no signal decides alone, there is a registration limit per connection and suspicious devices can be flagged.",
-        },
-        {
-          q: "Does Blindaje accuse anyone or replace the police?",
-          a: "No. It links cases and signals, never puts a name to a voice and never searches for anyone online. It always points to 105, Línea 1818 and the police station, and the case file reaches the authorities only through a formal channel.",
         },
         {
           q: "How does an institution join?",
@@ -965,25 +752,9 @@ export const en: Dict = {
   },
   page: {
     problemTitle: ["Thousands of reports", "no one connects"],
-    review: {
-      title: "A person confirms every link",
-      states: ["Proposed", "In review", "Confirmed"],
-      caseA: "Case A, shopkeeper",
-      caseB: "Case B, mototaxi driver",
-      tie: "Same voice",
-      score: "0.91",
-      detail: "The voice matches in 4 of 5 segments, even though the numbers and accounts differ.",
-      proposedBy: "Proposed by the Linker, with verified citations",
-      confirm: "Confirm link",
-      discard: "Dismiss",
-      confirmed: "Confirmed by the team reviewer on Oct 28, 10:42",
-      undo: "Undo",
-      discarded: "Dismissed by the reviewer. Not used for linking.",
-    },
     tech: {
       title: ["Built with Meta AI,", "piece by piece"],
       lead: "Every voice note, message, photo or video goes through Meta models, becomes signals that can be compared and reaches agents that propose. A person approves.",
-      modelsLabel: "Models",
       groups: [
         {
           kind: "Meta Model API",
@@ -1009,9 +780,6 @@ export const en: Dict = {
           ],
         },
       ],
-      agentsLabel: "Agents",
-      diagramNote:
-        "The dotted line skips Meta's models: the voiceprint uses ECAPA, an open third-party model. Signals join a single cord, and the agents read from it.",
       approves: "Approves",
       agents: [
         { name: "Linker", what: "Explains each possible link", approves: "The reviewer" },

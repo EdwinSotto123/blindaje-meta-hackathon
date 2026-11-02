@@ -58,7 +58,6 @@ export interface Dict {
   nav: {
     ariaLabel: string;
     benefits: string;
-    signals: string;
     map: string;
     product: string;
     how: string;
@@ -121,25 +120,9 @@ export interface Dict {
       shot: ShotCopy;
     };
   };
-  intel: {
-    title: string;
-    lead: string;
-    link: { title: string; text: string; shot: ShotCopy };
-    network: { title: string; text: string; shot: ShotCopy };
-    alert: { title: string; text: string; cardTitle: string; card: string; cardMeta: string };
-    advice: { title: string; text: string; shot: ShotCopy };
-    agentsTitle: string;
-    agentsLead: string;
-    approvesLabel: string;
-    agents: { name: string; text: string; approves: string }[];
-    rules: string;
-  };
   tech: {
     title: string;
     lead: string;
-    pipelineLabel: string;
-    pipeline: { stage: string; items: string[] }[];
-    modelsTitle: string;
     groups: { title: string; rows: { name: string; id: string; use: string }[] }[];
     honestTitle: string;
     honest: string[];
@@ -259,19 +242,6 @@ export interface Dict {
       legend: { sin_datos: string; bajo: string; medio: string; alto: string };
       note: string;
     };
-    /** Las señales que compara Blindaje, con los glifos del grafo de la consola. */
-    signals: {
-      title: string;
-      lead: string;
-      items: {
-        kind: "voz" | "imagen" | "frase" | "id" | "cobro" | "zona";
-        name: string;
-        text: string;
-        example: string;
-        how: string;
-      }[];
-      note: string;
-    };
     problem: { gapsTitle: string };
     benefits: {
       title: string;
@@ -335,8 +305,6 @@ export interface Dict {
         };
         note: string;
       };
-      demoTitle: string;
-      demoLead: string;
     };
     tour: {
       title: string;
@@ -374,7 +342,6 @@ export interface Dict {
       similarity: string;
       /** Rótulo del tono medido (F0) de cada versión. */
       pitch: string;
-      dims: string;
       replay: string;
       chart: {
         caption: string;
@@ -386,22 +353,6 @@ export interface Dict {
       };
       note: string;
       source: string;
-    };
-    /** La app por dentro: capturas reales del celular, cada nota con los pasos que la revisaron. */
-    inside: {
-      title: string;
-      lead: string;
-      /** Nombre del carrusel en celulares (se desplaza de lado). */
-      listLabel: string;
-      items: {
-        shot: ProductShot;
-        title: string;
-        text: string;
-        /** Tecnologías que se ven en la captura. */
-        models: string[];
-        alt: string;
-      }[];
-      note: string;
     };
     trust: { title: string; lead: string };
     /** Menú de secciones en celular y tableta. */
@@ -420,30 +371,11 @@ export interface Dict {
   /** Texto propio del diseño "informe impreso": titulares cortos, entradas, filas y pies de foto. */
   page: {
     problemTitle: [string, string];
-    review: {
-      title: string;
-      states: [string, string, string];
-      caseA: string;
-      caseB: string;
-      tie: string;
-      score: string;
-      detail: string;
-      proposedBy: string;
-      confirm: string;
-      discard: string;
-      confirmed: string;
-      undo: string;
-      discarded: string;
-    };
     tech: {
       title: [string, string];
       lead: string;
-      modelsLabel: string;
       groups: { kind: string; rows: { name: string; use: string }[] }[];
-      agentsLabel: string;
       approves: string;
-      /** Pie del diagrama del pipeline: qué significa la línea punteada. */
-      diagramNote: string;
       agents: { name: string; what: string; approves: string }[];
     };
     results: { title: string };

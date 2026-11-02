@@ -1,11 +1,7 @@
 ---
-/**
- * Cómo funciona: el recorrido completo animado con el scroll (Flow.astro, seis escenas del audio al
- * distrito) y la demo de revisión, donde el visitante hace de revisora.
- */
+/** Cómo funciona: el recorrido completo animado con el scroll (Flow.astro, seis escenas del audio al distrito). */
 import type { Dict } from "../i18n";
 import Flow from "./Flow.astro";
-import LinkDemo from "./LinkDemo.astro";
 
 interface Props {
   dict: Dict;
@@ -25,42 +21,5 @@ const h = d.lp.how;
     </div>
 
     <Flow dict={d} />
-
-    <div class="demo" data-reveal>
-      <div class="demo__text">
-        <h3 class="head">{h.demoTitle}</h3>
-        <p class="lead soft">{h.demoLead}</p>
-        <p class="small soft demo__rules">{d.intel.rules}</p>
-      </div>
-      <LinkDemo dict={d} />
-    </div>
   </div>
 </section>
-
-<style>
-  .demo {
-    display: grid;
-    gap: 32px;
-    margin-top: 80px;
-    padding-top: 64px;
-    border-top: 1px solid var(--linea);
-  }
-
-  .demo__text {
-    display: grid;
-    gap: 14px;
-    align-content: center;
-  }
-
-  .demo__rules {
-    max-width: 36em;
-  }
-
-  @media (min-width: 960px) {
-    .demo {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      gap: 64px;
-      align-items: center;
-    }
-  }
-</style>

@@ -25,10 +25,7 @@ type ProductBase =
   | "consola-zonas"
   | "portal-mapa"
   | "portal-zona"
-  | "app-audio-texto"
   | "app-audio-recorrido"
-  | "app-foto-recorrido"
-  | "app-como-funciona"
   | "app-disfraz-cuaderno"
   | "app-notas-privadas";
 

@@ -1,13 +1,13 @@
 ---
 /**
- * Aunque disfracen la voz, queda huella: una nota de voz ficticia (voz 1 del demo, MMS-TTS) en
- * cuatro pasos animados. 1) la onda, 2) disfrazada con +4 semitonos, 3) el barrido de tono que la
- * revierte, 4) la huella de 192 números de ECAPA y su ID. Ondas, huella y audios salen de
- * eval/py/blindaje_eval/voz_landing.py; las cifras, de eval/results/voz_distorsion.json (28 voces de
- * SLR73). Sin ese reporte la sección no se muestra.
+ * Aunque disfracen la voz, queda huella: una nota de voz ficticia (voz 1 del demo, MMS-TTS) en tres
+ * pasos animados. 1) la onda y su tono, 2) disfrazada con +4 semitonos, 3) el barrido de tono que la
+ * revierte. La huella de 192 números y su ID se ven en Cómo funciona (escena Señales). Ondas, tono y
+ * audios salen de eval/py/blindaje_eval/voz_landing.py; las cifras, de eval/results/voz_distorsion.json
+ * (28 voces de SLR73). Sin ese reporte la sección no se muestra.
  *
  * Movimiento: sin JavaScript o con movimiento reducido se ve el estado final. Con JavaScript, al
- * entrar a la vista se arma el estado inicial y los pasos se encienden en orden (unos 7 s).
+ * entrar a la vista se arma el estado inicial y los pasos se encienden en orden (unos 5 s).
  */
 import type { Dict } from "../i18n";
 import { readVoiceReport } from "../lib/voice-report";
@@ -72,18 +72,6 @@ const lanes = [dots(tono.limpia), dots(tono.disfrazada), dots(tono.revertida)];
 const hz = [tono.limpia.hz, tono.disfrazada.hz, tono.revertida.hz];
 /** Cuánto se mueven los puntos en el carril por los semitonos del disfraz (para armar la animación). */
 const semitonePx = r ? (r.semitones / (12 * Math.log2(hi / lo))) * (LANE - 8) : 0;
-const firstNumbers = demo.huella
-  .slice(0, 4)
-  .map((x) => (x < 0 ? `−${Math.abs(x).toFixed(3)}` : x.toFixed(3)))
-  .join(", ");
-
-/** La huella: 192 barras desde una línea base, hacia arriba o abajo según el signo. */
-const maxAbs = Math.max(...demo.huella.map(Math.abs));
-const huella = demo.huella.map((x, i) => {
-  const h = Math.max(0.6, (Math.abs(x) / maxAbs) * 26);
-  return { x: i * 2, y: x >= 0 ? 32 - h : 32, h, up: x >= 0 };
-});
-
 const sweep = r ? Array.from({ length: r.sweep[1] - r.sweep[0] + 1 }, (_, i) => r.sweep[0] + i) : [];
 const target = r ? -r.semitones : 0;
 const targetPos = r ? (target - r.sweep[0]) / (r.sweep[1] - r.sweep[0]) : 0;
@@ -112,7 +100,7 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
       <div class="va" data-voz>
         <ol class="va__steps" role="list">
           {v.steps.map((s, i) => (
-            <li class="va__step" style={`--t0: ${[0.1, 1.6, 2.9, 5.4][i]}s`}>
+            <li class="va__step" style={`--t0: ${[0.1, 1.6, 2.9][i]}s`}>
               <p class="va__label">
                 <span class="va__n num" aria-hidden="true">
                   {i + 1}
@@ -121,12 +109,12 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
               </p>
 
               <div class="va__visual">
-                {i < 3 && (
+                {
                   <p class="va__hz">
                     {v.pitch} <strong class="num">{hz[i]} Hz</strong>
                   </p>
-                )}
-                {i < 3 && (
+                }
+                {
                   <svg
                     class={`tono tono--${i + 1}`}
                     viewBox={`0 0 ${waveW} ${LANE}`}
@@ -141,49 +129,18 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
                       ))}
                     </g>
                   </svg>
-                )}
-                {i < 3 ? (
-                  <svg
-                    class={`wave wave--${i + 1}`}
-                    viewBox={`0 0 ${waveW} 64`}
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
-                    {waves[i]!.map((b, j) => (
-                      <rect x={b.x} y="4" width="2.4" height="56" rx="1.2" style={`--a:${b.a};--b:${b.b};--i:${j}`} />
-                    ))}
-                  </svg>
-                ) : (
-                  <div class="emb">
-                    <svg
-                      class="emb__bars"
-                      viewBox="0 0 384 64"
-                      preserveAspectRatio="none"
-                      aria-hidden="true"
-                      focusable="false"
-                    >
-                      <line x1="0" y1="32" x2="384" y2="32" />
-                      {huella.map((b, j) => (
-                        <rect
-                          class:list={[b.up ? "up" : "down"]}
-                          x={b.x}
-                          y={b.y}
-                          width="1.4"
-                          height={b.h}
-                          style={`--i:${j}`}
-                        />
-                      ))}
-                    </svg>
-                    <p class="emb__id">
-                      <span class="emb__chip">V-3</span>
-                      <span class="emb__dims">{v.dims}</span>
-                    </p>
-                    <code class="emb__nums" translate="no">
-                      [{firstNumbers}, …]
-                    </code>
-                  </div>
-                )}
+                }
+                <svg
+                  class={`wave wave--${i + 1}`}
+                  viewBox={`0 0 ${waveW} 64`}
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  {waves[i]!.map((b, j) => (
+                    <rect x={b.x} y="4" width="2.4" height="56" rx="1.2" style={`--a:${b.a};--b:${b.b};--i:${j}`} />
+                  ))}
+                </svg>
 
                 {i === 2 && (
                   <div class="dial" aria-hidden="true">
@@ -208,7 +165,7 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
               <h3 class="va__title">{fill(s.title)}</h3>
               <p class="soft va__text">{fill(s.text)}</p>
 
-              {i < 3 && (
+              {
                 <button
                   type="button"
                   class="va__play"
@@ -220,7 +177,7 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
                   <Icon name="pause" class="icon va__icon va__icon--pause" />
                   <span>{v.listen}</span>
                 </button>
-              )}
+              }
             </li>
           ))}
         </ol>
@@ -477,68 +434,6 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
     font-weight: 700;
   }
 
-  /* ---------- Huella ---------- */
-
-  .emb {
-    display: grid;
-    gap: 10px;
-  }
-
-  .emb__bars {
-    display: block;
-    width: 100%;
-    height: 72px;
-  }
-
-  .emb__bars line {
-    stroke: var(--linea-2);
-    stroke-width: 1;
-  }
-
-  .emb__bars rect {
-    fill: #815d00;
-    transform-box: fill-box;
-  }
-
-  .emb__bars rect.up {
-    transform-origin: bottom;
-  }
-
-  .emb__bars rect.down {
-    transform-origin: top;
-  }
-
-  .emb__id {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 12px;
-    margin: 0;
-  }
-
-  .emb__chip {
-    padding: 3px 12px;
-    border: 1.5px solid #815d00;
-    border-radius: 999px;
-    background: #f8eed8;
-    color: var(--tinta);
-    font-family: var(--display);
-    font-weight: 700;
-  }
-
-  .emb__nums {
-    overflow: hidden;
-    font-size: 0.8125rem;
-    color: var(--ink-2);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .emb__dims {
-    font-size: var(--step-small);
-    color: var(--ink-2);
-  }
-
   /* ---------- Escuchar y repetir ---------- */
 
   .va__play,
@@ -641,10 +536,6 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
     background: var(--terracota);
   }
 
-  .va.is-armed .emb__bars rect {
-    transform: scaleY(0);
-  }
-
   .va.is-playing .va__visual svg {
     transition: opacity 0.4s ease var(--t0);
   }
@@ -685,10 +576,6 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
 
   .va.is-playing .dial__cursor {
     animation: dial-sweep 1.8s var(--ease) calc(2.9s + 0.1s) both;
-  }
-
-  .va.is-playing .emb__bars rect {
-    transition: transform 0.45s var(--ease) calc(5.4s + 0.3s + var(--i) * 4ms);
   }
 
   @keyframes dial-sweep {
@@ -884,7 +771,7 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
 
   @media (min-width: 1100px) {
     .va__steps {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 28px;
     }
   }
