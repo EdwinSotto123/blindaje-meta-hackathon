@@ -60,6 +60,26 @@ intenta revertirlo con un barrido de tono de −8 a +8 semitonos. Escribe `resul
 - La reversión es un experimento: no corre en el pipeline, y el parecido revertido queda bajo el umbral de revisión.
 - `blindaje_eval.voz_landing` genera la animación de la landing: ondas, tono, huella y audios de la voz 1 ficticia del demo.
 
+**Fotos desde otro ángulo** (02/11, aparte de `pnpm eval`): ¿se reconoce la misma colcha si la foto
+cambia de ángulo? Tiene dos pasos:
+- `pnpm demo:fotos` genera tres fotos ficticias con Muse Image en `demo/fotos-colcha/`: la misma colcha
+  rosada con rosas desde dos ángulos, y una trampa con los mismos objetos sobre otra colcha. Después
+  Muse Spark 1.3 las describe y compara los pares. Escribe `results/fotos_vlm.json`.
+- `pnpm demo:fotos:parches` calcula con DINOv2 el vector de la foto entera (como el pipeline) y el hash
+  perceptual. También calcula los 24 × 16 parches: su mejor pareja en la otra foto (0.65 o más), las
+  parejas mutuas sin el borde y una PCA conjunta para pintarlos. Escribe
+  `results/fotos_huella.json` y los datos de la landing (`apps/landing/src/data/fotos-demo.json`).
+- Resultado:
+
+  | Par | Coseno foto entera | Hash (bits distintos) | Hoy el sistema | Parches con pareja | Muse Spark |
+  |---|---|---|---|---|---|
+  | Misma colcha, otro ángulo | 0.61 | 28 | no las une (0.00) | 188 de 384 | probable |
+  | Otra colcha, mismos objetos | 0.55 | 34 | no las une (0.00) | 79 de 384 | poco probable |
+  | La misma foto, recortada y recomprimida | 0.87 | 10 | las une (0.80) | 379 de 384 | — |
+
+- Comparar por parches y preguntarle a Muse Spark es un experimento: no corre en el pipeline. Con tres
+  fotos, solo muestra la idea; no es una medida de precisión.
+
 ## Estructura de `report.json` (schema 1.1)
 
 El README del repo y la landing leen solo `resumen`. Cambios que rompan la forma suben

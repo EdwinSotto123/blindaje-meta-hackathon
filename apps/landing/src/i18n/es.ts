@@ -645,6 +645,73 @@ export const es: Dict = {
       agentsLead:
         "Corren con Muse Spark 1.3 por la Responses API, con salida JSON de esquema estricto. Toda afirmación cita evidencia: sin cita, la salida no vale.",
     },
+    photos: {
+      title: "Otro ángulo, la misma colcha",
+      lead: "Las bandas mandan fotos para asustar, y dos fotos del mismo cuarto casi nunca salen iguales: cambian el ángulo, la luz y el encuadre. Así se ven por dentro, parche por parche, y esto es lo que dice Muse Spark al mirarlas. Fotos ficticias, generadas con Muse Image.",
+      pairsLabel: "Qué par de fotos comparar",
+      pairs: ["Misma colcha, otro ángulo", "Otra colcha, mismos objetos", "La misma foto, reenviada"],
+      photoA: "Foto del caso A",
+      photoB: ["Foto del caso B", "Foto del caso C", "La foto del caso A, recortada y recomprimida"],
+      alt: [
+        "Foto ficticia vista desde arriba: una colcha fucsia con rosas blancas y flecos, tres balas y una hoja que dice PAGA O YA SABES.",
+        "Foto ficticia en diagonal: la misma colcha fucsia con rosas blancas y flecos sobre una cama de madera, la pared celeste despintada, un foco y la nota.",
+        "Foto ficticia vista desde arriba: una colcha azul a cuadros, tres balas y una hoja que dice PAGA O YA SABES.",
+        "La primera foto otra vez, recortada en los bordes y con menos calidad, como queda al reenviarla.",
+      ],
+      stepsLabel: "Pasos de la comparación",
+      steps: [
+        {
+          title: "La foto en parches",
+          text: "DINOv2, el modelo de imagen del sistema, corta cada foto en una cuadrícula de 24 × 16: {total} parches.",
+        },
+        {
+          title: "Cada parche, 384 números",
+          text: "DINOv2 describe cada parche con 384 números; aquí van resumidos en un color. Mismo color, parche parecido, aunque cambie el ángulo.",
+        },
+        {
+          title: "Cada parche busca pareja",
+          text: "Si en la otra foto hay un parche parecido ({umbral} o más), se enciende; si no, se apaga.",
+        },
+        {
+          title: "Las mejores parejas",
+          text: "Una línea une los parches que se eligen el uno al otro como el más parecido.",
+        },
+        {
+          title: "Lo que ve Muse Spark",
+          text: "Mira las dos fotos enteras, nombra los detalles que no cambian con el ángulo y dice si parece el mismo lugar.",
+        },
+      ],
+      count: "{n} de {total} con pareja",
+      stats: {
+        whole: "Foto entera, DINOv2",
+        hash: "Hash perceptual",
+        hashBits: "{n} de 64 bits distintos",
+        partners: "Parches con pareja",
+        partnersOf: "{n} de {total}",
+        system: "Hoy el sistema",
+        joins: "Las une ({p})",
+        notJoins: "No las une ({p})",
+      },
+      vlm: "Muse Spark",
+      verdicts: {
+        probable: "Mismo lugar: probable",
+        posible: "Mismo lugar: posible",
+        poco_probable: "Mismo lugar: poco probable",
+      },
+      common: "En común",
+      differences: "Diferencias",
+      noVlm: "Es la misma foto: el sistema la reconoce por el hash, sin preguntarle a Muse Spark.",
+      explain: [
+        "Como fotos enteras se parecen poco ({cos}) y el hash cambia {ham} bits, así que hoy el sistema no las une. Parche por parche, {n} de {total} encuentran pareja: las rosas, los flecos y la hoja se encienden en las dos. Muse Spark llega a lo mismo.",
+        "La misma nota, pero otra colcha. Solo {n} de {total} parches encuentran pareja: la hoja, el foco y algo del tejido. Las rosas y los flecos se apagan, y Muse Spark dice poco probable.",
+        "Es la misma foto, recortada y recomprimida: el hash cambia apenas {ham} bits y {n} de {total} parches encuentran pareja. El sistema ya la une ({p}).",
+      ],
+      hover: "Pasa el puntero o toca un parche para ver su pareja en la otra foto.",
+      replay: "Ver de nuevo",
+      note: "Hoy el sistema compara la foto entera (DINOv2 y hash perceptual) y reconoce la misma foto reenviada o recortada. Comparar parche por parche y preguntarle a Muse Spark por los detalles en común es un experimento de la evaluación: todavía no une casos, y una persona revisaría cada pista.",
+      source:
+        "Fotos ficticias de Muse Image. Parches de DINOv2 ViT-S/14 (24 × 16); los colores son las tres primeras componentes principales de sus vectores; las líneas dejan fuera el borde de la foto. Muse Spark 1.3 con salida JSON. Cifras: eval/results/fotos_huella.json y fotos_vlm.json.",
+    },
     voice: {
       title: "Aunque disfracen la voz, queda huella",
       lead: "Basta un cambiador de voz para que la huella no reconozca a la misma persona. Lo medimos con {speakers} voces reales de español de Perú (SLR73) enviadas por WhatsApp: cuánto se pierde y cuánto se recupera al revertir el tono.",

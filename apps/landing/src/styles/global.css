@@ -492,7 +492,9 @@ code {
  * enfocable (teclado) solo cuando de verdad desborda. !important porque las grillas de cada componente
  * tienen más especificidad (llevan el atributo de alcance de Astro). */
 @media (max-width: 719px) {
+  /* relative: lo posicionado adentro (como .sr-only) queda dentro de la tira y no ensancha la página. */
   .hs {
+    position: relative;
     display: flex !important;
     grid-template-columns: none !important;
     gap: 12px !important;

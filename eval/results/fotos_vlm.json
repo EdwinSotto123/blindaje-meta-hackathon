@@ -1,0 +1,104 @@
+{
+  "modelo": "muse-spark-1.3",
+  "generado": "2026-11-02T23:07:29.022Z",
+  "descripciones": {
+    "colcha-1": {
+      "lugar": "Parece una cama o superficie cubierta con una manta en un interior rústico",
+      "superficie": "Manta o colcha texturizada de color fucsia con estampado de rosas blancas grandes",
+      "objetos": [
+        "papel cuadriculado con mensaje manuscrito",
+        "tres balas de color dorado"
+      ],
+      "detalles": [
+        "Manta de color fucsia intenso con estampado de rosas grandes blancas y hojas en tono verdoso",
+        "Textura gruesa y rugosa tipo peluche o tejido afelpado",
+        "Borde inferior con flecos blancos trenzados y desgastados",
+        "Paredes laterales de aspecto rústico y desgastado en tonos verdosos y marrones",
+        "Iluminación cálida amarillenta que parece venir de la parte superior"
+      ],
+      "texto_visible": [
+        "PAGA O YA SABES"
+      ]
+    },
+    "colcha-2": {
+      "lugar": "Parece una habitación precaria con una cama",
+      "superficie": "Manta o colcha de cama gruesa color fucsia con estampado de rosas grandes blancas y flecos blancos",
+      "objetos": [
+        "cama de madera",
+        "manta",
+        "cuaderno cuadriculado",
+        "balas",
+        "foco colgante",
+        "ventana con rejas"
+      ],
+      "detalles": [
+        "manta gruesa fucsia con rosas grandes blancas y flecos blancos en el borde",
+        "pared celeste desgastada con pintura descascarada y manchas",
+        "ventana con barrotes metálicos oscuros",
+        "foco amarillo colgando del techo con cable visible"
+      ],
+      "texto_visible": [
+        "PAGA O YA SABES"
+      ]
+    },
+    "otra-1": {
+      "lugar": "lo que parece ser una cama en un interior humilde junto a una pared deteriorada",
+      "superficie": "frazada o manta de textura gruesa, color azul oscuro con estampado a cuadros de líneas claras blancas o beige",
+      "objetos": [
+        "hoja de papel cuadriculado con borde rasgado",
+        "tres balas de color dorado"
+      ],
+      "detalles": [
+        "frazada azul oscuro con cuadriculado de líneas claras blancas o beige y textura gruesa arrugada",
+        "pared de fondo de tono claro con textura descascarada, manchas y desgaste",
+        "luz cálida amarillenta que ilumina desde la parte superior",
+        "estructura de madera rústica en el lado derecho que parece parte de una cama"
+      ],
+      "texto_visible": [
+        "PAGA O YA SABES"
+      ]
+    }
+  },
+  "pares": [
+    {
+      "a": "colcha-1",
+      "b": "colcha-2",
+      "resultado": {
+        "mismo_lugar": "probable",
+        "en_comun": [
+          "manta fucsia con rosas blancas grandes y fleco blanco",
+          "cama de madera rústica",
+          "paredes azuladas con pintura descascarada",
+          "bombilla cálida colgando",
+          "nota manuscrita junto a tres balas doradas"
+        ],
+        "diferencias": [
+          "encuadre cenital cerrado vs vista lateral abierta",
+          "papel suelto recortado vs cuaderno sobre la manta",
+          "balas en vertical vs balas acostadas juntas"
+        ],
+        "explicacion": "Los indicios apuntan a que sería el mismo espacio, por la manta, la cama y el deterioro de las paredes. Las variaciones de encuadre y de disposición de los objetos parecerían deberse a cambio de ángulo y manipulación, por lo que convendría que la revisora lo confirme."
+      }
+    },
+    {
+      "a": "colcha-1",
+      "b": "otra-1",
+      "resultado": {
+        "mismo_lugar": "poco_probable",
+        "en_comun": [
+          "nota en papel cuadriculado con misma frase junto a balas",
+          "tres balas doradas sobre una manta en una cama",
+          "luz cálida cenital sobre la escena",
+          "madera rústica y pared deteriorada al fondo"
+        ],
+        "diferencias": [
+          "manta rosada con rosas blancas y flecos vs manta azul a cuadros sin flecos",
+          "nota pequeña de trazo fino vs hoja más grande de trazo grueso",
+          "tres balas alineadas en fila vs tres balas en triángulo",
+          "fondo lateral azulado angosto vs pared clara muy descascarada"
+        ],
+        "explicacion": "Los indicios de composición se parecen, con nota y balas sobre cama bajo luz cálida. Pero el color, estampado y textura de la manta, que no cambian con el ángulo, apuntan a cobertores distintos."
+      }
+    }
+  ]
+}

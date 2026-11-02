@@ -1,0 +1,48 @@
+{
+  "modelo": "facebook/dinov2-small",
+  "calibracion": {
+    "hamming_max": 10,
+    "p_hamming": 0.8,
+    "dino_a": 40,
+    "dino_b": 0.959,
+    "p_max": 0.5
+  },
+  "pares": [
+    {
+      "a": "colcha-1",
+      "b": "colcha-2",
+      "tipo": "misma_colcha",
+      "coseno": 0.608,
+      "hamming": 28,
+      "p_imagen": 0.0,
+      "con_pareja": 188,
+      "parches": 384,
+      "con_pareja_b": 139,
+      "lineas": 15
+    },
+    {
+      "a": "colcha-1",
+      "b": "otra-1",
+      "tipo": "otra_colcha",
+      "coseno": 0.553,
+      "hamming": 34,
+      "p_imagen": 0.0,
+      "con_pareja": 79,
+      "parches": 384,
+      "con_pareja_b": 116,
+      "lineas": 13
+    },
+    {
+      "a": "colcha-1",
+      "b": "colcha-1-reenviada",
+      "tipo": "reenviada",
+      "coseno": 0.866,
+      "hamming": 10,
+      "p_imagen": 0.8,
+      "con_pareja": 379,
+      "parches": 384,
+      "con_pareja_b": 383,
+      "lineas": 36
+    }
+  ]
+}

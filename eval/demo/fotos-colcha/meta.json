@@ -1,0 +1,19 @@
+{
+  "ficticio": true,
+  "modelo": "muse-image-1.0",
+  "fotos": [
+    {
+      "id": "colcha-1",
+      "prompt": "Fotografía realista tomada con un celular, de noche, con la luz amarilla de un foco. Sin personas, sin rostros, sin armas de fuego, sin sangre. Estilo foto de evidencia. Interior de un cuarto humilde en Lima, Perú: una cama con una colcha de chenil rosada fucsia con rosas blancas grandes estampadas y una franja de flecos blancos en el borde. Vista de cerca, desde arriba. Sobre la colcha hay tres balas doradas sin disparar y una hoja de cuaderno cuadriculado con una nota escrita a mano con plumón negro que dice 'PAGA O YA SABES'."
+    },
+    {
+      "id": "colcha-2",
+      "prompt": "Fotografía realista tomada con un celular, de noche, con la luz amarilla de un foco. Sin personas, sin rostros, sin armas de fuego, sin sangre. Estilo foto de evidencia. Interior de un cuarto humilde en Lima, Perú: una cama con una colcha de chenil rosada fucsia con rosas blancas grandes estampadas y una franja de flecos blancos en el borde. Vista en diagonal desde el pie de la cama, más lejos: se ve la pared celeste despintada y una ventana con reja. Sobre la colcha hay tres balas doradas sin disparar y una hoja de cuaderno cuadriculado con una nota escrita a mano con plumón negro que dice 'PAGA O YA SABES'."
+    },
+    {
+      "id": "otra-1",
+      "prompt": "Fotografía realista tomada con un celular, de noche, con la luz amarilla de un foco. Sin personas, sin rostros, sin armas de fuego, sin sangre. Estilo foto de evidencia. Interior de un cuarto humilde en Lima, Perú: una cama con una colcha de lana azul marino a cuadros grises, sin flores. Vista de cerca, desde arriba. Sobre la colcha hay tres balas doradas sin disparar y una hoja de cuaderno cuadriculado con una nota escrita a mano con plumón negro que dice 'PAGA O YA SABES'."
+    }
+  ],
+  "nota": "Imágenes sintéticas para la evaluación y la landing de Blindaje. No retratan un lugar ni un hecho real."
+}

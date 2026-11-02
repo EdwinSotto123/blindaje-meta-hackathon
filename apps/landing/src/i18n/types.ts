@@ -330,6 +330,43 @@ export interface Dict {
       agentsLead: string;
     };
     /**
+     * Otro ángulo, la misma colcha (Fotos.astro): parches de DINOv2 y Muse Spark sobre fotos ficticias,
+     * con cifras de apps/landing/src/data/fotos-demo.json. Las llaves entre llaves se llenan en el build.
+     */
+    photos: {
+      title: string;
+      lead: string;
+      pairsLabel: string;
+      pairs: [string, string, string];
+      photoA: string;
+      photoB: [string, string, string];
+      /** Texto alternativo: la foto A y las tres B, en el orden de los pares. */
+      alt: [string, string, string, string];
+      stepsLabel: string;
+      steps: { title: string; text: string }[];
+      count: string;
+      stats: {
+        whole: string;
+        hash: string;
+        hashBits: string;
+        partners: string;
+        partnersOf: string;
+        system: string;
+        joins: string;
+        notJoins: string;
+      };
+      vlm: string;
+      verdicts: { probable: string; posible: string; poco_probable: string };
+      common: string;
+      differences: string;
+      noVlm: string;
+      explain: [string, string, string];
+      hover: string;
+      replay: string;
+      note: string;
+      source: string;
+    };
+    /**
      * Una voz disfrazada y su huella: animación paso a paso (la voz, disfrazada, revertida, huella e ID)
      * con cifras de eval/results/voz_distorsion.json. Las llaves entre llaves se llenan en el build.
      */

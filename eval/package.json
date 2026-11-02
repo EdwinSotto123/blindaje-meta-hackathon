@@ -13,6 +13,8 @@
     "test": "vitest run",
     "demo:images": "tsx src/gen-demo-images.ts",
     "demo:audio": "uv run --project py python -I -m blindaje_eval.tts_demo",
+    "demo:fotos": "tsx src/fotos-colcha.ts",
+    "demo:fotos:parches": "uv run --project py python -I -m blindaje_eval.fotos_huella",
     "whatsapp": "uv run --project py python -I -m blindaje_eval.whatsapp"
   },
   "dependencies": {

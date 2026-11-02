@@ -645,6 +645,73 @@ export const en: Dict = {
       agentsLead:
         "They run on Muse Spark 1.3 through the Responses API, with strict JSON schema output. Every claim cites evidence: without a citation, the output is rejected.",
     },
+    photos: {
+      title: "Another angle, the same bedspread",
+      lead: "Gangs send photos to scare people, and two photos of the same room almost never come out the same: the angle, the light and the framing change. This is how they look inside, patch by patch, and what Muse Spark says when it looks at them. Fictitious photos, generated with Muse Image.",
+      pairsLabel: "Which pair of photos to compare",
+      pairs: ["Same bedspread, another angle", "Another bedspread, same objects", "The same photo, forwarded"],
+      photoA: "Photo from case A",
+      photoB: ["Photo from case B", "Photo from case C", "The photo from case A, cropped and recompressed"],
+      alt: [
+        "Fictitious photo from above: a fuchsia bedspread with white roses and a fringe, three bullets and a note that says PAGA O YA SABES (pay or you know what).",
+        "Fictitious photo at an angle: the same fuchsia bedspread with white roses and a fringe on a wooden bed, the peeling light blue wall, a bulb and the note.",
+        "Fictitious photo from above: a blue checked bedspread, three bullets and a note that says PAGA O YA SABES.",
+        "The first photo again, cropped at the edges and at lower quality, as it ends up when forwarded.",
+      ],
+      stepsLabel: "Steps of the comparison",
+      steps: [
+        {
+          title: "The photo in patches",
+          text: "DINOv2, the system’s image model, cuts each photo into a 24 × 16 grid: {total} patches.",
+        },
+        {
+          title: "Each patch, 384 numbers",
+          text: "DINOv2 describes each patch with 384 numbers; here they are summed up as one color. Same color, similar patch, even when the angle changes.",
+        },
+        {
+          title: "Each patch looks for a match",
+          text: "If the other photo has a similar patch ({umbral} or more), it lights up; if not, it fades.",
+        },
+        {
+          title: "The best pairs",
+          text: "A line joins the patches that pick each other as the most similar.",
+        },
+        {
+          title: "What Muse Spark sees",
+          text: "It looks at both whole photos, names the details that don’t change with the angle and says whether it looks like the same place.",
+        },
+      ],
+      count: "{n} of {total} with a match",
+      stats: {
+        whole: "Whole photo, DINOv2",
+        hash: "Perceptual hash",
+        hashBits: "{n} of 64 bits differ",
+        partners: "Patches with a match",
+        partnersOf: "{n} of {total}",
+        system: "Today the system",
+        joins: "Links them ({p})",
+        notJoins: "Doesn’t link them ({p})",
+      },
+      vlm: "Muse Spark",
+      verdicts: {
+        probable: "Same place: probable",
+        posible: "Same place: possible",
+        poco_probable: "Same place: unlikely",
+      },
+      common: "In common (in Spanish)",
+      differences: "Differences (in Spanish)",
+      noVlm: "It is the same photo: the system recognizes it by the hash, without asking Muse Spark.",
+      explain: [
+        "As whole photos they look only somewhat alike ({cos}) and the hash changes {ham} bits, so today the system doesn’t link them. Patch by patch, {n} of {total} find a match: the roses, the fringe and the note light up in both. Muse Spark reaches the same answer.",
+        "The same note, but another bedspread. Only {n} of {total} patches find a match: the note, the bulb and some of the weave. The roses and the fringe fade, and Muse Spark says unlikely.",
+        "It is the same photo, cropped and recompressed: the hash changes only {ham} bits and {n} of {total} patches find a match. The system already links it ({p}).",
+      ],
+      hover: "Hover or tap a patch to see its match in the other photo.",
+      replay: "Play again",
+      note: "Today the system compares whole photos (DINOv2 and a perceptual hash) and recognizes the same photo forwarded or cropped. Comparing patch by patch and asking Muse Spark for shared details is an evaluation experiment: it doesn’t link cases yet, and a person would review every lead.",
+      source:
+        "Fictitious photos from Muse Image. DINOv2 ViT-S/14 patches (24 × 16); the colors are the first three principal components of their vectors; the lines leave out the edge of the photo. Muse Spark 1.3 with JSON output. Figures: eval/results/fotos_huella.json and fotos_vlm.json.",
+    },
     voice: {
       title: "Even a disguised voice leaves a print",
       lead: "A voice changer is enough for the print to stop recognizing the same person. We measured it with {speakers} real voices in Peruvian Spanish (SLR73) sent over WhatsApp: how much is lost, and how much reversing the pitch brings back.",
