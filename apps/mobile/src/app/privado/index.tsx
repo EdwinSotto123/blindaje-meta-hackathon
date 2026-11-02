@@ -183,6 +183,13 @@ export default function NotasPrivadas() {
               : "Aquí verás los datos que detectemos: montos, plazos, números y nombres de grupos."}
           </T>
         )}
+        <Button
+          label="Cómo lo revisamos"
+          kind="secondary"
+          compact
+          onPress={() => router.push("/privado/tecnologia")}
+          testID="ir-tecnologia"
+        />
       </Card>
 
       <View style={{ flexDirection: "row", gap: 8 }}>

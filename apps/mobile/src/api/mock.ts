@@ -10,6 +10,7 @@ import {
   type EvidenceItem,
   type EvidenceType,
   hallazgosParaVictima,
+  type PasoProceso,
   textoAutenticidadVictima,
   type TimelineEvent,
   type VictimAlert,
@@ -59,6 +60,54 @@ export type MockOptions = {
  */
 const CENTRAL = { id: CENTRAL_ORG_ID, name: "Equipo central (ficticio)" };
 const CANAL_DEMO = { id: "org_demo", name: "Canal de difusión de prueba (ficticio)" };
+
+/** "Cómo lo revisamos" simulado, con la forma de `services/api/src/pipeline/proceso.ts`. */
+function procesoSimulado(item: EvidenceItem, transcript: Turn, conFicha: boolean): PasoProceso[] {
+  const pasos: PasoProceso[] = [
+    {
+      paso: "Guardado cifrado",
+      tecnologia: "AES-256-GCM",
+      detalle: "La huella SHA-256 de tu celular y la del servidor coinciden: llegó sin cambios.",
+    },
+  ];
+  if (item.status !== "procesado") return pasos;
+  const sinSenales = "No encontramos señales. Eso no lo prueba al 100 %.";
+  if (item.tipo === "audio") {
+    pasos.push(
+      {
+        paso: "Lo pasamos a texto",
+        tecnologia: "Muse Voice Transcribe 1.0",
+        detalle: `${transcript?.length ?? 1} turnos, con palabras de aquí como Yape, Plin o cupo.`,
+      },
+      {
+        paso: "Huella de la voz de quien te habla",
+        tecnologia: "SpeechBrain ECAPA",
+        detalle: "Tu voz queda fuera. Solo se compara con otros casos si das permiso.",
+      },
+      { paso: "Revisamos si fue hecho con IA", tecnologia: "AudioSeal, C2PA y Muse Spark 1.2", detalle: sinSenales },
+    );
+  }
+  if (item.tipo === "imagen" || item.tipo === "video") {
+    pasos.push(
+      {
+        paso: "Buscamos objetos en la imagen",
+        tecnologia: "SAM 3.1",
+        detalle: "No encontramos balas, armas, notas escritas ni placas.",
+      },
+      { paso: "Huella de la imagen", tecnologia: "DINOv2", detalle: "Solo se compara con otros casos si das permiso." },
+      { paso: "Revisamos si fue hecho con IA", tecnologia: "Video Seal, C2PA y Muse Spark 1.3", detalle: sinSenales },
+    );
+  }
+  if (conFicha) {
+    pasos.push({
+      paso: "Datos para tu denuncia",
+      tecnologia: "Muse Spark 1.3",
+      detalle:
+        "Monto, plazo, canal de pago y frases, en un formato fijo. Lo que dice la evidencia entra como dato, nunca como orden.",
+    });
+  }
+  return pasos;
+}
 
 /** Guiones ficticios para las transcripciones simuladas. */
 const GUIONES = [
@@ -404,6 +453,7 @@ export function createMockServer(opts: MockOptions = {}) {
         autenticidad:
           e.item.status === "procesado" && e.item.tipo !== "texto" ? textoAutenticidadVictima("sin_senales") : null,
         origen: e.source,
+        proceso: procesoSimulado(e.item, e.transcript, listo),
       })),
       updated_at: c.summary.updated_at,
       consejos: listo ? consejosPara(d, frases) : [],

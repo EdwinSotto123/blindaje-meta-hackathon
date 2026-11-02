@@ -411,6 +411,24 @@ describe("Workflow completo y reporte de la víctima", () => {
     expect(relato!.transcripcion).toEqual([
       expect.objectContaining({ text: "Tengo una bodega y me mandaron audios (ficticio)." }),
     ]);
+    // "Cómo lo revisamos": solo pasos que corrieron, con la tecnología de cada uno.
+    const pasos = (e: unknown) => (e as { proceso: Array<{ paso: string; tecnologia: string }> }).proceso;
+    expect(pasos(audio).map((p) => p.tecnologia)).toEqual([
+      "AES-256-GCM",
+      "Muse Voice Transcribe 1.0",
+      "SpeechBrain ECAPA",
+      "Llama Prompt Guard 2",
+      "AudioSeal, C2PA y Muse Spark 1.2",
+      "Muse Spark 1.3",
+      "HMAC-SHA256 y FAISS",
+    ]);
+    expect(pasos(texto).map((p) => p.paso)).toEqual([
+      "Guardado cifrado",
+      "Buscamos órdenes escondidas para la IA",
+      "Datos para tu denuncia",
+      "Comparación sin nombres",
+    ]);
+    expect(pasos(audio)[4]).toMatchObject({ detalle: "No encontramos señales. Eso no lo prueba al 100 %." });
     const text = JSON.stringify(report.body);
     for (const k of VICTIM_FORBIDDEN_KEYS) expect(text.includes(`"${k}"`), k).toBe(false);
 

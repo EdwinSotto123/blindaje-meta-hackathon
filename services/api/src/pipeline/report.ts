@@ -1,7 +1,8 @@
-import type { VictimReport } from "@blindaje/shared";
+import { districtById, type VictimReport } from "@blindaje/shared";
 import type { Env } from "../env";
 import { parseJsonColumn } from "../lib/db";
 import { nowIso } from "../lib/ids";
+import { procesoDelCaso } from "./proceso";
 import { readEvidenceText } from "./text";
 import type {
   FramesContent,
@@ -15,7 +16,8 @@ import type {
  * Complementos del reporte de la víctima (todo de SU caso, nada de otros):
  *  - el texto de los mensajes pegados y del relato como un solo turno en `transcripcion`, para que
  *    la app lo muestre sin guardarlo en el celular;
- *  - "Lo que encontramos" en vivo: hallazgos de cada evidencia procesada, antes de la ficha.
+ *  - "Lo que encontramos" en vivo: hallazgos de cada evidencia procesada, antes de la ficha;
+ *  - "Cómo lo revisamos": el recorrido de cada pieza (`proceso.ts`).
  */
 
 interface DerivativeRow {
@@ -56,7 +58,7 @@ function liveFindings(report: VictimReport, ders: DerivativeRow[]): string[] {
 }
 
 export async function enrichVictimReport(env: Env, report: VictimReport): Promise<VictimReport> {
-  const [{ results: ders }, { results: texts }] = await Promise.all([
+  const [{ results: ders }, { results: texts }, proceso] = await Promise.all([
     env.DB.prepare(
       "SELECT evidence_id, tipo, content_json FROM derivatives WHERE case_id = ? AND tipo IN ('transcripcion','segmentacion','redactada','lectura','frames')",
     )
@@ -65,9 +67,11 @@ export async function enrichVictimReport(env: Env, report: VictimReport): Promis
     env.DB.prepare("SELECT id, r2_key FROM evidence WHERE case_id = ? AND tipo = 'texto'")
       .bind(report.case_id)
       .all<{ id: string; r2_key: string }>(),
+    procesoDelCaso(env, report.case_id),
   ]);
   const evidencia = await Promise.all(
-    report.evidencia.map(async (e) => {
+    report.evidencia.map(async (item) => {
+      const e = { ...item, proceso: proceso.get(item.id) ?? [] };
       if (e.tipo !== "texto" || e.transcripcion) return e;
       const row = texts.find((t) => t.id === e.id);
       const text = row ? await readEvidenceText(env, row) : null;
@@ -111,7 +115,14 @@ export async function denunciaPdfData(
     seudonimo: extra.seudonimo,
     resumen: report.ficha?.resumen ?? null,
     narrativa: relato?.transcripcion?.map((t) => t.text).join("\n") ?? null,
-    ficha: report.ficha ? { ...report.ficha, resumen_mo: report.ficha.resumen } : null,
+    // La zona se guarda como id de distrito; el PDF lleva su nombre.
+    ficha: report.ficha
+      ? {
+          ...report.ficha,
+          zona: districtById(report.ficha.zona)?.name ?? report.ficha.zona,
+          resumen_mo: report.ficha.resumen,
+        }
+      : null,
     hallazgos: report.hallazgos,
     cronologia: report.cronologia,
     evidencia: report.evidencia.map((e) => ({

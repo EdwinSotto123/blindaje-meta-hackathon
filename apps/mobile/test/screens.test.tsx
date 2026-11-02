@@ -164,6 +164,7 @@ import DenunciaLista from "@/app/privado/lista";
 import Nota from "@/app/privado/nota";
 import Pegar from "@/app/privado/pegar";
 import Recibido from "@/app/privado/recibido";
+import Tecnologia from "@/app/privado/tecnologia";
 import Bienvenida from "@/app/bienvenida/index";
 import Pin from "@/app/bienvenida/pin";
 import Senuelo from "@/app/bienvenida/senuelo";
@@ -235,6 +236,30 @@ describe("Pantallas privadas (modo real)", () => {
     await render(<Nota />);
     expect(screen.getByText("Huella de integridad (SHA-256)")).toBeTruthy();
     expect(screen.getByText(r.evidencia[0]!.sha256)).toBeTruthy();
+    // "Cómo lo revisamos": los pasos que corrieron, cada uno con su tecnología.
+    expect(screen.getByText("Cómo lo revisamos")).toBeTruthy();
+    expect(screen.getByText("Guardado cifrado")).toBeTruthy();
+    expect(screen.getByText("AES-256-GCM")).toBeTruthy();
+  });
+
+  it("Cómo funciona: cada paso con su tecnología, el permiso de hoy y lo que nunca hacemos", async () => {
+    configStore.set({ consent: "solo_denuncia" });
+    await render(<Tecnologia />);
+    for (const t of [
+      "En tu celular",
+      "En la nube",
+      "Con tu permiso",
+      "Lo que nunca hacemos",
+      "Muse Voice Transcribe 1.0",
+      "SAM 3.1",
+      "Muse Spark 1.3",
+      "DINOv2",
+      "HMAC-SHA256",
+      "No es cifrado de extremo a extremo",
+    ]) {
+      expect(screen.getAllByText(t).length).toBeGreaterThan(0);
+    }
+    expect(screen.getByText(/Hoy está apagado/)).toBeTruthy();
   });
 
   it("Grabar: botón grande de mantener presionado", async () => {
@@ -484,6 +509,13 @@ describe("Modo señuelo", () => {
     expect(screen.queryByText("Pide pago por Yape")).toBeNull();
     expect(screen.queryByText("Mensaje de texto")).toBeNull();
     expect(screen.getByText("Guardado cifrado, fuera de este celular")).toBeTruthy();
+  });
+
+  it("Cómo funciona no dice si el permiso está activado", async () => {
+    configStore.set({ consent: "comunitario" });
+    await render(<Tecnologia />);
+    expect(screen.getByText(/Se activa en Ajustes\./)).toBeTruthy();
+    expect(screen.queryByText(/Lo tienes activado/)).toBeNull();
   });
 
   it("los avisos no piden nada al servidor y se ven vacíos", async () => {

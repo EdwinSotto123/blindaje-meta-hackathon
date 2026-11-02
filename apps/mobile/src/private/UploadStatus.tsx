@@ -3,13 +3,15 @@ import { View } from "react-native";
 
 import { Card, Chip, Mark, T } from "@/components/ui";
 import { refreshReport, syncNow, usePrivate } from "@/private/data";
+import { Proceso } from "@/private/Proceso";
 import { termsFromReport, Transcript } from "@/private/Transcript";
 import { usePolling } from "@/private/usePolling";
 import { colors } from "@/theme/tokens";
 
 /**
- * Qué pasó con lo que acabas de guardar: espera conexión, se está subiendo, ya está en la nube
- * y, cuando el servidor lo procesa, la transcripción con los datos resaltados.
+ * Qué pasó con lo que acabas de guardar: espera conexión, se está subiendo, ya está en la nube,
+ * cada paso de la revisión apenas termina (con su tecnología) y, al final, la transcripción con los
+ * datos resaltados.
  */
 export function UploadStatus({
   queueId,
@@ -56,20 +58,23 @@ export function UploadStatus({
   }
 
   const hallazgos = report?.hallazgos ?? [];
+  const pasos = ev?.proceso ?? [];
+  const enNube = item?.status === "subido" || !!ev;
 
   return (
     <View style={{ gap: 12 }} accessibilityLiveRegion="polite">
       <Chip label={label} icon={icon} color={color} testID="estado-subida" />
-      {showTranscript && (item?.status === "subido" || ev) ? (
+      {showTranscript && enNube && !done && !pasos.length ? (
         <Card>
-          <T variant="h2">
-            {done ? (ev?.transcripcion?.length ? "Lo que dice" : "Revisado") : "Revisando lo que subiste…"}
-          </T>
-          {done && ev?.transcripcion?.length ? (
-            <Transcript turns={ev.transcripcion} terms={termsFromReport(report)} />
-          ) : null}
-          {done && ev?.nota ? <T variant="secondary">{ev.nota}</T> : null}
-          {done && hallazgos.length ? (
+          <T variant="h2">Revisando lo que subiste…</T>
+        </Card>
+      ) : null}
+      {showTranscript && done ? (
+        <Card>
+          <T variant="h2">{ev?.transcripcion?.length ? "Lo que dice" : "Revisado"}</T>
+          {ev?.transcripcion?.length ? <Transcript turns={ev.transcripcion} terms={termsFromReport(report)} /> : null}
+          {ev?.nota ? <T variant="secondary">{ev.nota}</T> : null}
+          {hallazgos.length ? (
             <View style={{ gap: 8 }}>
               <T variant="h2">Lo que encontramos</T>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
@@ -80,6 +85,16 @@ export function UploadStatus({
             </View>
           ) : null}
         </Card>
+      ) : null}
+      {pasos.length ? (
+        <View style={{ gap: 12 }}>
+          <T variant="h2">Cómo lo revisamos</T>
+          <Proceso
+            pasos={pasos}
+            pendiente={ev?.status === "recibido" || ev?.status === "procesando"}
+            testID="proceso-en-vivo"
+          />
+        </View>
       ) : null}
     </View>
   );

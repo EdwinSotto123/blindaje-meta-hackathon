@@ -9,7 +9,10 @@ import { textoAutenticidadVictima, VictimReport } from "@/shared";
 
 let mockReport: VictimReport | null = null;
 
-jest.mock("expo-router", () => ({ useLocalSearchParams: () => ({ id: "ev-1" }) }));
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => ({ id: "ev-1" }),
+  useRouter: () => ({ push: jest.fn() }),
+}));
 jest.mock("@/private/data", () => ({
   usePrivate: <T,>(sel: (s: { report: VictimReport | null }) => T) => sel({ report: mockReport }),
 }));
@@ -20,7 +23,7 @@ jest.mock("@/private/PrivateScreen", () => {
 
 import Nota from "@/app/privado/nota";
 
-function report(autenticidad: string | null | undefined): VictimReport {
+function report(autenticidad: string | null | undefined, proceso?: unknown[]): VictimReport {
   // Pasa por el esquema: así se prueba también que una respuesta sin el campo se lee como null.
   return VictimReport.parse({
     case_id: "c-1",
@@ -45,6 +48,7 @@ function report(autenticidad: string | null | undefined): VictimReport {
         transcripcion: null,
         nota: null,
         ...(autenticidad === undefined ? {} : { autenticidad }),
+        ...(proceso === undefined ? {} : { proceso }),
       },
     ],
     updated_at: "2026-10-28T10:00:00Z",
@@ -68,5 +72,37 @@ describe("autenticidad en el detalle de la nota", () => {
     expect(mockReport.evidencia[0]!.autenticidad).toBeNull();
     await render(<Nota />);
     expect(screen.queryByText("¿Fue hecho con IA?")).toBeNull();
+  });
+});
+
+describe("Cómo lo revisamos en el detalle de la nota", () => {
+  const texto = textoAutenticidadVictima("sin_senales");
+  const pasos = [
+    { paso: "Guardado cifrado", tecnologia: "AES-256-GCM", detalle: "Llegó sin cambios." },
+    { paso: "Lo pasamos a texto", tecnologia: "Muse Voice Transcribe 1.0", detalle: "2 voces en 4 turnos." },
+    {
+      paso: "Revisamos si fue hecho con IA",
+      tecnologia: "AudioSeal, C2PA y Muse Spark 1.2",
+      detalle: "No encontramos señales. Eso no lo prueba al 100 %.",
+    },
+  ];
+
+  it("muestra cada paso con una etiqueta por tecnología y no repite la tarjeta de IA", async () => {
+    mockReport = report(texto, pasos);
+    await render(<Nota />);
+    expect(screen.getByText("Cómo lo revisamos")).toBeTruthy();
+    expect(screen.getByText("Lo pasamos a texto")).toBeTruthy();
+    for (const t of ["AES-256-GCM", "Muse Voice Transcribe 1.0", "AudioSeal", "C2PA", "Muse Spark 1.2"])
+      expect(screen.getByText(t)).toBeTruthy();
+    expect(screen.queryByText("¿Fue hecho con IA?")).toBeNull();
+    expect(screen.queryByText("Seguimos revisando…")).toBeNull();
+  });
+
+  it("una respuesta antigua sin proceso no muestra la sección", async () => {
+    mockReport = report(texto);
+    expect(mockReport.evidencia[0]!.proceso).toEqual([]);
+    await render(<Nota />);
+    expect(screen.queryByText("Cómo lo revisamos")).toBeNull();
+    expect(screen.getByText("¿Fue hecho con IA?")).toBeTruthy();
   });
 });

@@ -284,6 +284,12 @@ export default function Ajustes() {
                 además, {CONSENT_SHORT.charAt(0).toLowerCase() + CONSENT_SHORT.slice(1)} Puedes apagarlo cuando quieras.
               </T>
             </Card>
+            <Button
+              label="Cómo funciona por dentro"
+              kind="secondary"
+              compact
+              onPress={() => router.push("/privado/tecnologia")}
+            />
           </View>
         </>
       ) : null}

@@ -238,3 +238,7 @@ Víctima: `VictimReport` agrega `consejos: string[]`, consejos de prevención se
 Desde el 29/10, `evidencia[]` también trae `origen: string | null` (el `x-source` con que se subió), y
 `x-source` acepta `llamada`: la nota de una llamada que la persona marcó como extorsión en la app, o su
 grabación. En la cronología se ven como "Llamada recibida" y "Grabación de una llamada".
+Desde el 02/11, `evidencia[]` trae `proceso: PasoProceso[]` (`{ paso, tecnologia, detalle }`): "Cómo lo
+revisamos", el recorrido de esa pieza con el modelo o la técnica de cada paso (Muse Voice Transcribe,
+SAM 3.1, Muse Spark, AudioSeal, DINOv2…). Sale de `services/api/src/pipeline/proceso.ts` y solo
+lista lo que de verdad corrió: sin coincidencias con otros casos, puntajes ni señales forenses.

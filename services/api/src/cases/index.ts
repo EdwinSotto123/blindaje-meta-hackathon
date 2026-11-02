@@ -278,6 +278,8 @@ export async function buildVictimReport(env: Env, c: CaseRow): Promise<VictimRep
         nota,
         autenticidad: nivel.success ? textoAutenticidadVictima(nivel.data) : null,
         origen: e.source ?? null,
+        // El recorrido ("Cómo lo revisamos") lo agrega enrichVictimReport.
+        proceso: [],
       };
     }),
     // Consejos de prevención por reglas fijas sobre SU ficha: nunca datos de otros casos.

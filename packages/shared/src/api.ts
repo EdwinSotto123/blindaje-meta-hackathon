@@ -224,6 +224,18 @@ export const TranscriptTurn = z.object({
  * Reporte propio de la víctima. NUNCA incluye vínculos, redes, coincidencias,
  * puntajes ni datos de otros casos. Los tests de services/api lo garantizan.
  */
+/**
+ * Un paso de lo que el sistema hizo con una pieza de evidencia de la víctima: qué se hizo, con qué
+ * tecnología y el resultado en una frase. Sale solo de SU evidencia y de lo que de verdad corrió:
+ * nunca resultados de vinculación, puntajes ni señales forenses.
+ */
+export const PasoProceso = z.object({
+  paso: z.string(),
+  tecnologia: z.string(),
+  detalle: z.string().nullable(),
+});
+export type PasoProceso = z.infer<typeof PasoProceso>;
+
 export const VictimReport = z
   .object({
     case_id: z.string(),
@@ -260,6 +272,8 @@ export const VictimReport = z
         autenticidad: z.string().nullable().default(null),
         /** De dónde vino en el celular (x-source al subir: grabacion, pegado, llamada…). Aditivo: null si no se informó. */
         origen: z.string().nullable().default(null),
+        /** Cómo se revisó esta pieza, paso por paso (`pipeline/proceso.ts`). Aditivo: [] si falta. */
+        proceso: z.array(PasoProceso).default([]),
       }),
     ),
     /**

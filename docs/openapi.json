@@ -6120,6 +6120,28 @@
           "alto"
         ]
       },
+      "PasoProceso": {
+        "type": "object",
+        "properties": {
+          "paso": {
+            "type": "string"
+          },
+          "tecnologia": {
+            "type": "string"
+          },
+          "detalle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "paso",
+          "tecnologia",
+          "detalle"
+        ]
+      },
       "PerfilRed": {
         "type": "object",
         "properties": {
@@ -8034,6 +8056,13 @@
                     "string",
                     "null"
                   ]
+                },
+                "proceso": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PasoProceso"
+                  }
                 }
               },
               "required": [
@@ -8050,7 +8079,8 @@
                 "transcripcion",
                 "nota",
                 "autenticidad",
-                "origen"
+                "origen",
+                "proceso"
               ]
             }
           },
