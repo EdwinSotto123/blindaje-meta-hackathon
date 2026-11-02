@@ -40,7 +40,8 @@ export default function Nota() {
           ) : ev.status !== "procesado" ? (
             <T variant="secondary">Estamos revisando esta nota…</T>
           ) : null}
-          {ev.nota ? (
+          {/* La nota del servidor ("Encontramos: bala…") ya va en su paso cuando hay recorrido. */}
+          {ev.nota && !ev.proceso.length ? (
             <Card>
               <T variant="h2">Nota</T>
               <T variant="body">{ev.nota}</T>

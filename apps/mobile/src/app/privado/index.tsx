@@ -108,7 +108,9 @@ export default function NotasPrivadas() {
           <Icon name="file" />
           <View style={{ flex: 1 }}>
             <T variant="bodyBold">{held.length === 1 ? "Recibiste 1 archivo" : `Recibiste ${held.length} archivos`}</T>
-            <T variant="small">Revísalo y decide si lo guardas.</T>
+            <T variant="small">
+              {held.length === 1 ? "Revísalo y decide si lo guardas." : "Revísalos y decide si los guardas."}
+            </T>
           </View>
           <Icon name="chevron" />
         </Pressable>

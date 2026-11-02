@@ -69,12 +69,13 @@ export function UploadStatus({
           <T variant="h2">Revisando lo que subiste…</T>
         </Card>
       ) : null}
-      {showTranscript && done ? (
+      {showTranscript && done && (ev?.transcripcion?.length || (!pasos.length && (ev?.nota || hallazgos.length))) ? (
         <Card>
           <T variant="h2">{ev?.transcripcion?.length ? "Lo que dice" : "Revisado"}</T>
           {ev?.transcripcion?.length ? <Transcript turns={ev.transcripcion} terms={termsFromReport(report)} /> : null}
-          {ev?.nota ? <T variant="secondary">{ev.nota}</T> : null}
-          {hallazgos.length ? (
+          {/* Con recorrido, lo encontrado en esta pieza va en sus pasos; los hallazgos de todo el caso, en las notas. */}
+          {ev?.nota && !pasos.length ? <T variant="secondary">{ev.nota}</T> : null}
+          {hallazgos.length && !pasos.length ? (
             <View style={{ gap: 8 }}>
               <T variant="h2">Lo que encontramos</T>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>

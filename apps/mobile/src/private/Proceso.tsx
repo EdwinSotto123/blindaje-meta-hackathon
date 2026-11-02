@@ -28,8 +28,11 @@ export function TecTag({ label }: { label: string }) {
         paddingVertical: 2,
       }}
     >
+      {/* "simple": con el corte por defecto, Android partía "Video Seal" dentro de una etiqueta del ancho justo. */}
       <Text
         maxFontSizeMultiplier={1.4}
+        numberOfLines={1}
+        textBreakStrategy="simple"
         style={{ fontFamily: fonts.textoBold, fontSize: 14, lineHeight: 20, color: colors.tinta }}
       >
         {label}
