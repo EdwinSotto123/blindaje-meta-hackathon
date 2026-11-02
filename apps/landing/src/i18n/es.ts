@@ -768,6 +768,42 @@ export const es: Dict = {
       agentsLead:
         "Corren con Muse Spark 1.3 por la Responses API, con salida JSON de esquema estricto. Toda afirmación cita evidencia: sin cita, la salida no vale.",
     },
+    inside: {
+      title: "Cada nota dice qué la revisó",
+      lead: "Así se ve por dentro la app de la víctima. Capturas reales en un emulador Android, contra la API en vivo, con un audio y una foto ficticios: cada nota muestra los pasos que de verdad corrieron y el modelo que hizo cada uno.",
+      listLabel: "Capturas de la app",
+      items: [
+        {
+          shot: "app-audio-texto",
+          title: "El audio, en texto",
+          text: "Muse Voice Transcribe pasó a texto 24 segundos de audio, separó los turnos y la app resaltó el monto.",
+          models: ["Muse Voice Transcribe 1.0"],
+          alt: "Captura de la app: nota de un audio de 24 segundos con su transcripción; «dos mil soles» aparece resaltado.",
+        },
+        {
+          shot: "app-audio-recorrido",
+          title: "Cómo se revisó",
+          text: "La huella de la voz de quien amenaza, nunca la de la víctima, y la revisión de si el audio fue hecho con IA.",
+          models: ["SpeechBrain ECAPA", "AudioSeal", "C2PA", "Muse Spark 1.2"],
+          alt: "Captura de la app: Cómo lo revisamos, con cuatro pasos y su tecnología: AES-256-GCM, Muse Voice Transcribe 1.0, SpeechBrain ECAPA y AudioSeal, C2PA y Muse Spark 1.2.",
+        },
+        {
+          shot: "app-foto-recorrido",
+          title: "La foto",
+          text: "SAM 3.1 encontró la bala, la nota escrita a mano y la fachada; Muse Spark 1.3 leyó «LOS X. 48 HORAS».",
+          models: ["SAM 3.1", "Muse Spark 1.3", "DINOv2"],
+          alt: "Captura de la app: nota de una foto. SAM 3.1 encontró bala, nota escrita a mano y fachada de tienda; Muse Spark 1.3 leyó LOS X. 48 HORAS.",
+        },
+        {
+          shot: "app-como-funciona",
+          title: "Cómo funciona",
+          text: "Una pantalla explica el recorrido completo en palabras simples, también lo que Blindaje nunca hace.",
+          models: ["AES-256-GCM", "PBKDF2-SHA256", "ECDSA P-256"],
+          alt: "Captura de la app: pantalla Cómo funciona, con lo que pasa en el celular: cifrado AES-256-GCM, el PIN como huella PBKDF2-SHA256 y una llave ECDSA P-256.",
+        },
+      ],
+      note: "La app no muestra puntajes, señales forenses ni datos de otros casos. Audio, foto y caso ficticios; capturas del 2 de noviembre de 2026.",
+    },
     trust: {
       title: "Lo que Blindaje no hace",
       lead: "Estos límites son parte del diseño, no una nota al pie. Protegen a las víctimas y evitan errores graves.",

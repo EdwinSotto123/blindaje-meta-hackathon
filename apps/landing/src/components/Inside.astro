@@ -1,0 +1,195 @@
+---
+/**
+ * La app por dentro: cuatro capturas reales del celular (emulador Android contra la API en vivo,
+ * evidencia ficticia), cada una en un marco de celular con lo que muestra y la tecnología que se ve.
+ * En pantallas anchas van en fila; en el celular, en un carrusel que se desplaza de lado. La parte de
+ * abajo de cada captura se funde con el papel de la app para no cortar texto a la mitad.
+ */
+import { getImage } from "astro:assets";
+import type { Dict } from "../i18n";
+import { productShot } from "../lib/screenshots";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const t = d.lp.inside;
+const items = (
+  await Promise.all(
+    t.items.map(async (it) => {
+      const image = productShot(it.shot);
+      if (!image) return null;
+      const img = await getImage({
+        src: image,
+        widths: [280, 420, 560, 840].filter((w) => w <= image.width),
+        format: "webp",
+        quality: 80,
+      });
+      return { ...it, image, img };
+    }),
+  )
+).filter((x): x is NonNullable<typeof x> => x !== null);
+---
+
+{items.length > 0 && (
+  <section class="section" id="app" aria-labelledby="app-title">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <h2 id="app-title" class="head">
+          {t.title}
+        </h2>
+        <p class="lead soft">{t.lead}</p>
+      </div>
+
+      <ul class="inside" role="list" aria-label={t.listLabel} tabindex="0">
+        {items.map((it) => (
+          <li class="inside__item" data-reveal>
+            <figure>
+              <div class="inside__phone">
+                <div class="inside__screen">
+                  <img
+                    src={it.img.src}
+                    srcset={it.img.srcSet.attribute}
+                    sizes="(min-width: 1100px) 280px, (min-width: 640px) 40vw, 68vw"
+                    width={it.image.width}
+                    height={it.image.height}
+                    alt={it.alt}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </div>
+              <figcaption>
+                <h3 class="inside__title">{it.title}</h3>
+                <p class="soft">{it.text}</p>
+                <ul class="inside__models" role="list">
+                  {it.models.map((m) => (
+                    <li class="tag" translate="no">
+                      {m}
+                    </li>
+                  ))}
+                </ul>
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+
+      <p class="cap inside__note">{t.note}</p>
+    </div>
+  </section>
+)}
+
+<style>
+  .inside {
+    list-style: none;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(232px, 68vw);
+    gap: 24px;
+    margin: 0 calc(var(--margin) * -1);
+    padding: 8px var(--margin) 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--margin);
+    overscroll-behavior-x: contain;
+  }
+
+  .inside:focus-visible {
+    outline: 3px solid var(--terracota);
+    outline-offset: 2px;
+  }
+
+  .inside__item {
+    scroll-snap-align: start;
+    min-width: 0;
+  }
+
+  .inside__item figure {
+    display: grid;
+    gap: 18px;
+    margin: 0;
+  }
+
+  /* El mismo marco de celular que la portada. */
+  .inside__phone {
+    padding: 7px;
+    border-radius: 30px;
+    background: var(--noche);
+    box-shadow:
+      0 2px 4px rgb(42 30 23 / 0.2),
+      0 30px 50px -20px rgb(42 30 23 / 0.55);
+  }
+
+  .inside__screen {
+    position: relative;
+    overflow: hidden;
+    border-radius: 23px;
+    /* El papel de la app (DESIGN.md de la raíz): la captura se funde en él. */
+    background: #fbfcfe;
+  }
+
+  .inside__screen img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .inside__screen::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 16%;
+    background: linear-gradient(to bottom, rgb(251 252 254 / 0), #fbfcfe 85%);
+    pointer-events: none;
+  }
+
+  .inside__title {
+    margin: 0 0 6px;
+    font-family: var(--display);
+    font-size: 1.3125rem;
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .inside__item p {
+    margin: 0;
+  }
+
+  .inside__models {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 0;
+    padding: 0;
+  }
+
+  .inside__note {
+    margin-top: 28px;
+  }
+
+  @media (min-width: 640px) {
+    .inside {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 48px 32px;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+    }
+
+    .inside__phone {
+      max-width: 300px;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .inside {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 32px;
+    }
+  }
+</style>

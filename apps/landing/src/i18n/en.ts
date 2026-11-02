@@ -768,6 +768,42 @@ export const en: Dict = {
       agentsLead:
         "They run on Muse Spark 1.3 through the Responses API, with strict JSON schema output. Every claim cites evidence: without a citation, the output is rejected.",
     },
+    inside: {
+      title: "Every note shows what checked it",
+      lead: "The victim’s app from the inside. Real screenshots on an Android emulator against the live API, with a fictitious voice note and photo: each note lists the steps that actually ran and the model behind each one.",
+      listLabel: "App screenshots",
+      items: [
+        {
+          shot: "app-audio-texto",
+          title: "The voice note, as text",
+          text: "Muse Voice Transcribe turned 24 seconds of audio into text, split the turns, and the app highlighted the amount.",
+          models: ["Muse Voice Transcribe 1.0"],
+          alt: "App screenshot in Spanish: a 24-second voice note with its transcript; «dos mil soles» (two thousand soles) is highlighted.",
+        },
+        {
+          shot: "app-audio-recorrido",
+          title: "How it was checked",
+          text: "A print of the voice making the threat, never the victim’s, and a check for whether the audio was made with AI.",
+          models: ["SpeechBrain ECAPA", "AudioSeal", "C2PA", "Muse Spark 1.2"],
+          alt: "App screenshot in Spanish: How we checked it, four steps with their technology: AES-256-GCM, Muse Voice Transcribe 1.0, SpeechBrain ECAPA, and AudioSeal, C2PA and Muse Spark 1.2.",
+        },
+        {
+          shot: "app-foto-recorrido",
+          title: "The photo",
+          text: "SAM 3.1 found the bullet, the handwritten note and the storefront; Muse Spark 1.3 read «LOS X. 48 HORAS» (THE X. 48 HOURS).",
+          models: ["SAM 3.1", "Muse Spark 1.3", "DINOv2"],
+          alt: "App screenshot in Spanish: a photo note. SAM 3.1 found a bullet, a handwritten note and a storefront; Muse Spark 1.3 read LOS X. 48 HORAS.",
+        },
+        {
+          shot: "app-como-funciona",
+          title: "How it works",
+          text: "One screen explains the whole path in plain words, including what Blindaje never does.",
+          models: ["AES-256-GCM", "PBKDF2-SHA256", "ECDSA P-256"],
+          alt: "App screenshot in Spanish: the How it works screen, with what happens on the phone: AES-256-GCM encryption, the PIN stored as a PBKDF2-SHA256 hash and an ECDSA P-256 key.",
+        },
+      ],
+      note: "The app shows no scores, forensic signals or data from other cases, and it is in Spanish. Fictitious voice note, photo and case; screenshots from November 2, 2026.",
+    },
     trust: {
       title: "What Blindaje does not do",
       lead: "These limits are part of the design, not a footnote. They protect victims and prevent serious mistakes.",

@@ -1,7 +1,8 @@
 /**
  * Capturas reales tomadas en build de docs/screenshots/: la consola y el portal en modo simulado
  * (datos ficticios), con nombre fijo, consola-*.png y portal-*.png, más su recorte para el celular
- * (*-movil.png). Si falta una, su figura no se muestra.
+ * (*-movil.png), y la app de la víctima en el emulador contra la API en vivo (app-*.png, evidencia
+ * ficticia). Si falta una, su figura no se muestra.
  */
 import type { ImageMetadata } from "astro";
 
@@ -23,7 +24,11 @@ type ProductBase =
   | "consola-rastreo-filtracion"
   | "consola-zonas"
   | "portal-mapa"
-  | "portal-zona";
+  | "portal-zona"
+  | "app-audio-texto"
+  | "app-audio-recorrido"
+  | "app-foto-recorrido"
+  | "app-como-funciona";
 
 /** Cada captura puede tener su recorte para el celular, con el mismo nombre y "-movil". */
 export type ProductShot = ProductBase | `${ProductBase}-movil`;

@@ -324,6 +324,22 @@ export interface Dict {
       agentsTitle: string;
       agentsLead: string;
     };
+    /** La app por dentro: capturas reales del celular, cada nota con los pasos que la revisaron. */
+    inside: {
+      title: string;
+      lead: string;
+      /** Nombre del carrusel en celulares (se desplaza de lado). */
+      listLabel: string;
+      items: {
+        shot: ProductShot;
+        title: string;
+        text: string;
+        /** Tecnologías que se ven en la captura. */
+        models: string[];
+        alt: string;
+      }[];
+      note: string;
+    };
     trust: { title: string; lead: string };
     /** Menú de secciones en celular y tableta. */
     menu: { label: string; faq: string };
