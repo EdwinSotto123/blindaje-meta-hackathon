@@ -129,25 +129,11 @@ export const en: Dict = {
         inside: "Inside: your private notes",
         key: "Secret entry and PIN",
         note: "Illustration. You choose the disguise; this is one of them.",
-        ledgerTitle: "Today’s sales",
-        ledger: [
-          { item: "2 milks", amount: "S/ 9.00" },
-          { item: "Bread, 10 rolls", amount: "S/ 3.00" },
-          { item: "Soda", amount: "S/ 2.50" },
-        ],
-        totalLabel: "Total",
-        total: "S/ 14.50",
-        evidence: [
-          { kind: "voice", text: "WhatsApp voice note, 0:24" },
-          { kind: "phrase", text: "Message: “2,000 soles via Yape within 48 hours”" },
-          { kind: "image", text: "Photo of the shop with a bullet" },
-        ],
-        foundLabel: "What we found",
-        found: ["Demands 2,000 soles", "Via Yape", "48-hour deadline", "Claims to be “Los X”"],
-        caseLabel: "Case A",
       },
-      shotOutsideAlt: "Screenshot of the app from the outside: it looks like an ordinary business app",
-      shotInsideAlt: "Screenshot of the app from the inside: private notes with the saved evidence",
+      shotOutsideAlt:
+        "Screenshot of the app from the outside: the sales notebook, with the day’s sales and the credit owed",
+      shotInsideAlt:
+        "Screenshot of the app from the inside: private notes with messages, a photo and a call, and what was found: payment by Yape, S/ 800 and a deadline",
       cloud:
         "Without a signal, the evidence waits encrypted on the phone and is deleted from it once the upload is confirmed. Only authorized people can see it.",
     },
@@ -596,7 +582,7 @@ export const en: Dict = {
       title: "What each one gets",
       lead: "Victims document without exposing themselves, the community knows where it happens and what to do, and the authorities get cases already linked.",
       illustration:
-        "Illustration of the app. Outside, a working sales notebook; inside, the private notes. You choose the disguise.",
+        "Real screenshots of the app on an Android emulator, with fictitious data. Outside, a working sales notebook; inside, the private notes. You choose the disguise: it can also be a shopping list or a change calculator.",
       victimPhotoAlt:
         "Inside a corner shop in Lima: shelves of goods, stacked red beer crates and two people at the counter, seen from behind.",
       victimPhotoCredit: "Illustrative photo: cemeiakano, CC BY-SA 2.0. It shows no victims.",
@@ -794,7 +780,6 @@ export const en: Dict = {
         },
       ],
       listen: "Listen",
-      pause: "Pause",
       audioLabels: [
         "Listen to the original voice, 7 seconds",
         "Listen to the disguised voice, 7 seconds",

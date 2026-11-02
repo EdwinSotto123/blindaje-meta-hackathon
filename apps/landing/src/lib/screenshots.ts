@@ -28,7 +28,9 @@ type ProductBase =
   | "app-audio-texto"
   | "app-audio-recorrido"
   | "app-foto-recorrido"
-  | "app-como-funciona";
+  | "app-como-funciona"
+  | "app-disfraz-cuaderno"
+  | "app-notas-privadas";
 
 /** Cada captura puede tener su recorte para el celular, con el mismo nombre y "-movil". */
 export type ProductShot = ProductBase | `${ProductBase}-movil`;

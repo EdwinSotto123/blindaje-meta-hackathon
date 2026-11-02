@@ -122,25 +122,11 @@ export const es: Dict = {
         inside: "Por dentro: tus notas privadas",
         key: "Entrada secreta y PIN",
         note: "Ilustración. El disfraz lo eliges tú: este es uno de ellos.",
-        ledgerTitle: "Ventas de hoy",
-        ledger: [
-          { item: "2 leches", amount: "S/ 9.00" },
-          { item: "Pan, 10 unidades", amount: "S/ 3.00" },
-          { item: "Gaseosa", amount: "S/ 2.50" },
-        ],
-        totalLabel: "Total",
-        total: "S/ 14.50",
-        evidence: [
-          { kind: "voice", text: "Audio de WhatsApp, 0:24" },
-          { kind: "phrase", text: "Mensaje: “2,000 soles por Yape en 48 horas”" },
-          { kind: "image", text: "Foto del local con una bala" },
-        ],
-        foundLabel: "Lo que encontramos",
-        found: ["Pide 2,000 soles", "Por Yape", "Plazo de 48 horas", "Dice ser de “Los X”"],
-        caseLabel: "Caso A",
       },
-      shotOutsideAlt: "Captura de la app por fuera: se ve como una app común de un negocio",
-      shotInsideAlt: "Captura de la app por dentro: notas privadas con la evidencia guardada",
+      shotOutsideAlt:
+        "Captura de la app por fuera: el cuaderno de ventas, con las ventas del día y los fiados por cobrar",
+      shotInsideAlt:
+        "Captura de la app por dentro: notas privadas con mensajes, una foto y una llamada, y lo que encontramos: pago por Yape, S/ 800 y un plazo",
       cloud:
         "Sin señal, la evidencia espera cifrada en el celular y se borra de ahí cuando la subida se confirma. Solo la ven las personas autorizadas.",
     },
@@ -596,7 +582,7 @@ export const es: Dict = {
       title: "Lo que gana cada uno",
       lead: "La víctima documenta sin exponerse, la comunidad sabe dónde pasa y qué hacer, y la autoridad recibe casos ya vinculados.",
       illustration:
-        "Ilustración de la app. Por fuera, un cuaderno de ventas que funciona; por dentro, las notas privadas. El disfraz lo eliges tú.",
+        "Capturas reales de la app en un emulador Android, con datos ficticios. Por fuera, un cuaderno de ventas que funciona; por dentro, las notas privadas. El disfraz lo eliges tú: también puede ser una lista de compras o una calculadora de vueltos.",
       victimPhotoAlt:
         "Interior de una bodega de Lima: estantes con productos, cajas rojas de cerveza apiladas y dos personas de espaldas en el mostrador.",
       victimPhotoCredit: "Foto ilustrativa: cemeiakano, CC BY-SA 2.0. No muestra víctimas.",
@@ -794,7 +780,6 @@ export const es: Dict = {
         },
       ],
       listen: "Escuchar",
-      pause: "Pausar",
       audioLabels: [
         "Escuchar la voz original, 7 segundos",
         "Escuchar la voz disfrazada, 7 segundos",

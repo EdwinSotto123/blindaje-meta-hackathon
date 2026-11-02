@@ -218,9 +218,7 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
                 >
                   <Icon name="play" class="icon va__icon va__icon--play" />
                   <Icon name="pause" class="icon va__icon va__icon--pause" />
-                  <span data-listen={v.listen} data-pause={v.pause}>
-                    {v.listen}
-                  </span>
+                  <span>{v.listen}</span>
                 </button>
               )}
             </li>
@@ -599,8 +597,9 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
 
   /* ---------- Animación: estado inicial armado y encendido en orden ---------- */
 
-  .va.is-armed .va__step {
-    opacity: 0.35;
+  /* Solo se atenúan los gráficos: el texto conserva siempre su contraste. */
+  .va.is-armed .va__visual svg {
+    opacity: 0.4;
   }
 
   .va.is-armed .wave--1 rect {
@@ -637,25 +636,16 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
     fill: var(--terracota);
   }
 
-  .va.is-armed .va__hz strong {
-    opacity: 0;
-  }
-
   .va.is-armed .dial__cursor {
     left: 0;
     background: var(--terracota);
-  }
-
-  .va.is-armed .dial__target,
-  .va.is-armed .emb__id {
-    opacity: 0;
   }
 
   .va.is-armed .emb__bars rect {
     transform: scaleY(0);
   }
 
-  .va.is-playing .va__step {
+  .va.is-playing .va__visual svg {
     transition: opacity 0.4s ease var(--t0);
   }
 
@@ -693,32 +683,12 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
       fill 0.7s ease calc(var(--t0) + 1.9s);
   }
 
-  .va.is-playing .va__step:nth-child(1) .va__hz strong {
-    transition: opacity 0.3s ease 0.8s;
-  }
-
-  .va.is-playing .va__step:nth-child(2) .va__hz strong {
-    transition: opacity 0.3s ease 2.6s;
-  }
-
-  .va.is-playing .va__step:nth-child(3) .va__hz strong {
-    transition: opacity 0.3s ease 5.3s;
-  }
-
   .va.is-playing .dial__cursor {
     animation: dial-sweep 1.8s var(--ease) calc(2.9s + 0.1s) both;
   }
 
-  .va.is-playing .dial__target {
-    transition: opacity 0.3s ease 4.8s;
-  }
-
   .va.is-playing .emb__bars rect {
     transition: transform 0.45s var(--ease) calc(5.4s + 0.3s + var(--i) * 4ms);
-  }
-
-  .va.is-playing .emb__id {
-    transition: opacity 0.4s ease 6.7s;
   }
 
   @keyframes dial-sweep {
@@ -926,11 +896,8 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
     const audios = new Map<string, HTMLAudioElement>();
     root.querySelectorAll<HTMLAudioElement>("audio[data-audio]").forEach((a) => audios.set(a.dataset.audio!, a));
     const buttons = [...root.querySelectorAll<HTMLButtonElement>(".va__play")];
-    const setPressed = (b: HTMLButtonElement, on: boolean) => {
-      b.setAttribute("aria-pressed", String(on));
-      const label = b.querySelector<HTMLSpanElement>("span[data-listen]");
-      if (label) label.textContent = on ? label.dataset.pause! : label.dataset.listen!;
-    };
+    // El nombre no cambia ("Escuchar…"): aria-pressed dice si suena y el ícono pasa a pausa.
+    const setPressed = (b: HTMLButtonElement, on: boolean) => b.setAttribute("aria-pressed", String(on));
     for (const b of buttons) {
       const a = audios.get(b.dataset.clip!);
       if (!a) continue;

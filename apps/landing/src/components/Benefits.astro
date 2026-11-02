@@ -1,7 +1,7 @@
 ---
 /**
  * Beneficios por actor, en tres filas que alternan lado: la víctima (una bodega de Lima y la app por
- * fuera y por dentro, ilustrada), la comunidad y los negocios (el portal real y una alerta aprobada) y
+ * fuera y por dentro, en capturas reales del emulador), la comunidad y los negocios (el portal real y una alerta aprobada) y
  * la autoridad (el perfil real de una red y el índice del expediente). Cada fila: el actor, lo que gana
  * y sus vistos.
  */
@@ -18,12 +18,29 @@ interface Props {
 const { dict: d } = Astro.props;
 const b = d.lp.benefits;
 const il = d.actors.victim.illo;
-const evIcon = { voice: "mic", phrase: "file", image: "camera" } as const;
 const [outsideLabel] = il.outside.split(":");
-const [insideLabel, insideTail = ""] = il.inside.split(":");
-const notesTitle = insideTail.trim().charAt(0).toUpperCase() + insideTail.trim().slice(1);
+const [insideLabel] = il.inside.split(":");
 
 const bodegaImg = await getImage({ src: bodega, widths: [360, 540, 768], format: "webp", quality: 76 });
+/** La app de la víctima por fuera (el disfraz de cuaderno) y por dentro (las notas), del emulador. */
+const appShots = await Promise.all(
+  (
+    [
+      ["app-disfraz-cuaderno", d.actors.victim.shotOutsideAlt],
+      ["app-notas-privadas", d.actors.victim.shotInsideAlt],
+    ] as const
+  ).map(async ([name, alt]) => {
+    const image = productShot(name);
+    if (!image) return null;
+    const img = await getImage({
+      src: image,
+      widths: [200, 300, 400, 600].filter((w) => w <= image.width),
+      format: "webp",
+      quality: 80,
+    });
+    return { image, img, alt };
+  }),
+);
 const portal = productShot("portal-mapa-movil");
 const profile = productShot("consola-perfil-cartografo");
 const portalImg = portal
@@ -88,47 +105,32 @@ const profileImg = profile
                     />
                   </div>
                   <div class="ill__phones">
-                    <div class="mp">
-                      <div class="mp__screen mp__screen--grid">
-                        <p class="mp__title">{il.ledgerTitle}</p>
-                        <ul class="mp__ledger" role="list">
-                          {il.ledger.map((row) => (
-                            <li>
-                              <span>{row.item}</span>
-                              <span class="num">{row.amount}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <p class="mp__total">
-                          <span>{il.totalLabel}</span>
-                          <span class="num">{il.total}</span>
-                        </p>
-                      </div>
-                      <p class="mp__label">{outsideLabel}</p>
-                    </div>
-                    <div class="mp mp--inside">
-                      <div class="mp__screen">
-                        <p class="mp__title">{notesTitle}</p>
-                        <ul class="mp__ev" role="list">
-                          {il.evidence.map((e) => (
-                            <li>
-                              <Icon name={evIcon[e.kind]} />
-                              <span>{e.text}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <p class="mp__found-title">{il.foundLabel}</p>
-                        <ul class="mp__found" role="list">
-                          {il.found.map((f) => (
-                            <li>{f}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <p class="mp__label">
-                        <Icon name="key" />
-                        {insideLabel}
-                      </p>
-                    </div>
+                    {appShots.map((shot, k) =>
+                      shot ? (
+                        <div class:list={["mp", k === 1 && "mp--inside"]}>
+                          <div class="mp__shot">
+                            <img
+                              src={shot.img.src}
+                              srcset={shot.img.srcSet.attribute}
+                              sizes="(min-width: 960px) 220px, 42vw"
+                              width={shot.image.width}
+                              height={shot.image.height}
+                              alt={shot.alt}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </div>
+                          {k === 0 ? (
+                            <p class="mp__label">{outsideLabel}</p>
+                          ) : (
+                            <p class="mp__label">
+                              <Icon name="key" />
+                              {insideLabel}
+                            </p>
+                          )}
+                        </div>
+                      ) : null,
+                    )}
                   </div>
                 </div>
                 <figcaption class="cap">
@@ -239,7 +241,7 @@ const profileImg = profile
     }
   }
 
-  /* ---------- Víctima: la app por fuera y por dentro (ilustración) ---------- */
+  /* ---------- Víctima: la app por fuera y por dentro (capturas reales) ---------- */
 
   .ill {
     display: grid;
@@ -295,80 +297,31 @@ const profileImg = profile
     margin-top: 40px;
   }
 
-  .mp__screen {
-    display: grid;
-    gap: 10px;
-    align-content: start;
-    min-height: 300px;
-    padding: 18px 16px;
+  /* El marco de celular de la landing con la captura real; abajo se funde con el papel de la app. */
+  .mp__shot {
+    position: relative;
+    overflow: hidden;
     border: 7px solid var(--noche);
     border-radius: 28px;
-    background: var(--papel);
-    color: var(--tinta);
-    font-size: 0.875rem;
-    line-height: 1.35;
+    background: #fbfcfe;
     box-shadow: var(--lift);
   }
 
-  /* La cuadrícula del cuaderno de ventas: es el disfraz real de la app, por eso se dibuja aquí. */
-  .mp__screen--grid {
-    background-color: #fffdf8;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cpath d='M0 .5H18M.5 0V18' stroke='%23ecebe8'/%3E%3C/svg%3E");
+  .mp__shot img {
+    display: block;
+    width: 100%;
+    height: auto;
   }
 
-  .mp__title {
-    font-family: var(--display);
-    font-size: var(--step-lead);
-    font-weight: 700;
-    letter-spacing: -0.015em;
-    line-height: 1.1;
+  .mp__shot::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 14%;
+    background: linear-gradient(to bottom, rgb(251 252 254 / 0), #fbfcfe 85%);
+    pointer-events: none;
   }
 
-  .mp__ledger {
-    display: grid;
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .mp__ledger li,
-  .mp__total {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .mp__ledger .num,
-  .mp__total .num {
-    white-space: nowrap;
-  }
-
-  .mp__total {
-    margin-top: 4px;
-    padding-top: 8px;
-    border-top: 2px solid var(--tinta);
-    font-weight: 700;
-  }
-
-  .mp__ev {
-    display: grid;
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .mp__ev li {
-    display: grid;
-    grid-template-columns: 18px 1fr;
-    gap: 8px;
-    padding: 8px;
-    border-radius: 8px;
-    background: var(--fondo-2);
-  }
-
-  .mp__ev :global(.icon),
   .mp__label :global(.icon) {
     width: 18px;
     height: 18px;
@@ -377,27 +330,6 @@ const profileImg = profile
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
-  }
-
-  .mp__found-title {
-    margin-top: 4px;
-    font-weight: 700;
-  }
-
-  .mp__found {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .mp__found li {
-    padding: 2px 8px;
-    border-radius: 6px;
-    background: var(--ocre-suave);
-    font-weight: 700;
   }
 
   .mp__label {
@@ -561,18 +493,9 @@ const profileImg = profile
       margin-top: 24px;
     }
 
-    .mp__screen {
-      min-height: 240px;
-      padding: 14px 10px;
+    .mp__shot {
       border-width: 5px;
       border-radius: 22px;
-      font-size: var(--step-small);
-    }
-
-    .mp__ev li {
-      grid-template-columns: 1fr;
-      gap: 4px;
-      padding: 6px;
     }
   }
 </style>

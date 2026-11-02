@@ -161,8 +161,9 @@ const t = d.lp.tour;
     display: grid;
   }
 
+  /* Solo al cambiar de pestaña: al cargar, el primer panel ya está quieto (y se lee entero). */
   @media (prefers-reduced-motion: no-preference) {
-    :global(.js) .tour__panel.is-active {
+    :global(.js) .tour[data-switched] .tour__panel.is-active {
       animation: panel-in 0.5s var(--ease) both;
     }
   }
@@ -203,6 +204,7 @@ const t = d.lp.tour;
     const tabs = [...tour.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
     const panels = tabs.map((t) => document.getElementById(t.getAttribute("aria-controls") ?? ""));
     const select = (i: number, focus: boolean) => {
+      tour.dataset.switched = "";
       tabs.forEach((t, j) => {
         const on = j === i;
         t.setAttribute("aria-selected", String(on));

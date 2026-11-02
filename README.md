@@ -74,6 +74,14 @@ victims never report for fear of retaliation.
     <td>Authenticity: AudioSeal, Video Seal, C2PA and Muse Spark look for signs of AI.</td>
     <td>The public map: districts and ranges, never addresses.</td>
   </tr>
+  <tr>
+    <td><img src="docs/screenshots/app-audio-recorrido.png" alt="Victim app: how a voice note was checked, step by step, with Muse Voice Transcribe, SpeechBrain ECAPA, AudioSeal, C2PA and Muse Spark 1.2" width="300" /></td>
+    <td><img src="docs/screenshots/app-foto-recorrido.png" alt="Victim app: a photo note where SAM 3.1 found a bullet and a handwritten note, and Muse Spark 1.3 read it" width="300" /></td>
+  </tr>
+  <tr>
+    <td>Victim app (Android emulator, live API): every note lists the steps that ran on it and the model behind each one.</td>
+    <td>A fictitious photo: SAM 3.1 finds the bullet and the note, Muse Spark 1.3 reads «LOS X. 48 HORAS».</td>
+  </tr>
 </table>
 
 More in [`docs/screenshots/`](docs/screenshots/).

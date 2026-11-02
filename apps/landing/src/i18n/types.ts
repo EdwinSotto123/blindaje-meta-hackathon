@@ -99,14 +99,6 @@ export interface Dict {
         inside: string;
         key: string;
         note: string;
-        ledgerTitle: string;
-        ledger: { item: string; amount: string }[];
-        totalLabel: string;
-        total: string;
-        evidence: { kind: "voice" | "phrase" | "image"; text: string }[];
-        foundLabel: string;
-        found: string[];
-        caseLabel: string;
       };
       shotOutsideAlt: string;
       shotInsideAlt: string;
@@ -333,7 +325,6 @@ export interface Dict {
       lead: string;
       steps: { label: string; title: string; text: string }[];
       listen: string;
-      pause: string;
       /** Nombre accesible de cada audio: original, disfrazada y revertida. */
       audioLabels: [string, string, string];
       similarity: string;
