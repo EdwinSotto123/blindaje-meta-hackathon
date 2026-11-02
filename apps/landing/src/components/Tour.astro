@@ -51,12 +51,10 @@ const t = d.lp.tour;
           <div class="tour__text">
             <h3 class="tour__title">{it.title}</h3>
             <p class="soft">{it.text}</p>
-            <span class="tag">{it.note}</span>
           </div>
           <Shot
             name={it.shot}
             alt={it.alt}
-            caption={it.caption}
             sizes="(min-width: 1100px) 780px, (min-width: 720px) 90vw, 92vw"
             widths={[640, 960, 1280, 1488]}
             class="tour__shot"
@@ -93,6 +91,15 @@ const t = d.lp.tour;
     gap: 14px;
     justify-items: start;
     align-content: start;
+  }
+
+  :global(.js) .tour__title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   .tour__title {

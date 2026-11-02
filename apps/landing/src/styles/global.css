@@ -50,14 +50,14 @@
   --mono: ui-monospace, "Cascadia Mono", Consolas, "SFMono-Regular", monospace;
 
   --step-small: 0.875rem;
-  --step-body: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
-  --step-lead: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
-  --step-head: clamp(1.875rem, 1.35rem + 2vw, 2.875rem);
-  --step-display: clamp(2.5rem, 1.6rem + 3.6vw, 4.5rem);
+  --step-body: clamp(0.9375rem, 0.92rem + 0.1vw, 1rem);
+  --step-lead: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --step-head: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  --step-display: clamp(2.125rem, 1.5rem + 2.6vw, 3.5rem);
 
   --margin: 20px;
   --gap: 16px;
-  --section-y: 80px;
+  --section-y: 56px;
   --radius: var(--r-l);
   --radius-sm: var(--r-m);
   --lift: var(--sombra-2);
@@ -67,14 +67,14 @@
   :root {
     --margin: 32px;
     --gap: 24px;
-    --section-y: 104px;
+    --section-y: 72px;
   }
 }
 
 @media (min-width: 1200px) {
   :root {
     --margin: 48px;
-    --section-y: 120px;
+    --section-y: 88px;
   }
 }
 
@@ -256,7 +256,7 @@ textarea {
 .sec-head {
   display: grid;
   gap: 16px;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 
 .sec-head .lead {
@@ -269,7 +269,7 @@ textarea {
     /* El título y la entrada empiezan en el mismo renglón, aunque la entrada sea larga. */
     align-items: baseline;
     column-gap: 64px;
-    margin-bottom: 64px;
+    margin-bottom: 44px;
   }
 }
 

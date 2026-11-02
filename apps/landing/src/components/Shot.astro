@@ -12,7 +12,8 @@ import { productShot, type ProductShot } from "../lib/screenshots";
 interface Props {
   name: ProductShot;
   alt: string;
-  caption: string;
+  /** Pie de la captura; si falta, la figura va sin pie. */
+  caption?: string;
   /** Pie para el recorte del celular, cuando muestra solo un detalle. */
   mobileCaption?: string;
   /** Atributo `sizes` de la imagen. */
@@ -62,9 +63,9 @@ const mob = mobile
         <span class="shot__cap-desk">{caption}</span>
         <span class="shot__cap-mob">{mobileCaption}</span>
       </figcaption>
-    ) : (
+    ) : caption ? (
       <figcaption>{caption}</figcaption>
-    )}
+    ) : null}
   </figure>
 )}
 

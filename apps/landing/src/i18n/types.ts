@@ -315,13 +315,9 @@ export interface Dict {
       items: {
         tab: string;
         title: string;
-        note: string;
         text: string;
         shot: ProductShot;
         alt: string;
-        caption: string;
-        /** Nota a mano sobre la captura (solo en pantallas anchas); decorativa. */
-        pen?: string;
       }[];
     };
     tech: {
