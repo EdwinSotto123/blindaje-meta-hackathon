@@ -290,7 +290,51 @@ export interface Dict {
     how: {
       title: string;
       lead: string;
-      steps: { title: string; text: string; tag: string }[];
+      /**
+       * El recorrido animado (Flow.astro): seis escenas, del audio al distrito. Las cifras son las del
+       * par A–B del demo en el motor de vinculación (eval/report.json, verificaciones a_demo_AB).
+       */
+      flow: {
+        railLabel: string;
+        scenes: { label: string; title: string; text: string; tags: string[] }[];
+        s1: { chips: [string, string, string]; seal: string };
+        s2: { transcript: string; highlight: string; bullet: string; note: string; fields: { k: string; v: string }[] };
+        s3: { rows: { name: string; raw: string; out: string }[] };
+        s4: {
+          caseA: string;
+          whereA: string;
+          caseB: string;
+          whereB: string;
+          index: string;
+          voice: string;
+          phone: string;
+          script: string;
+          photo: string;
+          voiceMatch: string;
+          scriptMatch: string;
+          phoneMismatch: string;
+          review: string;
+          probable: string;
+        };
+        s5: {
+          title: string;
+          status: string;
+          explain: string;
+          confirm: string;
+          dismiss: string;
+          confirmed: string;
+          audit: string;
+        };
+        s6: {
+          network: string;
+          sameVoice: string;
+          sameAccount: string;
+          below: string;
+          alertTitle: string;
+          alert: string;
+        };
+        note: string;
+      };
       demoTitle: string;
       demoLead: string;
     };

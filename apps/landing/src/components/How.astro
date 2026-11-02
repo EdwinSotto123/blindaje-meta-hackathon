@@ -1,10 +1,10 @@
 ---
 /**
- * Cómo funciona: cuatro pasos en fila, unidos por una línea que se completa al bajar, y la demo de
- * revisión, donde el visitante hace de revisora.
+ * Cómo funciona: el recorrido completo animado con el scroll (Flow.astro, seis escenas del audio al
+ * distrito) y la demo de revisión, donde el visitante hace de revisora.
  */
 import type { Dict } from "../i18n";
-import Icon from "./Icon.astro";
+import Flow from "./Flow.astro";
 import LinkDemo from "./LinkDemo.astro";
 
 interface Props {
@@ -13,7 +13,6 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const h = d.lp.how;
-const icons = ["lock", "wave", "link", "pin"] as const;
 ---
 
 <section class="section how" id="como-funciona" aria-labelledby="como-title">
@@ -25,27 +24,7 @@ const icons = ["lock", "wave", "link", "pin"] as const;
       <p class="lead soft">{h.lead}</p>
     </div>
 
-    <div class="steps-wrap">
-      <span class="steps__line" aria-hidden="true"></span>
-      <ol class="steps" role="list">
-        {h.steps.map((s, i) => (
-          <li class="step">
-            <span class="step__num num" aria-hidden="true">
-              {i + 1}
-            </span>
-            <div class="step__body">
-              <h3 class="step__title">
-                <span class="sr-only">{i + 1}. </span>
-                <Icon name={icons[i] ?? "check"} />
-                {s.title}
-              </h3>
-              <p class="soft">{s.text}</p>
-              <span class="tag">{s.tag}</span>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </div>
+    <Flow dict={d} />
 
     <div class="demo" data-reveal>
       <div class="demo__text">
@@ -59,152 +38,6 @@ const icons = ["lock", "wave", "link", "pin"] as const;
 </section>
 
 <style>
-  .steps-wrap {
-    position: relative;
-  }
-
-  .steps {
-    position: relative;
-    display: grid;
-    gap: 36px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  /* La línea que une los pasos: vertical en el celular, horizontal en pantallas anchas. */
-  .steps__line {
-    position: absolute;
-    left: 23px;
-    top: 24px;
-    bottom: 24px;
-    width: 2px;
-    background: var(--arcilla);
-    transform-origin: top;
-  }
-
-  .step {
-    position: relative;
-    display: grid;
-    grid-template-columns: 48px 1fr;
-    gap: 20px;
-    align-content: start;
-  }
-
-  .step__num {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--terracota);
-    color: #fff;
-    font-family: var(--display);
-    font-size: var(--step-lead);
-    font-weight: 700;
-    box-shadow: 0 0 0 6px var(--fondo);
-  }
-
-  .step__body {
-    display: grid;
-    gap: 10px;
-    align-content: start;
-    justify-items: start;
-    padding-top: 8px;
-  }
-
-  .step__title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.375rem;
-    letter-spacing: -0.015em;
-    line-height: 1.2;
-  }
-
-  .step__title :global(.icon) {
-    width: 22px;
-    height: 22px;
-    fill: none;
-    stroke: var(--terracota);
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  @media (min-width: 960px) {
-    .steps {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: var(--gap);
-    }
-
-    .steps__line {
-      left: 24px;
-      right: 24px;
-      top: 23px;
-      bottom: auto;
-      width: auto;
-      height: 2px;
-      transform-origin: left;
-    }
-
-    .step {
-      grid-template-columns: 1fr;
-      gap: 20px;
-      padding-right: 16px;
-    }
-
-    .step__body {
-      padding-top: 0;
-    }
-  }
-
-  /* Con movimiento permitido, la línea se completa mientras la sección cruza la pantalla. */
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .steps__line {
-        animation: line-grow linear both;
-        animation-timeline: view();
-        animation-range: entry 40% cover 50%;
-      }
-
-      @media (min-width: 960px) {
-        .steps__line {
-          animation-name: line-grow-x;
-        }
-      }
-
-      .step__num {
-        animation: num-pop linear both;
-        animation-timeline: view();
-        animation-range: entry 60% entry 100%;
-      }
-    }
-  }
-
-  @keyframes line-grow {
-    from {
-      transform: scaleY(0);
-    }
-  }
-
-  @keyframes line-grow-x {
-    from {
-      transform: scaleX(0);
-    }
-  }
-
-  @keyframes num-pop {
-    from {
-      transform: scale(0.6);
-      opacity: 0.4;
-    }
-  }
-
-  /* ---------- La demo ---------- */
-
-  /* La demo: el texto y el vínculo que se toca, separados del paso a paso por una línea. */
   .demo {
     display: grid;
     gap: 32px;
