@@ -25,7 +25,7 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
       <p class="lead soft">{p.lead}</p>
     </div>
 
-    <ul class="figs" role="list" data-reveal>
+    <ul class="figs hs" role="list" aria-label={`${first} ${second}`} data-reveal>
       {p.figures.slice(0, 3).map((f) => (
         <li class="fig">
           <span class="fig__value num">{f.value}</span>
@@ -41,7 +41,7 @@ const newTab = d.lang === "es" ? " (se abre en otra pestaña)" : " (opens in a n
 
     <div class="gaps" data-reveal>
       <h3 class="gaps__title">{d.lp.problem.gapsTitle}</h3>
-      <ul class="gaps__list" role="list">
+      <ul class="gaps__list hs" role="list" aria-label={d.lp.problem.gapsTitle}>
         {p.gaps.map((g) => (
           <li>
             <p class="gaps__name">{g.title}</p>

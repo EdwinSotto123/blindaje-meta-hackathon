@@ -23,7 +23,7 @@ const c = d.commitments;
       <p class="lead soft">{d.lp.trust.lead}</p>
     </div>
 
-    <ul class="lim" role="list" data-reveal>
+    <ul class="lim hs" role="list" aria-label={d.lp.trust.title} data-reveal>
       {c.items.map((it) => (
         <li class="lim__item">
           <span class="lim__icon">

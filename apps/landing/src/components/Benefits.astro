@@ -122,7 +122,7 @@ const [victim, ...others] = b.audiences;
       </article>
     )}
 
-    <div class="pair">
+    <div class="pair hs" role="group" aria-label={b.title}>
       {others.map((a) => (
         <article class="pair__item" aria-labelledby={`aud-${a.id}`} data-reveal>
           <h3 id={`aud-${a.id}`} class="head row__name">

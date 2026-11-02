@@ -58,5 +58,19 @@ const enUrl = new URL("/en/", site).href;
       {dict.skip}
     </a>
     <slot />
+    <script>
+      // Las tiras .hs que desbordan (en el celular) se pueden recorrer con el teclado.
+      const strips = Array.from(document.querySelectorAll<HTMLElement>(".hs"));
+      const sync = () => {
+        for (const el of strips) {
+          if (el.scrollWidth > el.clientWidth + 2) el.tabIndex = 0;
+          else el.removeAttribute("tabindex");
+        }
+      };
+      if (strips.length) {
+        sync();
+        new ResizeObserver(sync).observe(document.documentElement);
+      }
+    </script>
   </body>
 </html>

@@ -98,7 +98,7 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
       </div>
 
       <div class="va" data-voz>
-        <ol class="va__steps" role="list">
+        <ol class="va__steps hs" role="list" aria-label={v.title}>
           {v.steps.map((s, i) => (
             <li class="va__step" style={`--t0: ${[0.1, 1.6, 2.9][i]}s`}>
               <p class="va__label">
@@ -236,8 +236,10 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
             ))}
           </tbody>
         </table>
-        <p class="vt__note">{fill(v.note)}</p>
-        <p class="cap">{v.source}</p>
+        <div class="vt__aside">
+          <p class="vt__note">{fill(v.note)}</p>
+          <p class="cap">{v.source}</p>
+        </div>
       </div>
     </div>
   </section>
@@ -606,7 +608,25 @@ const per100 = (x: number) => (x === 0 ? "0" : x.toFixed(2));
   .vt-wrap {
     display: grid;
     gap: 14px;
-    max-width: 960px;
+  }
+
+  .vt__aside {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+
+  /* En pantallas anchas, la lectura de las cifras va al costado de la tabla: la sección no crece. */
+  @media (min-width: 1100px) {
+    .vt-wrap {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      column-gap: 56px;
+      align-items: start;
+    }
+
+    .vt__aside {
+      padding-top: 3.2rem;
+    }
   }
 
   .vt {

@@ -491,6 +491,7 @@ export const es: Dict = {
       cta: "Abrir el mapa",
       label: "Mapa esquemático de los 50 distritos de Lima y Callao con datos ficticios",
       legend: { sin_datos: "Sin datos o pocos casos", bajo: "Bajo", medio: "Medio", alto: "Alto" },
+      listToggle: "Ver los distritos en una lista",
       note: "Datos ficticios. Cada cuadro es un distrito en su posición aproximada.",
     },
     how: {
@@ -659,6 +660,8 @@ export const es: Dict = {
       ],
     },
     tech: {
+      tabsLabel: "Tecnología de Blindaje",
+      tabs: ["Meta Model API", "Modelos abiertos de Meta", "Seis agentes"],
       apiLabel: "Meta Model API",
       openLabel: "Modelos y librerías abiertas de Meta",
       agentsTitle: "Seis agentes, y siempre una persona que aprueba",

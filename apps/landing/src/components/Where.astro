@@ -93,18 +93,21 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
             </li>
           ))}
         </ul>
-        <ol class="where__list" role="list" data-where-list>
-          {listed.map((x) => (
-            <li data-id={x.id}>
-              <span class="swatch" data-nivel={DEMO[x.id]!.nivel} />
-              <span class="where__dname">{x.name}</span>
-              <span class="where__dval">
-                {levelName(DEMO[x.id]!.nivel)}
-                <span class="where__dnum">{DEMO[x.id]!.casos}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
+        <details class="where__more">
+          <summary class="where__more-btn">{w.listToggle}</summary>
+          <ol class="where__list" role="list" data-where-list>
+            {listed.map((x) => (
+              <li data-id={x.id}>
+                <span class="swatch" data-nivel={DEMO[x.id]!.nivel} />
+                <span class="where__dname">{x.name}</span>
+                <span class="where__dval">
+                  {levelName(DEMO[x.id]!.nivel)}
+                  <span class="where__dnum">{DEMO[x.id]!.casos}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </details>
         <figcaption class="cap">{w.note}</figcaption>
       </div>
     </figure>
@@ -245,6 +248,31 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
   .swatch[data-nivel="alto"] {
     border: 0;
     background: var(--lvl-alto);
+  }
+
+  /* La lista repite lo que dice el mapa: queda plegada, a un clic. */
+  .where__more {
+    margin-top: 4px;
+  }
+
+  .where__more-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 700;
+    color: var(--tinta);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .where__more-btn:focus-visible {
+    outline: 3px solid var(--terracota);
+    outline-offset: 2px;
+  }
+
+  .where__more[open] .where__more-btn {
+    margin-bottom: 8px;
   }
 
   .where__list {

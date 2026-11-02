@@ -117,6 +117,18 @@ const t = d.lp.tour;
     gap: 8px;
   }
 
+  /* En el celular, una sola fila que se desliza de lado en vez de tres renglones de pestañas. */
+  @media (max-width: 719px) {
+    :global(.js) .tour__tabs {
+      flex-wrap: nowrap;
+      margin-inline: calc(var(--margin) * -1);
+      padding: 2px var(--margin) 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      scroll-padding-inline: var(--margin);
+    }
+  }
+
   .tour__tab {
     flex: none;
     min-height: 44px;

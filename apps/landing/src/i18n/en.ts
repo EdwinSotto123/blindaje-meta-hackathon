@@ -491,6 +491,7 @@ export const en: Dict = {
       cta: "Open the map",
       label: "Schematic map of the 50 districts of Lima and Callao with fictitious data",
       legend: { sin_datos: "No data or few cases", bajo: "Low", medio: "Medium", alto: "High" },
+      listToggle: "See the districts as a list",
       note: "Fictitious data. Each square is a district in its approximate position.",
     },
     how: {
@@ -659,6 +660,8 @@ export const en: Dict = {
       ],
     },
     tech: {
+      tabsLabel: "Blindaje’s technology",
+      tabs: ["Meta Model API", "Meta’s open models", "Six agents"],
       apiLabel: "Meta Model API",
       openLabel: "Meta’s open models and libraries",
       agentsTitle: "Six agents, and always a person who approves",

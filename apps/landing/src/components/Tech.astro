@@ -1,8 +1,9 @@
 ---
 /**
- * Hecho con Meta AI: los modelos de Meta como una lista corta (nombre, id y su trabajo), los seis
- * agentes en una tabla con quién aprueba y, al final, lo que no es de Meta, dicho claro. El recorrido
- * de la evidencia está animado en Cómo funciona.
+ * Hecho con Meta AI, en tres pestañas: los modelos de la Meta Model API, los modelos y librerías
+ * abiertas de Meta (nombre, id y su trabajo) y los seis agentes con quién aprueba. Debajo, siempre a
+ * la vista, lo que no es de Meta. Sin JavaScript, las tres partes se ven una debajo de otra. El
+ * recorrido de la evidencia está animado en Cómo funciona.
  */
 import type { Dict } from "../i18n";
 import Icon from "./Icon.astro";
@@ -34,83 +35,196 @@ const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent:
       <p class="lead soft">{t.lead}</p>
     </div>
 
-    <div class="stack stack--models">
-      {groups.map((g, gi) => (
-        <div class="mlist" data-reveal>
-          <h3 class="stack__title">
-            <Icon name={gi === 0 ? "chip" : "file"} />
-            {g.label}
-          </h3>
-          <ul role="list">
-            {g.rows.map((m) => (
-              <li>
-                <p>
-                  <span class="mlist__name">{m.name}</span>{" "}
-                  <code class="mlist__id" translate="no">
-                    {m.id}
-                  </code>
-                </p>
-                <p class="mlist__use soft">{m.use}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-
-    <div class="stack stack--agents">
-      <div class="agents" data-reveal>
-        <h3 class="stack__title">
-          <Icon name="user" />
-          {lp.agentsTitle}
-        </h3>
-        <p class="soft small">{lp.agentsLead}</p>
-        <table class="agt">
-          <thead>
-            <tr>
-              <th scope="col">{cols.agent}</th>
-              <th scope="col">{cols.what}</th>
-              <th scope="col">{t.approves}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {t.agents.map((a) => (
-              <tr>
-                <th scope="row">{a.name}</th>
-                <td class="soft">{a.what}</td>
-                <td class="agt__ok">
-                  <Icon name="check" />
-                  {a.approves}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div class="tt" data-tabs>
+      <div class="tt__tabs" role="tablist" aria-label={lp.tabsLabel}>
+        {lp.tabs.map((label, i) => (
+          <button
+            type="button"
+            class="tt__tab"
+            role="tab"
+            id={`tt-tab-${i}`}
+            aria-controls={`tt-panel-${i}`}
+            aria-selected={i === 0 ? "true" : "false"}
+            tabindex={i === 0 ? 0 : -1}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
-      <div class="honest" data-reveal>
-        <Icon name="alert" />
-        <div>
-          <p class="honest__title">{d.tech.honestTitle}</p>
-          {d.tech.honest.map((h) => (
-            <p class="soft small">{h}</p>
-          ))}
+      {groups.map((g, gi) => (
+        <div
+          class:list={["tt__panel", gi === 0 && "is-active"]}
+          role="tabpanel"
+          id={`tt-panel-${gi}`}
+          aria-labelledby={`tt-tab-${gi}`}
+          tabindex="0"
+        >
+          <div class="mlist">
+            <h3 class="stack__title">
+              <Icon name={gi === 0 ? "chip" : "file"} />
+              {g.label}
+            </h3>
+            <ul role="list">
+              {g.rows.map((m) => (
+                <li>
+                  <p>
+                    <span class="mlist__name">{m.name}</span>{" "}
+                    <code class="mlist__id" translate="no">
+                      {m.id}
+                    </code>
+                  </p>
+                  <p class="mlist__use soft">{m.use}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
+      ))}
+
+      <div class="tt__panel" role="tabpanel" id="tt-panel-2" aria-labelledby="tt-tab-2" tabindex="0">
+        <div class="agents">
+          <h3 class="stack__title">
+            <Icon name="user" />
+            {lp.agentsTitle}
+          </h3>
+          <p class="soft small">{lp.agentsLead}</p>
+          <table class="agt">
+            <thead>
+              <tr>
+                <th scope="col">{cols.agent}</th>
+                <th scope="col">{cols.what}</th>
+                <th scope="col">{t.approves}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {t.agents.map((a) => (
+                <tr>
+                  <th scope="row">{a.name}</th>
+                  <td class="soft">{a.what}</td>
+                  <td class="agt__ok">
+                    <Icon name="check" />
+                    {a.approves}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="honest" data-reveal>
+      <Icon name="alert" />
+      <div>
+        <p class="honest__title">{d.tech.honestTitle}</p>
+        {d.tech.honest.map((h) => (
+          <p class="soft small">{h}</p>
+        ))}
       </div>
     </div>
   </div>
 </section>
 
 <style>
-  .tech__line {
+  /* ---------- Pestañas (como las de Producto) ---------- */
+
+  .tt {
+    display: grid;
+    gap: 28px;
+  }
+
+  .tt__tabs {
+    display: none;
+  }
+
+  /* Sin JavaScript, las tres partes se apilan con aire entre ellas. */
+  .tt__panel + .tt__panel {
+    margin-top: 48px;
+  }
+
+  .tt__panel:focus-visible {
+    outline: 3px solid var(--terracota);
+    outline-offset: 6px;
+    border-radius: 8px;
+  }
+
+  :global(.js) .tt__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tt__tab {
+    flex: none;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--ink-2);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+
+  .tt__tab:hover {
+    border-color: var(--ink-2);
+    color: var(--ink);
+  }
+
+  .tt__tab[aria-selected="true"] {
+    border-color: var(--tinta);
+    background: var(--tinta);
+    color: var(--fondo);
+  }
+
+  .tt__tab:focus-visible {
+    outline: 3px solid var(--terracota);
+    outline-offset: 2px;
+  }
+
+  :global(.js) .tt__panel {
+    display: none;
+  }
+
+  :global(.js) .tt__panel + .tt__panel {
+    margin-top: 0;
+  }
+
+  :global(.js) .tt__panel.is-active {
     display: block;
   }
 
-  .stack {
-    display: grid;
-    gap: 48px;
-    margin-top: 56px;
-    align-items: start;
+  /* En pantallas anchas, cada lista de modelos en dos columnas: la pestaña no crece hacia abajo. */
+  @media (min-width: 900px) {
+    .mlist ul {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 48px;
+    }
+  }
+
+  @media (max-width: 719px) {
+    :global(.js) .tt__tabs {
+      flex-wrap: nowrap;
+      margin-inline: calc(var(--margin) * -1);
+      padding: 2px var(--margin) 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+  }
+
+  .honest {
+    margin-top: 40px;
+  }
+
+  .tech__line {
+    display: block;
   }
 
   .stack__title,
@@ -267,18 +381,46 @@ const cols = d.lang === "es" ? { agent: "Agente", what: "Qué hace" } : { agent:
     margin-top: 3px;
     color: var(--cuenta-ink);
   }
-
-  @media (min-width: 900px) {
-    .stack--models {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      column-gap: 64px;
-    }
-  }
-
-  @media (min-width: 1100px) {
-    .stack--agents {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      column-gap: 64px;
-    }
-  }
 </style>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>("[data-tabs]")) {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const panels = tabs.map((t) => document.getElementById(t.getAttribute("aria-controls") ?? ""));
+    const select = (i: number, focus: boolean) => {
+      tabs.forEach((t, j) => {
+        const on = j === i;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        panels[j]?.classList.toggle("is-active", on);
+      });
+      if (focus) {
+        tabs[i]?.focus();
+        tabs[i]?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(i, false));
+      t.addEventListener("keydown", (e) => {
+        const last = tabs.length - 1;
+        const next =
+          e.key === "ArrowRight"
+            ? i === last
+              ? 0
+              : i + 1
+            : e.key === "ArrowLeft"
+              ? i === 0
+                ? last
+                : i - 1
+              : e.key === "Home"
+                ? 0
+                : e.key === "End"
+                  ? last
+                  : -1;
+        if (next < 0) return;
+        e.preventDefault();
+        select(next, true);
+      });
+    });
+  }
+</script>

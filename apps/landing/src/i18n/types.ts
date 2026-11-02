@@ -240,6 +240,8 @@ export interface Dict {
       cta: string;
       label: string;
       legend: { sin_datos: string; bajo: string; medio: string; alto: string };
+      /** Rótulo del desplegable con la lista de distritos (la misma información del mapa). */
+      listToggle: string;
       note: string;
     };
     problem: { gapsTitle: string };
@@ -323,6 +325,9 @@ export interface Dict {
       }[];
     };
     tech: {
+      /** Las tres pestañas de Hecho con Meta AI: API, modelos abiertos y agentes. */
+      tabsLabel: string;
+      tabs: [string, string, string];
       apiLabel: string;
       openLabel: string;
       agentsTitle: string;
