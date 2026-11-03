@@ -4,9 +4,11 @@
  *
  *  1. Recolecta  la evidencia entra a la app disfrazada (capturas reales del emulador) y se cifra
  *  2. Analiza    Muse Voice Transcribe, SAM 3.1 (las cajas reales de la foto del demo) y Muse Spark
- *  3. Señales    voz en 192 números (la huella ECAPA real de la voz 1), HMAC, vector de texto, DINOv2
- *  4. Compara    FAISS encuentra la voz de A; voz 0.85 y guion 0.40 se combinan en 0.91 (par A–B
- *                del demo, eval/report.json)
+ *  3. Señales    cada señal en píxeles, un píxel por número: la huella ECAPA de la nota B1, el HMAC,
+ *                el vector e5 del guion y el DINOv2 del recorte de la bala (vectores reales,
+ *                src/data/flujo-vectores.json de eval/py/blindaje_eval/flujo_vectores.py)
+ *  4. Compara    FAISS busca la voz de B en el índice: la de A (0.79) gana a siete voces de SLR73;
+ *                voz 0.85 y guion 0.40 se combinan en 0.91 (par A–B del demo, eval/report.json)
  *  5. Revisa     una revisora confirma; la auditoría queda encadenada
  *  6. Muestra    B–C por la cuenta …488 (p 0.95), la red R-001, el distrito y la alerta aprobada
  *
@@ -17,7 +19,7 @@
 import { getImage } from "astro:assets";
 import type { Dict } from "../i18n";
 import { productShot } from "../lib/screenshots";
-import demo from "../data/voz-demo.json";
+import vec from "../data/flujo-vectores.json";
 import mostrador from "../assets/flujo/mostrador.jpg";
 import bala from "../assets/flujo/bala.jpg";
 import Icon from "./Icon.astro";
@@ -49,27 +51,11 @@ const BOXES = [
   { x: 40.6, y: 53.0, w: 35.5, h: 38.1, label: f.s2.note, below: false },
 ];
 
-/** La huella ECAPA real de la voz 1 del demo (192 números), como barras desde una línea base. */
-const maxAbs = Math.max(...demo.huella.map(Math.abs));
-const voz = demo.huella.map((x, i) => {
-  const h = Math.max(0.8, (Math.abs(x) / maxAbs) * 20);
-  return { x: i * 2, y: x >= 0 ? 22 - h : 22, h };
-});
-
-/**
- * Vectores de texto y de imagen: solo la forma (los valores no se muestran ni se citan). Un patrón
- * fijo derivado del índice, para que el build sea siempre igual.
- */
-const forma = (n: number, seed: number) =>
-  Array.from({ length: n }, (_, i) => {
-    const v = Math.sin(i * 12.9898 + seed * 78.233) * 43758.5453;
-    return v - Math.floor(v);
-  });
-const e5 = forma(40, 3);
-const dino = forma(64, 7).map((v, i) => ({ x: i * 3, h: 3 + v * 17 }));
-
 const transcript = f.s2.transcript.split(f.s2.highlight);
-const vIndex = ["V-1", "V-2", "V-3", "V-4", "V-5", "V-6", "V-8", "V-9"];
+/** Las tres señales que son vectores, en píxeles (un píxel por número), y su tamaño en la imagen. */
+const pixels = [vec.voz, null, vec.guion, vec.foto].map((v, k) =>
+  v ? { src: v.png, w: k === 0 ? 32 : 48, h: k === 0 ? 6 : 8 } : null,
+);
 const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
 ---
 
@@ -250,31 +236,12 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
                   </span>
                   <span class="s3__arrow" />
                   <span class="s3__sig">
-                    {k === 0 && (
-                      <svg class="s3__vec" viewBox="0 0 384 44" preserveAspectRatio="none">
-                        {voz.map((b) => (
-                          <rect x={b.x} y={b.y} width="1.3" height={b.h} />
-                        ))}
-                      </svg>
-                    )}
-                    {k === 1 && (
+                    {pixels[k] ? (
+                      <img class="s3__px" src={pixels[k]!.src} width={pixels[k]!.w} height={pixels[k]!.h} alt="" />
+                    ) : (
                       <code class="s3__hmac" data-hmac="HMAC 7c1e 9a40 d2b8" translate="no">
                         HMAC 7c1e 9a40 d2b8
                       </code>
-                    )}
-                    {k === 2 && (
-                      <span class="s3__dots">
-                        {e5.map((v) => (
-                          <span style={`--v:${v.toFixed(2)}`} />
-                        ))}
-                      </span>
-                    )}
-                    {k === 3 && (
-                      <svg class="s3__vec" viewBox="0 0 192 22" preserveAspectRatio="none">
-                        {dino.map((b) => (
-                          <rect x={b.x} y={22 - b.h} width="2" height={b.h} />
-                        ))}
-                      </svg>
                     )}
                     <span class="s3__pill">{r.out}</span>
                   </span>
@@ -326,10 +293,17 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
                 <span class="s4__v s4__b s4__v--none">—</span>
 
                 <div class="s4__index">
-                  <p>{f.s4.index}</p>
+                  <p>
+                    <img class="s4__px" src={vec.sonda.png} width="16" height="12" alt="" />
+                    {f.s4.index}
+                  </p>
                   <ul role="list">
-                    {vIndex.map((x) => (
-                      <li class:list={[x === "V-3" && "is-hit"]}>{x}</li>
+                    {vec.indice.map((x) => (
+                      <li class:list={[x.caso_a && "is-hit"]}>
+                        <img class="s4__px" src={x.png} width="16" height="12" alt="" />
+                        <span class="s4__vid">{x.id}</span>
+                        <span class="s4__cos num">{x.coseno.toFixed(2)}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -903,16 +877,15 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
     min-width: 0;
   }
 
-  .s3__vec {
+  /* Un píxel por número: la imagen es chica (32 x 6 o 48 x 8) y se agranda sin suavizar. */
+  .s3__px {
     flex: 1;
     min-width: 0;
-    height: 2.4em;
-  }
-
-  .s3__vec rect {
-    fill: var(--cb);
-    transform-box: fill-box;
-    transform-origin: bottom;
+    width: 100%;
+    height: 2.6em;
+    border: 1px solid var(--cb);
+    border-radius: 3px;
+    image-rendering: pixelated;
   }
 
   .s3__hmac {
@@ -925,24 +898,10 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
     text-overflow: ellipsis;
   }
 
-  .s3__dots {
-    flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    min-width: 0;
-  }
-
-  .s3__dots span {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--cb);
-    opacity: calc(0.25 + var(--v) * 0.75);
-  }
-
   .s3__pill {
     flex: none;
+    min-width: 4.6em;
+    text-align: center;
     padding: 0.2em 0.65em;
     border: 1.5px solid var(--cb);
     border-radius: 999px;
@@ -1115,8 +1074,9 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
   }
 
   /* El índice de FAISS: aparece sobre el medio, encuentra V-3 y deja paso a las líneas. */
+  /* Mientras busca, el índice ocupa el lugar del caso A (que todavía no aparece). */
   .s4__index {
-    grid-column: 3;
+    grid-column: 2 / span 2;
     grid-row: 2 / span 4;
     align-self: stretch;
     display: grid;
@@ -1130,9 +1090,26 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
   }
 
   .s4__index p {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
     margin: 0;
     font-weight: 700;
-    text-align: center;
+  }
+
+  .s4__index p .s4__px {
+    width: 2.6em;
+  }
+
+  /* Las huellas en el orden de la de B (V-7): la que se le parece repite su degradado. */
+  .s4__px {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    border-radius: 3px;
+    image-rendering: pixelated;
   }
 
   .s4__index ul {
@@ -1145,12 +1122,34 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
   }
 
   .s4__index li {
-    padding: 0.2em 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.25em 0.3em;
+    padding: 0.3em;
     border-radius: 6px;
     background: var(--fondo-2);
-    font-size: 0.86em;
+    font-size: 0.8em;
     font-weight: 700;
-    text-align: center;
+  }
+
+  .s4__index li .s4__px {
+    grid-column: 1 / -1;
+  }
+
+  .s4__vid,
+  .s4__cos {
+    white-space: nowrap;
+  }
+
+  .s4__cos {
+    color: var(--ink-2);
+    font-weight: 400;
+    text-align: end;
+  }
+
+  .s4__index li.is-hit .s4__cos {
+    color: var(--voz-borde);
+    font-weight: 700;
   }
 
   .s4__index li.is-hit {
@@ -1791,8 +1790,7 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
       const proxy = { p: 0 };
       gsap.set(q(".s3__raw"), { autoAlpha: 0, x: -10 });
       gsap.set(q(".s3__arrow"), { scaleX: 0 });
-      gsap.set(q(".s3__vec rect"), { scaleY: 0 });
-      gsap.set(q(".s3__dots span"), { scale: 0 });
+      gsap.set(q(".s3__px"), { clipPath: "inset(0 100% 0 0)" });
       gsap.set(q(".s3__pill"), { autoAlpha: 0, scale: 0.8 });
       if (hmac) hmac.textContent = scramble(hmacTarget, 0);
       q(".s3__row").forEach((row, k) => {
@@ -1802,8 +1800,14 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
           { scaleX: 1, duration: 0.4 },
           ">-0.1",
         );
-        if (k === 0 || k === 3)
-          tl.to(s(".s3__vec rect"), { scaleY: 1, duration: 0.6, stagger: { amount: 0.6 } }, ">-0.1");
+        // Los vectores aparecen columna por columna, como se escriben sus números.
+        const px = s(".s3__px")[0];
+        if (px)
+          tl.to(
+            px,
+            { clipPath: "inset(0 0% 0 0)", duration: 0.8, ease: `steps(${px.getAttribute("width") ?? 32})` },
+            ">-0.1",
+          );
         if (k === 1 && hmac)
           tl.to(
             proxy,
@@ -1817,7 +1821,6 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
             },
             ">-0.1",
           );
-        if (k === 2) tl.to(s(".s3__dots span"), { scale: 1, duration: 0.4, stagger: { amount: 0.5 } }, ">-0.1");
         tl.to(s(".s3__pill"), { autoAlpha: 1, scale: 1, duration: 0.4 }, ">-0.2");
       });
       tl.addLabel("s2");

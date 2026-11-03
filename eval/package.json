@@ -15,6 +15,7 @@
     "demo:audio": "uv run --project py python -I -m blindaje_eval.tts_demo",
     "demo:fotos": "tsx src/fotos-colcha.ts",
     "demo:fotos:parches": "uv run --project py python -I -m blindaje_eval.fotos_huella",
+    "demo:flujo:vectores": "uv run --project py python -I -m blindaje_eval.flujo_vectores",
     "demo:voz:huella": "uv run --project py python -I -m blindaje_eval.voz_huella",
     "whatsapp": "uv run --project py python -I -m blindaje_eval.whatsapp"
   },

@@ -26,6 +26,8 @@ apps/landing/src/data/voz-demo.json
 apps/landing/src/data/fotos-demo.json
 # Datos de la voz en píxeles (espectrogramas, huellas y matrices), de eval/py/blindaje_eval/voz_huella.py
 apps/landing/src/data/voz-huella.json
+# Vectores reales en píxeles de las escenas Señales y Compara, de eval/py/blindaje_eval/flujo_vectores.py
+apps/landing/src/data/flujo-vectores.json
 services/ml/
 eval/py/
 infra/
