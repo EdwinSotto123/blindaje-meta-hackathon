@@ -1,25 +1,31 @@
 ---
 /**
- * El pitch: diez escenas a pantalla entera que avanzan con el scroll, con datos reales del proyecto.
+ * El pitch: catorce escenas a pantalla entera que avanzan con el scroll, con datos reales del proyecto.
  *
- *  0. Blindaje       el logo se arma con píxeles (solo, al cargar)
- *  1. El problema    13,892 denuncias caen sobre Lima, cada una sola (Ministerio Público, ene-jul 2026;
- *                    reparto por distrito fiscal de Lima: Este 1,806, Sur 1,346, Norte 1,305, Centro 1,178)
- *  2. Las víctimas   tres números distintos mandan audios, la foto de la bala y mensajes a tres víctimas
- *                    (casos ficticios A, B y C del demo: src/data/casos-demo.json)
- *  3. Escucha        la onda del audio, su espectrograma y su huella ECAPA de 192 números (voz-huella.json)
- *  4. Desdistorsiona la voz disfrazada +4 y el barrido de tono hasta −5 (cosenos reales: 0.18 a 0.49)
- *  5. Compara        el radar de voces: distancia al centro = 1 − coseno con la voz de B (pitch.json:
- *                    caso A 0.79, caso C 0.50, víctima 0.27, 28 voces de SLR73)
- *  6. Mira           las cajas de SAM 3.1 sobre la foto del caso A y los parches de DINOv2 de dos fotos del
- *                    mismo cuarto (fotos-demo.json)
- *  7. Lee            la ficha que Muse Spark 1.3 sacó de verdad de cada caso (pitch.json, fichas)
- *  8. Une            la red: casos e identificadores compartidos, y una persona que confirma
- *  9. Protege        el distrito en el mapa y la alerta aprobada
+ *  0. Blindaje        el logo se arma con píxeles (solo, al cargar)
+ *  1. El problema     13,892 denuncias caen sobre Lima, cada una sola (Ministerio Público, ene-jul 2026;
+ *                     reparto por distrito fiscal de Lima: Este 1,806, Sur 1,346, Norte 1,305, Centro 1,178)
+ *  2. Las víctimas    tres números distintos mandan audios, la foto de la bala y mensajes a tres víctimas
+ *                     (casos ficticios A, B y C del demo: src/data/casos-demo.json)
+ *  3. Escucha         la onda del audio, su espectrograma y su huella ECAPA de 192 números (voz-huella.json)
+ *  4. Desdistorsiona  la voz disfrazada +4 y el barrido de tono hasta −5 (cosenos reales: 0.18 a 0.49)
+ *  5. Compara voces   el radar: distancia al centro = 1 − coseno con la voz de B (pitch.json, radar)
+ *  6. Mira            las cajas de SAM 3.1 sobre la foto del caso A y los parches de DINOv2 (fotos-demo.json)
+ *  7. Lee             Muse Spark lee la evidencia del caso A y llena la ficha; de dónde sale cada dato
+ *                     (pitch.json, lee y casos: la ficha real de la evaluación)
+ *  8. Números         cada teléfono y cuenta, normalizado y cifrado con HMAC como el pipeline (con una
+ *                     clave de demostración); 7 contactos distintos, 5 casos con la misma cuenta
+ *  9. Patrones        las frases firma que se repiten, el vector e5 del resumen y la x del MO de 496
+ *                     pares de guiones ficticios (pitch.json, patrones)
+ * 10. Combina         voz 0.85 y guion 0.40 dan 0.91; la misma cuenta, 0.95 (pitch.json, combina)
+ * 11. Une             la red: casos e identificadores compartidos, y una persona que confirma
+ * 12. Vigila          14 días en San Juan de Lurigancho: 5 casos de «Los X» encienden la alerta
+ * 13. Protege         el distrito en el mapa y la alerta aprobada
  *
+ * Los datos de texto los arma eval/src/pitch-texto.ts y el radar, eval/py/blindaje_eval/pitch_datos.py.
  * Con JavaScript y movimiento, la sección se fija y el scroll avanza las escenas (un lienzo dibuja todo;
  * el texto de cada escena es HTML). Sin movimiento, cada escena se ve quieta con su dibujo final. Sin
- * JavaScript, el texto de las diez escenas, una debajo de otra.
+ * JavaScript, el texto de las escenas, una debajo de otra.
  */
 import { getImage } from "astro:assets";
 import type { Dict } from "../i18n";
@@ -504,16 +510,42 @@ const config = JSON.stringify({
   };
   type Pieza = { tipo: "audio" | "texto" | "imagen"; texto?: string; onda?: number[] };
   type Casos = { casos: { caso: string; contacto: string; piezas: Pieza[] }[] };
-  type Ficha = {
+  type Marca = { a: number; b: number; kind: string };
+  type CasoFicha = {
+    tipo_amenaza: string | null;
     monto_soles: number | null;
     periodicidad: string | null;
     plazo: string | null;
-    cuentas: { tipo: string; valor: string }[];
+    canal_pago: string | null;
     grupo: string | null;
+    frases: string[];
+    identificadores: { tipo: string; valor: string; rol: string }[];
+    fuentes: string[];
   };
+  type Par = { par: string; coseno: number; frases: string[]; canal: boolean; grupo: boolean; x: number; p: number };
+  type Señales = { voz: number; guion: number; cuenta: number; total: number };
   type PitchData = {
     radar: { caso_a: number; caso_c: number; victima_a: number; slr73: number[] };
-    fichas: { casos: Record<string, Ficha> };
+    lee: { piezas: { label: string; tipo: string; texto: string; marcas: Marca[] }[] };
+    casos: Record<string, CasoFicha>;
+    numeros: {
+      items: { caso: string; rol: string; valor: string; normalizado: string; ref: string; ultimos: string }[];
+    };
+    patrones: {
+      frases: { frase: string; casos: string[] }[];
+      coseno_media: number;
+      vector_a: number[] | null;
+      vector_b: number[] | null;
+      x_mismo: number[];
+      x_distintos: number[];
+      cal: { a: number; b: number; p_max: number };
+      pares: Par[];
+    };
+    combina: { ab: Señales; bc: Señales; revisar: number; probable: number };
+    vigia: {
+      ventana: number;
+      casos: { caso: string; zona: string; dia: number; grupo: string | null }[];
+    };
   };
   type VozData = {
     disfraz: number;
@@ -1341,130 +1373,621 @@ const config = JSON.stringify({
       }
     };
 
-    /** 7. Lee: la ficha que Muse Spark sacó de cada caso, y la misma cuenta en B y C. */
-    const sceneRead = (g: G, R: Rect, u: number) => {
-      const casos = D.casos?.casos ?? [];
-      const fichas = D.pitch?.fichas.casos ?? {};
-      const small = R.w < 520;
-      const fs = small ? 10 : 13;
-      const rowH = R.h / 3;
-      const leftW = R.w * (small ? 0.44 : 0.46);
-      const midX = R.x + leftW + R.w * 0.07;
-      const cardX = R.x + leftW + R.w * 0.14;
-      const cardW = R.w - (cardX - R.x);
-      const acc: { x: number; y: number; w: number }[] = [];
-      casos.forEach((cs, i) => {
-        const y0 = R.y + i * rowH + 6;
-        const msg = cs.piezas.find((p) => p.tipo === "texto")?.texto ?? "";
-        const a = ease(seg(u, i * 0.07, i * 0.07 + 0.15));
-        g.globalAlpha = a;
-        txt(g, fill(L.caseLabel, { k: cs.caso }), R.x, y0 + 8, fs + 1, c(COL.cream), 700);
-        // El mensaje, en una burbuja a su medida.
-        font(g, fs + 1, 400);
-        const lines = Math.ceil(g.measureText(msg).width / (leftW - 24)) + 1;
-        const bh = Math.min(rowH - 34, lines * (fs + 1) * 1.36 + 18);
-        g.fillStyle = "#f4efe8";
-        g.beginPath();
-        g.roundRect(R.x, y0 + 20, leftW, bh, 10);
-        g.fill();
-        wrap(g, msg, R.x + 12, y0 + 36, leftW - 24, fs + 1, "#2a1e17", 400, 1.36);
-        g.globalAlpha = 1;
-        // Muse Spark lee.
-        const beam = seg(u, 0.25 + i * 0.05, 0.38 + i * 0.05);
-        if (beam > 0) {
-          g.strokeStyle = c(COL.frase, 0.8);
-          g.lineWidth = 1.5;
-          g.beginPath();
-          g.moveTo(R.x + leftW, y0 + rowH / 2);
-          g.lineTo(lerp(R.x + leftW, cardX - 6, beam), y0 + rowH / 2);
-          g.stroke();
+    /** Colores de cada tipo de dato que lee Muse Spark. */
+    const KIND: Record<string, string> = {
+      monto: "231 173 69",
+      plazo: "141 187 230",
+      cuenta: "111 207 142",
+      grupo: "236 159 208",
+      frase: "190 165 255",
+    };
+
+    /** Texto en líneas que recuerda dónde quedó cada palabra (para marcar trozos y saber qué ya se leyó). */
+    const layout = (g: G, s: string, maxW: number, size: number, maxLines = 99) => {
+      font(g, size, 400);
+      const space = g.measureText(" ").width;
+      const words: { w: string; a: number; b: number; x: number; line: number; width: number }[] = [];
+      let x = 0;
+      let line = 0;
+      let i = 0;
+      for (const w of s.split(" ")) {
+        const width = g.measureText(w).width;
+        if (x > 0 && x + width > maxW) {
+          line++;
+          x = 0;
         }
-        // La ficha.
-        const f = fichas[cs.caso];
-        if (!f) return;
-        const cuenta = f.cuentas[0]?.valor ?? "";
-        const fields: [string, string, boolean][] = [
-          [
-            L.amount,
-            f.monto_soles
-              ? `S/ ${f.monto_soles.toLocaleString("en-US")}${f.periodicidad === "semanal" ? ` ${L.weekly}` : ""}`
-              : "",
-            false,
-          ],
-          [L.deadline, f.plazo ?? "", false],
-          [L.account, cuenta ? `Yape ${cuenta}` : "", true],
-          [L.group, f.grupo ?? "", false],
-        ];
-        const shown = fields.filter((x) => x[1]);
-        const colW = cardW / 2;
-        shown.forEach(([k, v, isAcc], j) => {
-          const fa = ease(seg(u, 0.4 + i * 0.06 + j * 0.03, 0.5 + i * 0.06 + j * 0.03));
-          if (fa <= 0) return;
-          // En pantallas chicas, un dato por línea: "Monto S/ 2,000".
-          const x = small ? cardX : cardX + (j % 2) * colW;
-          const y = small ? y0 + 26 + j * (fs + 9) : y0 + 22 + Math.floor(j / 2) * (rowH * 0.36);
-          g.globalAlpha = fa;
-          let vx = x;
-          let vy2 = y + fs + 4;
-          if (small) {
-            txt(g, k, x, y, fs - 1.5, c(COL.dim), 400);
-            font(g, fs - 1.5, 400);
-            vx = x + g.measureText(k).width + 5;
-            vy2 = y;
-          } else txt(g, k, x, y, fs - 1.5, c(COL.dim), 400);
-          txt(g, v, vx, vy2, fs + 0.5, c(COL.cream), 700);
-          g.globalAlpha = 1;
-          if (isAcc && cuenta === "900 000 202") {
-            font(g, fs + 0.5, 700);
-            acc.push({ x: vx, y: vy2, w: g.measureText(v).width });
-          }
-        });
-      });
-      // La misma cuenta en B y C.
-      const m = seg(u, 0.72, 0.86);
-      if (m > 0 && acc.length === 2) {
-        acc.forEach((a) => {
-          g.strokeStyle = c(COL.id, m);
-          g.lineWidth = 1.5;
-          g.strokeRect(a.x - 5, a.y - 11, a.w + 10, 22);
-        });
-        const [a, b] = acc as [(typeof acc)[0], (typeof acc)[0]];
-        const x = Math.max(a.x + a.w, b.x + b.w) + 18;
-        g.strokeStyle = c(COL.id, m);
-        g.beginPath();
-        g.moveTo(a.x + a.w + 5, a.y);
-        g.lineTo(x, a.y);
-        g.lineTo(x, lerp(a.y, b.y, m));
-        g.lineTo(b.x + b.w + 5, b.y);
-        g.stroke();
-        if (m >= 1) pill(g, L.sameAccount, Math.min(R.x + R.w - 50, x), (a.y + b.y) / 2, COL.id, fs, true);
+        if (line >= maxLines) break;
+        words.push({ w, a: i, b: i + w.length, x, line, width });
+        x += width + space;
+        i += w.length + 1;
       }
-      // Muse Spark, entre los mensajes y las fichas.
-      const sa = ease(seg(u, 0.18, 0.28));
-      if (sa > 0) {
-        g.globalAlpha = sa;
-        g.save();
-        g.translate(midX, R.y + R.h / 2);
-        g.rotate(-Math.PI / 2);
-        txt(g, "Muse Spark 1.3", 0, 0, fs, c(COL.frase), 700, "center");
-        g.restore();
+      return { words, lines: Math.min(maxLines, line + 1) };
+    };
+
+    /** 7. Lee: Muse Spark lee la evidencia del caso A y cada dato vuela a su fila de la ficha. */
+    const sceneRead = (g: G, R: Rect, u: number) => {
+      const lee = D.pitch?.lee;
+      const casos = D.pitch?.casos;
+      if (!lee || !casos) return;
+      const f = casos.A!;
+      const small = R.w < 560;
+      const fs = small ? 10.5 : 12.5;
+      const lh = fs * 1.42;
+      const colW = small ? R.w : R.w * 0.56;
+      const fichaX = small ? R.x : R.x + colW + R.w * 0.05;
+      const fichaW = small ? R.w : R.w - colW - R.w * 0.05;
+      // La evidencia: cada pieza con su etiqueta y su texto; lo leído se enciende.
+      g.globalAlpha = ease(seg(u, 0, 0.06));
+      txt(g, L.evidence, R.x, R.y + 6, fs + 1, c(COL.cream), 700);
+      g.globalAlpha = 1;
+      let y = R.y + 26;
+      const total = lee.piezas.reduce((n, p) => n + p.texto.length, 0);
+      const read = seg(u, 0.04, 0.55) * total;
+      let offset = 0;
+      const flying: { x: number; y: number; kind: string; t: number; text: string }[] = [];
+      for (const pz of lee.piezas) {
+        const lay = layout(g, pz.texto, colW - 20, fs, small ? 3 : 6);
+        const h = lay.lines * lh + 30;
+        if (y + h > R.y + (small ? R.h * 0.5 : R.h * 0.86)) break;
+        g.fillStyle = "rgb(255 255 255 / 0.05)";
+        g.beginPath();
+        g.roundRect(R.x, y, colW, h, 8);
+        g.fill();
+        txt(
+          g,
+          `${pz.label}, ${pz.tipo === "audio" ? L.voiceNote : L.message}`,
+          R.x + 10,
+          y + 12,
+          fs - 2,
+          c(COL.dim),
+          700,
+        );
+        for (const m of pz.marcas) {
+          const ws = lay.words.filter((w) => w.b > m.a && w.a < m.b);
+          if (!ws.length) continue;
+          const seen = read >= offset + m.b;
+          if (!seen) continue;
+          for (const w of ws) {
+            g.fillStyle = c(KIND[m.kind] ?? COL.dim, 0.28);
+            g.fillRect(R.x + 10 + w.x - 2, y + 22 + w.line * lh, w.width + 4, lh - 2);
+          }
+          const w0 = ws[0]!;
+          flying.push({
+            x: R.x + 10 + w0.x,
+            y: y + 22 + w0.line * lh + lh / 2,
+            kind: m.kind,
+            t: (offset + m.b) / total,
+            text: pz.texto.slice(m.a, m.b),
+          });
+        }
+        for (const w of lay.words) {
+          const on = read >= offset + w.b;
+          txt(g, w.w, R.x + 10 + w.x, y + 22 + w.line * lh + lh / 2, fs, on ? c(COL.cream) : c(COL.dim, 0.45));
+        }
+        offset += pz.texto.length;
+        y += h + 10;
+      }
+      // La cabeza de lectura de Muse Spark.
+      const rd = seg(u, 0.04, 0.55);
+      if (rd > 0 && rd < 1) pill(g, "Muse Spark 1.3", R.x + colW * rd, R.y + 6, COL.frase, fs - 2);
+      // La ficha.
+      const fy = small ? R.y + R.h * 0.53 : R.y + 26;
+      const rows: [string, string, string | null][] = [
+        [L.fields.threat, f.tipo_amenaza ? (L.threats[f.tipo_amenaza] ?? f.tipo_amenaza) : "", null],
+        [
+          L.fields.amount,
+          f.monto_soles
+            ? `S/ ${f.monto_soles.toLocaleString("en-US")} ${f.periodicidad ? (L.periods[f.periodicidad] ?? "") : ""}`
+            : "",
+          "monto",
+        ],
+        [L.fields.deadline, f.plazo ?? "", "plazo"],
+        [L.fields.channel, f.canal_pago === "yape" ? "Yape" : (f.canal_pago ?? ""), null],
+        [L.fields.payment, f.identificadores.find((i) => i.rol === "cobro")?.valor ?? "", "cuenta"],
+        [L.fields.contact, f.identificadores.find((i) => i.rol === "contacto")?.valor ?? "", null],
+        [L.fields.group, f.grupo ?? "", "grupo"],
+        [
+          L.fields.phrases,
+          f.frases
+            .slice(0, small ? 1 : 3)
+            .map((x) => `«${x}»`)
+            .join("  "),
+          "frase",
+        ],
+        [L.fields.sources, f.fuentes.join(", "), null],
+      ];
+      const rowH = small ? (R.h * 0.44) / rows.length : Math.min(46, (R.h - 70) / rows.length);
+      const appear = ease(seg(u, 0.02, 0.1));
+      g.globalAlpha = appear;
+      g.fillStyle = "rgb(255 255 255 / 0.06)";
+      g.beginPath();
+      g.roundRect(fichaX, fy - 4, fichaW, rows.length * rowH + 36, 10);
+      g.fill();
+      g.strokeStyle = c(COL.frase, 0.5);
+      g.lineWidth = 1;
+      g.stroke();
+      txt(g, L.ficha, fichaX + 12, fy + 10, fs, c(COL.frase), 700);
+      if (!small) txt(g, L.strict, fichaX + 12, fy + 26, fs - 2.5, c(COL.dim), 400);
+      g.globalAlpha = 1;
+      rows.forEach(([k, v, kind], i) => {
+        const ry = fy + 34 + i * rowH + (small ? 0 : 8);
+        // Cada fila se llena cuando llega su dato (o al final de la lectura, si no tiene marca).
+        const arrive = kind ? flying.filter((x) => x.kind === kind).map((x) => x.t)[0] : undefined;
+        const t0 = arrive !== undefined ? 0.04 + arrive * 0.51 + 0.06 : 0.58 + i * 0.015;
+        const a = ease(seg(u, t0, t0 + 0.05));
+        txt(g, k, fichaX + 12, ry, fs - 2, c(COL.dim, Math.max(0.5, a)), 400);
+        if (a > 0) {
+          g.globalAlpha = a;
+          const vx = fichaX + (small ? 90 : 108);
+          wrap(g, v, vx, ry, fichaW - (vx - fichaX) - 10, fs - 0.5, kind ? c(KIND[kind]!) : c(COL.cream), 700, 1.25, 2);
+          g.globalAlpha = 1;
+        }
+      });
+      // Los datos vuelan del texto a su fila.
+      for (const fl of flying) {
+        const i = rows.findIndex((r) => r[2] === fl.kind);
+        if (i < 0) continue;
+        const t0 = 0.04 + fl.t * 0.51;
+        const k = seg(u, t0, t0 + 0.07);
+        if (k <= 0 || k >= 1) continue;
+        const tx = fichaX + (small ? 90 : 108);
+        const ty = fy + 34 + i * rowH + (small ? 0 : 8);
+        const e = inout(k);
+        g.globalAlpha = 1 - k * 0.3;
+        pill(
+          g,
+          fl.text.length > 22 ? `${fl.text.slice(0, 20)}…` : fl.text,
+          lerp(fl.x, tx, e) + 30,
+          lerp(fl.y, ty, e) - Math.sin(e * Math.PI) * 30,
+          KIND[fl.kind]!,
+          fs - 2,
+          true,
+        );
+        g.globalAlpha = 1;
+      }
+      // Y la ficha de cada caso: siete tarjetas chicas.
+      const cards = seg(u, 0.72, 0.9);
+      if (cards > 0 && !small) {
+        const ids = Object.keys(casos);
+        const cw = (R.w - (ids.length - 1) * 8) / ids.length;
+        const cy = R.y + R.h - 58;
+        txt(g, L.otherFichas, R.x, cy - 16, fs - 1, c(COL.dim), 700);
+        ids.forEach((id, i) => {
+          const a = ease(seg(cards, (i / ids.length) * 0.6, (i / ids.length) * 0.6 + 0.4));
+          if (a <= 0) return;
+          const cf = casos[id]!;
+          const cx = R.x + i * (cw + 8);
+          g.globalAlpha = a;
+          g.fillStyle = "#f4efe8";
+          g.beginPath();
+          g.roundRect(cx, cy, cw, 52, 8);
+          g.fill();
+          txt(g, id, cx + 8, cy + 14, fs + 1, "#2a1e17", 800, "left", display);
+          txt(
+            g,
+            cf.monto_soles ? `S/ ${cf.monto_soles.toLocaleString("en-US")}` : "",
+            cx + 24,
+            cy + 14,
+            fs - 2,
+            "#2a1e17",
+            700,
+          );
+          const cobro = cf.identificadores.find((x) => x.rol === "cobro")?.valor ?? "";
+          txt(
+            g,
+            cobro ? `…${cobro.slice(-3)}` : "",
+            cx + 8,
+            cy + 36,
+            fs - 1.5,
+            cobro.endsWith("202") ? "#1e6b40" : "#5a4a40",
+            800,
+          );
+          g.globalAlpha = 1;
+        });
+      }
+    };
+
+    /** Un texto que se va cifrando: los caracteres se vuelven hex de a poco (siempre igual para un mismo avance). */
+    const scramble = (from: string, to: string, p: number) => {
+      const hex = "0123456789abcdef";
+      const n = Math.max(from.length, to.length);
+      let out = "";
+      for (let i = 0; i < n; i++) {
+        if (i / n < p) out += to[i] ?? "";
+        else out += from[i] ? hex[(i * 7 + Math.floor(p * 31)) % 16] : "";
+      }
+      return out;
+    };
+
+    /** 8. Números: normalizar, cifrar con HMAC y cruzar los códigos. */
+    const sceneNumbers = (g: G, R: Rect, u: number) => {
+      const items = D.pitch?.numeros.items;
+      if (!items) return;
+      const small = R.w < 560;
+      const fs = small ? 9.5 : 12.5;
+      const casos = [...new Set(items.map((x) => x.caso))];
+      const rowH = Math.min(small ? 30 : 48, (R.h - 110) / casos.length);
+      const x0 = R.x;
+      const xC = R.x + (small ? 26 : 44);
+      const colW = (R.w - (xC - R.x) - (small ? 54 : 150)) / 2;
+      const xP = xC + colW + 12;
+      const top = R.y + 40;
+      const phase = u < 0.3 ? 0 : u < 0.5 ? 1 : 2;
+      const heads = [L.fields.contact, L.fields.payment];
+      const sub = [L.normalized, L.normalized, L.hmac][phase]!;
+      g.globalAlpha = ease(seg(u, 0, 0.06));
+      heads.forEach((h, i) => {
+        const x = i === 0 ? xC : xP;
+        txt(g, h, x, R.y + 6, fs + 1, c(COL.cream), 700);
+        txt(g, phase === 0 ? "" : sub, x, R.y + 24, fs - 2, c(phase === 2 ? COL.id : COL.dim), 700);
+      });
+      g.globalAlpha = 1;
+      const shared = new Map<string, number>();
+      for (const it of items) if (it.rol === "cobro") shared.set(it.ref, (shared.get(it.ref) ?? 0) + 1);
+      const hot = [...shared.entries()].sort((a, b) => b[1] - a[1])[0];
+      const match = ease(seg(u, 0.72, 0.84));
+      const rowsY: Record<string, number> = {};
+      casos.forEach((k, r) => {
+        const y = top + r * rowH + rowH / 2;
+        rowsY[k] = y;
+        const a = ease(seg(u, r * 0.02, 0.08 + r * 0.02));
+        g.globalAlpha = a;
+        txt(g, k, x0, y, fs + 3, c(COL.cream), 800, "left", display);
+        for (const rol of ["contacto", "cobro"]) {
+          const it = items.find((x) => x.caso === k && x.rol === rol);
+          if (!it) continue;
+          const x = rol === "contacto" ? xC : xP;
+          let t = it.valor;
+          let col = c(COL.cream);
+          if (u >= 0.3) t = it.normalizado;
+          if (u >= 0.5) {
+            const q = seg(u, 0.5 + r * 0.015, 0.62 + r * 0.015);
+            t = q < 1 ? scramble(it.normalizado, `${it.ref} …${it.ultimos}`, q) : `${it.ref} …${it.ultimos}`;
+            col = c(COL.id);
+          }
+          const isHot = rol === "cobro" && hot && it.ref === hot[0];
+          if (isHot && match > 0) {
+            g.fillStyle = c(COL.id, 0.2 * match);
+            font(g, fs, 700, "ui-monospace, Consolas, monospace");
+            g.fillRect(x - 6, y - fs, g.measureText(t).width + 12, fs * 2);
+          }
+          txt(
+            g,
+            t,
+            x,
+            y,
+            fs,
+            rol === "cobro" && match > 0 && !isHot ? c(COL.dim, 0.7) : col,
+            700,
+            "left",
+            "ui-monospace, Consolas, monospace",
+          );
+        }
+        g.globalAlpha = 1;
+      });
+      // Los que coinciden: un corchete con cuántos casos comparten la cuenta.
+      if (match > 0 && hot) {
+        const ys = casos
+          .filter((k) => items.some((x) => x.caso === k && x.rol === "cobro" && x.ref === hot[0]))
+          .map((k) => rowsY[k]!);
+        const bx = xP + colW + 8;
+        g.strokeStyle = c(COL.id, match);
+        g.lineWidth = 2;
+        g.beginPath();
+        for (const y of ys) {
+          g.moveTo(bx - 6, y);
+          g.lineTo(bx + 6, y);
+        }
+        g.moveTo(bx + 6, Math.min(...ys));
+        g.lineTo(bx + 6, lerp(Math.min(...ys), Math.max(...ys), match));
+        g.stroke();
+        g.globalAlpha = match;
+        if (!small)
+          wrap(
+            g,
+            fill(L.sameAccountCases, { n: hot[1] }),
+            bx + 14,
+            (Math.min(...ys) + Math.max(...ys)) / 2 - 8,
+            R.x + R.w - bx - 14,
+            fs,
+            c(COL.id),
+            700,
+            1.3,
+            3,
+          );
+        g.globalAlpha = 1;
+      }
+      // Las conclusiones, abajo.
+      const out = ease(seg(u, 0.78, 0.9));
+      if (out > 0) {
+        const by = top + casos.length * rowH + 18;
+        g.globalAlpha = out;
+        txt(g, L.distinctContacts, R.x, by, fs, c(COL.cream), 700);
+        if (small && hot) txt(g, fill(L.sameAccountCases, { n: hot[1] }), R.x, by + fs * 1.6, fs, c(COL.id), 700);
+        txt(
+          g,
+          `${L.demoKey}. ${L.stored}: ID-…, …${hot?.[0] ? items.find((x) => x.ref === hot[0])?.ultimos : ""}`,
+          R.x,
+          by + fs * (small ? 3.2 : 1.8),
+          fs - 2,
+          c(COL.dim),
+          400,
+        );
         g.globalAlpha = 1;
       }
     };
 
-    /** 8. Une: los casos y lo que comparten arman la red; una persona la confirma. */
+    /** 9. Patrones de habla: las frases que se repiten, el vector del resumen y lo que separa a las bandas. */
+    const scenePatterns = (g: G, R: Rect, u: number) => {
+      const pt = D.pitch?.patrones;
+      if (!pt) return;
+      const small = R.w < 560;
+      const fs = small ? 9.5 : 12;
+      // Las frases firma que se repiten, con los casos donde aparecen.
+      g.globalAlpha = ease(seg(u, 0, 0.06));
+      txt(g, L.phrasesTitle, R.x, R.y + 6, fs + 1, c(COL.cream), 700);
+      g.globalAlpha = 1;
+      const letters = ["A", "B", "C", "D", "E", "F", "G"];
+      pt.frases.slice(0, 3).forEach((fr, i) => {
+        const y = R.y + 32 + i * (small ? 34 : 40);
+        const a = ease(seg(u, i * 0.05, 0.1 + i * 0.05));
+        g.globalAlpha = a;
+        const q = `«${fr.frase.replace(/[.]$/, "")}»`;
+        wrap(g, q, R.x, y, small ? R.w * 0.55 : R.w * 0.5, fs + 0.5, c(KIND.frase!), 700, 1.2, 1);
+        letters.forEach((k, j) => {
+          const on = fr.casos.includes(k);
+          const lit = on ? ease(seg(u, 0.1 + i * 0.05 + j * 0.012, 0.16 + i * 0.05 + j * 0.012)) : 0;
+          const bx = R.x + (small ? R.w * 0.58 : R.w * 0.53) + j * (small ? 18 : 24);
+          g.fillStyle = on && lit > 0 ? c(KIND.frase!, 0.25 + 0.75 * lit) : "rgb(255 255 255 / 0.08)";
+          g.beginPath();
+          g.roundRect(bx, y - (small ? 8 : 10), small ? 15 : 20, small ? 16 : 20, 4);
+          g.fill();
+          txt(
+            g,
+            k,
+            bx + (small ? 7.5 : 10),
+            y + 0.5,
+            fs - 1.5,
+            on && lit > 0.5 ? "#231a14" : c(COL.dim, 0.6),
+            800,
+            "center",
+          );
+        });
+        g.globalAlpha = 1;
+      });
+      // El resumen de A y de B como vectores (384 números): se parecen, pero todos se parecen.
+      const vy = R.y + (small ? 140 : 170);
+      const va = pt.vector_a;
+      const vb = pt.vector_b;
+      const vec2 = seg(u, 0.22, 0.38);
+      if (va && vb && vec2 > 0) {
+        const cols = 96;
+        const rows = 4;
+        const cw = (R.w * (small ? 1 : 0.62)) / cols;
+        const scale = Math.max(...va.map(Math.abs)) * 0.7;
+        [va, vb].forEach((v, s) => {
+          const y = vy + s * (rows * cw + 22);
+          txt(g, fill(L.summaryVector, { k: s === 0 ? "A" : "B" }), R.x, y - 8, fs - 1.5, c(COL.dim), 700);
+          for (let k = 0; k < cols * rows; k++) {
+            if (k / (cols * rows) > vec2) break;
+            g.fillStyle = rgb(cellColor(v[k]!, scale));
+            g.fillRect(R.x + (k % cols) * cw, y + Math.floor(k / cols) * cw, cw - 0.5, cw - 0.5);
+          }
+        });
+        if (!small) {
+          const p0 = pt.pares[0]!;
+          const cx = R.x + R.w * 0.66;
+          g.globalAlpha = ease(seg(u, 0.34, 0.42));
+          txt(g, `${L.terms.cosine} ${fmt(p0.coseno)}`, cx, vy + 14, fs + 2, c(COL.cream), 800);
+          wrap(
+            g,
+            fill(L.avgCosine, { c: fmt(pt.coseno_media) }),
+            cx,
+            vy + 36,
+            R.w * 0.32,
+            fs - 1,
+            c(COL.dim),
+            400,
+            1.3,
+            3,
+          );
+          g.globalAlpha = 1;
+        }
+      }
+      // La cuenta del guion: parecido + frase común + mismo canal + mismo grupo.
+      const p0 = pt.pares[0]!;
+      const fy = vy + (small ? 64 : 84);
+      const terms: [string, string, number][] = [
+        [L.terms.cosine, fmt(p0.coseno), 0.42],
+        [L.terms.phrases, `+ ${fmt(0.05 * Math.min(p0.frases.length, 3))}`, 0.47],
+        [L.terms.channel, `+ ${p0.canal ? "0.03" : "0.00"}`, 0.52],
+        [L.terms.group, `+ ${p0.grupo ? "0.05" : "0.00"}`, 0.57],
+        ["x", `= ${p0.x.toFixed(3)}`, 0.62],
+      ];
+      let tx = R.x;
+      const tw = (R.w * (small ? 1 : 0.95)) / terms.length;
+      txt(g, "A y B", R.x, fy - 14, fs - 1, c(COL.dim), 700);
+      terms.forEach(([k, v, t0]) => {
+        const a = ease(seg(u, t0, t0 + 0.05));
+        g.globalAlpha = a;
+        txt(g, v, tx, fy + 6, fs + (small ? 1 : 3), k === "x" ? c(COL.ocre) : c(COL.cream), 800, "left", display);
+        txt(g, k, tx, fy + 26, fs - 2, c(COL.dim), 400);
+        g.globalAlpha = 1;
+        tx += tw;
+      });
+      const pg = ease(seg(u, 0.66, 0.72));
+      if (pg > 0) {
+        g.globalAlpha = pg;
+        pill(
+          g,
+          `${L.terms.result} ${fmt(p0.p)} (${L.cap})`,
+          R.x + R.w * (small ? 0.5 : 0.8),
+          fy + 48,
+          COL.ocre,
+          fs,
+          true,
+        );
+        g.globalAlpha = 1;
+      }
+      // Lo que separa: la x de 496 pares de guiones ficticios.
+      const hy = fy + (small ? 76 : 88);
+      const hh = R.y + R.h - hy - 30;
+      const hist = seg(u, 0.7, 0.88);
+      if (hist > 0 && hh > 40) {
+        const lo = 0.85;
+        const hi = 1.2;
+        const bins = 35;
+        const count = (xs: number[]) => {
+          const b = new Array<number>(bins).fill(0);
+          for (const x of xs) b[Math.min(bins - 1, Math.max(0, Math.floor(((x - lo) / (hi - lo)) * bins)))]!++;
+          return b;
+        };
+        const cm = count(pt.x_mismo);
+        const cd = count(pt.x_distintos);
+        const mx = Math.max(...cm, ...cd);
+        const bw = R.w / bins;
+        const X = (x: number) => R.x + ((x - lo) / (hi - lo)) * R.w;
+        for (let i = 0; i < bins; i++) {
+          const hd = (cd[i]! / mx) * hh * hist;
+          const hm = (cm[i]! / mx) * hh * hist;
+          g.fillStyle = c(COL.dim, 0.45);
+          g.fillRect(R.x + i * bw + 1, hy + hh - hd, bw - 2, hd);
+          g.fillStyle = c(COL.ocre, 0.9);
+          g.fillRect(R.x + i * bw + bw * 0.25, hy + hh - hm, bw * 0.5, hm);
+        }
+        g.fillStyle = "rgb(255 255 255 / 0.25)";
+        g.fillRect(R.x, hy + hh, R.w, 1);
+        // Los pares del demo: A y B (mismo guion) y A y C (no).
+        const mk = ease(seg(u, 0.84, 0.92));
+        pt.pares.forEach((pp, i) => {
+          if (mk <= 0) return;
+          const x = X(pp.x);
+          g.strokeStyle = i === 0 ? c(COL.ocre, mk) : c(COL.cream, mk * 0.8);
+          g.setLineDash(i === 0 ? [] : [3, 3]);
+          g.lineWidth = 2;
+          g.beginPath();
+          g.moveTo(x, hy - 4);
+          g.lineTo(x, hy + hh);
+          g.stroke();
+          g.setLineDash([]);
+          g.globalAlpha = mk;
+          pill(g, `${pp.par.replace("-", " y ")} ${fmt(pp.p)}`, x, hy - 14, i === 0 ? COL.ocre : COL.dim, fs - 1.5);
+          g.globalAlpha = 1;
+        });
+        g.globalAlpha = hist;
+        g.fillStyle = c(COL.ocre);
+        g.fillRect(R.x, hy + hh + 14, 10, 10);
+        txt(g, fill(L.sameScript, { n: pt.x_mismo.length }), R.x + 14, hy + hh + 19, fs - 1.5, c(COL.dim));
+        font(g, fs - 1.5);
+        const lx = R.x + 14 + g.measureText(fill(L.sameScript, { n: pt.x_mismo.length })).width + 18;
+        g.fillStyle = c(COL.dim, 0.45);
+        g.fillRect(lx, hy + hh + 14, 10, 10);
+        txt(g, fill(L.otherPairs, { n: pt.x_distintos.length }), lx + 14, hy + hh + 19, fs - 1.5, c(COL.dim));
+        g.globalAlpha = 1;
+      }
+    };
+
+    /** 10. Combina: las señales calibradas de dos pares y su suma. */
+    const sceneCombine = (g: G, R: Rect, u: number) => {
+      const cb = D.pitch?.combina;
+      if (!cb) return;
+      const small = R.w < 560;
+      const fs = small ? 10 : 12.5;
+      const pairs: [string, Señales, number][] = [
+        ["A y B", cb.ab, 0],
+        ["B y C", cb.bc, 0.45],
+      ];
+      const ph = R.h / 2 - 10;
+      pairs.forEach(([name, sg, t0], pi) => {
+        const y0 = R.y + pi * (ph + 20);
+        const a0 = ease(seg(u, t0, t0 + 0.06));
+        if (a0 <= 0) return;
+        g.globalAlpha = a0;
+        txt(g, name, R.x, y0 + 8, fs + 4, c(COL.cream), 800, "left", display);
+        g.globalAlpha = 1;
+        const barX = R.x + (small ? 70 : 110);
+        const barW = R.w - (barX - R.x) - (small ? 40 : 60);
+        const rows: [string, number, string][] = [
+          [L.signals.voice, sg.voz, COL.ocre],
+          [L.signals.script, sg.guion, KIND.frase!],
+          [L.signals.account, sg.cuenta, COL.id],
+          [L.signals.together, sg.total, COL.cream],
+        ];
+        const rh = Math.min(small ? 26 : 38, (ph - 40) / rows.length);
+        rows.forEach(([k, v, col], i) => {
+          const y = y0 + 34 + i * rh;
+          const grow = ease(seg(u, t0 + 0.05 + i * 0.06, t0 + 0.13 + i * 0.06));
+          const isTotal = i === rows.length - 1;
+          txt(
+            g,
+            k,
+            R.x,
+            y + rh / 2 - 2,
+            fs - (isTotal ? 0 : 1),
+            isTotal ? c(COL.cream) : c(COL.dim),
+            isTotal ? 800 : 400,
+          );
+          g.fillStyle = "rgb(255 255 255 / 0.08)";
+          g.fillRect(barX, y + 2, barW, rh - 10);
+          g.fillStyle = c(col, isTotal ? 1 : 0.85);
+          g.fillRect(barX, y + 2, barW * v * grow, rh - 10);
+          if (grow > 0)
+            txt(g, v > 0.005 ? fmt(v) : "0", barX + barW * v * grow + 8, y + rh / 2 - 3, fs, c(COL.cream), 700);
+        });
+        // Los umbrales: revisar (0.60) y probable (0.90).
+        for (const [v, lab] of [
+          [cb.revisar, L.review],
+          [cb.probable, L.probable],
+        ] as [number, string][]) {
+          const x = barX + barW * v;
+          g.setLineDash([3, 4]);
+          g.strokeStyle = c(COL.cream, 0.5 * a0);
+          g.lineWidth = 1;
+          g.beginPath();
+          g.moveTo(x, y0 + 26);
+          g.lineTo(x, y0 + 34 + rows.length * rh - 6);
+          g.stroke();
+          g.setLineDash([]);
+          txt(g, `${lab} ${fmt(v)}`, x, y0 + 20, fs - 2.5, c(COL.dim, a0), 700, "center");
+        }
+        const done = ease(seg(u, t0 + 0.3, t0 + 0.36));
+        if (done > 0) {
+          g.globalAlpha = done;
+          const parts = [sg.voz, sg.guion, sg.cuenta].filter((x) => x > 0.005);
+          const formula = `1 − ${parts.map((x) => `(1 − ${fmt(x)})`).join(" × ")} = ${fmt(sg.total)}`;
+          txt(
+            g,
+            formula,
+            barX,
+            y0 + 34 + rows.length * rh + 8,
+            fs - 1,
+            c(COL.dim),
+            700,
+            "left",
+            "ui-monospace, Consolas, monospace",
+          );
+          if (sg.total >= cb.probable)
+            pill(g, L.probable, R.x + R.w - (small ? 34 : 44), y0 + 8, COL.alert, fs - 1, true);
+          g.globalAlpha = 1;
+        }
+      });
+    };
+
+    /** 11. Une: los casos y lo que comparten arman la red; una persona la confirma. */
     const sceneNetwork = (g: G, R: Rect, u: number) => {
       const small = R.w < 520;
       const fs = small ? 10 : 12;
       const P = (fx: number, fy: number) => ({ x: R.x + R.w * fx, y: R.y + R.h * fy });
       const cases = [
-        { k: "A", ...P(0.12, 0.3) },
-        { k: "B", ...P(0.45, 0.5) },
-        { k: "C", ...P(0.88, 0.22) },
-        { k: "D", ...P(0.9, 0.55) },
-        { k: "E", ...P(0.76, 0.86) },
+        { k: "A", ...P(0.1, 0.32) },
+        { k: "B", ...P(0.42, 0.5) },
+        { k: "C", ...P(0.9, 0.2) },
+        { k: "D", ...P(0.94, 0.48) },
+        { k: "E", ...P(0.84, 0.78) },
+        { k: "G", ...P(0.6, 0.86) },
       ];
-      const voice = { ...P(0.27, 0.42), col: COL.ocre, lab: "V-3" };
+      const F = { k: "F", ...P(0.24, 0.72) };
+      const voice = { ...P(0.25, 0.42), col: COL.ocre, lab: "V-3" };
       const acc = { ...P(0.68, 0.5), col: COL.id, lab: "Yape …202" };
       const edges: [{ x: number; y: number }, { x: number; y: number }, string][] = [
         [cases[0]!, voice, COL.ocre],
@@ -1473,23 +1996,23 @@ const config = JSON.stringify({
         [acc, cases[2]!, COL.id],
         [acc, cases[3]!, COL.id],
         [acc, cases[4]!, COL.id],
+        [acc, cases[5]!, COL.id],
       ];
-      // El anillo de la red.
       const ring = ease(seg(u, 0.62, 0.76));
       if (ring > 0) {
         g.setLineDash([6, 6]);
         g.strokeStyle = c(COL.alert, 0.8 * ring);
         g.lineWidth = 1.5;
         g.beginPath();
-        g.ellipse(R.x + R.w * 0.5, R.y + R.h * 0.53, R.w * 0.5, R.h * 0.47, 0, 0, Math.PI * 2 * ring);
+        g.ellipse(R.x + R.w * 0.53, R.y + R.h * 0.53, R.w * 0.5, R.h * 0.47, 0, 0, Math.PI * 2 * ring);
         g.stroke();
         g.setLineDash([]);
         g.globalAlpha = ring;
-        pill(g, L.network, R.x + R.w * 0.5, R.y + 8, COL.alert, fs + 1);
+        pill(g, L.network, R.x + R.w * 0.53, R.y + 8, COL.alert, fs + 1);
         g.globalAlpha = 1;
       }
       edges.forEach(([a, b, col], i) => {
-        const f = ease(seg(u, 0.25 + i * 0.05, 0.35 + i * 0.05));
+        const f = ease(seg(u, 0.25 + i * 0.04, 0.35 + i * 0.04));
         if (f <= 0) return;
         g.strokeStyle = c(col, 0.9);
         g.lineWidth = 2.5;
@@ -1498,6 +2021,21 @@ const config = JSON.stringify({
         g.lineTo(lerp(a.x, b.x, f), lerp(a.y, b.y, f));
         g.stroke();
       });
+      // F dice ser de Los X, pero paga a otra cuenta y su voz no está: solo el guion (0.40) no alcanza.
+      const fa = ease(seg(u, 0.5, 0.6));
+      if (fa > 0) {
+        g.setLineDash([3, 5]);
+        g.strokeStyle = c(KIND.frase!, 0.6 * fa);
+        g.lineWidth = 1.5;
+        g.beginPath();
+        g.moveTo(F.x, F.y);
+        g.lineTo(cases[0]!.x, cases[0]!.y);
+        g.stroke();
+        g.setLineDash([]);
+        g.globalAlpha = fa * 0.9;
+        txt(g, L.scriptOnly, F.x - 16, F.y + (small ? 30 : 38), fs - 1.5, c(KIND.frase!), 700, "left");
+        g.globalAlpha = 1;
+      }
       for (const h of [voice, acc]) {
         const f = ease(seg(u, 0.18, 0.3));
         if (f <= 0) continue;
@@ -1522,19 +2060,18 @@ const config = JSON.stringify({
         );
         g.globalAlpha = 1;
       }
-      cases.forEach((n, i) => {
-        const f = ease(seg(u, i * 0.04, 0.14 + i * 0.04));
+      [...cases, F].forEach((n, i) => {
+        const f = ease(seg(u, i * 0.03, 0.14 + i * 0.03));
         if (f <= 0) return;
-        const w = small ? 34 : 44;
-        g.globalAlpha = f;
+        const w = small ? 32 : 42;
+        g.globalAlpha = f * (n === F ? 0.45 : 1);
         g.fillStyle = "#f4efe8";
         g.beginPath();
         g.roundRect(n.x - w / 2, n.y - w / 2, w, w, 10);
         g.fill();
-        txt(g, n.k, n.x, n.y + 1, small ? 15 : 19, "#2a1e17", 800, "center", display);
+        txt(g, n.k, n.x, n.y + 1, small ? 15 : 18, "#2a1e17", 800, "center", display);
         g.globalAlpha = 1;
       });
-      // La revisora confirma.
       const ok = ease(seg(u, 0.78, 0.9));
       if (ok > 0) {
         const x = cases[0]!.x - (small ? 8 : 12);
@@ -1556,7 +2093,128 @@ const config = JSON.stringify({
       }
     };
 
-    /** 9. Protege: el distrito se enciende en el mapa y sale la alerta aprobada. */
+    /** 12. Vigila: 14 días en dos distritos; con 5 casos de «Los X» en uno, la alerta. */
+    const sceneVigia = (g: G, R: Rect, u: number) => {
+      const vg = D.pitch?.vigia;
+      if (!vg) return;
+      const small = R.w < 560;
+      const fs = small ? 10 : 12.5;
+      const zonas = [
+        { id: "san-juan-de-lurigancho", name: "San Juan de Lurigancho" },
+        { id: "comas", name: "Comas" },
+      ];
+      const ax0 = R.x + (small ? 4 : 10);
+      const ax1 = R.x + R.w - 10;
+      const X = (dia: number) => lerp(ax0, ax1, (vg.ventana - dia) / vg.ventana);
+      const rowY = (i: number) => R.y + (small ? 64 : 90) + i * (small ? 70 : 96);
+      const a0 = ease(seg(u, 0, 0.08));
+      // El eje: hace 14 días a hoy.
+      g.globalAlpha = a0;
+      g.fillStyle = "rgb(255 255 255 / 0.25)";
+      g.fillRect(ax0, R.y + 30, ax1 - ax0, 1);
+      for (let d = vg.ventana; d >= 0; d--) {
+        const x = X(d);
+        g.fillRect(x, R.y + 26, 1, d % 7 === 0 ? 9 : 5);
+        if (d % 7 === 0)
+          txt(
+            g,
+            d === 0 ? L.today : fill(L.daysAgo, { n: d }),
+            x,
+            R.y + 14,
+            fs - 2,
+            c(COL.dim),
+            400,
+            d === vg.ventana ? "left" : d === 0 ? "right" : "center",
+          );
+      }
+      zonas.forEach((z, i) => {
+        const y = rowY(i);
+        txt(g, z.name, ax0, y - (small ? 22 : 28), fs, c(COL.cream), 700);
+        g.fillStyle = "rgb(255 255 255 / 0.06)";
+        g.fillRect(ax0, y - 14, ax1 - ax0, 28);
+      });
+      g.globalAlpha = 1;
+      // Los casos entran en el orden en que llegaron (del más antiguo al más nuevo).
+      const orden = [...vg.casos].sort((a, b) => b.dia - a.dia);
+      let losX = 0;
+      orden.forEach((cs, i) => {
+        const zi = zonas.findIndex((z) => z.id === cs.zona);
+        if (zi < 0) return;
+        const t0 = 0.1 + i * 0.07;
+        const a = ease(seg(u, t0, t0 + 0.06));
+        if (a <= 0) return;
+        const isX = cs.grupo === "Los X" && cs.zona === "san-juan-de-lurigancho";
+        if (isX && a >= 1) losX++;
+        const x = X(cs.dia);
+        const y = rowY(zi);
+        const r = (small ? 10 : 13) * (0.6 + 0.4 * a);
+        g.beginPath();
+        g.arc(x, y, r, 0, Math.PI * 2);
+        g.fillStyle = isX ? c(COL.alert) : cs.grupo ? c("200 170 150") : c(COL.dim, 0.6);
+        g.fill();
+        txt(g, cs.caso, x, y + 0.5, fs, "#231a14", 800, "center", display);
+        if (a < 1) {
+          g.strokeStyle = c(COL.alert, 1 - a);
+          g.lineWidth = 1.5;
+          g.beginPath();
+          g.arc(x, y, r + (1 - a) * 18, 0, Math.PI * 2);
+          g.stroke();
+        }
+      });
+      // El contador del patrón y la regla.
+      const cy = rowY(2) - (small ? 10 : 6);
+      const full = losX >= 5;
+      g.globalAlpha = a0;
+      txt(
+        g,
+        fill(L.counter, { n: losX }),
+        R.x,
+        cy,
+        fs + (small ? 4 : 8),
+        full ? c(COL.alert) : c(COL.cream),
+        800,
+        "left",
+        display,
+      );
+      txt(g, `${L.pattern}. ${L.rule}`, R.x, cy + (small ? 22 : 28), fs - 1.5, c(COL.dim), 400);
+      g.globalAlpha = 1;
+      // El borrador de alerta y la aprobación.
+      const dr = ease(seg(u, 0.68, 0.78));
+      if (dr > 0) {
+        const cw = small ? R.w : R.w * 0.62;
+        const cx = R.x;
+        const y = cy + (small ? 40 : 56);
+        g.globalAlpha = dr;
+        g.fillStyle = "#f4efe8";
+        g.beginPath();
+        g.roundRect(cx, y, cw, small ? 74 : 92, 10);
+        g.fill();
+        txt(g, L.draft, cx + 14, y + 20, fs + 1, "#7a3b20", 800);
+        wrap(g, L.alert, cx + 14, y + 42, cw - 28, fs, "#2a1e17", 400, 1.35, 2);
+        g.globalAlpha = 1;
+        const ok = ease(seg(u, 0.82, 0.9));
+        if (ok > 0) {
+          const bx = small ? cx : cx + cw + 22;
+          const by = y + (small ? 92 : 46);
+          g.globalAlpha = ok;
+          g.fillStyle = "#2f6b4a";
+          g.beginPath();
+          g.arc(bx + 12, by, 12, 0, Math.PI * 2);
+          g.fill();
+          g.strokeStyle = "#fff";
+          g.lineWidth = 2.5;
+          g.beginPath();
+          g.moveTo(bx + 7, by);
+          g.lineTo(bx + 11, by + 4);
+          g.lineTo(bx + 18, by - 4);
+          g.stroke();
+          txt(g, L.approved, bx + 30, by + 1, fs, c(COL.cream), 700);
+          g.globalAlpha = 1;
+        }
+      }
+    };
+
+    /** 13. Protege: el distrito se enciende en el mapa y sale la alerta aprobada. */
     const sceneProtect = (g: G, R: Rect, u: number) => {
       const small = R.w < 520;
       const fs = small ? 10 : 12;
@@ -1633,7 +2291,11 @@ const config = JSON.stringify({
       sceneRadar,
       sceneLook,
       sceneRead,
+      sceneNumbers,
+      scenePatterns,
+      sceneCombine,
       sceneNetwork,
+      sceneVigia,
       sceneProtect,
     ];
 

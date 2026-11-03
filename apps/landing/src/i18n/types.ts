@@ -217,7 +217,7 @@ export interface Dict {
   lp: {
     /** El texto corto del botón del mapa en la cabecera. */
     hero: { ctaMapShort: string };
-    /** El pitch: diez escenas a pantalla entera que avanzan con el scroll (Pitch.astro). */
+    /** El pitch: escenas a pantalla entera que avanzan con el scroll (Pitch.astro). */
     pitch: {
       railLabel: string;
       hint: string;
@@ -252,15 +252,55 @@ export interface Dict {
         note: string;
         sameRoom: string;
         patches: string;
-        amount: string;
-        deadline: string;
-        account: string;
-        group: string;
-        weekly: string;
+        message: string;
+        voiceNote: string;
+        evidence: string;
+        ficha: string;
+        strict: string;
+        fields: {
+          threat: string;
+          amount: string;
+          deadline: string;
+          channel: string;
+          payment: string;
+          contact: string;
+          group: string;
+          phrases: string;
+          sources: string;
+        };
+        threats: Record<string, string>;
+        periods: Record<string, string>;
+        otherFichas: string;
+        legend: { monto: string; plazo: string; cuenta: string; grupo: string; frase: string };
+        normalized: string;
+        hmac: string;
+        stored: string;
+        demoKey: string;
+        distinctContacts: string;
+        sameAccountCases: string;
+        phrasesTitle: string;
+        inCases: string;
+        summaryVector: string;
+        avgCosine: string;
+        terms: { cosine: string; phrases: string; channel: string; group: string; result: string };
+        sameScript: string;
+        otherPairs: string;
+        cap: string;
+        signals: { voice: string; script: string; account: string; together: string };
+        review: string;
+        probable: string;
+        daysAgo: string;
+        today: string;
+        rule: string;
+        pattern: string;
+        counter: string;
+        draft: string;
+        approved: string;
         sameVoice: string;
         sameAccount: string;
         network: string;
         confirmed: string;
+        scriptOnly: string;
         alertTitle: string;
         alert: string;
         range: string;

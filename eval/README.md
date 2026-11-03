@@ -97,10 +97,21 @@ caché (correr esos dos antes). Escribe `results/voz_huella.json` y `apps/landin
   mensajes y transcripciones) y escribe `apps/landing/src/data/casos-demo.json`.
 - `pnpm demo:pitch` calcula el radar de voces con las huellas de la caché: el coseno de B1 con el caso A
   (0.79), el caso C (0.49), la muestra de la víctima A (0.27) y las 28 voces de SLR73 (0.31 como máximo).
-- `pnpm demo:pitch:fichas` pide a Muse Spark 1.3 la ficha de los casos A, B y C con el mismo prompt y
-  esquema del sistema (con caché; la primera vez costó US$ 0.02). B y C dan la misma cuenta, 900 000 202.
+- `pnpm demo:pitch:texto` arma todo lo de texto con las funciones del sistema y sin llamar a ninguna API
+  (sale de la caché de la evaluación):
+  - **lee:** la ficha de Muse Spark del caso A y dónde aparece cada dato en su evidencia.
+  - **números:** los 14 teléfonos y cuentas de A a G, normalizados y cifrados con `hmacIdentifier`, pero
+    con una clave de demostración. Los 7 contactos son distintos; B, C, D, E y G cobran a la misma
+    cuenta.
+  - **patrones:** las frases firma que se repiten ("Habla con el jefe" en 6 casos), el vector e5 de los
+    resúmenes y la x del MO de los 496 pares de los 32 guiones (47 del mismo guion, 449 distintos).
+    A–B da 1.069 (guion 0.40) y A–C da 0.939 (guion 0.00).
+  - **combina:** voz 0.85 y guion 0.40 dan 0.91 para A–B; la cuenta da 0.95 para B–C.
+  - **vigía:** el día y el distrito de cada caso. En San Juan de Lurigancho hay 5 casos de "Los X" en
+    14 días.
 
-Los dos últimos escriben en `apps/landing/src/data/pitch.json`.
+`pnpm demo:pitch` y `pnpm demo:pitch:texto` escriben en `apps/landing/src/data/pitch.json`; corre
+primero `demo:pitch`.
 
 **El índice de voces del recorrido** (02/11): `pnpm demo:flujo:vectores` escribe
 `apps/landing/src/data/flujo-vectores.json` con el índice de voces de la escena Compara: la huella ECAPA
