@@ -35,6 +35,7 @@ import type { Dict } from "../i18n";
 import { PORTAL_URL } from "../i18n/sources";
 import { DISTRICT_GRID, DISTRICTS } from "../../../../packages/shared/src/zones";
 import mostrador from "../assets/flujo/mostrador.jpg";
+import casosDemo from "../data/casos-demo.json";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -43,15 +44,40 @@ interface Props {
 
 const { dict: d } = Astro.props;
 const p = d.lp.pitch;
+const ui = p.ui;
 const n = p.scenes.length;
+const fill = (s: string, t: Record<string, string | number>) =>
+  s.replace(/\{(\w+)\}/g, (m, k: string) => (k in t ? String(t[k]) : m));
 /** Los audios que se pueden escuchar en cada escena (los 7 s de public/voz, voz ficticia de MMS-TTS). */
-const audios: Record<number, { src: string; label: string; name: string }[]> = {
+const audios: Record<number, { src: string; label: string; name: string; undo?: number }[]> = {
   3: [{ src: "/voz/b1-limpia.m4a", label: p.audio.clean, name: p.audio.cleanName }],
   4: [
-    { src: "/voz/b1-disfrazada.m4a", label: p.audio.disguised, name: p.audio.disguisedName },
-    { src: "/voz/b1-revertida.m4a", label: p.audio.reverted, name: p.audio.revertedName },
+    { src: "/voz/b1-disfrazada.m4a", label: p.audio.disguised, name: p.audio.disguisedName, undo: 0 },
+    { src: "/voz/b1-revertida.m4a", label: p.audio.reverted, name: p.audio.revertedName, undo: -4 },
   ],
 };
+/** El audio que recibe cada víctima (las notas de voz ficticias del demo, eval/demo/audio, en m4a). */
+const victimAudio = casosDemo.casos.map((cs, k) => {
+  const pz = cs.piezas.find((x) => x.tipo === "audio") as { segundos?: number } | undefined;
+  return {
+    src: `/casos/${cs.caso.toLowerCase()}1.m4a`,
+    who: ui.victims.who[k] ?? cs.caso,
+    name: fill(ui.victims.name, { k: cs.caso, s: Math.round(pz?.segundos ?? 0) }),
+  };
+});
+/** Las señales de "Combina" y los datos de "Lee", con el color que tienen en el lienzo. */
+const SIGNALS = [
+  ["voz", p.canvas.signals.voice, "231 173 69"],
+  ["guion", p.canvas.signals.script, "190 165 255"],
+  ["cuenta", p.canvas.signals.account, "111 207 142"],
+] as const;
+const KINDS = [
+  ["monto", "231 173 69"],
+  ["plazo", "141 187 230"],
+  ["cuenta", "111 207 142"],
+  ["grupo", "236 159 208"],
+  ["frase", "190 165 255"],
+] as const;
 const img = await getImage({ src: mostrador, widths: [720], format: "webp", quality: 80 });
 
 const config = JSON.stringify({
@@ -62,6 +88,8 @@ const config = JSON.stringify({
   },
   photo: img.src,
   labels: p.canvas,
+  ui,
+  nav: p.nav,
 });
 ---
 
@@ -89,10 +117,192 @@ const config = JSON.stringify({
                 </ul>
               )}
               {i === 1 && <p class="pt__source">{p.source}</p>}
+              {i === 2 && (
+                <div class="pt__ctl" role="group" aria-labelledby="pt-ctl-2">
+                  <p class="pt__ctl-label" id="pt-ctl-2">
+                    {ui.victims.label}
+                  </p>
+                  <div class="pt__opts">
+                    {victimAudio.map((a, k) => (
+                      <button type="button" class="pt__play" data-src={a.src} data-victim={k} aria-pressed="false">
+                        <Icon name="play" class="icon pt__icon pt__icon--play" />
+                        <Icon name="pause" class="icon pt__icon pt__icon--pause" />
+                        {a.who}
+                        <span class="sr-only">, {a.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {i === 4 && (
+                <div class="pt__ctl">
+                  <label class="pt__ctl-label" for="pt-undo">
+                    {ui.undo.label}
+                  </label>
+                  <input
+                    class="pt__range"
+                    id="pt-undo"
+                    type="range"
+                    min="-8"
+                    max="8"
+                    step="1"
+                    value="0"
+                    data-ctl="undo"
+                  />
+                  <div class="pt__ends" aria-hidden="true">
+                    <span>−8</span>
+                    <span>0</span>
+                    <span>+8</span>
+                  </div>
+                  <p class="pt__out" data-out="undo" />
+                </div>
+              )}
+              {i === 5 && (
+                <div class="pt__ctl">
+                  <label class="pt__ctl-label" for="pt-thr">
+                    {ui.radar.label}
+                  </label>
+                  <input
+                    class="pt__range"
+                    id="pt-thr"
+                    type="range"
+                    min="10"
+                    max="90"
+                    step="1"
+                    value="60"
+                    data-ctl="thr"
+                  />
+                  <div class="pt__ends" aria-hidden="true">
+                    <span>0.10</span>
+                    <span>0.90</span>
+                  </div>
+                  <p class="pt__out" data-out="thr" />
+                </div>
+              )}
+              {i === 6 && (
+                <div class="pt__ctl" role="group" aria-labelledby="pt-ctl-6">
+                  <p class="pt__ctl-label" id="pt-ctl-6">
+                    {ui.look.label}
+                  </p>
+                  <div class="pt__opts">
+                    {ui.look.pairs.map((name, k) => (
+                      <button type="button" class="pt__opt" data-look={k} aria-pressed={k === 0 ? "true" : "false"}>
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                  <p class="pt__out" data-out="look" />
+                </div>
+              )}
+              {i === 7 && (
+                <div class="pt__ctl" role="group" aria-labelledby="pt-ctl-7">
+                  <p class="pt__ctl-label" id="pt-ctl-7">
+                    {ui.read.label}
+                  </p>
+                  <div class="pt__opts">
+                    {KINDS.map(([kind, col]) => (
+                      <button
+                        type="button"
+                        class="pt__opt pt__opt--color"
+                        data-field={kind}
+                        aria-pressed="false"
+                        style={`--c:${col}`}
+                      >
+                        <span class="pt__swatch" aria-hidden="true" />
+                        {ui.read.fields[kind]}
+                      </button>
+                    ))}
+                  </div>
+                  <p class="pt__out" data-out="read" />
+                </div>
+              )}
+              {i === 10 && (
+                <div class="pt__ctl" role="group" aria-labelledby="pt-ctl-10">
+                  <p class="pt__ctl-label" id="pt-ctl-10">
+                    {ui.combine.label}
+                  </p>
+                  <div class="pt__opts">
+                    {SIGNALS.map(([key, label, col]) => (
+                      <button
+                        type="button"
+                        class="pt__opt pt__opt--color"
+                        data-sig={key}
+                        aria-pressed="true"
+                        style={`--c:${col}`}
+                      >
+                        <span class="pt__swatch" aria-hidden="true" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <p class="pt__out" data-out="combine" />
+                </div>
+              )}
+              {i === 11 && (
+                <div class="pt__ctl" role="group" aria-labelledby="pt-ctl-11">
+                  <p class="pt__ctl-label" id="pt-ctl-11">
+                    {ui.review.label}
+                  </p>
+                  <div class="pt__opts">
+                    <button type="button" class="pt__opt pt__opt--ok" data-review="ok" aria-pressed="false">
+                      <Icon name="check" class="icon" />
+                      {ui.review.confirm}
+                    </button>
+                    <button type="button" class="pt__opt pt__opt--no" data-review="no" aria-pressed="false">
+                      <Icon name="x" class="icon" />
+                      {ui.review.discard}
+                    </button>
+                  </div>
+                  <p class="pt__out" data-out="review" />
+                </div>
+              )}
+              {i === 12 && (
+                <div class="pt__ctl">
+                  <label class="pt__ctl-label" for="pt-day">
+                    {ui.vigia.label}
+                  </label>
+                  <input
+                    class="pt__range"
+                    id="pt-day"
+                    type="range"
+                    min="0"
+                    max="14"
+                    step="1"
+                    value="14"
+                    data-ctl="day"
+                  />
+                  <div class="pt__ends" aria-hidden="true">
+                    <span>{fill(p.canvas.daysAgo, { n: 14 })}</span>
+                    <span>{p.canvas.today}</span>
+                  </div>
+                  <p class="pt__out" data-out="day" />
+                </div>
+              )}
+              {i === 14 && (
+                <div class="pt__ctl" role="group" aria-labelledby="pt-ctl-14">
+                  <p class="pt__ctl-label" id="pt-ctl-14">
+                    {ui.scale.label}
+                  </p>
+                  <div class="pt__opts">
+                    {p.canvas.payments.map(([country], k) => (
+                      <button type="button" class="pt__opt" data-country={k} aria-pressed="false">
+                        {country}
+                      </button>
+                    ))}
+                  </div>
+                  <p class="pt__out" data-out="scale" />
+                </div>
+              )}
               {audios[i] && (
                 <div class="pt__audios" role="group" aria-label={p.audio.group}>
                   {audios[i]!.map((a) => (
-                    <button type="button" class="pt__play" data-src={a.src} aria-pressed="false">
+                    <button
+                      type="button"
+                      class="pt__play"
+                      data-src={a.src}
+                      data-undo={a.undo === undefined ? undefined : String(a.undo)}
+                      aria-pressed="false"
+                    >
                       <Icon name="play" class="icon pt__icon pt__icon--play" />
                       <Icon name="pause" class="icon pt__icon pt__icon--pause" />
                       {a.label}
@@ -102,10 +312,10 @@ const config = JSON.stringify({
                 </div>
               )}
               {i === 0 && (
-                <p class="pt__hint" aria-hidden="true">
-                  <span class="pt__mouse" />
-                  {p.hint}
-                </p>
+                <button type="button" class="btn pt__ghost pt__start" data-start>
+                  {p.start}
+                  <Icon name="arrowDown" class="icon" />
+                </button>
               )}
               {i === n - 1 && (
                 <div class="pt__cta">
@@ -121,6 +331,24 @@ const config = JSON.stringify({
           ))}
         </ol>
       </div>
+      <div class="pt__nav" role="group" aria-label={p.nav.label}>
+        <button type="button" class="pt__arrow" data-step="-1" aria-label={p.nav.prev} aria-disabled="true">
+          <Icon name="chevronUp" class="icon" />
+        </button>
+        <button type="button" class="pt__arrow" data-step="1" aria-label={p.nav.next}>
+          <Icon name="chevronDown" class="icon" />
+        </button>
+        <p class="pt__count" aria-hidden="true" data-count>
+          {fill(p.nav.count, { n: 1, total: n })}
+        </p>
+        <a class="pt__skip" href="#voz">
+          {p.nav.skip}
+        </a>
+      </div>
+      <div class="pt__progress" aria-hidden="true">
+        <span data-progress></span>
+      </div>
+      <p class="sr-only" aria-live="polite" data-live></p>
       <nav class="pt__rail" aria-label={p.railLabel}>
         <ol role="list">
           {p.scenes.map((s, i) => (
@@ -276,7 +504,193 @@ const config = JSON.stringify({
     font-size: 0.8125rem;
   }
 
-  .pt__hint {
+  /* ---------- Lo que se puede tocar: solo con JavaScript ---------- */
+  .pt__ctl,
+  .pt__start,
+  .pt__nav,
+  .pt__progress {
+    display: none;
+  }
+
+  :global(.js) .pt .pt__ctl {
+    display: grid;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  :global(.js) .pt .pt__start {
+    display: inline-flex;
+    justify-self: start;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .pt__start :global(.icon) {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .pt__ctl-label {
+    margin: 0;
+    color: var(--fondo);
+    font-size: var(--step-small);
+    font-weight: 700;
+  }
+
+  .pt__opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .pt__opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1.5px solid rgb(255 255 255 / 0.4);
+    border-radius: 999px;
+    background: none;
+    color: var(--fondo);
+    font: inherit;
+    font-size: var(--step-small);
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s,
+      color 0.15s;
+  }
+
+  .pt__opt:hover {
+    border-color: var(--fondo);
+  }
+
+  .pt__opt:focus-visible,
+  .pt__range:focus-visible {
+    outline: 3px solid var(--ocre);
+    outline-offset: 2px;
+  }
+
+  .pt__opt[aria-pressed="true"] {
+    border-color: var(--ocre);
+    background: var(--ocre);
+    color: var(--noche);
+  }
+
+  .pt__opt :global(.icon) {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Con el color de su señal en el lienzo (voz, guion, cuenta; monto, plazo...). */
+  .pt__opt--color {
+    border-color: rgb(var(--c) / 0.55);
+  }
+
+  .pt__opt--color[aria-pressed="true"] {
+    border-color: rgb(var(--c));
+    background: rgb(var(--c));
+  }
+
+  .pt__swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgb(var(--c));
+    box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.18);
+  }
+
+  .pt__opt--color[aria-pressed="true"] .pt__swatch {
+    background: var(--noche);
+    box-shadow: none;
+  }
+
+  .pt__opt--ok[aria-pressed="true"] {
+    border-color: #6fcf8e;
+    background: #6fcf8e;
+  }
+
+  .pt__opt--no[aria-pressed="true"] {
+    border-color: var(--fondo);
+    background: var(--fondo);
+  }
+
+  /* Los deslizadores: riel fino, perilla crema con borde ocre. */
+  .pt__range {
+    width: 100%;
+    max-width: 26rem;
+    height: 28px;
+    margin: 0;
+    background: none;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .pt__range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.22);
+  }
+
+  .pt__range::-webkit-slider-thumb {
+    width: 22px;
+    height: 22px;
+    margin-top: -8px;
+    border: 3px solid var(--ocre);
+    border-radius: 50%;
+    background: var(--fondo);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.45);
+    appearance: none;
+  }
+
+  .pt__range::-moz-range-track {
+    height: 6px;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.22);
+  }
+
+  .pt__range::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: 3px solid var(--ocre);
+    border-radius: 50%;
+    background: var(--fondo);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.45);
+  }
+
+  .pt__ends {
+    display: flex;
+    justify-content: space-between;
+    max-width: 26rem;
+    margin-top: -6px;
+    color: var(--claro-tenue);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pt__out {
+    min-height: 1.45em;
+    margin: 0;
+    color: var(--fondo);
+    font-size: var(--step-small);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.45;
+  }
+
+  .pt__out:empty {
     display: none;
   }
 
@@ -326,7 +740,7 @@ const config = JSON.stringify({
 
     .pt :global(.pt__still) {
       grid-column: 2;
-      grid-row: 1 / span 6;
+      grid-row: 1 / span 9;
       margin-top: 0;
     }
   }
@@ -392,46 +806,93 @@ const config = JSON.stringify({
       pointer-events: auto;
     }
 
-    :global(.js) .pt .pt__hint {
+    /* Anterior, siguiente, en qué escena va y el salto a lo que sigue (abajo, bajo el texto). */
+    :global(.js) .pt .pt__nav {
+      position: absolute;
+      bottom: 22px;
+      left: max(var(--margin), calc((100vw - 1232px) / 2));
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin: 18px 0 0;
+      gap: 8px;
+    }
+
+    .pt__arrow {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1.5px solid rgb(255 255 255 / 0.4);
+      border-radius: 50%;
+      background: rgb(28 20 15 / 0.6);
+      color: var(--fondo);
+      cursor: pointer;
+    }
+
+    .pt__arrow:hover:not([aria-disabled="true"]) {
+      border-color: var(--fondo);
+    }
+
+    .pt__arrow[aria-disabled="true"] {
+      border-color: rgb(255 255 255 / 0.16);
+      color: rgb(255 255 255 / 0.3);
+      cursor: default;
+    }
+
+    .pt__arrow:focus-visible,
+    .pt__skip:focus-visible {
+      outline: 3px solid var(--ocre);
+      outline-offset: 2px;
+    }
+
+    .pt__arrow :global(.icon) {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .pt__count {
+      min-width: 4.5em;
+      margin: 0 4px 0 6px;
+      color: var(--fondo);
+      font-size: var(--step-small);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pt__skip {
       color: var(--claro-tenue);
       font-size: var(--step-small);
       font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
 
-    .pt__mouse {
-      position: relative;
-      width: 18px;
-      height: 28px;
-      border: 2px solid var(--claro-tenue);
-      border-radius: 10px;
+    .pt__skip:hover {
+      color: var(--fondo);
     }
 
-    .pt__mouse::after {
-      content: "";
+    /* Cuánto falta: una línea ocre al pie del escenario. */
+    :global(.js) .pt .pt__progress {
       position: absolute;
-      top: 5px;
-      left: 50%;
-      width: 3px;
-      height: 6px;
-      margin-left: -1.5px;
-      border-radius: 2px;
-      background: var(--ocre);
-      animation: pt-wheel 1.6s ease-in-out 3;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: block;
+      height: 3px;
+      background: rgb(255 255 255 / 0.08);
     }
 
-    @keyframes pt-wheel {
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(7px);
-      }
+    .pt__progress span {
+      display: block;
+      height: 100%;
+      background: var(--ocre);
+      transform: scaleX(var(--p, 0));
+      transform-origin: left;
     }
 
     /* La barra de escenas: puntos a la derecha (en el celular, una línea arriba). */
@@ -509,10 +970,25 @@ const config = JSON.stringify({
   }
 
   @media (prefers-reduced-motion: no-preference) and (max-width: 899px) {
+    /* El dibujo arriba y el texto abajo; el degradado empieza donde termina el dibujo (--pt-viz). */
     :global(.js) .pt .pt__copy {
       align-items: flex-end;
       padding-bottom: 22px;
-      background: linear-gradient(180deg, transparent 48%, rgb(28 20 15 / 0.92) 64%);
+      background: linear-gradient(
+        180deg,
+        transparent calc(var(--pt-viz, 48vh) - 8px),
+        rgb(28 20 15 / 0.94) calc(var(--pt-viz, 48vh) + 26px)
+      );
+    }
+
+    :global(.js) .pt .pt__scene {
+      align-self: end;
+      gap: 9px;
+    }
+
+    :global(.js) .pt .pt__scene:has(.pt__ctl) .pt__tags,
+    :global(.js) .pt .pt__ends {
+      display: none;
     }
 
     :global(.js) .pt .pt__title {
@@ -525,6 +1001,33 @@ const config = JSON.stringify({
 
     :global(.js) .pt .pt__text {
       font-size: 0.9375rem;
+      line-height: 1.45;
+    }
+
+    /* En el celular se avanza deslizando: sin flechas; los controles, más compactos. */
+    :global(.js) .pt .pt__nav {
+      display: none;
+    }
+
+    :global(.js) .pt .pt__ctl {
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .pt__opt,
+    .pt__play {
+      min-height: 38px;
+      padding: 0 12px;
+      font-size: 0.8125rem;
+    }
+
+    .pt__out,
+    .pt__ctl-label {
+      font-size: 0.8125rem;
+    }
+
+    .pt__tags li {
+      font-size: 0.75rem;
     }
 
     :global(.js) .pt .pt__rail {
@@ -549,8 +1052,11 @@ const config = JSON.stringify({
   }
 
   @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
+    /* El texto se centra en el alto que dejan libre las flechas de abajo. */
     :global(.js) .pt .pt__copy {
       max-width: none;
+      padding-top: 20px;
+      padding-bottom: 84px;
       padding-left: max(var(--margin), calc((100vw - 1232px) / 2));
     }
 
@@ -576,6 +1082,8 @@ const config = JSON.stringify({
     grid: { cols: number; rows: number; tiles: [string, number, number, string][] };
     photo: string;
     labels: Labels;
+    ui: Dict["lp"]["pitch"]["ui"];
+    nav: Dict["lp"]["pitch"]["nav"];
   };
   type Pieza = {
     tipo: "audio" | "texto" | "imagen";
@@ -708,29 +1216,90 @@ const config = JSON.stringify({
     const stage = root.querySelector<HTMLElement>("[data-stage]")!;
     const scenes = [...root.querySelectorAll<HTMLElement>("[data-scene]")];
     const dots = [...root.querySelectorAll<HTMLButtonElement>("[data-goto]")];
+    const copy = root.querySelector<HTMLElement>(".pt__scenes")!;
+    const cfg = JSON.parse(root.dataset.config ?? "{}") as Config;
+    const L = cfg.labels;
+    const U = cfg.ui;
+    const sceneOf = (el: Element) => Number(el.closest<HTMLElement>("[data-scene]")?.dataset.scene ?? -1);
+    /** Vuelve a dibujar una escena después de tocar algo (en vivo, el lienzo; sin movimiento, su dibujo quieto). */
+    let repaint: (i: number) => void = () => {};
+
+    // ---------- Lo que la persona eligió en cada escena (null: lo decide el scroll) ----------
+    const I = {
+      victim: -1,
+      undo: null as number | null,
+      thr: null as number | null,
+      look: null as number | null,
+      field: null as string | null,
+      sig: { voz: true, guion: true, cuenta: true } as Record<"voz" | "guion" | "cuenta", boolean>,
+      review: null as "ok" | "no" | null,
+      day: null as number | null,
+      country: null as number | null,
+      /** Las escenas que la persona ya tocó: su dibujo se muestra completo, sin esperar al scroll. */
+      touched: new Set<number>(),
+      /** Cuándo fue el último toque (para las transiciones que dependen del tiempo). */
+      t: 0,
+    };
+    /** Valores que se acercan a su meta cuadro a cuadro; `moving` pide otro cuadro. */
+    const sm: Record<string, number> = {};
+    let moving = false;
+    const smooth = (key: string, to: number) => {
+      const v = sm[key] ?? to;
+      const next = reduce || Math.abs(to - v) < 0.002 ? to : v + (to - v) * 0.2;
+      sm[key] = next;
+      if (next !== to) moving = true;
+      return next;
+    };
+    /** Lo que marca el scroll en la escena que se ve (para que los deslizadores lo sigan). */
+    const auto: { undo?: number; day?: number } = {};
+    let main = false;
+
     // Los audios: uno a la vez, se crean al tocar y se detienen al cambiar de escena.
-    let sound: { a: HTMLAudioElement; b: HTMLButtonElement } | null = null;
+    let sound: { a: HTMLAudioElement; b: HTMLButtonElement; ended: boolean } | null = null;
     const stopSound = () => {
       sound?.a.pause();
     };
+    /** Cuánto lleva el audio de ese archivo (0 a 1; 1 si terminó), o -1 si no es el último que sonó. */
+    const heard = (src: string) => {
+      if (!sound || sound.b.dataset.src !== src) return -1;
+      if (sound.ended) return 1;
+      const d = sound.a.duration;
+      return d > 0 && Number.isFinite(d) ? Math.min(1, sound.a.currentTime / d) : 0;
+    };
+    const playing = () => !!sound && !sound.a.paused;
     for (const b of root.querySelectorAll<HTMLButtonElement>("[data-src]")) {
       b.addEventListener("click", () => {
+        const at = sceneOf(b);
+        if (b.dataset.victim) I.victim = Number(b.dataset.victim);
+        if (b.dataset.undo) setUndo(Number(b.dataset.undo), false);
         if (sound?.b === b && !sound.a.paused) {
           sound.a.pause();
           return;
         }
         stopSound();
         const a = new Audio(b.dataset.src);
-        a.addEventListener("play", () => b.setAttribute("aria-pressed", "true"));
-        a.addEventListener("pause", () => b.setAttribute("aria-pressed", "false"));
-        a.addEventListener("ended", () => b.setAttribute("aria-pressed", "false"));
-        sound = { a, b };
+        const s = { a, b, ended: false };
+        const tick = () => repaint(at);
+        a.addEventListener("play", () => {
+          b.setAttribute("aria-pressed", "true");
+          tick();
+        });
+        a.addEventListener("pause", () => {
+          b.setAttribute("aria-pressed", "false");
+          tick();
+        });
+        a.addEventListener("ended", () => {
+          s.ended = true;
+          b.setAttribute("aria-pressed", "false");
+          tick();
+        });
+        // Sin movimiento no hay cuadros: el dibujo quieto se actualiza con el avance del audio.
+        if (reduce) a.addEventListener("timeupdate", tick);
+        sound = s;
+        tick();
         void a.play();
       });
     }
-    const copy = root.querySelector<HTMLElement>(".pt__scenes")!;
-    const cfg = JSON.parse(root.dataset.config ?? "{}") as Config;
-    const L = cfg.labels;
     /** "A-B" o ("A", "B") como "A y B" / "A and B". */
     const pairName = (a: string, b?: string) => {
       const [x = "", y = ""] = b === undefined ? a.split("-") : [a, b];
@@ -818,6 +1387,17 @@ const config = JSON.stringify({
       const h = w / aspect;
       return { x: R.x + (R.w - w * cols) / 2, y: R.y + (R.h - h * rows) / 2, w, h };
     };
+
+    // ---------- Lo que se toca en el lienzo: atajos con el mouse o el dedo ----------
+    // Cada uno tiene su equivalente en los controles del texto o en la barra de escenas (teclado).
+    type Hit = { x: number; y: number; w: number; h: number; go: () => void };
+    let hits: Hit[] = [];
+    const hit = (x: number, y: number, w: number, h: number, go: () => void) => {
+      if (main) hits.push({ x, y, w, h, go });
+    };
+    /** Lleva el scroll a una escena (lo define el modo en vivo). */
+    let goto: (i: number) => void = () => {};
+    const press = (sel: string) => root.querySelector<HTMLButtonElement>(sel)?.click();
 
     // ---------- Lo que se prepara una vez ----------
     let spec: { limpia: HTMLCanvasElement; disfrazada: HTMLCanvasElement } | null = null;
@@ -1104,28 +1684,37 @@ const config = JSON.stringify({
     };
 
     /** 14. Escala: de Lima a la región, y el expediente que cualquier policía o fiscalía puede recibir. */
-    const sceneScale = (g: G, R: Rect, u: number) => {
+    /** Los países de "Escala", en el orden de los rótulos de pago. */
+    const PAY_CODES = ["PE", "CO", "BR", "CR"];
+    const sceneScale = (g: G, R: Rect, u0: number) => {
       const M = D.mapas;
       if (!M) return;
+      // Si la persona elige un país, ese se enciende y su línea desde Lima se marca.
+      const sel = I.country;
+      const pick = sel === null ? "" : (PAY_CODES[sel] ?? "");
+      const u = sel === null ? u0 : Math.max(u0, 0.9);
       const small = R.w < 560;
       const fs = small ? 10 : 12.5;
       const box = small ? { x: R.x, y: R.y, w: R.w, h: R.h * 0.72 } : { x: R.x, y: R.y, w: R.w * 0.72, h: R.h };
       const P = project(box, LATAM_V);
       const lit = new Map<string, number>();
       CAPITALES.forEach(([code], i) => lit.set(code, ease(seg(u, 0.12 + i * 0.03, 0.2 + i * 0.03))));
-      drawLatam(g, M, P, ease(seg(u, 0, 0.08)), (code) => lit.get(code) ?? 0);
+      drawLatam(g, M, P, ease(seg(u, 0, 0.08)), (code) =>
+        pick ? (code === pick ? 1 : 0.12 * (lit.get(code) ?? 0)) : (lit.get(code) ?? 0),
+      );
       // Desde Lima, una línea a cada capital.
       const x0 = P.X(LIMA.lon);
       const y0 = P.Y(LIMA.lat);
-      CAPITALES.forEach(([, lon, lat], i) => {
+      CAPITALES.forEach(([code, lon, lat], i) => {
         const f = ease(seg(u, 0.08 + i * 0.03, 0.2 + i * 0.03));
         if (f <= 0) return;
         const x1 = P.X(lon);
         const y1 = P.Y(lat);
         const mx = (x0 + x1) / 2 - (y1 - y0) * 0.18;
         const my = (y0 + y1) / 2 + (x1 - x0) * 0.18 - 20;
-        g.strokeStyle = c(COL.ocre, 0.65);
-        g.lineWidth = 1.3;
+        const mine = code === pick;
+        g.strokeStyle = c(COL.ocre, pick ? (mine ? 1 : 0.18) : 0.65);
+        g.lineWidth = mine ? 2.6 : 1.3;
         g.beginPath();
         g.moveTo(x0, y0);
         const n = 24;
@@ -1162,11 +1751,13 @@ const config = JSON.stringify({
       L.payments.forEach(([country, apps, lon, lat], i) => {
         const a = ease(seg(u, 0.55 + i * 0.05, 0.63 + i * 0.05));
         if (a <= 0) return;
-        g.globalAlpha = a;
+        const mine = sel === i;
+        g.globalAlpha = a * (sel === null || mine ? 1 : 0.5);
         const x = P.X(Number(lon));
         const y = P.Y(Number(lat));
-        pill(g, `${country}: ${apps}`, x, y, COL.ocre, fs - 1.5);
+        const w = pill(g, `${country}: ${apps}`, x, y, COL.ocre, fs - (mine ? 0 : 1.5), mine);
         g.globalAlpha = 1;
+        hit(x - w / 2, y - fs, w, fs * 2, () => press(`[data-country="${i}"]`));
       });
       // El expediente, para cualquier policía o fiscalía.
       const ex = ease(seg(u, 0.72, 0.84));
@@ -1272,6 +1863,8 @@ const config = JSON.stringify({
         glyphIcon(g, kind, x, y, r * 0.55, c(col));
         txt(g, label, x, y + r + 14, Math.max(11, S * 0.045), c(COL.cream), 700, "center");
         g.globalAlpha = 1;
+        // Escucha, Mira y Lee llevan a su escena.
+        if (a >= 1) hit(x - r - 8, y - r - 6, r * 2 + 16, r * 2 + 30, () => goto([3, 6, 7][i]!));
       });
     };
 
@@ -1362,7 +1955,17 @@ const config = JSON.stringify({
      * Una pieza de evidencia como la ve la víctima: el audio con su onda (se pinta mientras "suena") y su
      * duración, el mensaje en dos líneas o la foto. Devuelve el alto que ocupa.
      */
-    const piece = (g: G, p: Pieza, x: number, y: number, w: number, a: number, play: number, small: boolean) => {
+    const piece = (
+      g: G,
+      p: Pieza,
+      x: number,
+      y: number,
+      w: number,
+      a: number,
+      play: number,
+      small: boolean,
+      lines = 2,
+    ) => {
       const fs = small ? 9 : 11.5;
       g.save();
       g.globalAlpha = a;
@@ -1410,7 +2013,10 @@ const config = JSON.stringify({
         const sec = Math.round(p.segundos ?? 0);
         txt(g, `0:${String(sec).padStart(2, "0")}`, x + w - 8, y + h / 2 + 0.5, fs - 1, "#5a4a40", 700, "right");
       } else {
-        const lines = small ? 2 : 2;
+        // Las líneas que de verdad ocupa el mensaje, hasta el tope.
+        font(g, fs, 400);
+        const need = Math.ceil(g.measureText(p.texto ?? "").width / (w - 18) + 0.15);
+        lines = Math.max(1, Math.min(lines, need));
         h = lines * fs * 1.32 + 16;
         g.beginPath();
         g.roundRect(x, y, w, h, 10);
@@ -1427,7 +2033,7 @@ const config = JSON.stringify({
     };
 
     /** 2. Las víctimas: tres números distintos les mandan audios, fotos y mensajes; cada una queda sola. */
-    const sceneVictims = (g: G, R: Rect, u: number) => {
+    const sceneVictims = (g: G, R: Rect, u0: number) => {
       const casos = D.casos?.casos ?? [];
       const small = R.w < 560;
       const fs = small ? 9.5 : 12;
@@ -1436,49 +2042,57 @@ const config = JSON.stringify({
       const pw = colW - (small ? 4 : 16);
       const sy = R.y + 10;
       const vy = R.y + R.h - (small ? 48 : 62);
+      const r = small ? 18 : 28;
+      // Si la persona eligió un caso, todo ya llegó: ese celular se lee entero y los otros se atenúan.
+      const sel = I.victim;
+      const u = sel >= 0 ? Math.max(u0, 0.8) : u0;
       // El orden de llegada: de la más antigua a la más nueva, en los tres celulares.
       const all = casos
         .flatMap((cs, i) => cs.piezas.map((pz, j) => ({ i, j, pz })))
         .sort((a, b) => (b.pz.dia ?? 0) - (a.pz.dia ?? 0) || (a.pz.hora ?? "").localeCompare(b.pz.hora ?? ""));
       const slotT = new Map(all.map((x, k) => [`${x.i}-${x.j}`, 0.1 + k * (0.6 / all.length)]));
+      let bottom = sy;
       casos.forEach((cs, i) => {
         const x = R.x + i * (colW + gap);
         const cx = x + colW / 2;
+        const dim = sel >= 0 && sel !== i ? 0.3 : 1;
         const a0 = ease(seg(u, i * 0.03, 0.08 + i * 0.03));
         // El número que manda: otro número para cada víctima.
-        g.globalAlpha = a0;
+        g.globalAlpha = a0 * dim;
         pill(g, cs.contacto, cx, sy, COL.dim, small ? 8.5 : 11.5);
         txt(g, L.otherNumber, cx, sy + (small ? 16 : 22), small ? 8.5 : 11, c(COL.dim), 400, "center");
         g.globalAlpha = 1;
-        // Las piezas, una debajo de otra, en el orden en que llegaron.
-        let y = sy + (small ? 30 : 42);
+        // Las piezas, una debajo de otra, en el orden en que llegaron (las que faltan guardan su lugar).
+        const top = sy + (small ? 30 : 42);
+        let y = top;
         cs.piezas.forEach((pz, j) => {
           const t0 = slotT.get(`${i}-${j}`) ?? 0.1;
           const f = seg(u, t0, t0 + 0.08);
-          if (f <= 0) {
-            y +=
-              pz.tipo === "imagen"
-                ? pw * 0.5 + 18
-                : pz.tipo === "audio"
-                  ? small
-                    ? 38
-                    : 56
-                  : (small ? 9 : 11.5) * 2.64 + (small ? 24 : 34);
-            return;
-          }
           const e = ease(f);
-          const play = pz.tipo === "audio" ? seg(u, t0 + 0.08, t0 + 0.3) : 0;
-          const dy = (1 - e) * -26;
-          y += piece(g, pz, x + (colW - pw) / 2, y + dy, pw, e, play, small);
+          let play = pz.tipo === "audio" ? seg(u, t0 + 0.08, t0 + 0.3) : 0;
+          if (pz.tipo === "audio" && sel === i) {
+            const h = heard(`/casos/${cs.caso.toLowerCase()}1.m4a`);
+            if (h >= 0) play = h;
+          }
+          const dy = f > 0 ? (1 - e) * -26 : 0;
+          y += piece(g, pz, x + (colW - pw) / 2, y + dy, pw, e * dim, play, small, sel === i ? 5 : 2);
         });
+        bottom = Math.max(bottom, y);
+        if (sel === i) {
+          g.strokeStyle = c(COL.ocre, 0.9);
+          g.lineWidth = 1.5;
+          g.beginPath();
+          g.roundRect(x + (colW - pw) / 2 - 6, top - 8, pw + 12, y - top + (small ? 0 : -6), 12);
+          g.stroke();
+        }
         // La víctima.
-        const r = small ? 18 : 28;
         const iso = seg(u, 0.78, 0.92);
+        g.globalAlpha = dim;
         g.beginPath();
         g.arc(cx, vy, r, 0, Math.PI * 2);
         g.fillStyle = c("255 255 255", 0.08 * a0);
         g.fill();
-        g.strokeStyle = c(COL.alert, 0.4 + 0.6 * iso);
+        g.strokeStyle = c(sel === i ? COL.ocre : COL.alert, 0.4 + 0.6 * iso);
         g.lineWidth = 1.5 + iso;
         g.stroke();
         if (iso > 0 && iso < 1) {
@@ -1487,18 +2101,57 @@ const config = JSON.stringify({
           g.strokeStyle = c(COL.alert, 0.7 * (1 - iso));
           g.stroke();
         }
-        g.globalAlpha = a0;
+        g.globalAlpha = a0 * dim;
         victimIcon(g, i, cx, vy, r);
         txt(g, fill(L.caseLabel, { k: cs.caso }), cx, vy + r + (small ? 12 : 16), fs, c(COL.cream), 700, "center");
         txt(g, `${L.sectors[i]}, ${L.zones[i]}`, cx, vy + r + (small ? 25 : 33), fs - 1.5, c(COL.dim), 400, "center");
         g.globalAlpha = 1;
         // Para cada una, un caso aislado.
         if (iso > 0) {
-          g.globalAlpha = iso;
+          g.globalAlpha = iso * dim;
           pill(g, L.oneReport, cx, vy - r - (small ? 12 : 16), COL.alert, small ? 8.5 : 11, true);
           g.globalAlpha = 1;
         }
+        // Tocar un celular reproduce su audio (lo mismo que su botón).
+        hit(x, sy - 14, colW, vy + r + 40 - sy, () => press(`[data-victim="${i}"]`));
       });
+      // Lo que dice el audio del caso elegido, como subtítulos que avanzan mientras suena.
+      const cs = casos[sel];
+      const audio = cs?.piezas.find((x) => x.tipo === "audio");
+      if (cs && audio?.texto) {
+        const tfs = small ? 10.5 : 16;
+        const y0 = bottom + (small ? 2 : 10);
+        const y1 = vy - r - (small ? 24 : 34);
+        const max = Math.floor((y1 - y0 - tfs * 1.8) / (tfs * 1.38));
+        if (max >= 1) {
+          const h = heard(`/casos/${cs.caso.toLowerCase()}1.m4a`);
+          const p = h < 0 ? 1 : h;
+          const words = audio.texto.split(" ");
+          const said = `«${words.slice(0, Math.ceil(words.length * p)).join(" ")}${p >= 1 ? "»" : ""}`;
+          font(g, tfs, 400);
+          const lines: string[] = [];
+          let cur = "";
+          for (const w of said.split(" ")) {
+            const next = cur ? `${cur} ${w}` : w;
+            if (g.measureText(next).width > R.w && cur) {
+              lines.push(cur);
+              cur = w;
+            } else cur = next;
+          }
+          if (cur) lines.push(cur);
+          txt(g, `${fill(L.caseLabel, { k: cs.caso })}, ${L.says}`, R.x, y0 + tfs * 0.6, tfs - 1.5, c(COL.ocre), 700);
+          lines.slice(-max).forEach((l, k) => txt(g, l, R.x, y0 + tfs * 2.1 + k * tfs * 1.38, tfs, c(COL.cream), 400));
+        }
+      }
+    };
+
+    /** La línea que marca por dónde va el audio que suena. */
+    const playhead = (g: G, x: number, y: number, h: number) => {
+      g.fillStyle = c(COL.cream, 0.95);
+      g.fillRect(x - 1, y - 4, 2, h + 8);
+      g.beginPath();
+      g.arc(x, y - 4, 4, 0, Math.PI * 2);
+      g.fill();
     };
 
     /** La huella (12 x 16) en un rectángulo, con las casillas que ya llegaron. */
@@ -1542,7 +2195,9 @@ const config = JSON.stringify({
         ? { x: left.x, y: left.y + left.h * 0.44, w: left.w, h: left.h * 0.5 }
         : { x: left.x, y: wy + 112, w: left.w, h: left.h - (wy + 112 - left.y) };
       if (spec) {
-        const rev = seg(u, 0.25, 0.48);
+        // Si suena el audio, el espectrograma se ve entero y una línea marca por dónde va.
+        const ph = heard("/voz/b1-limpia.m4a");
+        const rev = Math.max(seg(u, 0.25, 0.48), ph >= 0 ? 1 : 0);
         txt(g, L.spectrogram, sp.x, sp.y - 12, fs, c(COL.dim, rev > 0 ? 1 : 0), 700);
         g.save();
         g.beginPath();
@@ -1551,6 +2206,7 @@ const config = JSON.stringify({
         g.imageSmoothingEnabled = false;
         g.drawImage(spec.limpia, sp.x, sp.y, sp.w, sp.h);
         g.restore();
+        if (ph > 0 && ph < 1) playhead(g, sp.x + sp.w * ph, sp.y, sp.h);
       }
       // La huella: cada número llega desde la nota.
       if (fp) {
@@ -1598,14 +2254,30 @@ const config = JSON.stringify({
       const small = R.w < 520;
       const fs = small ? 10.5 : 12.5;
       const wide = R.w > 560;
-      const sp = { x: R.x, y: R.y + 22, w: wide ? R.w * 0.55 : R.w, h: wide ? R.h * 0.62 : R.h * 0.38 };
-      // Qué tono mira ahora.
-      const q = seg(u, 0.18, 0.82) * (PATH_K.length - 1);
-      const i0 = Math.floor(q);
-      const kf = lerp(PATH_K[i0]!, PATH_K[Math.min(PATH_K.length - 1, i0 + 1)]!, inout(q - i0));
-      const k = Math.round(kf);
+      const sp = {
+        x: R.x,
+        y: R.y + 22,
+        w: wide ? R.w * 0.55 : R.w,
+        h: wide ? R.h * 0.62 : Math.min(R.h * 0.45, R.h - 178),
+      };
+      // Qué tono mira ahora: el que eligió la persona con el deslizador o, si no tocó nada, el del scroll.
+      const user = I.undo !== null;
+      let kf: number;
+      let k: number;
+      if (user) {
+        k = I.undo!;
+        kf = smooth("undo", k);
+      } else {
+        const q = seg(u, 0.18, 0.82) * (PATH_K.length - 1);
+        const i0 = Math.floor(q);
+        kf = lerp(PATH_K[i0]!, PATH_K[Math.min(PATH_K.length - 1, i0 + 1)]!, inout(q - i0));
+        k = Math.round(kf);
+        sm.undo = kf;
+        if (main) auto.undo = k;
+      }
       const cur = fp.sweep.find((s) => s.k === k) ?? fp.sweep.find((s) => s.k === 0)!;
-      const fin = seg(u, 0.82, 0.9) > 0;
+      const best = fp.sweep.reduce((a, b) => (b.cos > a.cos ? b : a)).k;
+      const fin = user || seg(u, 0.82, 0.9) > 0;
       const e = D.voz.espectro;
       const rowH = sp.h / e.filas;
       g.save();
@@ -1615,9 +2287,12 @@ const config = JSON.stringify({
       g.fillStyle = rgb(RAMP[0]!);
       g.fillRect(sp.x, sp.y, sp.w, sp.h);
       g.imageSmoothingEnabled = false;
-      g.globalAlpha = ease(seg(u, 0, 0.1));
+      g.globalAlpha = user ? 1 : ease(seg(u, 0, 0.1));
       g.drawImage(spec.disfrazada, sp.x, sp.y - kf * e.por_semitono * rowH, sp.w, sp.h);
       g.restore();
+      // Si suena la voz disfrazada o la revertida, una línea marca por dónde va.
+      const ph = Math.max(heard("/voz/b1-disfrazada.m4a"), heard("/voz/b1-revertida.m4a"));
+      if (ph > 0 && ph < 1) playhead(g, sp.x + sp.w * ph, sp.y, sp.h);
       const lab = k === 0 ? `${L.voiceB}, ${L.disguised}` : `${L.voiceB}, ${fill(L.reverted, { k: signed(k) })}`;
       txt(g, lab, sp.x, sp.y - 12, fs, c(COL.dim), 700);
       // La escala de semitonos.
@@ -1636,25 +2311,32 @@ const config = JSON.stringify({
       g.lineTo(mx + 6, dy - 18);
       g.fill();
       txt(g, L.semitones, sp.x + sp.w / 2, dy + 32, fs - 2, c(COL.dim), 400, "center");
-      // Las dos huellas y el parecido.
-      const cell = wide ? Math.min(11, (R.w - sp.w - 40) / 16) : Math.min(8, (R.w - 20) / 34);
+      // Las dos huellas y el parecido (en el celular, las huellas a la izquierda y el parecido al lado).
+      const cell = wide ? Math.min(11, (R.w - sp.w - 40) / 16) : Math.min(6.5, (R.w * 0.62 - 12) / 32);
       const gx = wide ? R.x + R.w - cell * 16 : R.x;
-      const gy = wide ? R.y + 22 : dy + 40;
+      const gy = wide ? R.y + 22 : dy + 54;
       txt(g, L.voiceA, gx, gy - 12, fs - 1, c(COL.dim), 700);
       drawPrint(g, gx, gy, cell, fp.a, fp.scale);
-      const g2x = wide ? gx : gx + cell * 16 + 18;
+      const g2x = wide ? gx : gx + cell * 16 + 12;
       const g2y = wide ? gy + cell * 12 + 30 : gy;
       txt(g, L.voiceB, g2x, g2y - 12, fs - 1, c(COL.dim), 700);
       drawPrint(g, g2x, g2y, cell, cur.v, fp.scale);
-      const gw = wide ? cell * 16 : R.w;
-      const gyy = wide ? g2y + cell * 12 + 26 : gy + cell * 12 + 22;
-      gauge(g, gx, gyy, gw, cur.cos, fs, fin && k === -5);
+      if (wide) gauge(g, gx, g2y + cell * 12 + 26, cell * 16, cur.cos, fs, fin && k === best);
+      else {
+        const x3 = g2x + cell * 16 + 18;
+        gauge(g, x3, gy - 12, R.x + R.w - x3, cur.cos, fs, fin && k === best);
+      }
     };
 
     /** 5. Compara: el radar de voces alrededor de la voz de B. */
-    const sceneRadar = (g: G, R: Rect, u: number) => {
+    const sceneRadar = (g: G, R: Rect, u0: number) => {
       const r = D.pitch?.radar;
       if (!r) return;
+      // El umbral lo puede mover la persona: las voces que lo pasan se encienden y las demás se apagan.
+      const user = I.thr !== null;
+      const u = user ? Math.max(u0, 0.8) : u0;
+      const thr = I.thr ?? 0.6;
+      const tS = smooth("thr", thr);
       const small = R.w < 520;
       const fs = small ? 10 : 12;
       const cx = R.x + R.w / 2;
@@ -1670,13 +2352,21 @@ const config = JSON.stringify({
         g.arc(cx, cy, dist(v), 0, Math.PI * 2);
         g.stroke();
       }
+      if (user) {
+        g.fillStyle = c(COL.ocre, 0.07);
+        g.beginPath();
+        g.arc(cx, cy, dist(tS), 0, Math.PI * 2);
+        g.fill();
+      }
       g.setLineDash([6, 4]);
-      g.strokeStyle = c(COL.ocre, 0.55 * a0);
+      g.strokeStyle = c(COL.ocre, (user ? 0.9 : 0.55) * a0);
+      g.lineWidth = user ? 1.6 : 1;
       g.beginPath();
-      g.arc(cx, cy, dist(0.6), 0, Math.PI * 2);
+      g.arc(cx, cy, dist(tS), 0, Math.PI * 2);
       g.stroke();
       g.setLineDash([]);
-      txt(g, `${L.threshold} 0.60`, cx, cy - dist(0.6) - 10, fs - 1, c(COL.ocre, a0), 700, "center");
+      g.lineWidth = 1;
+      txt(g, `${L.threshold} ${fmt(thr)}`, cx, cy - dist(tS) - 10, fs - 1, c(COL.ocre, a0), 700, "center");
       // Las voces: entran desde afuera hasta su distancia.
       const pts = [
         ...r.slr73.map((cos, i) => ({ cos, ang: i * 2.39996 + 0.4, col: COL.dim, s: 3, lab: "" })),
@@ -1690,10 +2380,18 @@ const config = JSON.stringify({
         const d = lerp(Rr * 1.5, dist(p.cos), f);
         const x = cx + Math.cos(p.ang) * d;
         const y = cy + Math.sin(p.ang) * d;
-        g.fillStyle = c(p.col, Math.min(1, f * 1.5));
+        const pass = p.cos >= tS;
+        g.fillStyle = c(p.col, Math.min(1, f * 1.5) * (user && !pass ? 0.3 : 1));
         g.beginPath();
         g.arc(x, y, p.s * (small ? 0.8 : 1), 0, Math.PI * 2);
         g.fill();
+        if (user && pass) {
+          g.strokeStyle = c(COL.ocre);
+          g.lineWidth = 1.5;
+          g.beginPath();
+          g.arc(x, y, p.s * (small ? 0.8 : 1) + 4, 0, Math.PI * 2);
+          g.stroke();
+        }
         if (p.lab && f >= 1) {
           const la = seg(u, 0.62, 0.75);
           if (p.cos === r.caso_a) {
@@ -1729,8 +2427,12 @@ const config = JSON.stringify({
       { x: 0.295, y: 0.632, w: 0.091, h: 0.103, lab: "bullet" },
       { x: 0.406, y: 0.53, w: 0.355, h: 0.381, lab: "note" },
     ];
-    const sceneLook = (g: G, R: Rect, u: number) => {
+    const sceneLook = (g: G, R: Rect, u0: number) => {
       const small = R.w < 520;
+      // La persona elige qué par de fotos comparar; entonces todo se ve completo y las líneas vuelven a tenderse.
+      const sel = I.look ?? 0;
+      const touched = I.touched.has(6);
+      const u = touched ? 1 : u0;
       const fs = small ? 10 : 12;
       const pw = Math.min(R.w, R.h * 0.46 * (1000 / 506));
       const ph = pw * (506 / 1000);
@@ -1769,7 +2471,7 @@ const config = JSON.stringify({
       // Dos fotos del mismo cuarto, parche por parche.
       const fo = D.fotos;
       if (!fo) return;
-      const par = fo.pares[0]!;
+      const par = fo.pares[sel]!;
       const C = fo.grid.cols;
       const Rw = fo.grid.rows;
       const gap = R.w * 0.08;
@@ -1788,8 +2490,13 @@ const config = JSON.stringify({
           g.fillRect(mx[s]! + (k % C) * cw + 0.5, my + Math.floor(k / C) * ch + 0.5, cw - 1, ch - 1);
         }
       });
+      const names = [L.sameRoom, L.otherRoom, L.resent];
+      if (u >= 0.45) txt(g, names[sel] ?? "", mx[0]!, my - 12, fs - 0.5, c(COL.cream), 700);
+      const lt = touched && !reduce ? clamp((performance.now() - I.t) / 900) : 1;
+      if (lt < 1) moving = true;
       par.lineas.forEach(([i, j], li) => {
-        const f = ease(seg(u, 0.62 + (li / par.lineas.length) * 0.18, 0.66 + (li / par.lineas.length) * 0.18));
+        const at = li / par.lineas.length;
+        const f = touched ? ease(seg(lt, at * 0.5, at * 0.5 + 0.5)) : ease(seg(u, 0.62 + at * 0.18, 0.66 + at * 0.18));
         if (f <= 0) return;
         const x0 = mx[0]! + ((i! % C) + 0.5) * cw;
         const y0 = my + (Math.floor(i! / C) + 0.5) * ch;
@@ -1818,8 +2525,16 @@ const config = JSON.stringify({
           const a = ease(seg(cmp, i * 0.2, i * 0.2 + 0.6));
           if (a <= 0) return;
           const y = by + i * (small ? 18 : 24);
-          g.globalAlpha = a;
+          const on = !touched || i === sel;
+          g.globalAlpha = a * (on ? 1 : 0.45);
+          if (touched && i === sel) {
+            g.fillStyle = c(COL.ocre);
+            g.beginPath();
+            g.arc(R.x - 9, y, 3.5, 0, Math.PI * 2);
+            g.fill();
+          }
           txt(g, name, R.x, y, fs - 1, c(COL.cream), 700);
+          hit(R.x - 14, y - (small ? 9 : 12), R.w + 14, small ? 18 : 24, () => press(`[data-look="${i}"]`));
           g.fillStyle = c(col, 0.85);
           g.fillRect(R.x + lw, y - 5, bw * (n / 384) * a, 10);
           txt(g, fill(L.patches, { n }), R.x + lw + bw * (n / 384) * a + 8, y + 0.5, fs - 1.5, c(COL.dim), 400);
@@ -1860,10 +2575,13 @@ const config = JSON.stringify({
     };
 
     /** 7. Lee: Muse Spark lee la evidencia del caso A y cada dato vuela a su fila de la ficha. */
-    const sceneRead = (g: G, R: Rect, u: number) => {
+    const sceneRead = (g: G, R: Rect, u0: number) => {
       const lee = D.pitch?.lee;
       const casos = D.pitch?.casos;
       if (!lee || !casos) return;
+      // Si la persona elige un dato, la lectura ya terminó: se marca de dónde sale y a qué fila va.
+      const sel = I.field;
+      const u = sel ? Math.max(u0, 0.66) : u0;
       const f = casos.A!;
       const small = R.w < 560;
       const fs = small ? 10.5 : 12.5;
@@ -1902,9 +2620,15 @@ const config = JSON.stringify({
           if (!ws.length) continue;
           const seen = read >= offset + m.b;
           if (!seen) continue;
+          const mine = sel === m.kind;
           for (const w of ws) {
-            g.fillStyle = c(KIND[m.kind] ?? COL.dim, 0.28);
+            g.fillStyle = c(KIND[m.kind] ?? COL.dim, sel ? (mine ? 0.62 : 0.08) : 0.28);
             g.fillRect(R.x + 10 + w.x - 2, y + 22 + w.line * lh, w.width + 4, lh - 2);
+            if (mine) {
+              g.strokeStyle = c(KIND[m.kind]!);
+              g.lineWidth = 1.2;
+              g.strokeRect(R.x + 10 + w.x - 2.5, y + 22 + w.line * lh - 0.5, w.width + 5, lh - 1);
+            }
           }
           const w0 = ws[0]!;
           flying.push({
@@ -1951,7 +2675,7 @@ const config = JSON.stringify({
         ],
         [L.fields.sources, f.fuentes.join(", "), null],
       ];
-      const rowH = small ? (R.h * 0.44) / rows.length : Math.min(46, (R.h - 70) / rows.length);
+      const rowH = small ? (R.y + R.h - fy - 34) / rows.length : Math.min(46, (R.h - 70) / rows.length);
       const appear = ease(seg(u, 0.02, 0.1));
       g.globalAlpha = appear;
       g.fillStyle = "rgb(255 255 255 / 0.06)";
@@ -1966,6 +2690,13 @@ const config = JSON.stringify({
       g.globalAlpha = 1;
       rows.forEach(([k, v, kind], i) => {
         const ry = fy + 34 + i * rowH + (small ? 0 : 8);
+        if (sel && kind === sel) {
+          g.fillStyle = c(KIND[kind]!, 0.16);
+          g.beginPath();
+          g.roundRect(fichaX + 4, ry - rowH / 2 + 1, fichaW - 8, rowH - 2, 6);
+          g.fill();
+        }
+        if (kind) hit(fichaX, ry - rowH / 2, fichaW, rowH, () => press(`[data-field="${kind}"]`));
         // Cada fila se llena cuando llega su dato (o al final de la lectura, si no tiene marca).
         const arrive = kind ? flying.filter((x) => x.kind === kind).map((x) => x.t)[0] : undefined;
         const t0 = arrive !== undefined ? 0.04 + arrive * 0.51 + 0.06 : 0.58 + i * 0.015;
@@ -1978,6 +2709,26 @@ const config = JSON.stringify({
           g.globalAlpha = 1;
         }
       });
+      // El dato elegido, unido con una línea a su fila.
+      const fl0 = sel ? flying.find((x) => x.kind === sel) : undefined;
+      const ri = sel ? rows.findIndex((r) => r[2] === sel) : -1;
+      if (fl0 && ri >= 0) {
+        const tx = fichaX + 6;
+        const ty = fy + 34 + ri * rowH + (small ? 0 : 8);
+        g.strokeStyle = c(KIND[sel!]!, 0.9);
+        g.lineWidth = 1.5;
+        g.setLineDash([4, 3]);
+        g.beginPath();
+        g.moveTo(fl0.x, fl0.y);
+        if (small) g.bezierCurveTo(fl0.x, (fl0.y + ty) / 2, tx - 30, ty, tx, ty);
+        else g.bezierCurveTo((fl0.x + tx) / 2, fl0.y, (fl0.x + tx) / 2, ty, tx, ty);
+        g.stroke();
+        g.setLineDash([]);
+        g.fillStyle = c(KIND[sel!]!);
+        g.beginPath();
+        g.arc(tx, ty, 3.5, 0, Math.PI * 2);
+        g.fill();
+      }
       // Los datos vuelan del texto a su fila.
       for (const fl of flying) {
         const i = rows.findIndex((r) => r[2] === fl.kind);
@@ -2343,11 +3094,17 @@ const config = JSON.stringify({
     };
 
     /** 10. Combina: las señales calibradas de dos pares y su suma. */
-    const sceneCombine = (g: G, R: Rect, u: number) => {
+    /** La suma de las señales prendidas: 1 − ∏(1 − p), la misma de combineSignals (packages/shared). */
+    const combined = (sg: Señales) =>
+      1 - (I.sig.voz ? 1 - sg.voz : 1) * (I.sig.guion ? 1 - sg.guion : 1) * (I.sig.cuenta ? 1 - sg.cuenta : 1);
+    const sceneCombine = (g: G, R: Rect, u0: number) => {
       const cb = D.pitch?.combina;
       if (!cb) return;
       const small = R.w < 560;
       const fs = small ? 10 : 12.5;
+      // La persona puede apagar señales: la suma se recalcula y cambia la decisión.
+      const touched = I.touched.has(10);
+      const u = touched ? 1 : u0;
       const pairs: [string, Señales, number][] = [
         [pairName("A", "B"), cb.ab, 0],
         [pairName("B", "C"), cb.bc, 0.45],
@@ -2362,32 +3119,53 @@ const config = JSON.stringify({
         g.globalAlpha = 1;
         const barX = R.x + (small ? 70 : 110);
         const barW = R.w - (barX - R.x) - (small ? 40 : 60);
-        const rows: [string, number, string][] = [
-          [L.signals.voice, sg.voz, COL.ocre],
-          [L.signals.script, sg.guion, KIND.frase!],
-          [L.signals.account, sg.cuenta, COL.id],
-          [L.signals.together, sg.total, COL.cream],
+        const tot = combined(sg);
+        const totS = smooth(`tot${pi}`, tot);
+        const rows: [string, number, string, string | null][] = [
+          [L.signals.voice, sg.voz, COL.ocre, "voz"],
+          [L.signals.script, sg.guion, KIND.frase!, "guion"],
+          [L.signals.account, sg.cuenta, COL.id, "cuenta"],
+          [L.signals.together, totS, COL.cream, null],
         ];
         const rh = Math.min(small ? 26 : 38, (ph - 40) / rows.length);
-        rows.forEach(([k, v, col], i) => {
+        rows.forEach(([k, v, col, key], i) => {
           const y = y0 + 34 + i * rh;
           const grow = ease(seg(u, t0 + 0.05 + i * 0.06, t0 + 0.13 + i * 0.06));
-          const isTotal = i === rows.length - 1;
+          const isTotal = key === null;
+          const on = isTotal || I.sig[key as keyof typeof I.sig];
           txt(
             g,
             k,
             R.x,
             y + rh / 2 - 2,
             fs - (isTotal ? 0 : 1),
-            isTotal ? c(COL.cream) : c(COL.dim),
+            isTotal ? c(COL.cream) : c(COL.dim, on ? 1 : 0.6),
             isTotal ? 800 : 400,
           );
           g.fillStyle = "rgb(255 255 255 / 0.08)";
           g.fillRect(barX, y + 2, barW, rh - 10);
-          g.fillStyle = c(col, isTotal ? 1 : 0.85);
-          g.fillRect(barX, y + 2, barW * v * grow, rh - 10);
+          if (on) {
+            g.fillStyle = c(col, isTotal ? 1 : 0.85);
+            g.fillRect(barX, y + 2, barW * v * grow, rh - 10);
+          } else if (v > 0.005) {
+            // Apagada: solo su contorno, para ver cuánto aportaba.
+            g.setLineDash([3, 3]);
+            g.strokeStyle = c(col, 0.7);
+            g.lineWidth = 1;
+            g.strokeRect(barX + 0.5, y + 2.5, barW * v * grow - 1, rh - 11);
+            g.setLineDash([]);
+          }
           if (grow > 0)
-            txt(g, v > 0.005 ? fmt(v) : "0", barX + barW * v * grow + 8, y + rh / 2 - 3, fs, c(COL.cream), 700);
+            txt(
+              g,
+              on ? (v > 0.005 ? fmt(v) : "0") : L.off,
+              barX + barW * v * grow + 8,
+              y + rh / 2 - 3,
+              fs,
+              on ? c(COL.cream) : c(COL.dim),
+              700,
+            );
+          if (key) hit(R.x, y, R.w, rh, () => press(`[data-sig="${key}"]`));
         });
         // Los umbrales: revisar (0.60) y probable (0.90).
         for (const [v, lab] of [
@@ -2408,8 +3186,16 @@ const config = JSON.stringify({
         const done = ease(seg(u, t0 + 0.3, t0 + 0.36));
         if (done > 0) {
           g.globalAlpha = done;
-          const parts = [sg.voz, sg.guion, sg.cuenta].filter((x) => x > 0.005);
-          const formula = `1 − ${parts.map((x) => `(1 − ${fmt(x)})`).join(" × ")} = ${fmt(sg.total)}`;
+          const parts = [
+            [sg.voz, I.sig.voz],
+            [sg.guion, I.sig.guion],
+            [sg.cuenta, I.sig.cuenta],
+          ]
+            .filter(([x, on]) => on && (x as number) > 0.005)
+            .map(([x]) => x as number);
+          const formula = parts.length
+            ? `1 − ${parts.map((x) => `(1 − ${fmt(x)})`).join(" × ")} = ${fmt(tot)}`
+            : `= ${fmt(0)}`;
           txt(
             g,
             formula,
@@ -2421,17 +3207,28 @@ const config = JSON.stringify({
             "left",
             "ui-monospace, Consolas, monospace",
           );
-          if (sg.total >= cb.probable)
-            pill(g, L.probable, R.x + R.w - (small ? 34 : 44), y0 + 8, COL.alert, fs - 1, true);
+          // La decisión: probable, a revisión o no llega al equipo.
+          const lv = tot >= cb.probable ? "probable" : tot >= cb.revisar ? "review" : "none";
+          const label = lv === "probable" ? L.probable : lv === "review" ? L.review : U.combine.levels.none;
+          const col = lv === "probable" ? COL.alert : lv === "review" ? COL.ocre : COL.dim;
+          font(g, fs - 1, 700);
+          const pw2 = g.measureText(label).width + (fs - 1) * 1.1;
+          font(g, fs + 4, 800, display);
+          const nameW = g.measureText(name).width;
+          pill(g, label, R.x + nameW + 14 + pw2 / 2, y0 + 8, col, fs - 1, lv === "probable");
           g.globalAlpha = 1;
         }
       });
     };
 
     /** 11. Une: los casos y lo que comparten arman la red; una persona la confirma. */
-    const sceneNetwork = (g: G, R: Rect, u: number) => {
+    const sceneNetwork = (g: G, R: Rect, u0: number) => {
       const small = R.w < 520;
       const fs = small ? 10 : 12;
+      // La persona revisa el vínculo por la voz entre A y B: si lo descarta, A queda fuera de la red.
+      const rv = I.review;
+      const u = rv ? Math.max(u0, 0.95) : u0;
+      const out = rv === "no";
       const P = (fx: number, fy: number) => ({ x: R.x + R.w * fx, y: R.y + R.h * fy });
       const cases = [
         { k: "A", ...P(0.1, 0.32) },
@@ -2463,18 +3260,21 @@ const config = JSON.stringify({
         g.stroke();
         g.setLineDash([]);
         g.globalAlpha = ring;
-        pill(g, L.network, R.x + R.w * 0.53, R.y + 8, COL.alert, fs + 1);
+        pill(g, fill(L.network, { n: out ? 5 : 6 }), R.x + R.w * 0.53, R.y + 8, COL.alert, fs + 1);
         g.globalAlpha = 1;
       }
       edges.forEach(([a, b, col], i) => {
         const f = ease(seg(u, 0.25 + i * 0.04, 0.35 + i * 0.04));
         if (f <= 0) return;
-        g.strokeStyle = c(col, 0.9);
-        g.lineWidth = 2.5;
+        const cut = out && i < 2;
+        g.strokeStyle = c(col, cut ? 0.3 : 0.9);
+        g.lineWidth = cut ? 1.5 : 2.5;
+        if (cut) g.setLineDash([4, 5]);
         g.beginPath();
         g.moveTo(a.x, a.y);
         g.lineTo(lerp(a.x, b.x, f), lerp(a.y, b.y, f));
         g.stroke();
+        g.setLineDash([]);
       });
       // F dice ser de Los X, pero paga a otra cuenta y su voz no está: solo el guion (0.40) no alcanza.
       const fa = ease(seg(u, 0.5, 0.6));
@@ -2494,7 +3294,7 @@ const config = JSON.stringify({
       for (const h of [voice, acc]) {
         const f = ease(seg(u, 0.18, 0.3));
         if (f <= 0) continue;
-        g.globalAlpha = f;
+        g.globalAlpha = f * (out && h === voice ? 0.4 : 1);
         g.fillStyle = "rgb(28 20 15)";
         g.beginPath();
         g.arc(h.x, h.y, small ? 14 : 18, 0, Math.PI * 2);
@@ -2519,7 +3319,7 @@ const config = JSON.stringify({
         const f = ease(seg(u, i * 0.03, 0.14 + i * 0.03));
         if (f <= 0) return;
         const w = small ? 32 : 42;
-        g.globalAlpha = f * (n === F ? 0.45 : 1);
+        g.globalAlpha = f * (n === F || (out && n.k === "A") ? 0.45 : 1);
         g.fillStyle = "#f4efe8";
         g.beginPath();
         g.roundRect(n.x - w / 2, n.y - w / 2, w, w, 10);
@@ -2527,23 +3327,32 @@ const config = JSON.stringify({
         txt(g, n.k, n.x, n.y + 1, small ? 15 : 18, "#2a1e17", 800, "center", display);
         g.globalAlpha = 1;
       });
-      const ok = ease(seg(u, 0.78, 0.9));
+      // La decisión: confirmado (por una revisora, o por la persona que mira) o descartado.
+      const ok = rv ? 1 : ease(seg(u, 0.78, 0.9));
       if (ok > 0) {
         const x = cases[0]!.x - (small ? 8 : 12);
         const y = cases[0]!.y - (small ? 44 : 58);
         g.globalAlpha = ok;
-        g.fillStyle = "#2f6b4a";
+        g.fillStyle = out ? "#8a3b22" : "#2f6b4a";
         g.beginPath();
         g.arc(x, y, small ? 11 : 14, 0, Math.PI * 2);
         g.fill();
         g.strokeStyle = "#fff";
         g.lineWidth = 2.5;
         g.beginPath();
-        g.moveTo(x - 5, y);
-        g.lineTo(x - 1, y + 4);
-        g.lineTo(x + 6, y - 4);
+        if (out) {
+          g.moveTo(x - 4.5, y - 4.5);
+          g.lineTo(x + 4.5, y + 4.5);
+          g.moveTo(x + 4.5, y - 4.5);
+          g.lineTo(x - 4.5, y + 4.5);
+        } else {
+          g.moveTo(x - 5, y);
+          g.lineTo(x - 1, y + 4);
+          g.lineTo(x + 6, y - 4);
+        }
         g.stroke();
-        txt(g, L.confirmed, x + (small ? 18 : 22), y + 1, fs, c(COL.cream), 700, "left");
+        const said = rv === "ok" ? L.confirmedByYou : out ? L.discardedByYou : L.confirmed;
+        txt(g, said, x + (small ? 18 : 22), y + 1, fs, c(COL.cream), 700, "left");
         g.globalAlpha = 1;
       }
     };
@@ -2552,6 +3361,9 @@ const config = JSON.stringify({
     const sceneVigia = (g: G, R: Rect, u: number) => {
       const vg = D.pitch?.vigia;
       if (!vg) return;
+      // Con el deslizador, la persona avanza los días: los casos entran cuando llega su fecha.
+      const user = I.day !== null;
+      const dS = user ? smooth("day", I.day!) : 0;
       const small = R.w < 560;
       const fs = small ? 10 : 12.5;
       const zonas = [
@@ -2562,7 +3374,7 @@ const config = JSON.stringify({
       const ax1 = R.x + R.w - 10;
       const X = (dia: number) => lerp(ax0, ax1, (vg.ventana - dia) / vg.ventana);
       const rowY = (i: number) => R.y + (small ? 64 : 90) + i * (small ? 70 : 96);
-      const a0 = ease(seg(u, 0, 0.08));
+      const a0 = user ? 1 : ease(seg(u, 0, 0.08));
       // El eje: hace 14 días a hoy.
       g.globalAlpha = a0;
       g.fillStyle = "rgb(255 255 255 / 0.25)";
@@ -2592,12 +3404,14 @@ const config = JSON.stringify({
       // Los casos entran en el orden en que llegaron (del más antiguo al más nuevo).
       const orden = [...vg.casos].sort((a, b) => b.dia - a.dia);
       let losX = 0;
+      let last = -1;
       orden.forEach((cs, i) => {
         const zi = zonas.findIndex((z) => z.id === cs.zona);
         if (zi < 0) return;
         const t0 = 0.1 + i * 0.07;
-        const a = ease(seg(u, t0, t0 + 0.06));
+        const a = user ? ease(clamp((dS - (vg.ventana - cs.dia)) * 2 + 1)) : ease(seg(u, t0, t0 + 0.06));
         if (a <= 0) return;
+        if (a >= 1) last = Math.max(last, vg.ventana - cs.dia);
         const isX = cs.grupo === "Los X" && cs.zona === "san-juan-de-lurigancho";
         if (isX && a >= 1) losX++;
         const x = X(cs.dia);
@@ -2616,6 +3430,16 @@ const config = JSON.stringify({
           g.stroke();
         }
       });
+      if (!user && main) auto.day = Math.max(0, last);
+      // El día que eligió la persona: una línea sobre las dos filas.
+      if (user) {
+        const xc = X(vg.ventana - dS);
+        g.fillStyle = c(COL.cream, 0.85);
+        g.fillRect(xc - 1, R.y + 22, 2, rowY(1) + 18 - (R.y + 22));
+        g.beginPath();
+        g.arc(xc, R.y + 30, 4.5, 0, Math.PI * 2);
+        g.fill();
+      }
       // El contador del patrón y la regla.
       const cy = rowY(2) - (small ? 10 : 6);
       const full = losX >= 5;
@@ -2633,8 +3457,8 @@ const config = JSON.stringify({
       );
       txt(g, `${L.pattern}. ${L.rule}`, R.x, cy + (small ? 22 : 28), fs - 1.5, c(COL.dim), 400);
       g.globalAlpha = 1;
-      // El borrador de alerta y la aprobación.
-      const dr = ease(seg(u, 0.68, 0.78));
+      // El borrador de alerta y la aprobación (con el deslizador, apenas se juntan los cinco casos).
+      const dr = user ? (full ? 1 : 0) : ease(seg(u, 0.68, 0.78));
       if (dr > 0) {
         const cw = small ? R.w : R.w * 0.62;
         const cx = R.x;
@@ -2647,7 +3471,7 @@ const config = JSON.stringify({
         txt(g, L.draft, cx + 14, y + 20, fs + 1, "#7a3b20", 800);
         wrap(g, L.alert, cx + 14, y + 42, cw - 28, fs, "#2a1e17", 400, 1.35, 2);
         g.globalAlpha = 1;
-        const ok = ease(seg(u, 0.82, 0.9));
+        const ok = user ? 1 : ease(seg(u, 0.82, 0.9));
         if (ok > 0) {
           const bx = small ? cx : cx + cw + 22;
           const by = y + (small ? 92 : 46);
@@ -2782,9 +3606,235 @@ const config = JSON.stringify({
         const x = right + Math.max(40, W * 0.04);
         viz = { x, y: H * 0.1, w: W - x - 70, h: H * 0.8 };
       } else {
-        viz = { x: 18, y: 44, w: W - 36, h: H * 0.5 };
+        delete sm.vizh;
+        viz = { x: 18, y: 44, w: W - 36, h: 0 };
+        fitViz();
       }
+      root.style.setProperty("--pt-viz", `${Math.round(viz.y + viz.h)}px`);
       fonts();
+    };
+    /** En el celular, el dibujo usa todo el alto que deja libre el texto de la escena que se ve. */
+    const fitViz = () => {
+      if (W >= 900) return;
+      const li = scenes[active];
+      const want = Math.max(H * 0.3, Math.min(H * 0.56, H - (li?.offsetHeight ?? H * 0.5) - 80));
+      const h = Math.round(smooth("vizh", want));
+      if (h !== viz.h) {
+        viz = { ...viz, h };
+        root.style.setProperty("--pt-viz", `${Math.round(viz.y + h)}px`);
+      }
+    };
+
+    // ---------- Lo que dice cada control ----------
+    const $ = <T extends Element>(sel: string) => root.querySelector<T>(sel);
+    const liveRegion = $<HTMLElement>("[data-live]");
+    /** Lo que se anuncia a un lector de pantalla después de tocar un control. */
+    const say = (s: string) => {
+      if (liveRegion && s) liveRegion.textContent = s;
+    };
+    const writeOut = (key: string, s: string) => {
+      const el = $<HTMLElement>(`[data-out="${key}"]`);
+      if (el && el.textContent !== s) el.textContent = s;
+    };
+    const undoIn = $<HTMLInputElement>('[data-ctl="undo"]');
+    const thrIn = $<HTMLInputElement>('[data-ctl="thr"]');
+    const dayIn = $<HTMLInputElement>('[data-ctl="day"]');
+    const undoText = (k: number) => {
+      const s = fp?.sweep.find((x) => x.k === k);
+      if (!fp || !s) return "";
+      const best = fp.sweep.reduce((a, b) => (b.cos > a.cos ? b : a)).k;
+      return fill(k === 0 ? U.undo.zero : k === best ? U.undo.best : U.undo.out, { k: signed(k), c: fmt(s.cos) });
+    };
+    const thrText = (t: number) => {
+      const r = D.pitch?.radar;
+      if (!r) return "";
+      const n = [r.caso_a, r.caso_c, r.victima_a, ...r.slr73].filter((x) => x >= t).length;
+      const tt = fmt(t);
+      // La voz del caso A es la más parecida: si no pasa, no pasa ninguna.
+      if (r.caso_a < t) return fill(U.radar.none, { t: tt });
+      const m = n - 1;
+      if (m === 0) return fill(U.radar.onlyA, { t: tt });
+      return fill(m === 1 ? U.radar.manyOne : U.radar.manyMany, { t: tt, n, m });
+    };
+    const lookText = (k: number) => {
+      const par = D.fotos?.pares[k];
+      return par ? `${[L.sameRoom, L.otherRoom, L.resent][k]}: ${fill(L.patches, { n: par.con_pareja })}` : "";
+    };
+    const readText = (kind: string | null) => {
+      if (!kind) return "";
+      for (const pz of D.pitch?.lee.piezas ?? []) {
+        const m = pz.marcas.find((x) => x.kind === kind);
+        if (m)
+          return fill(pz.tipo === "audio" ? U.read.outAudio : U.read.outText, {
+            field: U.read.fields[kind as keyof typeof U.read.fields] ?? kind,
+            text: pz.texto.slice(m.a, m.b),
+            id: pz.label,
+          });
+      }
+      return "";
+    };
+    const combineText = () => {
+      const cb = D.pitch?.combina;
+      if (!cb) return "";
+      const rows: [string, string, Señales][] = [
+        ["A", "B", cb.ab],
+        ["B", "C", cb.bc],
+      ];
+      return rows
+        .map(([a, b, sg]) => {
+          const p = combined(sg);
+          const lv = p >= cb.probable ? "probable" : p >= cb.revisar ? "review" : "none";
+          return fill(U.combine.out, { pair: pairName(a, b), p: fmt(p), level: U.combine.levels[lv] });
+        })
+        .join(". ");
+    };
+    const reviewText = () => (I.review === "ok" ? U.review.confirmed : I.review === "no" ? U.review.discarded : "");
+    const dayText = (day: number) => {
+      const vg = D.pitch?.vigia;
+      if (!vg) return "";
+      const ago = vg.ventana - day;
+      const n = vg.casos.filter(
+        (x) => x.grupo === "Los X" && x.zona === "san-juan-de-lurigancho" && x.dia >= ago,
+      ).length;
+      const when = ago === 0 ? U.vigia.today : ago === 1 ? U.vigia.whenOne : fill(U.vigia.when, { n: ago });
+      return n >= 5 ? fill(U.vigia.alert, { when }) : fill(U.vigia.out, { when, n });
+    };
+    const scaleText = (k: number | null) => {
+      const row = k === null ? undefined : L.payments[k];
+      return row ? fill(U.scale.out, { country: row[0], apps: row[1] }) : "";
+    };
+    /** Escribe lo que dice cada control según lo elegido (o, si no tocó nada, lo que marca el scroll). */
+    const outputs = () => {
+      const k = I.undo ?? auto.undo ?? (reduce ? -5 : 0);
+      writeOut("undo", undoText(k));
+      undoIn?.setAttribute("aria-valuetext", undoText(k));
+      const t = I.thr ?? 0.6;
+      writeOut("thr", thrText(t));
+      thrIn?.setAttribute("aria-valuetext", thrText(t));
+      writeOut("look", lookText(I.look ?? 0));
+      writeOut("read", readText(I.field));
+      writeOut("combine", combineText());
+      writeOut("review", reviewText());
+      const day = I.day ?? auto.day ?? 14;
+      writeOut("day", dayText(day));
+      dayIn?.setAttribute("aria-valuetext", dayText(day));
+      writeOut("scale", scaleText(I.country));
+    };
+
+    // ---------- Lo que pasa al tocar ----------
+    const touch = (i: number) => {
+      I.touched.add(i);
+      I.t = performance.now();
+    };
+    const pressGroup = (attr: string, value: string | null) => {
+      for (const b of root.querySelectorAll<HTMLButtonElement>(`[${attr}]`))
+        b.setAttribute("aria-pressed", String(b.getAttribute(attr) === value));
+    };
+    const setUndo = (k: number, announce = true) => {
+      I.undo = k;
+      touch(4);
+      if (undoIn) undoIn.value = String(k);
+      outputs();
+      if (announce) say(undoText(k));
+      repaint(4);
+    };
+    undoIn?.addEventListener("input", () => setUndo(Number(undoIn.value)));
+    thrIn?.addEventListener("input", () => {
+      I.thr = Number(thrIn.value) / 100;
+      touch(5);
+      outputs();
+      say(thrText(I.thr));
+      repaint(5);
+    });
+    dayIn?.addEventListener("input", () => {
+      I.day = Number(dayIn.value);
+      touch(12);
+      outputs();
+      say(dayText(I.day));
+      repaint(12);
+    });
+    root.addEventListener("click", (e) => {
+      const b = (e.target as Element | null)?.closest<HTMLButtonElement>("button");
+      if (!b || !root.contains(b)) return;
+      const k = b.dataset;
+      if (k.look !== undefined) {
+        I.look = Number(k.look);
+        touch(6);
+        pressGroup("data-look", k.look);
+        outputs();
+        say(lookText(I.look));
+        repaint(6);
+      } else if (k.field) {
+        I.field = I.field === k.field ? null : k.field;
+        touch(7);
+        pressGroup("data-field", I.field);
+        outputs();
+        say(readText(I.field));
+        repaint(7);
+      } else if (k.sig) {
+        const key = k.sig as keyof typeof I.sig;
+        I.sig[key] = !I.sig[key];
+        touch(10);
+        b.setAttribute("aria-pressed", String(I.sig[key]));
+        outputs();
+        say(combineText());
+        repaint(10);
+      } else if (k.review) {
+        I.review = k.review === "no" ? "no" : "ok";
+        touch(11);
+        pressGroup("data-review", I.review);
+        outputs();
+        say(reviewText());
+        repaint(11);
+      } else if (k.country !== undefined) {
+        const c0 = Number(k.country);
+        I.country = I.country === c0 ? null : c0;
+        touch(14);
+        pressGroup("data-country", I.country === null ? null : String(I.country));
+        outputs();
+        say(scaleText(I.country));
+        repaint(14);
+      }
+    });
+    /** Al salir de una escena, vuelve a lo que decide el scroll. */
+    const reset = (i: number) => {
+      I.touched.delete(i);
+      if (i === 2) I.victim = -1;
+      else if (i === 4) I.undo = null;
+      else if (i === 5) {
+        I.thr = null;
+        if (thrIn) thrIn.value = "60";
+      } else if (i === 6) {
+        I.look = null;
+        pressGroup("data-look", "0");
+      } else if (i === 7) {
+        I.field = null;
+        pressGroup("data-field", null);
+      } else if (i === 10) {
+        I.sig = { voz: true, guion: true, cuenta: true };
+        for (const b of root.querySelectorAll("[data-sig]")) b.setAttribute("aria-pressed", "true");
+      } else if (i === 11) {
+        I.review = null;
+        pressGroup("data-review", null);
+      } else if (i === 12) I.day = null;
+      else if (i === 14) {
+        I.country = null;
+        pressGroup("data-country", null);
+      }
+      outputs();
+    };
+    /** Los deslizadores siguen al scroll mientras la persona no los toque. */
+    const follow = () => {
+      let changed = false;
+      if (I.undo === null && auto.undo !== undefined && undoIn && undoIn.value !== String(auto.undo)) {
+        undoIn.value = String(auto.undo);
+        changed = true;
+      }
+      if (I.day === null && auto.day !== undefined && dayIn && dayIn.value !== String(auto.day)) {
+        dayIn.value = String(auto.day);
+        changed = true;
+      }
+      if (changed) outputs();
     };
 
     // ---------- El scroll ----------
@@ -2794,6 +3844,22 @@ const config = JSON.stringify({
     let t0 = performance.now();
     let active = 0;
     const live = !reduce;
+    const bar = $<HTMLElement>("[data-progress]");
+    const count = $<HTMLElement>("[data-count]");
+    const steps = [...root.querySelectorAll<HTMLButtonElement>("[data-step]")];
+    const sceneName = (i: number) => dots[i]?.querySelector(".sr-only")?.textContent?.trim() ?? "";
+    /** La cuenta y las flechas: apagadas en los extremos y con el nombre de la escena a la que llevan. */
+    const navState = () => {
+      if (count) count.textContent = fill(cfg.nav.count, { n: active + 1, total: N });
+      for (const b of steps) {
+        const d = Number(b.dataset.step);
+        const to = active + d;
+        const off = to < 0 || to >= N;
+        const name = d < 0 ? cfg.nav.prev : cfg.nav.next;
+        b.setAttribute("aria-disabled", String(off));
+        b.setAttribute("aria-label", off ? name : `${name}: ${sceneName(to)}`);
+      }
+    };
 
     let topPx = 0;
     const progress = () => {
@@ -2804,30 +3870,39 @@ const config = JSON.stringify({
 
     const draw = () => {
       ctx.clearRect(0, 0, W, H);
+      moving = false;
+      hits = [];
+      fitViz();
       const T = performance.now() - t0;
       const i = Math.floor(shown);
       const u = shown - i;
       // Al final de cada escena, la siguiente entra encima.
-      const out = seg(u, 0.86, 1);
+      const fade = seg(u, 0.86, 1);
       ctx.save();
-      ctx.globalAlpha = 1 - out;
+      ctx.globalAlpha = 1 - fade;
+      main = fade < 0.5;
       SCENES[i]?.(ctx, viz, Math.min(1, u / 0.82), T);
+      main = false;
       ctx.restore();
-      if (out > 0 && i + 1 < N) {
+      if (fade > 0 && i + 1 < N) {
         ctx.save();
-        ctx.globalAlpha = out;
+        ctx.globalAlpha = fade;
         SCENES[i + 1]?.(ctx, viz, 0, T);
         ctx.restore();
       }
       const next = Math.min(N - 1, Math.floor(shown + 0.1));
       if (next !== active) {
         stopSound();
+        reset(active);
         scenes[active]?.classList.remove("is-on");
         scenes[next]?.classList.add("is-on");
         dots[active]?.removeAttribute("aria-current");
         dots[next]?.setAttribute("aria-current", "step");
         active = next;
+        navState();
       }
+      follow();
+      bar?.style.setProperty("--p", clamp(shown / (N - 1)).toFixed(4));
     };
 
     const frame = () => {
@@ -2836,7 +3911,8 @@ const config = JSON.stringify({
       if (Math.abs(target - shown) < 0.0005) shown = target;
       draw();
       const intro = performance.now() - t0 < 2600 && shown < 1;
-      raf = Math.abs(target - shown) > 0.0005 || intro ? requestAnimationFrame(frame) : 0;
+      const busy = Math.abs(target - shown) > 0.0005 || intro || moving || playing();
+      raf = busy ? requestAnimationFrame(frame) : 0;
     };
     const kick = () => {
       if (!raf) raf = requestAnimationFrame(frame);
@@ -2857,6 +3933,7 @@ const config = JSON.stringify({
       D.voz = voz.default as unknown as VozData;
       D.fotos = fotos.default as unknown as FotosData;
       prepare();
+      outputs();
     };
 
     if (live) {
@@ -2872,6 +3949,8 @@ const config = JSON.stringify({
       top();
       measure();
       t0 = performance.now();
+      repaint = () => kick();
+      navState();
       kick();
       photo.addEventListener("load", kick);
       // Los datos de las escenas (unos 150 KB) y la foto del caso A no hacen falta para el logo: bajan al
@@ -2899,37 +3978,70 @@ const config = JSON.stringify({
         measure();
         kick();
       }).observe(stage);
-      dots.forEach((b) =>
+      // Ir a una escena: el scroll la deja con su dibujo completo.
+      goto = (i: number) => {
+        const k = Math.max(0, Math.min(N - 1, i));
+        const span = track.offsetHeight - stage.offsetHeight;
+        const start = window.scrollY + track.getBoundingClientRect().top - topPx;
+        window.scrollTo({ top: start + (k === 0 ? 0 : ((k + 0.8) / N) * span), behavior: "smooth" });
+      };
+      dots.forEach((b) => b.addEventListener("click", () => goto(Number(b.dataset.goto))));
+      for (const b of steps)
         b.addEventListener("click", () => {
-          const i = Number(b.dataset.goto);
-          const span = track.offsetHeight - stage.offsetHeight;
-          const start = window.scrollY + track.getBoundingClientRect().top - topPx;
-          window.scrollTo({ top: start + (i === 0 ? 0 : ((i + 0.62) / N) * span), behavior: "smooth" });
-        }),
-      );
+          if (b.getAttribute("aria-disabled") !== "true") goto(active + Number(b.dataset.step));
+        });
+      $("[data-start]")?.addEventListener("click", () => goto(1));
+      // Con el escenario fijo, las flechas ← y → del teclado pasan de escena (fuera de los deslizadores).
+      window.addEventListener("keydown", (e) => {
+        if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        if ((e.target as Element | null)?.closest?.("input, textarea, select, [contenteditable]")) return;
+        const r = track.getBoundingClientRect();
+        if (r.top > topPx + 2 || r.bottom < topPx + stage.offsetHeight - 2) return;
+        e.preventDefault();
+        goto(active + (e.key === "ArrowRight" ? 1 : -1));
+      });
+      // Atajos en el lienzo: el cursor de mano donde se puede tocar.
+      const hitAt = (e: MouseEvent) => {
+        const r = canvas.getBoundingClientRect();
+        const x = e.clientX - r.left;
+        const y = e.clientY - r.top;
+        return hits.find((h) => x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h);
+      };
+      canvas.addEventListener("pointermove", (e) => {
+        canvas.style.cursor = hitAt(e) ? "pointer" : "";
+      });
+      canvas.addEventListener("click", (e) => hitAt(e)?.go());
     } else if (reduce) {
-      // Sin movimiento: cada escena con su dibujo final, quieto.
+      // Sin movimiento: cada escena con su dibujo final, quieto; los controles lo vuelven a dibujar.
+      const still = (i: number) => {
+        const li = scenes[i];
+        if (!li) return;
+        let cv = li.querySelector<HTMLCanvasElement>(".pt__still");
+        if (!cv) {
+          cv = document.createElement("canvas");
+          cv.className = "pt__still";
+          cv.setAttribute("aria-hidden", "true");
+          li.append(cv);
+        }
+        const r = cv.getBoundingClientRect();
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        cv.width = Math.round(r.width * dpr);
+        cv.height = Math.round(r.height * dpr);
+        const g = cv.getContext("2d");
+        if (!g) return;
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const pad = r.width * 0.06;
+        SCENES[i]?.(g, { x: pad, y: pad, w: r.width - pad * 2, h: r.height - pad * 2 }, 1, 99999);
+      };
+      repaint = still;
+      $("[data-start]")?.addEventListener("click", () => scenes[1]?.scrollIntoView());
       void load().then(() => {
+        if (undoIn) undoIn.value = "-5";
+        outputs();
         const draws = () => {
           fonts();
-          scenes.forEach((li, i) => {
-            let cv = li.querySelector<HTMLCanvasElement>(".pt__still");
-            if (!cv) {
-              cv = document.createElement("canvas");
-              cv.className = "pt__still";
-              cv.setAttribute("aria-hidden", "true");
-              li.append(cv);
-            }
-            const r = cv.getBoundingClientRect();
-            const dpr = Math.min(2, window.devicePixelRatio || 1);
-            cv.width = Math.round(r.width * dpr);
-            cv.height = Math.round(r.height * dpr);
-            const g = cv.getContext("2d");
-            if (!g) return;
-            g.setTransform(dpr, 0, 0, dpr, 0, 0);
-            const pad = r.width * 0.06;
-            SCENES[i]?.(g, { x: pad, y: pad, w: r.width - pad * 2, h: r.height - pad * 2 }, 1, 99999);
-          });
+          scenes.forEach((_, i) => still(i));
         };
         if (photo.complete) draws();
         else photo.addEventListener("load", draws, { once: true });

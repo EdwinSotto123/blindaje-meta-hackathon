@@ -220,7 +220,10 @@ export interface Dict {
     /** El pitch: escenas a pantalla entera que avanzan con el scroll (Pitch.astro). */
     pitch: {
       railLabel: string;
-      hint: string;
+      /** El botón de la primera escena que lleva a la siguiente. */
+      start: string;
+      /** Avanzar y retroceder: rótulo del grupo, botones, la cuenta ({n} de {total}) y el salto a lo que sigue. */
+      nav: { label: string; prev: string; next: string; count: string; skip: string };
       scenes: { kicker: string; title: string; text: string; tags?: string[] }[];
       /** Los audios del pitch: el rótulo del botón y lo que sigue en su nombre accesible. */
       audio: {
@@ -231,6 +234,23 @@ export interface Dict {
         disguisedName: string;
         reverted: string;
         revertedName: string;
+      };
+      /** Lo que se puede tocar en cada escena: rótulos, lo que dice cada salida y nombres accesibles. */
+      ui: {
+        victims: { label: string; who: [string, string, string]; name: string };
+        undo: { label: string; out: string; best: string; zero: string };
+        radar: { label: string; none: string; onlyA: string; manyOne: string; manyMany: string };
+        look: { label: string; pairs: [string, string, string] };
+        read: {
+          label: string;
+          fields: { monto: string; plazo: string; cuenta: string; grupo: string; frase: string };
+          outAudio: string;
+          outText: string;
+        };
+        combine: { label: string; out: string; levels: { none: string; review: string; probable: string } };
+        review: { label: string; confirm: string; discard: string; confirmed: string; discarded: string };
+        vigia: { label: string; when: string; whenOne: string; today: string; out: string; alert: string };
+        scale: { label: string; out: string };
       };
       ctaMap: string;
       ctaPilot: string;
@@ -318,6 +338,10 @@ export interface Dict {
         probable: string;
         /** Un par de casos, con {a} y {b}. */
         pair: string;
+        /** Lo que dice el audio del caso elegido (subtítulos en Las víctimas). */
+        says: string;
+        /** Una señal apagada en Combina. */
+        off: string;
         daysAgo: string;
         today: string;
         rule: string;
@@ -329,6 +353,8 @@ export interface Dict {
         sameAccount: string;
         network: string;
         confirmed: string;
+        confirmedByYou: string;
+        discardedByYou: string;
         scriptOnly: string;
         alertTitle: string;
         alert: string;

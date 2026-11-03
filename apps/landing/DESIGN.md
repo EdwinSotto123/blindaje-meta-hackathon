@@ -118,6 +118,17 @@ sus textos lo dicen.
   El modo en vivo lo decide el CSS (`.js` y movimiento permitido) para que el titular pinte en el primer
   cuadro; los datos del lienzo bajan después de la carga. Sin movimiento, cada escena con su dibujo final
   quieto; sin JavaScript, el texto en lista.
+- **Pitch interactivo (3/11):** debajo del texto, cada escena que se presta tiene su control, con datos
+  reales: escuchar el audio de cada víctima (con subtítulos), mover el tono que deshace el disfraz, mover
+  el umbral de revisión entre las voces, elegir qué par de fotos comparar, tocar un dato de la ficha para
+  ver de dónde sale, prender o apagar señales (la suma usa `combineSignals`), confirmar o descartar el
+  vínculo entre A y B, avanzar los días del Vigía y elegir un país. Los deslizadores siguen al scroll
+  hasta que se tocan; al salir de la escena, todo vuelve a lo que decide el scroll. Abajo a la izquierda,
+  anterior y siguiente, "n de 15" y "Saltar la historia"; las flechas ← y → del teclado pasan de escena y
+  una línea ocre al pie marca el avance. Los controles son botones con `aria-pressed` y deslizadores con
+  `aria-valuetext`; lo que cambia se anuncia en una región `aria-live`. Sin movimiento, los controles
+  vuelven a dibujar el dibujo quieto; sin JavaScript, no se muestran. En el celular, el dibujo usa el alto
+  que deja libre el texto de cada escena.
 - **Después del pitch:** Voz (los audios del caso B), Fotos (la misma colcha), dónde pasa (mapa),
   beneficios, recorrido del producto, Meta AI, resultados, límites, preguntas y "Solicita acceso".
 - **Cabecera:** crema con línea inferior; wordmark, seis enlaces, idioma y "Ver el mapa". La franja de
