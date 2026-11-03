@@ -113,12 +113,6 @@ caché (correr esos dos antes). Escribe `results/voz_huella.json` y `apps/landin
 `pnpm demo:pitch` y `pnpm demo:pitch:texto` escriben en `apps/landing/src/data/pitch.json`; corre
 primero `demo:pitch`.
 
-**El índice de voces del recorrido** (02/11): `pnpm demo:flujo:vectores` escribe
-`apps/landing/src/data/flujo-vectores.json` con el índice de voces de la escena Compara: la huella ECAPA
-de B1 y la de cada voz guardada en píxeles (un píxel por número), con su coseno real con B1. La voz del
-caso A da 0.79 (el mismo del reporte) y las siete voces de SLR73 que hacen de otras voces guardadas, de
-0.06 a 0.20.
-
 ## Estructura de `report.json` (schema 1.1)
 
 El README del repo y la landing leen solo `resumen`. Cambios que rompan la forma suben

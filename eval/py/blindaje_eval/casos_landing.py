@@ -4,7 +4,7 @@ Toma de eval/demo (todo ficticio: personas, negocios, números, cuentas y "Los X
 el primer audio de cada uno, sus mensajes y si hay foto. Escribe apps/landing/src/data/casos-demo.json:
 por caso, el número desde el que escriben, cuántos días antes llegó cada pieza, la duración y la forma
 de onda de cada audio (36 barras), el texto de los mensajes y la transcripción de los audios
-(guiones-audio.json). La foto del caso A que se dibuja es el recorte del mostrador de assets/flujo.
+(guiones-audio.json). La foto del caso A que se dibuja es el recorte del mostrador (assets/flujo).
 
 Uso (desde eval/):
   pnpm demo:casos

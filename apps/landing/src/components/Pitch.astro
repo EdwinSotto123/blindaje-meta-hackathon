@@ -1,6 +1,6 @@
 ---
 /**
- * El pitch: catorce escenas a pantalla entera que avanzan con el scroll, con datos reales del proyecto.
+ * El pitch: quince escenas a pantalla entera que avanzan con el scroll, con datos reales del proyecto.
  *
  *  0. Blindaje        el logo se arma con píxeles (solo, al cargar)
  *  1. El problema     de América Latina al Perú: 13,892 denuncias en siete meses (Ministerio Público,
@@ -141,7 +141,7 @@ const config = JSON.stringify({
 
 <style>
   .pt {
-    --pt-top: 0px;
+    --pt-top: 44px;
     position: relative;
     background: var(--noche);
     color: var(--fondo);
@@ -332,206 +332,208 @@ const config = JSON.stringify({
   }
 
   /* ---------- En vivo: la sección se fija y el scroll avanza las escenas ---------- */
-
-  .pt.is-live .pt__track {
-    height: calc(100svh - var(--pt-top) + var(--n) * 85svh);
-  }
-
-  .pt.is-live .pt__stage {
-    position: sticky;
-    top: var(--pt-top);
-    height: calc(100svh - var(--pt-top));
-    overflow: hidden;
-  }
-
-  .pt.is-live .pt__canvas {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  .pt.is-live .pt__copy {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    padding: 0 var(--margin);
-    pointer-events: none;
-  }
-
-  .pt.is-live .pt__scenes {
-    position: relative;
-    display: grid;
-    width: min(100%, 30rem);
-  }
-
-  /* El texto nunca se atenúa: entra descubriéndose de arriba abajo (clip-path) y sale igual. */
-  .pt.is-live .pt__scene {
-    grid-area: 1 / 1;
-    align-self: center;
-    visibility: hidden;
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(14px);
-    transition:
-      clip-path 0.4s ease,
-      transform 0.4s ease,
-      visibility 0s linear 0.4s;
-  }
-
-  .pt.is-live .pt__scene.is-on {
-    visibility: visible;
-    clip-path: inset(0 0 0 0);
-    transform: none;
-    transition:
-      clip-path 0.55s ease 0.12s,
-      transform 0.55s ease 0.12s,
-      visibility 0s;
-    pointer-events: auto;
-  }
-
-  .pt.is-live .pt__hint {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 18px 0 0;
-    color: var(--claro-tenue);
-    font-size: var(--step-small);
-    font-weight: 700;
-  }
-
-  .pt__mouse {
-    position: relative;
-    width: 18px;
-    height: 28px;
-    border: 2px solid var(--claro-tenue);
-    border-radius: 10px;
-  }
-
-  .pt__mouse::after {
-    content: "";
-    position: absolute;
-    top: 5px;
-    left: 50%;
-    width: 3px;
-    height: 6px;
-    margin-left: -1.5px;
-    border-radius: 2px;
-    background: var(--ocre);
-    animation: pt-wheel 1.6s ease-in-out 3;
-  }
-
-  @keyframes pt-wheel {
-    0%,
-    100% {
-      transform: translateY(0);
+  /* Con JavaScript (la clase .js la pone Base.astro antes de pintar) y sin pedir menos movimiento. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .pt .pt__track {
+      height: calc(100svh - var(--pt-top) + var(--n) * 85svh);
     }
 
-    50% {
-      transform: translateY(7px);
+    :global(.js) .pt .pt__stage {
+      position: sticky;
+      top: var(--pt-top);
+      height: calc(100svh - var(--pt-top));
+      overflow: hidden;
+    }
+
+    :global(.js) .pt .pt__canvas {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    :global(.js) .pt .pt__copy {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 var(--margin);
+      pointer-events: none;
+    }
+
+    :global(.js) .pt .pt__scenes {
+      position: relative;
+      display: grid;
+      width: min(100%, 30rem);
+    }
+
+    /* El texto nunca se atenúa: entra descubriéndose de arriba abajo (clip-path) y sale igual. */
+    :global(.js) .pt .pt__scene {
+      grid-area: 1 / 1;
+      align-self: center;
+      visibility: hidden;
+      clip-path: inset(0 0 100% 0);
+      transform: translateY(14px);
+      transition:
+        clip-path 0.4s ease,
+        transform 0.4s ease,
+        visibility 0s linear 0.4s;
+    }
+
+    :global(.js) .pt .pt__scene.is-on {
+      visibility: visible;
+      clip-path: inset(0 0 0 0);
+      transform: none;
+      transition:
+        clip-path 0.55s ease 0.12s,
+        transform 0.55s ease 0.12s,
+        visibility 0s;
+      pointer-events: auto;
+    }
+
+    :global(.js) .pt .pt__hint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0 0;
+      color: var(--claro-tenue);
+      font-size: var(--step-small);
+      font-weight: 700;
+    }
+
+    .pt__mouse {
+      position: relative;
+      width: 18px;
+      height: 28px;
+      border: 2px solid var(--claro-tenue);
+      border-radius: 10px;
+    }
+
+    .pt__mouse::after {
+      content: "";
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      width: 3px;
+      height: 6px;
+      margin-left: -1.5px;
+      border-radius: 2px;
+      background: var(--ocre);
+      animation: pt-wheel 1.6s ease-in-out 3;
+    }
+
+    @keyframes pt-wheel {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(7px);
+      }
+    }
+
+    /* La barra de escenas: puntos a la derecha (en el celular, una línea arriba). */
+    :global(.js) .pt .pt__rail {
+      position: absolute;
+      top: 50%;
+      right: 14px;
+      display: block;
+      transform: translateY(-50%);
+    }
+
+    .pt__rail ol {
+      display: grid;
+      gap: 4px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pt__dot {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+    }
+
+    .pt__dot::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgb(255 255 255 / 0.32);
+      transition:
+        transform 0.2s,
+        background-color 0.2s;
+    }
+
+    .pt__dot[aria-current="step"]::before {
+      background: var(--ocre);
+      transform: scale(1.5);
+    }
+
+    .pt__dot:hover::before {
+      background: var(--fondo);
+    }
+
+    .pt__dot:focus-visible {
+      outline: 3px solid var(--ocre);
+      outline-offset: 0;
+      border-radius: 50%;
+    }
+
+    .pt__dot-label {
+      position: absolute;
+      right: 32px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgb(18 12 9 / 0.9);
+      color: var(--fondo);
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+      visibility: hidden;
+    }
+
+    .pt__dot:hover .pt__dot-label,
+    .pt__dot:focus-visible .pt__dot-label {
+      visibility: visible;
     }
   }
 
-  /* La barra de escenas: puntos a la derecha (en el celular, una línea arriba). */
-  .pt.is-live .pt__rail {
-    position: absolute;
-    top: 50%;
-    right: 14px;
-    display: block;
-    transform: translateY(-50%);
-  }
-
-  .pt__rail ol {
-    display: grid;
-    gap: 4px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .pt__dot {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-  }
-
-  .pt__dot::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgb(255 255 255 / 0.32);
-    transition:
-      transform 0.2s,
-      background-color 0.2s;
-  }
-
-  .pt__dot[aria-current="step"]::before {
-    background: var(--ocre);
-    transform: scale(1.5);
-  }
-
-  .pt__dot:hover::before {
-    background: var(--fondo);
-  }
-
-  .pt__dot:focus-visible {
-    outline: 3px solid var(--ocre);
-    outline-offset: 0;
-    border-radius: 50%;
-  }
-
-  .pt__dot-label {
-    position: absolute;
-    right: 32px;
-    padding: 2px 8px;
-    border-radius: 6px;
-    background: rgb(18 12 9 / 0.9);
-    color: var(--fondo);
-    font-size: 0.75rem;
-    font-weight: 700;
-    white-space: nowrap;
-    visibility: hidden;
-  }
-
-  .pt__dot:hover .pt__dot-label,
-  .pt__dot:focus-visible .pt__dot-label {
-    visibility: visible;
-  }
-
-  @media (max-width: 899px) {
-    .pt.is-live .pt__copy {
+  @media (prefers-reduced-motion: no-preference) and (max-width: 899px) {
+    :global(.js) .pt .pt__copy {
       align-items: flex-end;
       padding-bottom: 22px;
       background: linear-gradient(180deg, transparent 48%, rgb(28 20 15 / 0.92) 64%);
     }
 
-    .pt.is-live .pt__title {
+    :global(.js) .pt .pt__title {
       font-size: clamp(1.375rem, 1.1rem + 1.6vw, 1.75rem);
     }
 
-    .pt.is-live .pt__title--first {
+    :global(.js) .pt .pt__title--first {
       font-size: clamp(1.75rem, 1.4rem + 2vw, 2.25rem);
     }
 
-    .pt.is-live .pt__text {
+    :global(.js) .pt .pt__text {
       font-size: 0.9375rem;
     }
 
-    .pt.is-live .pt__rail {
+    :global(.js) .pt .pt__rail {
       top: 8px;
       right: 50%;
       transform: translateX(50%);
     }
 
-    .pt.is-live .pt__rail ol {
+    :global(.js) .pt .pt__rail ol {
       display: flex;
       gap: 0;
     }
@@ -546,14 +548,20 @@ const config = JSON.stringify({
     }
   }
 
-  @media (min-width: 900px) {
-    .pt.is-live .pt__copy {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
+    :global(.js) .pt .pt__copy {
       max-width: none;
       padding-left: max(var(--margin), calc((100vw - 1232px) / 2));
     }
 
-    .pt.is-live .pt__scenes {
+    :global(.js) .pt .pt__scenes {
       width: min(36vw, 30rem);
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .pt {
+      --pt-top: 109px;
     }
   }
 </style>
@@ -723,6 +731,11 @@ const config = JSON.stringify({
     const copy = root.querySelector<HTMLElement>(".pt__scenes")!;
     const cfg = JSON.parse(root.dataset.config ?? "{}") as Config;
     const L = cfg.labels;
+    /** "A-B" o ("A", "B") como "A y B" / "A and B". */
+    const pairName = (a: string, b?: string) => {
+      const [x = "", y = ""] = b === undefined ? a.split("-") : [a, b];
+      return fill(L.pair, { a: x, b: y });
+    };
     const N = scenes.length;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const D: Data = {};
@@ -736,7 +749,6 @@ const config = JSON.stringify({
     };
     const photo = new Image();
     photo.decoding = "async";
-    photo.src = cfg.photo;
 
     // ---------- Texto en el lienzo ----------
     const font = (g: G, size: number, weight = 400, fam = sans) => (g.font = `${weight} ${size}px ${fam}`);
@@ -1191,22 +1203,29 @@ const config = JSON.stringify({
       }
     };
 
+    const shieldPath = new Path2D(SHIELD);
+    let shieldCells: { step: number; list: { x: number; y: number; k: number }[] } | null = null;
     /** 0. El logo: los píxeles llegan de todas partes y arman el escudo. */
     const sceneLogo = (g: G, R: Rect, _u: number, T: number) => {
       const S = Math.min(R.h * 0.5, R.w * 0.58);
       const sc = S / 28;
       const ox = R.x + R.w / 2 - 11.5 * sc;
       const oy = R.y + R.h * 0.34 - 14 * sc;
-      const path = new Path2D(SHIELD);
+      const path = shieldPath;
       const cs = Math.max(5, S / 22);
-      const cells: { x: number; y: number; k: number }[] = [];
-      // Las celdas que caen dentro del escudo (se calcula sobre la forma de 23 x 28).
-      const probe = probeCtx();
-      for (let y = 0; y < 28; y += cs / sc) {
-        for (let x = 0; x < 23; x += cs / sc) {
-          if (probe.isPointInPath(path, x + cs / sc / 2, y + cs / sc / 2)) cells.push({ x, y, k: cells.length });
+      // Las celdas que caen dentro del escudo (sobre la forma de 23 x 28); se calculan una vez por tamaño.
+      const cellStep = cs / sc;
+      if (!shieldCells || shieldCells.step !== cellStep) {
+        const probe = probeCtx();
+        const list: { x: number; y: number; k: number }[] = [];
+        for (let y = 0; y < 28; y += cellStep) {
+          for (let x = 0; x < 23; x += cellStep) {
+            if (probe.isPointInPath(path, x + cellStep / 2, y + cellStep / 2)) list.push({ x, y, k: list.length });
+          }
         }
+        shieldCells = { step: cellStep, list };
       }
+      const cells = shieldCells.list;
       const done = clamp((T - 1700) / 600);
       cells.forEach(({ x, y, k }) => {
         const e = inout((T - rnd(k) * 700) / 1000);
@@ -1754,7 +1773,7 @@ const config = JSON.stringify({
       const C = fo.grid.cols;
       const Rw = fo.grid.rows;
       const gap = R.w * 0.08;
-      const mw = Math.min((R.w - gap) / 2, ((R.h - ph - 60) * C) / Rw);
+      const mw = Math.min((R.w - gap) / 2, ((R.h - ph - (small ? 60 : 150)) * C) / Rw);
       const mh = (mw * Rw) / C;
       const my = py + ph + 46;
       const mx = [R.x + (R.w - mw * 2 - gap) / 2, R.x + (R.w - mw * 2 - gap) / 2 + mw + gap];
@@ -1783,20 +1802,29 @@ const config = JSON.stringify({
         g.lineTo(lerp(x0, x1, f), lerp(y0, y1, f));
         g.stroke();
       });
-      const lab = seg(u, 0.8, 0.9);
-      if (lab > 0) {
-        g.globalAlpha = lab;
-        txt(
-          g,
-          `${L.sameRoom}: ${fill(L.patches, { n: par.con_pareja })}`,
-          R.x + R.w / 2,
-          my + mh + 20,
-          fs,
-          c(COL.ocre),
-          700,
-          "center",
-        );
-        g.globalAlpha = 1;
+      // Cuántos parches encuentran pareja en cada par de fotos (de 384): el mismo cuarto, otro cuarto
+      // con los mismos objetos y la misma foto reenviada.
+      const cmp = seg(u, 0.78, 0.92);
+      if (cmp > 0) {
+        const rows: [string, number, string][] = [
+          [L.sameRoom, fo.pares[0]!.con_pareja, COL.ocre],
+          [L.otherRoom, fo.pares[1]!.con_pareja, COL.dim],
+          [L.resent, fo.pares[2]!.con_pareja, COL.cream],
+        ];
+        const by = my + mh + (small ? 18 : 26);
+        const lw = small ? R.w * 0.42 : R.w * 0.34;
+        const bw = R.w - lw - (small ? 120 : 190);
+        rows.forEach(([name, n, col], i) => {
+          const a = ease(seg(cmp, i * 0.2, i * 0.2 + 0.6));
+          if (a <= 0) return;
+          const y = by + i * (small ? 18 : 24);
+          g.globalAlpha = a;
+          txt(g, name, R.x, y, fs - 1, c(COL.cream), 700);
+          g.fillStyle = c(col, 0.85);
+          g.fillRect(R.x + lw, y - 5, bw * (n / 384) * a, 10);
+          txt(g, fill(L.patches, { n }), R.x + lw + bw * (n / 384) * a + 8, y + 0.5, fs - 1.5, c(COL.dim), 400);
+          g.globalAlpha = 1;
+        });
       }
     };
 
@@ -2233,7 +2261,7 @@ const config = JSON.stringify({
       ];
       let tx = R.x;
       const tw = (R.w * (small ? 1 : 0.95)) / terms.length;
-      txt(g, "A y B", R.x, fy - 14, fs - 1, c(COL.dim), 700);
+      txt(g, pairName("A", "B"), R.x, fy - 14, fs - 1, c(COL.dim), 700);
       terms.forEach(([k, v, t0]) => {
         const a = ease(seg(u, t0, t0 + 0.05));
         g.globalAlpha = a;
@@ -2298,7 +2326,7 @@ const config = JSON.stringify({
           g.stroke();
           g.setLineDash([]);
           g.globalAlpha = mk;
-          pill(g, `${pp.par.replace("-", " y ")} ${fmt(pp.p)}`, x, hy - 14, i === 0 ? COL.ocre : COL.dim, fs - 1.5);
+          pill(g, `${pairName(pp.par)} ${fmt(pp.p)}`, x, hy - 14, i === 0 ? COL.ocre : COL.dim, fs - 1.5);
           g.globalAlpha = 1;
         });
         g.globalAlpha = hist;
@@ -2321,8 +2349,8 @@ const config = JSON.stringify({
       const small = R.w < 560;
       const fs = small ? 10 : 12.5;
       const pairs: [string, Señales, number][] = [
-        ["A y B", cb.ab, 0],
-        ["B y C", cb.bc, 0.45],
+        [pairName("A", "B"), cb.ab, 0],
+        [pairName("B", "C"), cb.bc, 0.45],
       ];
       const ph = R.h / 2 - 10;
       pairs.forEach(([name, sg, t0], pi) => {
@@ -2647,8 +2675,11 @@ const config = JSON.stringify({
       const fs = small ? 10 : 12;
       const gr = fitGrid({ x: R.x, y: R.y, w: R.w * (small ? 1 : 0.62), h: R.h }, cfg.grid.cols, cfg.grid.rows, 1.25);
       const gap = Math.max(2, gr.w * 0.07);
-      const hot = new Set(["san-juan-de-lurigancho", "comas"]);
+      // Solo se publica San Juan de Lurigancho (6 casos de la red: rango 5-9). Comas tiene 1: menos de 5,
+      // queda igual que un distrito sin datos, como en el mapa público.
+      const hot = new Set(["san-juan-de-lurigancho"]);
       const on = ease(seg(u, 0.15, 0.4));
+      let comas = { x: 0, y: 0, w: 0, h: 0 };
       let sjl = { x: 0, y: 0, w: 0, h: 0 };
       for (const [id, col, row] of tiles) {
         const x = gr.x + col * gr.w + gap / 2;
@@ -2660,10 +2691,11 @@ const config = JSON.stringify({
         g.roundRect(x, y, w, h, 3);
         g.fill();
         if (hot.has(id) && on > 0) {
-          g.fillStyle = id === "san-juan-de-lurigancho" ? c("160 58 31", on) : c("214 98 62", on * 0.85);
+          g.fillStyle = c("160 58 31", on);
           g.fill();
         }
         if (id === "san-juan-de-lurigancho") sjl = { x, y, w, h };
+        if (id === "comas") comas = { x, y, w, h };
       }
       // Las ondas de la alerta.
       const wave = seg(u, 0.4, 0.8);
@@ -2676,21 +2708,27 @@ const config = JSON.stringify({
         g.arc(sjl.x + sjl.w / 2, sjl.y + sjl.h / 2, 10 + f * gr.w * 4, 0, Math.PI * 2);
         g.stroke();
       }
-      if (on >= 1) pill(g, L.range, sjl.x + sjl.w / 2, sjl.y - 14, COL.cream, fs, true);
+      if (on >= 1) pill(g, L.range, sjl.x + sjl.w / 2, sjl.y + sjl.h + 14, COL.cream, fs, true);
       if (on > 0) {
-        for (const [id, col, row] of tiles) {
-          if (!hot.has(id)) continue;
-          txt(
-            g,
-            id === "comas" ? "Comas" : "SJL",
-            gr.x + (col + 0.5) * gr.w,
-            gr.y + (row + 0.5) * gr.h,
-            Math.max(9, gr.w * 0.22),
-            c(COL.cream, on),
-            800,
-            "center",
-          );
-        }
+        txt(
+          g,
+          "SJL",
+          sjl.x + sjl.w / 2,
+          sjl.y + sjl.h / 2 + 0.5,
+          Math.max(9, gr.w * 0.22),
+          c(COL.cream, on),
+          800,
+          "center",
+        );
+        // Comas: punteado y con su nota, sin color.
+        g.setLineDash([3, 3]);
+        g.strokeStyle = c(COL.dim, 0.8 * on);
+        g.lineWidth = 1.2;
+        g.strokeRect(comas.x + 1, comas.y + 1, comas.w - 2, comas.h - 2);
+        g.setLineDash([]);
+        g.globalAlpha = on;
+        txt(g, L.underFive, comas.x + comas.w + 8, comas.y + comas.h / 2 + 0.5, fs - 1.5, c(COL.dim), 700, "left");
+        g.globalAlpha = 1;
       }
       // La alerta aprobada.
       const al = ease(seg(u, 0.55, 0.75));
@@ -2755,7 +2793,7 @@ const config = JSON.stringify({
     let raf = 0;
     let t0 = performance.now();
     let active = 0;
-    const live = !reduce && "IntersectionObserver" in window;
+    const live = !reduce;
 
     let topPx = 0;
     const progress = () => {
@@ -2805,6 +2843,7 @@ const config = JSON.stringify({
     };
 
     const load = async () => {
+      if (!photo.src) photo.src = cfg.photo;
       const [casos, pitch, voz, fotos, mapas] = await Promise.all([
         import("../data/casos-demo.json"),
         import("../data/pitch.json"),
@@ -2821,7 +2860,6 @@ const config = JSON.stringify({
     };
 
     if (live) {
-      root.classList.add("is-live");
       const top = () => {
         let h = 0;
         for (const el of document.querySelectorAll<HTMLElement>(".help, .top")) {
@@ -2836,8 +2874,26 @@ const config = JSON.stringify({
       t0 = performance.now();
       kick();
       photo.addEventListener("load", kick);
-      void load().then(kick);
-      window.addEventListener("scroll", kick, { passive: true });
+      // Los datos de las escenas (unos 150 KB) y la foto del caso A no hacen falta para el logo: bajan al
+      // primer scroll o, después de la carga y de un cuadro pintado, cuando el navegador queda libre. Así
+      // lo único que compite con el titular son las fuentes (Lighthouse móvil: LCP 3.2 s → 2.1 s).
+      let loading: Promise<void> | null = null;
+      const ensure = () => (loading ??= load().then(kick));
+      const idle = () => {
+        if ("requestIdleCallback" in window) requestIdleCallback(() => void ensure(), { timeout: 2500 });
+        else setTimeout(() => void ensure(), 1200);
+      };
+      const later = () => requestAnimationFrame(() => setTimeout(idle, 0));
+      if (document.readyState === "complete") later();
+      else window.addEventListener("load", later, { once: true });
+      window.addEventListener(
+        "scroll",
+        () => {
+          void ensure();
+          kick();
+        },
+        { passive: true },
+      );
       new ResizeObserver(() => {
         top();
         measure();

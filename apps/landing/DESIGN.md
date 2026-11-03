@@ -99,22 +99,31 @@ quedaron fuera de la web.
 
 ## Fotos
 
-Tres fotos de Wikimedia Commons con licencia abierta y crédito visible (`docs/fotos.md`): mototaxis en el
-centro de Lima (portada), un cerro poblado (selector del portal y login de la
-consola) y una bodega por dentro (fila de las víctimas). Radio de 20 px y `--sombra-2`. Nunca muestran
-víctimas ni negocios reconocibles, y ningún texto dice que ahí pasó un caso.
+Dos fotos de Wikimedia Commons con licencia abierta y crédito visible (`docs/fotos.md`): un cerro poblado
+(selector del portal y login de la consola) y una bodega por dentro (fila de las víctimas en la landing).
+Radio de 20 px y `--sombra-2`. Nunca muestran víctimas ni negocios reconocibles, y ningún texto dice que
+ahí pasó un caso. Las fotos de los casos del demo (el mostrador con la bala y la nota, las colchas de
+"Otro ángulo, la misma colcha") son ficticias, hechas con Muse Image (`eval/src/gen-demo-images.ts`), y
+sus textos lo dicen.
 
 ## Composición de la landing
 
-- **Portada:** foto de la calle a la izquierda con el portal real en un celular colgando del borde; a la
-  derecha "Nadie debería enfrentar la extorsión solo.", la frase de valor, "Ver el mapa por distrito"
-  (terracota) y "Ver cómo funciona", y a quién protege (palabras con un punto de ladrillo, no una lista
-  con vistos). El único movimiento: la foto se abre con un `clip-path` y el celular sube, una vez.
+- **Pitch (3/11, es la portada y "Cómo funciona"):** quince escenas a pantalla entera sobre la noche
+  café que avanzan con el scroll (`Pitch.astro`): el logo armado con píxeles; el problema, de América
+  Latina al Perú y sus distritos fiscales; las tres víctimas; la voz (huella, desdistorsión, radar); la
+  foto; el texto (ficha, números con HMAC, frases firma); la suma de señales; la red; el Vigía; el mapa;
+  y la escala a la región. Un solo lienzo dibuja todo con datos reales de la evaluación y casos
+  ficticios; el texto de cada escena es HTML y entra con `clip-path`, nunca con opacidad (axe mide el
+  contraste a mitad de un fundido). Los puntos de la derecha (arriba en el celular) nombran cada escena.
+  El modo en vivo lo decide el CSS (`.js` y movimiento permitido) para que el titular pinte en el primer
+  cuadro; los datos del lienzo bajan después de la carga. Sin movimiento, cada escena con su dibujo final
+  quieto; sin JavaScript, el texto en lista.
+- **Después del pitch:** Voz (los audios del caso B), Fotos (la misma colcha), dónde pasa (mapa),
+  beneficios, recorrido del producto, Meta AI, resultados, límites, preguntas y "Solicita acceso".
 - **Cabecera:** crema con línea inferior; wordmark, seis enlaces, idioma y "Ver el mapa". La franja de
   ayuda (105, Línea 1818, Salir rápido) queda fija arriba en la noche café.
-- **Secciones:** título a la izquierda y entrada a la derecha, alineados por la primera línea. Señales
-  en filas separadas por líneas, sin tarjetas. Pasos con números en círculos terracota unidos por una
-  línea arcilla. La demo de revisión va debajo, separada por una línea (nunca una tarjeta dentro de otra).
+- **Secciones:** título a la izquierda y entrada a la derecha, alineados por la primera línea; filas
+  separadas por líneas antes que tarjetas, y nunca una tarjeta dentro de otra.
 - **Beneficios:** filas alternadas; la de víctimas une la foto de la bodega con la app por fuera
   (cuaderno de ventas, su disfraz real) y por dentro.
 - **Pie:** la ayuda, el wordmark, enlaces, notas de honestidad y el crédito de cada foto.

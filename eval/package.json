@@ -19,7 +19,6 @@
     "demo:mapas": "uv run --project py python -I -m blindaje_eval.mapas_landing",
     "demo:pitch": "uv run --project py python -I -m blindaje_eval.pitch_datos",
     "demo:pitch:texto": "tsx src/pitch-texto.ts",
-    "demo:flujo:vectores": "uv run --project py python -I -m blindaje_eval.flujo_vectores",
     "demo:voz:huella": "uv run --project py python -I -m blindaje_eval.voz_huella",
     "whatsapp": "uv run --project py python -I -m blindaje_eval.whatsapp"
   },

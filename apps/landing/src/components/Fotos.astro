@@ -88,14 +88,7 @@ const vlmLang = es ? undefined : "es";
           </figure>
           {fotosB.map((img, i) => (
             <figure class:list={["fh__photo", "fh__photo--b", i === 0 && "is-active"]} data-b={i}>
-              <Image
-                src={img}
-                alt={p.alt[i + 1]!}
-                widths={[480, 720, 960]}
-                sizes={sizes}
-                loading={i === 0 ? "eager" : "lazy"}
-                data-img="b"
-              />
+              <Image src={img} alt={p.alt[i + 1]!} widths={[480, 720, 960]} sizes={sizes} loading="lazy" data-img="b" />
               <figcaption>{p.photoB[i]}</figcaption>
             </figure>
           ))}
@@ -1386,6 +1379,12 @@ const vlmLang = es ? undefined : "es";
       measure();
       render();
     }).observe(photos);
+
+    for (const img of root.querySelectorAll<HTMLImageElement>("[data-img]")) {
+      img.addEventListener("load", () => {
+        if (data) render();
+      });
+    }
 
     if (reduce.matches) t = END;
     if (!("IntersectionObserver" in window)) {

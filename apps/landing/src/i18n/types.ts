@@ -276,6 +276,8 @@ export interface Dict {
         bullet: string;
         note: string;
         sameRoom: string;
+        otherRoom: string;
+        resent: string;
         patches: string;
         message: string;
         voiceNote: string;
@@ -314,6 +316,8 @@ export interface Dict {
         signals: { voice: string; script: string; account: string; together: string };
         review: string;
         probable: string;
+        /** Un par de casos, con {a} y {b}. */
+        pair: string;
         daysAgo: string;
         today: string;
         rule: string;
@@ -328,6 +332,7 @@ export interface Dict {
         scriptOnly: string;
         alertTitle: string;
         alert: string;
+        underFive: string;
         range: string;
       };
     };
@@ -359,52 +364,6 @@ export interface Dict {
         title: string;
         points: string[];
       }[];
-    };
-    how: {
-      title: string;
-      lead: string;
-      /**
-       * El recorrido animado (Flow.astro): seis escenas, del audio al distrito. Las cifras son las del
-       * par A–B del demo en el motor de vinculación (eval/report.json, verificaciones a_demo_AB).
-       */
-      flow: {
-        railLabel: string;
-        scenes: { label: string; title: string; text: string; tags: string[] }[];
-        s2: { transcript: string; highlight: string; bullet: string; note: string; fields: { k: string; v: string }[] };
-        s4: {
-          caseA: string;
-          whereA: string;
-          caseB: string;
-          whereB: string;
-          index: string;
-          voice: string;
-          phone: string;
-          script: string;
-          photo: string;
-          voiceMatch: string;
-          scriptMatch: string;
-          phoneMismatch: string;
-          review: string;
-          probable: string;
-        };
-        s5: {
-          title: string;
-          status: string;
-          explain: string;
-          confirm: string;
-          dismiss: string;
-          confirmed: string;
-          audit: string;
-        };
-        s6: {
-          network: string;
-          sameVoice: string;
-          sameAccount: string;
-          alertTitle: string;
-          alert: string;
-        };
-        note: string;
-      };
     };
     tour: {
       title: string;
