@@ -411,31 +411,67 @@ export const es: Dict = {
   },
   lp: {
     hero: {
-      title: "Nadie debería enfrentar la extorsión solo",
-      lead: "Blindaje junta lo que guardan las víctimas (audios, fotos, mensajes, números y cuentas) para descubrir a la misma banda detrás de casos distintos y mostrar en qué distritos pasa. Una persona revisa cada vínculo.",
+      title: "La IA que descubre a la banda detrás de cada extorsión",
+      lead: "Las víctimas reciben audios, fotos y mensajes desde números distintos, y cada denuncia queda sola. Blindaje los escucha, los mira y los lee con modelos de Meta y otros abiertos, y une los que vienen de la misma banda. Una persona revisa cada vínculo.",
+      ctaCases: "Ver los casos",
       ctaMap: "Ver el mapa por distrito",
       ctaMapShort: "Ver el mapa",
-      audienceLabel: "Para",
-      audience: ["bodegueras", "mototaxistas", "puestos de mercado", "transportistas"],
-      photoAlt: "Mototaxis amarillos, azules y rojos esperando pasajeros en una calle peatonal del centro de Lima.",
-      photoCredit: "Foto ilustrativa: Paulo Guereta, CC BY 2.0. No muestra víctimas.",
-      phoneAlt:
-        "Captura del portal público en un celular: en Ate, el riesgo para bodegas es alto, entre 10 y 19 casos.",
-      phoneCap: "El portal público, sin cuenta. Datos ficticios.",
-    },
-    built: {
-      label: "Hecho con Meta AI",
-      items: [
-        "Muse Spark",
-        "Muse Voice Transcribe",
-        "SAM 3.1",
-        "AudioSeal",
-        "Video Seal",
-        "DINOv2",
-        "FAISS",
-        "PyTorch",
-        "React Native",
+      aiLabel: "Lo que hace la IA",
+      ai: [
+        {
+          name: "Escucha",
+          text: "La misma voz, aunque cambie de número o la disfrace.",
+          models: ["Muse Voice Transcribe", "ECAPA"],
+        },
+        {
+          name: "Mira",
+          text: "La misma bala, la misma nota, el mismo cuarto desde otro ángulo.",
+          models: ["SAM 3.1", "DINOv2"],
+        },
+        {
+          name: "Lee",
+          text: "El mismo guion, la misma cuenta de Yape, el mismo grupo.",
+          models: ["Muse Spark 1.3"],
+        },
       ],
+      cityLabel:
+        "Lima de noche, distrito por distrito: llegan denuncias ficticias y la IA une las que vienen de la misma banda por la voz, la cuenta y el guion.",
+      city: {
+        voice: "misma voz",
+        account: "misma cuenta",
+        script: "mismo guion",
+        photo: "misma nota",
+        network: "Los X: 5 casos",
+        legend: ["audio", "foto", "mensaje"],
+      },
+      cityNote: "Lima, distrito por distrito. Datos ficticios.",
+    },
+    cases: {
+      title: "Tres denuncias que nadie conecta",
+      lead: "Así llegan tres casos ficticios: cada víctima recibe audios, fotos y mensajes desde un número distinto. Por separado parecen casos sueltos.",
+      phonesLabel: "Lo que recibió cada víctima",
+      caseLabel: "Caso {k}",
+      sectors: { bodega: "Bodega", mototaxi: "Mototaxi", mercado: "Puesto de mercado" },
+      unknown: "No está en tus contactos",
+      daysAgo: "Hace {n} días",
+      photoAlt:
+        "Foto ficticia que recibió el caso A: una bala sobre el mostrador de la bodega y una nota escrita a mano que dice «Los X. 48 horas».",
+      listen: "Escuchar el audio del caso {k}, {s} segundos",
+      tags: {
+        voice: "Misma voz que el caso {k} ({cos})",
+        otherVoice: "Otra voz",
+        account: "Misma cuenta que el caso {k}",
+        spark: "Muse Spark: S/ 2,000, 48 horas, Los X",
+        sam: "SAM 3.1: bala y nota",
+      },
+      steps: [
+        "Llegan desde tres números distintos, en días y distritos distintos.",
+        "Blindaje los escucha, los mira y los lee: la misma voz en A y B, la misma cuenta en B y C.",
+      ],
+      verdict: "Tres números, tres víctimas que no se conocen y una sola banda: Los X. Abajo, cómo lo descubre.",
+      replay: "Ver de nuevo",
+      scaleTitle: "Y no son tres: son miles",
+      note: "Casos, números, cuentas y audios ficticios: las voces son sintéticas, hechas con MMS-TTS de Meta.",
     },
     problem: { gapsTitle: "Por qué no alcanza hoy" },
     benefits: {
@@ -504,28 +540,16 @@ export const es: Dict = {
       },
     },
     how: {
-      title: "Del audio de WhatsApp al mapa del distrito",
-      lead: "Así viaja una amenaza ficticia por Blindaje, del celular de la víctima al mapa del distrito, y así se comparan dos casos. Los modelos proponen y una persona decide.",
+      title: "De tres denuncias a una red",
+      lead: "Con la voz y las fotos ya convertidas en vectores, Blindaje lee cada caso, los compara con todos los demás y propone los vínculos. Los modelos proponen y una persona decide.",
       flow: {
         railLabel: "Pasos del recorrido",
         scenes: [
-          {
-            label: "Recolecta",
-            title: "La víctima guarda la evidencia sin que se note",
-            text: "La víctima reenvía a la app los audios, fotos y mensajes que recibió. Por fuera la app es un cuaderno de ventas; lo que guarda se cifra en el celular y sube con una huella (SHA-256) que prueba que nadie lo cambió.",
-            tags: ["AES-256-GCM", "SHA-256"],
-          },
           {
             label: "Analiza",
             title: "Los modelos de Meta leen cada pieza",
             text: "Muse Voice Transcribe pasa el audio a texto y separa quién habla. SAM 3.1 encuentra la bala y la nota en la foto. Muse Spark 1.3 arma la ficha del caso: monto, plazo, forma de pago y grupo.",
             tags: ["Muse Voice Transcribe 1.0", "SAM 3.1", "Muse Spark 1.3"],
-          },
-          {
-            label: "Señales",
-            title: "Todo se vuelve señales que se pueden comparar",
-            text: "Para comparar casos sin exponer a nadie, cada dato se vuelve una señal: la voz, en 192 números que describen cómo suena; teléfonos y cuentas, en un código cifrado (HMAC); el guion y la foto, en vectores. No se guarda ningún nombre.",
-            tags: ["SpeechBrain ECAPA", "HMAC-SHA256", "multilingual-e5-small", "DINOv2"],
           },
           {
             label: "Compara",
@@ -542,11 +566,10 @@ export const es: Dict = {
           {
             label: "Muestra",
             title: "Los vínculos arman la red y el mapa dice dónde",
-            text: "B y C además pagan a la misma cuenta, así que los tres casos forman una red. El mapa público muestra dónde pasa, por distrito y en rangos, nunca direcciones; las alertas salen solo cuando una persona las aprueba.",
+            text: "B y C además pagan a la misma cuenta, así que los tres casos forman una red: Los X. La alerta para la zona sale solo cuando una persona la aprueba, y el mapa público muestra dónde pasa, por distrito.",
             tags: ["Cartógrafo", "Vigía", "Mapa por distrito"],
           },
         ],
-        s1: { chips: ["Audio de WhatsApp", "Foto", "Mensaje"], seal: "Cifrado en el celular" },
         s2: {
           transcript: "Son dos mil soles. Te vamos a mandar el número para que yapees.",
           highlight: "dos mil soles",
@@ -557,14 +580,6 @@ export const es: Dict = {
             { k: "Plazo", v: "48 horas" },
             { k: "Canal", v: "Yape" },
             { k: "Grupo", v: "«Los X»" },
-          ],
-        },
-        s3: {
-          rows: [
-            { name: "Voz", raw: "Audio de 24 s", out: "V-7" },
-            { name: "Número", raw: "Yape 900 000 488", out: "…488" },
-            { name: "Guion", raw: "«habla con el jefe»", out: "e5" },
-            { name: "Foto", raw: "Recorte: bala", out: "IMG-1" },
           ],
         },
         s4: {
@@ -595,8 +610,7 @@ export const es: Dict = {
         s6: {
           network: "Red R-001",
           sameVoice: "misma voz",
-          sameAccount: "Yape …488",
-          below: "Comas: menos de 5 casos, no se publica",
+          sameAccount: "Yape …202",
           alertTitle: "Alerta aprobada",
           alert: "San Juan de Lurigancho: audios que dicen ser de «Los X». No pagues: denuncia en la Línea 1818.",
         },
@@ -656,7 +670,7 @@ export const es: Dict = {
     },
     photos: {
       title: "Otro ángulo, la misma colcha",
-      lead: "Las bandas mandan fotos para asustar, y dos fotos del mismo cuarto casi nunca salen iguales: cambian el ángulo, la luz y el encuadre. Así se ven por dentro, parche por parche, y esto es lo que dice Muse Spark al mirarlas. Fotos ficticias, generadas con Muse Image.",
+      lead: "Como la bala del caso A, las bandas mandan fotos para asustar: del negocio, de la casa, del cuarto. Dos fotos del mismo lugar casi nunca salen iguales, porque cambian el ángulo, la luz y el encuadre. Así las compara Blindaje por dentro, parche por parche, y esto dice Muse Spark al mirarlas. Fotos ficticias, generadas con Muse Image.",
       pairsLabel: "Qué par de fotos comparar",
       pairs: ["Misma colcha, otro ángulo", "Otra colcha, mismos objetos", "La misma foto, reenviada"],
       photoA: "Foto del caso A",
@@ -723,7 +737,7 @@ export const es: Dict = {
     },
     voice: {
       title: "Aunque disfracen la voz, queda huella",
-      lead: "Un cambiador de voz basta para que la huella no reconozca a la misma persona. Aquí se ve por qué, píxel por píxel, con una voz ficticia. Abajo, lo medido con {speakers} voces reales de español de Perú (SLR73) enviadas por WhatsApp.",
+      lead: "La voz del caso A vuelve a amenazar en el caso B, desde otro número. Así la reconoce Blindaje, píxel por píxel, y así la sigue cuando la disfrazan con una app. Abajo, lo medido con {speakers} voces reales de español de Perú (SLR73) enviadas por WhatsApp.",
       stepsLabel: "La voz disfrazada, paso a paso",
       steps: [
         {
@@ -883,12 +897,6 @@ export const es: Dict = {
       place: "Lima, 2026",
       photosLabel: "Fotos de Wikimedia Commons",
       photos: [
-        {
-          what: "mototaxis en el centro de Lima",
-          author: "Paulo Guereta",
-          license: "CC BY 2.0",
-          href: "https://commons.wikimedia.org/wiki/File:Lima_-_Per%C3%BA_(20529612568).jpg",
-        },
         {
           what: "una bodega de Lima",
           author: "cemeiakano",

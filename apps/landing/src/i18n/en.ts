@@ -411,31 +411,67 @@ export const en: Dict = {
   },
   lp: {
     hero: {
-      title: "No one should face extortion alone",
-      lead: "Blindaje brings together what victims keep (audio, photos, messages, numbers and accounts) to uncover the same gang behind different cases and show which districts it hits. A person reviews every link.",
+      title: "AI that finds the gang behind every extortion",
+      lead: "Victims get voice notes, photos and messages from different numbers, and every report stays on its own. Blindaje listens to them, looks at them and reads them with Meta models and other open ones, and links the ones that come from the same gang. A person reviews every link.",
+      ctaCases: "See the cases",
       ctaMap: "See the district map",
       ctaMapShort: "See the map",
-      audienceLabel: "For",
-      audience: ["corner shops", "mototaxi drivers", "market stalls", "transport workers"],
-      photoAlt: "Yellow, blue and red mototaxis waiting for passengers on a pedestrian street in central Lima.",
-      photoCredit: "Illustrative photo: Paulo Guereta, CC BY 2.0. It shows no victims.",
-      phoneAlt:
-        "Screenshot of the public portal on a phone: in Ate, the risk for corner shops is high, between 10 and 19 cases.",
-      phoneCap: "The public portal, no account. Fictitious data.",
-    },
-    built: {
-      label: "Built with Meta AI",
-      items: [
-        "Muse Spark",
-        "Muse Voice Transcribe",
-        "SAM 3.1",
-        "AudioSeal",
-        "Video Seal",
-        "DINOv2",
-        "FAISS",
-        "PyTorch",
-        "React Native",
+      aiLabel: "What the AI does",
+      ai: [
+        {
+          name: "Listens",
+          text: "The same voice, even from a new number or disguised.",
+          models: ["Muse Voice Transcribe", "ECAPA"],
+        },
+        {
+          name: "Looks",
+          text: "The same bullet, the same note, the same room from another angle.",
+          models: ["SAM 3.1", "DINOv2"],
+        },
+        {
+          name: "Reads",
+          text: "The same script, the same Yape account, the same group.",
+          models: ["Muse Spark 1.3"],
+        },
       ],
+      cityLabel:
+        "Lima at night, district by district: fictitious reports come in and the AI links the ones from the same gang by voice, account and script.",
+      city: {
+        voice: "same voice",
+        account: "same account",
+        script: "same script",
+        photo: "same note",
+        network: "Los X: 5 cases",
+        legend: ["voice note", "photo", "message"],
+      },
+      cityNote: "Lima, district by district. Fictitious data.",
+    },
+    cases: {
+      title: "Three reports no one connects",
+      lead: "This is how three fictitious cases arrive: each victim gets voice notes, photos and messages from a different number. On their own, they look unrelated.",
+      phonesLabel: "What each victim received",
+      caseLabel: "Case {k}",
+      sectors: { bodega: "Corner shop", mototaxi: "Mototaxi", mercado: "Market stall" },
+      unknown: "Not in your contacts",
+      daysAgo: "{n} days ago",
+      photoAlt:
+        "Fictitious photo sent to case A: a bullet on the shop counter and a handwritten note that reads «Los X. 48 horas» (48 hours).",
+      listen: "Listen to case {k}’s voice note, {s} seconds",
+      tags: {
+        voice: "Same voice as case {k} ({cos})",
+        otherVoice: "Another voice",
+        account: "Same account as case {k}",
+        spark: "Muse Spark: S/ 2,000, 48 hours, Los X",
+        sam: "SAM 3.1: bullet and note",
+      },
+      steps: [
+        "They come from three different numbers, on different days and in different districts.",
+        "Blindaje listens, looks and reads: the same voice in A and B, the same account in B and C.",
+      ],
+      verdict: "Three numbers, three victims who don’t know each other, and one gang: Los X. Below, how it finds out.",
+      replay: "Play again",
+      scaleTitle: "And it isn’t three: it’s thousands",
+      note: "Fictitious cases, numbers, accounts and voice notes: the voices are synthetic, made with Meta’s MMS-TTS.",
     },
     problem: { gapsTitle: "Why today is not enough" },
     benefits: {
@@ -504,28 +540,16 @@ export const en: Dict = {
       },
     },
     how: {
-      title: "From a WhatsApp voice note to the district map",
-      lead: "This is how a fictitious threat travels through Blindaje, from the victim’s phone to the district map, and how two cases get compared. Models propose; a person decides.",
+      title: "From three reports to one network",
+      lead: "With the voice and the photos already turned into vectors, Blindaje reads each case, compares it with every other one and proposes the links. Models propose; a person decides.",
       flow: {
         railLabel: "Steps of the journey",
         scenes: [
-          {
-            label: "Collect",
-            title: "The victim saves the evidence without anyone noticing",
-            text: "The victim forwards the voice notes, photos and messages they received to the app. From the outside it is a sales notebook; what it saves is encrypted on the phone and uploaded with a hash (SHA-256) that proves nobody changed it.",
-            tags: ["AES-256-GCM", "SHA-256"],
-          },
           {
             label: "Analyze",
             title: "Meta’s models read every piece",
             text: "Muse Voice Transcribe turns the audio into text and separates who speaks. SAM 3.1 finds the bullet and the note in the photo. Muse Spark 1.3 builds the case record: amount, deadline, payment method and group.",
             tags: ["Muse Voice Transcribe 1.0", "SAM 3.1", "Muse Spark 1.3"],
-          },
-          {
-            label: "Signals",
-            title: "Everything becomes signals that can be compared",
-            text: "To compare cases without exposing anyone, each piece becomes a signal: the voice, as 192 numbers that describe how it sounds; phones and accounts, as an encrypted code (HMAC); the script and the photo, as vectors. No name is stored.",
-            tags: ["SpeechBrain ECAPA", "HMAC-SHA256", "multilingual-e5-small", "DINOv2"],
           },
           {
             label: "Compare",
@@ -542,11 +566,10 @@ export const en: Dict = {
           {
             label: "Show",
             title: "Links build the network, the map shows where",
-            text: "B and C also pay into the same account, so the three cases form a network. The public map shows where it happens, by district and in ranges, never addresses; alerts go out only once a person approves them.",
+            text: "B and C also pay into the same account, so the three cases form one network: Los X. The alert for the area goes out only once a person approves it, and the public map shows where it happens, by district.",
             tags: ["Cartographer", "Lookout", "District map"],
           },
         ],
-        s1: { chips: ["WhatsApp voice note", "Photo", "Message"], seal: "Encrypted on the phone" },
         s2: {
           transcript: "Son dos mil soles. Te vamos a mandar el número para que yapees.",
           highlight: "dos mil soles",
@@ -557,14 +580,6 @@ export const en: Dict = {
             { k: "Deadline", v: "48 hours" },
             { k: "Channel", v: "Yape" },
             { k: "Group", v: "«Los X»" },
-          ],
-        },
-        s3: {
-          rows: [
-            { name: "Voice", raw: "24 s voice note", out: "V-7" },
-            { name: "Number", raw: "Yape 900 000 488", out: "…488" },
-            { name: "Script", raw: "«habla con el jefe»", out: "e5" },
-            { name: "Photo", raw: "Crop: bullet", out: "IMG-1" },
           ],
         },
         s4: {
@@ -595,8 +610,7 @@ export const en: Dict = {
         s6: {
           network: "Network R-001",
           sameVoice: "same voice",
-          sameAccount: "Yape …488",
-          below: "Comas: under 5 cases, not published",
+          sameAccount: "Yape …202",
           alertTitle: "Approved alert",
           alert: "San Juan de Lurigancho: voice notes claiming to be «Los X». Don’t pay: report it on Línea 1818.",
         },
@@ -656,7 +670,7 @@ export const en: Dict = {
     },
     photos: {
       title: "Another angle, the same bedspread",
-      lead: "Gangs send photos to scare people, and two photos of the same room almost never come out the same: the angle, the light and the framing change. This is how they look inside, patch by patch, and what Muse Spark says when it looks at them. Fictitious photos, generated with Muse Image.",
+      lead: "Like the bullet in case A, gangs send photos to scare people: of the shop, the home, the bedroom. Two photos of the same place almost never come out the same, because the angle, the light and the framing change. This is how Blindaje compares them inside, patch by patch, and what Muse Spark says when it looks at them. Fictitious photos, generated with Muse Image.",
       pairsLabel: "Which pair of photos to compare",
       pairs: ["Same bedspread, another angle", "Another bedspread, same objects", "The same photo, forwarded"],
       photoA: "Photo from case A",
@@ -723,7 +737,7 @@ export const en: Dict = {
     },
     voice: {
       title: "Even a disguised voice leaves a print",
-      lead: "A voice changer is enough for the print to stop recognizing the same person. Here is why, pixel by pixel, with a fictitious voice. Below, what we measured with {speakers} real voices in Peruvian Spanish (SLR73) sent over WhatsApp.",
+      lead: "The voice from case A threatens again in case B, from another number. This is how Blindaje recognizes it, pixel by pixel, and how it still follows it when an app disguises it. Below, what we measured with {speakers} real voices in Peruvian Spanish (SLR73) sent over WhatsApp.",
       stepsLabel: "The disguised voice, step by step",
       steps: [
         {
@@ -883,12 +897,6 @@ export const en: Dict = {
       place: "Lima, 2026",
       photosLabel: "Photos from Wikimedia Commons",
       photos: [
-        {
-          what: "mototaxis in central Lima",
-          author: "Paulo Guereta",
-          license: "CC BY 2.0",
-          href: "https://commons.wikimedia.org/wiki/File:Lima_-_Per%C3%BA_(20529612568).jpg",
-        },
         {
           what: "a corner shop in Lima",
           author: "cemeiakano",

@@ -28,6 +28,8 @@ apps/landing/src/data/fotos-demo.json
 apps/landing/src/data/voz-huella.json
 # Vectores reales en píxeles de las escenas Señales y Compara, de eval/py/blindaje_eval/flujo_vectores.py
 apps/landing/src/data/flujo-vectores.json
+# Los casos A, B y C del demo para la landing, de eval/py/blindaje_eval/casos_landing.py
+apps/landing/src/data/casos-demo.json
 services/ml/
 eval/py/
 infra/

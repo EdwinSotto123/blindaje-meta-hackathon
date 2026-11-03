@@ -1,16 +1,16 @@
 ---
 /**
- * El recorrido completo, animado con el scroll: seis escenas, del audio de WhatsApp al distrito.
+ * Cómo se unen los casos, animado con el scroll: cuatro escenas, de las piezas sueltas a la red.
  *
- *  1. Recolecta  la evidencia entra a la app disfrazada (capturas reales del emulador) y se cifra
- *  2. Analiza    Muse Voice Transcribe, SAM 3.1 (las cajas reales de la foto del demo) y Muse Spark
- *  3. Señales    cada señal en píxeles, un píxel por número: la huella ECAPA de la nota B1, el HMAC,
- *                el vector e5 del guion y el DINOv2 del recorte de la bala (vectores reales,
- *                src/data/flujo-vectores.json de eval/py/blindaje_eval/flujo_vectores.py)
- *  4. Compara    FAISS busca la voz de B en el índice: la de A (0.79) gana a siete voces de SLR73;
- *                voz 0.85 y guion 0.40 se combinan en 0.91 (par A–B del demo, eval/report.json)
- *  5. Revisa     una revisora confirma; la auditoría queda encadenada
- *  6. Muestra    B–C por la cuenta …488 (p 0.95), la red R-001, el distrito y la alerta aprobada
+ *  1. Analiza    Muse Voice Transcribe, SAM 3.1 (las cajas reales de la foto del demo) y Muse Spark
+ *  2. Compara    FAISS busca la voz de B en el índice: la de A (0.79) gana a siete voces de SLR73
+ *                (huellas reales, src/data/flujo-vectores.json); voz 0.85 y guion 0.40 se combinan en
+ *                0.91 (par A–B del demo, eval/report.json)
+ *  3. Revisa     una revisora confirma; la auditoría queda encadenada
+ *  4. Muestra    B–C por la cuenta …202 (p 0.95), la red R-001 y la alerta aprobada
+ *
+ * Lo que recibe cada víctima está en Casos.astro, la voz en Voz.astro, las fotos en Fotos.astro y el
+ * mapa en Where.astro: aquí no se repite.
  *
  * Sin JavaScript o con movimiento reducido, las escenas se ven quietas y completas, una debajo de
  * otra. Con movimiento, GSAP ScrollTrigger fija la sección y el scroll arma cada escena; la barra de
@@ -18,10 +18,8 @@
  */
 import { getImage } from "astro:assets";
 import type { Dict } from "../i18n";
-import { productShot } from "../lib/screenshots";
 import vec from "../data/flujo-vectores.json";
 import mostrador from "../assets/flujo/mostrador.jpg";
-import bala from "../assets/flujo/bala.jpg";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -31,19 +29,7 @@ interface Props {
 const { dict: d } = Astro.props;
 const f = d.lp.how.flow;
 
-const shot = async (name: "app-disfraz-cuaderno" | "app-notas-privadas") => {
-  const image = productShot(name);
-  return image
-    ? {
-        image,
-        img: await getImage({ src: image, widths: [200, 300, 400], format: "webp", quality: 78 }),
-      }
-    : null;
-};
-const fuera = await shot("app-disfraz-cuaderno");
-const dentro = await shot("app-notas-privadas");
 const mostradorImg = await getImage({ src: mostrador, widths: [360, 540, 720], format: "webp", quality: 78 });
-const balaImg = await getImage({ src: bala, widths: [120, 240], format: "webp", quality: 80 });
 
 /** Cajas reales de SAM 3.1 sobre la foto del demo, en % del recorte del mostrador (1000 × 506). */
 const BOXES = [
@@ -52,10 +38,6 @@ const BOXES = [
 ];
 
 const transcript = f.s2.transcript.split(f.s2.highlight);
-/** Las tres señales que son vectores, en píxeles (un píxel por número), y su tamaño en la imagen. */
-const pixels = [vec.voz, null, vec.guion, vec.foto].map((v, k) =>
-  v ? { src: v.png, w: k === 0 ? 32 : 48, h: k === 0 ? 6 : 8 } : null,
-);
 const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
 ---
 
@@ -98,58 +80,9 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
 
         <div class="fl__box" aria-hidden="true">
           {i === 0 && (
-            <div class="sc s1">
-              <ul class="s1__chips" role="list">
-                {f.s1.chips.map((c, k) => (
-                  <li class="chip s1__chip">
-                    <Icon name={(["mic", "camera", "clipboard"] as const)[k]!} />
-                    {c}
-                  </li>
-                ))}
-              </ul>
-              <div class="s1__phone">
-                {fuera && (
-                  <img
-                    class="s1__screen s1__screen--out"
-                    src={fuera.img.src}
-                    srcset={fuera.img.srcSet.attribute}
-                    sizes="200px"
-                    width={fuera.image.width}
-                    height={fuera.image.height}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                  />
-                )}
-                {dentro && (
-                  <img
-                    class="s1__screen s1__screen--in"
-                    src={dentro.img.src}
-                    srcset={dentro.img.srcSet.attribute}
-                    sizes="200px"
-                    width={dentro.image.width}
-                    height={dentro.image.height}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                  />
-                )}
-              </div>
-              <div class="s1__seal">
-                <p class="s1__sealtitle">
-                  <Icon name="lock" />
-                  {f.s1.seal}
-                </p>
-                <code translate="no">AES-256-GCM</code>
-                <code translate="no">SHA-256 dc21 2c4f b955…</code>
-              </div>
-            </div>
-          )}
-
-          {i === 1 && (
             <div class="sc s2">
               <div class="s2__lane">
-                <span class="s2__in" title={f.s1.chips[0]}>
+                <span class="s2__in">
                   <Icon name="mic" />
                 </span>
                 <span class="s2__arrow" />
@@ -165,7 +98,7 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
                 </p>
               </div>
               <div class="s2__lane">
-                <span class="s2__in" title={f.s1.chips[1]}>
+                <span class="s2__in">
                   <Icon name="camera" />
                 </span>
                 <span class="s2__arrow" />
@@ -193,7 +126,7 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
                 </div>
               </div>
               <div class="s2__lane">
-                <span class="s2__in" title={f.s1.chips[2]}>
+                <span class="s2__in">
                   <Icon name="clipboard" />
                 </span>
                 <span class="s2__arrow" />
@@ -211,46 +144,7 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
             </div>
           )}
 
-          {i === 2 && (
-            <div class="sc s3">
-              {f.s3.rows.map((r, k) => (
-                <div class={`s3__row s3__row--${k}`}>
-                  <span class="s3__name">
-                    <span class="s3__glyph" />
-                    {r.name}
-                  </span>
-                  <span class="s3__raw">
-                    {k === 3 ? (
-                      <img
-                        src={balaImg.src}
-                        srcset={balaImg.srcSet.attribute}
-                        sizes="72px"
-                        width={bala.width}
-                        height={bala.height}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    ) : null}
-                    {r.raw}
-                  </span>
-                  <span class="s3__arrow" />
-                  <span class="s3__sig">
-                    {pixels[k] ? (
-                      <img class="s3__px" src={pixels[k]!.src} width={pixels[k]!.w} height={pixels[k]!.h} alt="" />
-                    ) : (
-                      <code class="s3__hmac" data-hmac="HMAC 7c1e 9a40 d2b8" translate="no">
-                        HMAC 7c1e 9a40 d2b8
-                      </code>
-                    )}
-                    <span class="s3__pill">{r.out}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {i === 3 && (
+          {i === 1 && (
             <div class="sc s4">
               <div class="s4__grid">
                 <p class="s4__case s4__case--a">
@@ -271,11 +165,11 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
                 <span class="s4__v s4__b s4__v--voz s4__probe">V-7</span>
 
                 <span class="s4__k s4__k--tel">{f.s4.phone}</span>
-                <span class="s4__v s4__a s4__v--tel">…131</span>
+                <span class="s4__v s4__a s4__v--tel">…111</span>
                 <span class="s4__link s4__link--tel">
                   <span class="s4__why s4__why--no">≠ {f.s4.phoneMismatch}</span>
                 </span>
-                <span class="s4__v s4__b s4__v--tel">…904</span>
+                <span class="s4__v s4__b s4__v--tel">…222</span>
 
                 <span class="s4__k s4__k--mo">{f.s4.script}</span>
                 <span class="s4__v s4__a s4__v--mo">«Habla con el jefe»</span>
@@ -330,7 +224,7 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
             </div>
           )}
 
-          {i === 4 && (
+          {i === 2 && (
             <div class="sc s5">
               <div class="s5__card">
                 <p class="s5__head">
@@ -371,7 +265,7 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
             </div>
           )}
 
-          {i === 5 && (
+          {i === 3 && (
             <div class="sc s6">
               <svg class="s6__graph" viewBox="0 0 300 250">
                 <ellipse class="s6__ring" cx="150" cy="128" rx="138" ry="108" pathLength="1" />
@@ -404,15 +298,6 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
               </svg>
 
               <div class="s6__map">
-                <div class="s6__tiles">
-                  {Array.from({ length: 16 }, (_, t) => (
-                    <span
-                      class:list={["s6__tile", t === 2 && "is-comas", t === 10 && "is-sjl"]}
-                      data-label={t === 2 ? "Comas" : t === 10 ? "SJL" : undefined}
-                    />
-                  ))}
-                </div>
-                <p class="s6__below">{f.s6.below}</p>
                 <div class="s6__alert">
                   <p class="s6__alerttitle">
                     <Icon name="alert" />
@@ -583,68 +468,6 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
     font-size: 0.92em;
   }
 
-  /* ---------- 1. Recolecta ---------- */
-
-  .s1 {
-    grid-template-columns: 1fr auto;
-    grid-template-rows: 1fr auto;
-    gap: 3cqmin 5cqmin;
-    align-items: center;
-  }
-
-  .s1__chips {
-    display: grid;
-    gap: 3cqmin;
-    justify-items: start;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .s1__phone {
-    position: relative;
-    grid-row: 1 / span 2;
-    grid-column: 2;
-    width: min(46cqw, 50cqh);
-    aspect-ratio: 1080 / 1888;
-    overflow: hidden;
-    border: 6px solid var(--noche);
-    border-radius: 24px;
-    background: #fbfcfe;
-    box-shadow: var(--lift);
-  }
-
-  .s1__screen {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top;
-  }
-
-  .s1__screen--out {
-    opacity: 0;
-  }
-
-  .s1__seal {
-    display: grid;
-    gap: 0.35em;
-    justify-self: start;
-    padding: 0.8em 1em;
-    border: 1px solid var(--verde);
-    border-radius: 12px;
-    background: var(--verde-suave);
-  }
-
-  .s1__sealtitle {
-    display: flex;
-    align-items: center;
-    gap: 0.45em;
-    margin: 0;
-    font-weight: 700;
-  }
-
   /* ---------- 2. Analiza ---------- */
 
   /* Los tres carriles comparten columnas: entrada, modelo y salida alineados. */
@@ -773,139 +596,6 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
 
   .s2__field dd {
     margin: 0;
-    font-weight: 700;
-  }
-
-  /* ---------- 3. Señales ---------- */
-
-  .s3 {
-    align-content: center;
-    gap: 4.5cqmin;
-  }
-
-  .s3__row {
-    display: grid;
-    grid-template-columns: 9em minmax(0, 1fr) 4cqi minmax(0, 1.3fr);
-    align-items: center;
-    gap: 1.5cqi;
-  }
-
-  .s3__name {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    font-weight: 700;
-  }
-
-  .s3__glyph {
-    flex: none;
-    width: 1.1em;
-    height: 1.1em;
-    background: var(--c);
-  }
-
-  .s3__row--0 {
-    --c: var(--voz);
-    --cb: var(--voz-borde);
-    --ct: var(--voz-tinte);
-  }
-
-  .s3__row--1 {
-    --c: var(--id);
-    --cb: var(--id-borde);
-    --ct: var(--id-tinte);
-  }
-
-  .s3__row--2 {
-    --c: var(--mo);
-    --cb: var(--mo-borde);
-    --ct: var(--mo-tinte);
-  }
-
-  .s3__row--3 {
-    --c: var(--img);
-    --cb: var(--img-borde);
-    --ct: var(--img-tinte);
-  }
-
-  .s3__row--0 .s3__glyph {
-    border-radius: 50%;
-  }
-
-  .s3__row--1 .s3__glyph {
-    transform: rotate(45deg) scale(0.8);
-  }
-
-  .s3__row--2 .s3__glyph {
-    clip-path: polygon(0 15%, 70% 15%, 100% 50%, 70% 85%, 0 85%);
-  }
-
-  .s3__row--3 .s3__glyph {
-    clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  }
-
-  .s3__raw {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    min-width: 0;
-    padding: 0.4em 0.7em;
-    border-radius: 8px;
-    background: var(--fondo-2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .s3__raw img {
-    width: 2.6em;
-    height: 1.8em;
-    border-radius: 4px;
-    object-fit: cover;
-  }
-
-  .s3__arrow {
-    height: 2px;
-    background: var(--cb);
-    transform-origin: left;
-  }
-
-  .s3__sig {
-    display: flex;
-    align-items: center;
-    gap: 0.6em;
-    min-width: 0;
-  }
-
-  /* Un píxel por número: la imagen es chica (32 x 6 o 48 x 8) y se agranda sin suavizar. */
-  .s3__px {
-    flex: 1;
-    min-width: 0;
-    width: 100%;
-    height: 2.6em;
-    border: 1px solid var(--cb);
-    border-radius: 3px;
-    image-rendering: pixelated;
-  }
-
-  .s3__hmac {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    color: var(--cb);
-    font-weight: 700;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .s3__pill {
-    flex: none;
-    min-width: 4.6em;
-    text-align: center;
-    padding: 0.2em 0.65em;
-    border: 1.5px solid var(--cb);
-    border-radius: 999px;
-    background: var(--ct);
     font-weight: 700;
   }
 
@@ -1437,50 +1127,6 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
     gap: 0.8em;
   }
 
-  .s6__tiles {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-  }
-
-  .s6__tile {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 5px;
-    background: var(--lvl-none);
-  }
-
-  .s6__tile.is-sjl {
-    background: var(--lvl-medio);
-  }
-
-  .s6__tile.is-comas {
-    background: transparent;
-    box-shadow: inset 0 0 0 2px var(--linea-2);
-    outline: 1px dashed var(--tinta-2);
-    outline-offset: -5px;
-  }
-
-  .s6__tile[data-label]::after {
-    content: attr(data-label);
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    font-size: 0.78em;
-    font-weight: 700;
-  }
-
-  .s6__tile.is-sjl::after {
-    color: #fff;
-  }
-
-  .s6__below {
-    margin: 0;
-    font-size: 0.86em;
-    color: var(--tinta-2);
-  }
-
   .s6__alert {
     display: grid;
     gap: 0.3em;
@@ -1658,19 +1304,6 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
     .s4__k {
       visibility: hidden;
     }
-
-    .s3__row {
-      grid-template-columns: 6.5em minmax(0, 1fr);
-      row-gap: 0.4em;
-    }
-
-    .s3__arrow {
-      display: none;
-    }
-
-    .s3__sig {
-      grid-column: 1 / -1;
-    }
   }
 </style>
 
@@ -1689,18 +1322,6 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
       if (pos === "sticky" || pos === "fixed") h += el.offsetHeight;
     }
     return h;
-  }
-
-  /** HMAC que se arma letra por letra (siempre igual para el mismo avance del scroll). */
-  function scramble(target: string, p: number): string {
-    const chars = "0123456789abcdef";
-    return [...target]
-      .map((c, i) => {
-        if (c === " " || i < 5) return c;
-        if (i / target.length < p) return c;
-        return chars[(i * 7 + Math.floor(p * 37)) % chars.length];
-      })
-      .join("");
   }
 
   function setup(root: HTMLElement, gsap: Gsap, ScrollTrigger: ST) {
@@ -1728,43 +1349,8 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
           .to(boxes[from + 1]!, { autoAlpha: 1, scale: 1, duration: 0.8 }, "<");
       };
 
-      // 1. Recolecta: las tres piezas entran al celular, la pantalla pasa a las notas y se sella.
+      // 1. Analiza: cada carril se enciende y su salida aparece.
       starts.push(0);
-      const chips = q(".s1__chip");
-      const phone = q(".s1__phone")[0]!;
-      gsap.set(q(".s1__screen--out"), { opacity: 1 });
-      gsap.set(q(".s1__screen--in"), { opacity: 0 });
-      gsap.set(q(".s1__seal"), { autoAlpha: 0, y: 16 });
-      tl.to(
-        chips,
-        {
-          x: (_i: number, el: HTMLElement) => {
-            const a = el.getBoundingClientRect();
-            const b = phone.getBoundingClientRect();
-            return b.left + b.width / 2 - (a.left + a.width / 2);
-          },
-          y: (_i: number, el: HTMLElement) => {
-            const a = el.getBoundingClientRect();
-            const b = phone.getBoundingClientRect();
-            return b.top + b.height * 0.4 - (a.top + a.height / 2);
-          },
-          scale: 0.4,
-          autoAlpha: 0,
-          duration: 1.4,
-          ease: "power2.inOut",
-          stagger: 0.35,
-        },
-        0.3,
-      )
-        .to(q(".s1__screen--out"), { opacity: 0, duration: 0.6 }, ">-0.2")
-        .to(q(".s1__screen--in"), { opacity: 1, duration: 0.6 }, "<")
-        .to(q(".s1__seal"), { autoAlpha: 1, y: 0, duration: 0.8 }, ">");
-      tl.addLabel("s0");
-      done.push(tl.duration());
-      change(0);
-
-      // 2. Analiza: cada carril se enciende y su salida aparece.
-      starts.push(tl.duration());
       gsap.set(q(".s2__arrow"), { scaleX: 0 });
       gsap.set(q(".s2__model"), { autoAlpha: 0, scale: 0.92 });
       gsap.set(q(".s2__out"), { autoAlpha: 0, y: 10 });
@@ -1779,55 +1365,11 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
         if (k === 1) tl.to(s(".s2__box"), { autoAlpha: 1, scale: 1, duration: 0.5, stagger: 0.25 }, ">-0.2");
         if (k === 2) tl.from(s(".s2__field"), { autoAlpha: 0, y: 8, duration: 0.4, stagger: 0.15 }, "<");
       });
-      tl.addLabel("s1");
+      tl.addLabel("s0");
       done.push(tl.duration());
-      change(1);
+      change(0);
 
-      // 3. Señales: de lo crudo a lo comparable.
-      starts.push(tl.duration());
-      const hmac = q(".s3__hmac")[0];
-      const hmacTarget = hmac?.dataset.hmac ?? "";
-      const proxy = { p: 0 };
-      gsap.set(q(".s3__raw"), { autoAlpha: 0, x: -10 });
-      gsap.set(q(".s3__arrow"), { scaleX: 0 });
-      gsap.set(q(".s3__px"), { clipPath: "inset(0 100% 0 0)" });
-      gsap.set(q(".s3__pill"), { autoAlpha: 0, scale: 0.8 });
-      if (hmac) hmac.textContent = scramble(hmacTarget, 0);
-      q(".s3__row").forEach((row, k) => {
-        const s = (sel: string) => q(sel, row);
-        tl.to(s(".s3__raw"), { autoAlpha: 1, x: 0, duration: 0.5 }, k === 0 ? ">" : "<+0.45").to(
-          s(".s3__arrow"),
-          { scaleX: 1, duration: 0.4 },
-          ">-0.1",
-        );
-        // Los vectores aparecen columna por columna, como se escriben sus números.
-        const px = s(".s3__px")[0];
-        if (px)
-          tl.to(
-            px,
-            { clipPath: "inset(0 0% 0 0)", duration: 0.8, ease: `steps(${px.getAttribute("width") ?? 32})` },
-            ">-0.1",
-          );
-        if (k === 1 && hmac)
-          tl.to(
-            proxy,
-            {
-              p: 1,
-              duration: 0.9,
-              ease: "none",
-              onUpdate: () => {
-                hmac.textContent = scramble(hmacTarget, proxy.p);
-              },
-            },
-            ">-0.1",
-          );
-        tl.to(s(".s3__pill"), { autoAlpha: 1, scale: 1, duration: 0.4 }, ">-0.2");
-      });
-      tl.addLabel("s2");
-      done.push(tl.duration());
-      change(2);
-
-      // 4. Compara: FAISS encuentra la voz, las líneas unen lo que coincide y el puntaje se combina.
+      // 2. Compara: FAISS encuentra la voz, las líneas unen lo que coincide y el puntaje se combina.
       starts.push(tl.duration());
       const score = q(".s4__score")[0]!;
       const sc = { v: 0 };
@@ -1860,11 +1402,11 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
         .to(q(".s4__fill"), { scaleX: 0.91, duration: 0.7 }, "<")
         .to(sc, { v: 0.91, duration: 0.7, onUpdate: paint }, "<")
         .to(q(".s4__status"), { autoAlpha: 1, duration: 0.4 }, ">");
-      tl.addLabel("s3");
+      tl.addLabel("s1");
       done.push(tl.duration());
-      change(3);
+      change(1);
 
-      // 5. Revisa: la revisora confirma y la auditoría se encadena.
+      // 3. Revisa: la revisora confirma y la auditoría se encadena.
       starts.push(tl.duration());
       gsap.set(q(".s5__done"), { autoAlpha: 0, scale: 0.96 });
       gsap.set(q(".s5__cursor"), { autoAlpha: 0, x: 160, y: 60 });
@@ -1877,33 +1419,26 @@ const audit = ["a91f…07c2", "77c0…e5d1", "e3d2…4b90"];
         .to(q(".s5__cursor"), { autoAlpha: 0, duration: 0.3 }, "<")
         .to(q(".s5__audit p"), { autoAlpha: 1, duration: 0.4 }, ">")
         .to(q(".s5__audit li"), { autoAlpha: 1, x: 0, duration: 0.4, stagger: 0.25 }, "<");
-      tl.addLabel("s4");
+      tl.addLabel("s2");
       done.push(tl.duration());
-      change(4);
+      change(2);
 
-      // 6. Muestra: la red se dibuja y el distrito se enciende; la alerta sale aprobada.
+      // 4. Muestra: la red se dibuja y la alerta sale aprobada.
       starts.push(tl.duration());
       gsap.set(q(".s6__node"), { autoAlpha: 0, scale: 0.8, transformOrigin: "50% 50%" });
       gsap.set(q(".s6__edge"), { strokeDasharray: 1, strokeDashoffset: 1 });
       gsap.set(q(".s6__ring"), { autoAlpha: 0 });
       gsap.set(q(".s6__ringlabel, .s6__elabel"), { autoAlpha: 0 });
-      gsap.set(q(".s6__tile"), { autoAlpha: 0, scale: 0.8 });
-      gsap.set(q(".s6__below, .s6__alert"), { autoAlpha: 0, y: 12 });
+      gsap.set(q(".s6__alert"), { autoAlpha: 0, y: 12 });
       tl.to(q(".s6__node"), { autoAlpha: 1, scale: 1, duration: 0.4, stagger: 0.15 }, ">")
         .to(q(".s6__edge--voz"), { strokeDashoffset: 0, duration: 0.6 }, ">")
         .to(q(".s6__elabel")[0]!, { autoAlpha: 1, duration: 0.3 }, ">-0.2")
         .to(q(".s6__edge--id"), { strokeDashoffset: 0, duration: 0.6 }, ">")
         .to(q(".s6__elabel")[1]!, { autoAlpha: 1, duration: 0.3 }, ">-0.2")
         .to(q(".s6__ring, .s6__ringlabel"), { autoAlpha: 1, duration: 0.5 }, ">")
-        .to(
-          q(".s6__tile"),
-          { autoAlpha: 1, scale: 1, duration: 0.4, stagger: { amount: 0.5, from: 10, grid: [4, 4] } },
-          ">",
-        )
-        .to(q(".s6__below"), { autoAlpha: 1, y: 0, duration: 0.4 }, ">")
         .to(q(".s6__alert"), { autoAlpha: 1, y: 0, duration: 0.6 }, ">");
       tl.to({}, { duration: 0.6 });
-      tl.addLabel("s5");
+      tl.addLabel("s3");
       done.push(tl.duration());
 
       const total = tl.duration();

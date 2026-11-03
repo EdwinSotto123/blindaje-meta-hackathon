@@ -92,12 +92,16 @@ caché (correr esos dos antes). Escribe `results/voz_huella.json` y `apps/landin
 - Las 28 voces de SLR73 en tres matrices de coseno (nota de prueba contra voz inscrita). Primer lugar:
   100 % limpia, 7 % disfrazada y 68 % revertida, las mismas cifras que `voz_distorsion.json`.
 
-**Los vectores del recorrido** (02/11): `pnpm demo:flujo:vectores` escribe
-`apps/landing/src/data/flujo-vectores.json` con las señales del ejemplo en píxeles (un píxel por
-número): la huella ECAPA de B1, el vector e5 de «habla con el jefe» y el DINOv2 del recorte de la bala,
-calculados como en `services/ml` (usa los pesos de e5 de `services/ml/models`). También arma el índice
-de voces de la escena Compara: la voz del caso A (coseno 0.79 con B1, el mismo del reporte) y siete
-voces de SLR73 como otras voces guardadas (0.06 a 0.20).
+**Los casos de la landing** (03/11): `pnpm demo:casos` toma de `demo/` los casos ficticios A, B y C y
+deja lo que se ve en la sección "Tres denuncias que nadie conecta": los audios en
+`apps/landing/public/casos/` (m4a), la foto del caso A y `apps/landing/src/data/casos-demo.json` (número,
+días, onda de cada audio, mensajes y transcripciones).
+
+**El índice de voces del recorrido** (02/11): `pnpm demo:flujo:vectores` escribe
+`apps/landing/src/data/flujo-vectores.json` con el índice de voces de la escena Compara: la huella ECAPA
+de B1 y la de cada voz guardada en píxeles (un píxel por número), con su coseno real con B1. La voz del
+caso A da 0.79 (el mismo del reporte) y las siete voces de SLR73 que hacen de otras voces guardadas, de
+0.06 a 0.20.
 
 ## Estructura de `report.json` (schema 1.1)
 

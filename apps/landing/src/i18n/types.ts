@@ -219,19 +219,43 @@ export interface Dict {
       /** Titular de la portada. */
       title: string;
       lead: string;
-      /** Acción principal: el mapa público por distrito del portal (y su versión corta, en la cabecera). */
+      /** Acciones: ver los casos (en la página) y el mapa público por distrito (y su versión corta, en la cabecera). */
+      ctaCases: string;
       ctaMap: string;
       ctaMapShort: string;
-      /** A quién protege: "Para" y la lista. */
-      audienceLabel: string;
-      audience: string[];
-      /** La foto de la calle: texto alternativo y crédito con licencia. */
-      photoAlt: string;
-      photoCredit: string;
-      phoneAlt: string;
-      phoneCap: string;
+      /** Lo que hace la IA: escucha, mira y lee, con los modelos de cada cosa. */
+      aiLabel: string;
+      ai: { name: string; text: string; models: string[] }[];
+      /** Lima de noche: descripción del dibujo, sus rótulos y la nota de datos ficticios. */
+      cityLabel: string;
+      city: {
+        voice: string;
+        account: string;
+        script: string;
+        photo: string;
+        network: string;
+        legend: [string, string, string];
+      };
+      cityNote: string;
     };
-    built: { label: string; items: string[] };
+    /** Los casos: lo que recibe cada víctima (tres celulares) y lo que Blindaje encuentra en común. */
+    cases: {
+      title: string;
+      lead: string;
+      phonesLabel: string;
+      caseLabel: string;
+      sectors: Record<string, string>;
+      unknown: string;
+      daysAgo: string;
+      photoAlt: string;
+      listen: string;
+      tags: { voice: string; otherVoice: string; account: string; spark: string; sam: string };
+      steps: [string, string];
+      verdict: string;
+      replay: string;
+      scaleTitle: string;
+      note: string;
+    };
     /** Dónde pasa: el mapa esquemático de distritos y sus reglas públicas. */
     where: {
       title: string;
@@ -271,9 +295,7 @@ export interface Dict {
       flow: {
         railLabel: string;
         scenes: { label: string; title: string; text: string; tags: string[] }[];
-        s1: { chips: [string, string, string]; seal: string };
         s2: { transcript: string; highlight: string; bullet: string; note: string; fields: { k: string; v: string }[] };
-        s3: { rows: { name: string; raw: string; out: string }[] };
         s4: {
           caseA: string;
           whereA: string;
@@ -303,7 +325,6 @@ export interface Dict {
           network: string;
           sameVoice: string;
           sameAccount: string;
-          below: string;
           alertTitle: string;
           alert: string;
         };

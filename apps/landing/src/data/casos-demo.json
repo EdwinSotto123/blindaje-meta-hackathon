@@ -1,0 +1,191 @@
+{
+  "fuente": "eval/py/blindaje_eval/casos_landing.py (casos ficticios A, B y C de eval/demo)",
+  "ficticio": true,
+  "casos": [
+    {
+      "caso": "A",
+      "sector": "bodega",
+      "zona": "san-juan-de-lurigancho",
+      "contacto": "+51 900 000 111",
+      "piezas": [
+        {
+          "tipo": "audio",
+          "id": "A1",
+          "dia": 13,
+          "hora": "19:40",
+          "segundos": 24.2,
+          "onda": [
+            0.71,
+            0.74,
+            0.15,
+            0.0,
+            0.9,
+            0.67,
+            0.6,
+            0.55,
+            0.23,
+            0.0,
+            1.0,
+            0.87,
+            0.35,
+            0.92,
+            0.97,
+            0.86,
+            0.63,
+            0.02,
+            0.76,
+            0.21,
+            0.0,
+            0.79,
+            0.7,
+            0.89,
+            0.66,
+            0.0,
+            0.51,
+            0.72,
+            0.74,
+            0.02,
+            0.83,
+            0.71,
+            0.83,
+            0.79,
+            0.5,
+            0.0
+          ],
+          "texto": "Oye, escúchame bien. Sabemos que tienes tu bodeguita ahí en la esquina. Nosotros somos de Los X y aquí todos pagan su colaboración. Son dos mil soles. Te vamos a mandar el número para que yapees. Tienes cuarenta y ocho horas. Y no llames a la policía, porque nos vamos a enterar."
+        },
+        {
+          "tipo": "texto",
+          "dia": 12,
+          "hora": "20:20",
+          "texto": "Si no yapeas S/ 2,000 en 48 horas al 900 000 101 ya sabes lo que pasa. Los X."
+        },
+        {
+          "tipo": "imagen",
+          "dia": 10,
+          "hora": "08:30"
+        }
+      ]
+    },
+    {
+      "caso": "B",
+      "sector": "mototaxi",
+      "zona": "comas",
+      "contacto": "+51 900 000 222",
+      "piezas": [
+        {
+          "tipo": "audio",
+          "id": "B1",
+          "dia": 8,
+          "hora": "18:05",
+          "segundos": 20.3,
+          "onda": [
+            0.21,
+            0.47,
+            0.53,
+            0.04,
+            0.01,
+            0.44,
+            0.66,
+            0.62,
+            0.78,
+            0.04,
+            0.01,
+            0.55,
+            0.75,
+            0.75,
+            0.75,
+            0.73,
+            0.52,
+            0.34,
+            0.01,
+            0.01,
+            0.81,
+            1.0,
+            0.84,
+            0.77,
+            0.76,
+            0.32,
+            0.01,
+            0.32,
+            0.73,
+            0.58,
+            0.34,
+            0.64,
+            0.54,
+            0.77,
+            0.1,
+            0.01
+          ],
+          "texto": "Mototaxista, escucha. Aquí mandamos nosotros, Los X. Para que sigas trabajando tranquilo pagas tu cupo, mil quinientos soles. Habla con el jefe para que te pase el Yape. Y no llames a la policía, que tenemos gente en todos lados."
+        },
+        {
+          "tipo": "texto",
+          "dia": 8,
+          "hora": "18:07",
+          "texto": "Yapea al 900 000 202. Habla con el jefe."
+        }
+      ]
+    },
+    {
+      "caso": "C",
+      "sector": "mercado",
+      "zona": "san-juan-de-lurigancho",
+      "contacto": "+51 900 000 333",
+      "piezas": [
+        {
+          "tipo": "audio",
+          "id": "C1",
+          "dia": 5,
+          "hora": "09:25",
+          "segundos": 12.9,
+          "onda": [
+            0.01,
+            0.66,
+            0.7,
+            0.37,
+            0.14,
+            0.33,
+            0.72,
+            0.57,
+            0.31,
+            0.61,
+            0.57,
+            0.43,
+            0.05,
+            0.01,
+            0.01,
+            1.0,
+            0.77,
+            0.78,
+            0.64,
+            0.9,
+            0.25,
+            0.64,
+            0.81,
+            0.06,
+            0.01,
+            0.01,
+            0.01,
+            0.55,
+            0.88,
+            0.62,
+            0.32,
+            0.82,
+            0.69,
+            0.34,
+            0.06,
+            0.01
+          ],
+          "texto": "Comerciante, tu cupo es de ochocientos soles a la semana. Ya te mandamos el número para que yapees. Tienes hasta el viernes, no lo dejes pasar."
+        },
+        {
+          "tipo": "texto",
+          "dia": 5,
+          "hora": "09:30",
+          "texto": "Tu cupo es S/ 800 semanal. Yapea al 900 000 202. Tienes hasta el viernes."
+        }
+      ]
+    }
+  ]
+}
