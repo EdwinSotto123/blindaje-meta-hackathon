@@ -243,6 +243,8 @@ export interface Dict {
       /** Rótulo del desplegable con la lista de distritos (la misma información del mapa). */
       listToggle: string;
       note: string;
+      /** La animación del mapa: cuatro pasos (en orden con las reglas) y volver a verla. */
+      anim: { steps: [string, string, string, string]; replay: string };
     };
     problem: { gapsTitle: string };
     benefits: {

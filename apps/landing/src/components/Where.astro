@@ -5,6 +5,11 @@
  * ficticios: los mismos distritos y niveles que el modo simulado del portal. A la izquierda, las
  * reglas de lo público; al lado del mapa, la lista con nombre, nivel y rango, que es la lectura
  * principal (los cuadros claros tienen poco contraste con el papel y en el celular no llevan nombre).
+ *
+ * Animación (con JavaScript y movimiento): un <canvas> encima del mapa muestra cómo se arma, con
+ * denuncias ficticias. 1) cada punto en su calle, 2) se juntan por distrito, 3) se publica el rango y no
+ * la cifra, 4) con menos de 5 casos el distrito queda vacío. Al terminar, el lienzo se apaga y queda el
+ * mapa de siempre; cada regla de la izquierda se marca cuando se aplica.
  */
 import type { Dict } from "../i18n";
 import { DISTRICT_GRID, DISTRICTS } from "../../../../packages/shared/src/zones";
@@ -31,6 +36,34 @@ const DEMO: Record<string, { nivel: Level; casos: string }> = {
   "villa-el-salvador": { nivel: "bajo", casos: "5-9" },
   callao: { nivel: "bajo", casos: "5-9" },
 };
+/**
+ * Cuántas denuncias ficticias tiene cada distrito en la animación: dentro del rango de DEMO para los
+ * que se publican; los de menos de 5 no se publican y en el mapa quedan como uno sin casos.
+ */
+const COUNTS: Record<string, number> = {
+  "san-juan-de-lurigancho": 27,
+  ate: 13,
+  "san-martin-de-porres": 12,
+  "la-victoria": 11,
+  callao: 8,
+  "santa-anita": 7,
+  comas: 6,
+  "villa-el-salvador": 6,
+  "el-agustino": 5,
+  rimac: 4,
+  "san-juan-de-miraflores": 4,
+  "los-olivos": 3,
+  "santiago-de-surco": 3,
+  brena: 3,
+  independencia: 2,
+  chorrillos: 2,
+  lurin: 2,
+  "san-miguel": 1,
+  carabayllo: 1,
+};
+const anim = JSON.stringify(
+  Object.fromEntries(Object.entries(COUNTS).map(([id, n]) => [id, [n, DEMO[id]?.casos ?? null]])),
+);
 const ORDER: Record<Level, number> = { alto: 0, medio: 1, bajo: 2 };
 const listed = DISTRICTS.filter((x) => DEMO[x.id]).sort(
   (a, b) => ORDER[DEMO[a.id]!.nivel] - ORDER[DEMO[b.id]!.nivel] || a.name.localeCompare(b.name, "es"),
@@ -45,7 +78,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
         {w.title}
       </h2>
       <p class="lead soft">{w.lead}</p>
-      <ul class="checks where__rules" role="list">
+      <ul class="checks where__rules" role="list" data-where-rules>
         {w.rules.map((r) => (
           <li>
             <Icon name="check" />
@@ -82,9 +115,24 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
         <span class="where__north" aria-hidden="true">
           N ↑
         </span>
+        <canvas class="where__canvas" aria-hidden="true" data-where-canvas data-counts={anim}></canvas>
       </div>
 
       <div class="where__side">
+        <div class="where__now" data-where-now>
+          <div class="where__caps" aria-hidden="true">
+            {w.anim.steps.map((s, i) => (
+              <p class:list={["where__cap", i === 0 && "is-on"]} data-where-cap>
+                <span class="where__cap-n num">{i + 1}</span>
+                {s}
+              </p>
+            ))}
+          </div>
+          <button type="button" class="where__replay" data-where-replay>
+            <Icon name="restart" />
+            {w.anim.replay}
+          </button>
+        </div>
         <ul class="legend" role="list">
           {(["sin_datos", "bajo", "medio", "alto"] as const).map((n) => (
             <li>
@@ -182,6 +230,117 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
     background: var(--lvl-alto);
     border-color: var(--lvl-alto);
     color: #fff;
+  }
+
+  .where__canvas {
+    display: none;
+  }
+
+  :global(.js) .where__canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* La regla que se está aplicando en el mapa. */
+  .where__rules :global(li) {
+    margin: -4px -8px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background-color 0.3s var(--ease);
+  }
+
+  .where__rules :global(li.is-now) {
+    background: var(--hl);
+  }
+
+  .where__now {
+    display: none;
+  }
+
+  :global(.js) .where__now {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+  }
+
+  .where__caps {
+    display: grid;
+    flex: 1 1 22rem;
+  }
+
+  .where__cap {
+    display: flex;
+    gap: 10px;
+    grid-area: 1 / 1;
+    margin: 0;
+    font-weight: 700;
+    visibility: hidden;
+  }
+
+  .where__cap.is-on {
+    visibility: visible;
+  }
+
+  .where__cap-n {
+    flex: none;
+    color: var(--terracota);
+  }
+
+  .where__replay {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--linea-2);
+    border-radius: 999px;
+    background: var(--papel);
+    color: var(--tinta);
+    font: inherit;
+    font-size: var(--step-small);
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    visibility: hidden;
+  }
+
+  .where__replay.is-on {
+    visibility: visible;
+  }
+
+  .where__replay:hover {
+    border-color: var(--tinta);
+  }
+
+  .where__replay:focus-visible {
+    outline: 3px solid var(--terracota);
+    outline-offset: 2px;
+  }
+
+  .where__replay :global(.icon) {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Sin movimiento, el mapa queda quieto y completo. */
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .where__canvas,
+    :global(.js) .where__now {
+      display: none;
+    }
   }
 
   /* Pasar por la lista marca el distrito en el mapa. */
@@ -349,7 +508,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
 <script>
   // Pasar por un distrito de la lista lo marca en el mapa (la lista es la lectura principal).
   const list = document.querySelector<HTMLElement>("[data-where-list]");
-  const map = list?.closest(".where__fig")?.querySelector(".where__map");
+  const map = document.querySelector<HTMLElement>(".where__map");
   if (list && map) {
     const light = (id: string | null) => {
       for (const t of map.querySelectorAll(".tile.is-lit")) t.classList.remove("is-lit");
@@ -359,5 +518,243 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
       light((e.target as Element).closest<HTMLElement>("li[data-id]")?.dataset.id ?? null),
     );
     list.addEventListener("pointerleave", () => light(null));
+  }
+
+  /**
+   * Cómo se arma el mapa, con denuncias ficticias: cada punto en su calle (0), por distrito (1), el
+   * rango y no la cifra (2), menos de 5 no se publica (3). Al final el lienzo se apaga y queda el mapa.
+   */
+  const canvas = document.querySelector<HTMLCanvasElement>("[data-where-canvas]");
+  const ctx = canvas?.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (map && canvas && ctx && !reduce && "IntersectionObserver" in window) {
+    type Tile = {
+      id: string;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      fill: number[];
+      ink: string;
+      border: boolean;
+    };
+    type Dot = { tile: string; hu: number; hv: number; pu: number; pv: number; d: number };
+    const counts = JSON.parse(canvas.dataset.counts ?? "{}") as Record<string, [number, string | null]>;
+    const rules = [...document.querySelectorAll<HTMLElement>("[data-where-rules] li")];
+    const caps = [...document.querySelectorAll<HTMLElement>("[data-where-cap]")];
+    const replay = document.querySelector<HTMLButtonElement>("[data-where-replay]");
+    /** Inicio de cada paso (ms) y fin. */
+    const P = [0, 1700, 3300, 5100];
+    const END = 7600;
+    const FADE = 6700;
+
+    const clamp = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
+    const ease = (x: number) => 1 - (1 - x) ** 3;
+    const inout = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
+    const rnd = (k: number) => (((k + 1) * 2654435761) >>> 0) / 4294967296;
+    const nums = (c: string) => (c.match(/[\d.]+/g) ?? ["0", "0", "0"]).slice(0, 3).map(Number);
+    const rgb = (c: number[], a = 1) => `rgb(${c[0]! | 0} ${c[1]! | 0} ${c[2]! | 0} / ${a.toFixed(3)})`;
+
+    // Cada denuncia: dónde "pasó" (fuera de la grilla, en su calle) y su lugar en la pila del distrito.
+    const dots: Dot[] = [];
+    let seed = 1;
+    for (const [id, [n]] of Object.entries(counts)) {
+      const cols = Math.ceil(Math.sqrt(n * 1.25));
+      const rows = Math.ceil(n / cols);
+      for (let i = 0; i < n; i++) {
+        seed++;
+        dots.push({
+          tile: id,
+          hu: -0.3 + rnd(seed * 3) * 1.6,
+          hv: -0.3 + rnd(seed * 7) * 1.6,
+          pu: ((i % cols) + 0.5) / cols,
+          pv: (Math.floor(i / cols) + 0.5) / rows,
+          d: rnd(seed * 11),
+        });
+      }
+    }
+
+    let tiles = new Map<string, Tile>();
+    let none: number[] = [232, 230, 226];
+    let W = 0;
+    let H = 0;
+    let font = "sans-serif";
+    const measure = () => {
+      const box = map.getBoundingClientRect();
+      W = box.width;
+      H = box.height;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      tiles = new Map();
+      for (const el of map.querySelectorAll<HTMLElement>(".tile")) {
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        const t: Tile = {
+          id: el.dataset.id ?? "",
+          x: r.left - box.left,
+          y: r.top - box.top,
+          w: r.width,
+          h: r.height,
+          fill: nums(cs.backgroundColor),
+          ink: cs.color,
+          border: el.dataset.nivel !== "sin_datos",
+        };
+        tiles.set(t.id, t);
+        if (el.dataset.nivel === "sin_datos") none = t.fill;
+      }
+      font = getComputedStyle(map).fontFamily;
+    };
+
+    let t = 0;
+    let raf = 0;
+    let t0 = 0;
+    let lastStep = -2;
+
+    const label = (s: string, x: number, y: number, size: number, color: string) => {
+      ctx.font = `700 ${size}px ${font}`;
+      ctx.fillStyle = color;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(s, x, y);
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      if (t >= END) return;
+      const out = 1 - clamp((t - FADE) / (END - FADE));
+      ctx.globalAlpha = out;
+      // Los cuadros: grises hasta que su distrito se publica.
+      for (const tile of tiles.values()) {
+        const c = counts[tile.id];
+        const pub = c && c[1] ? ease(clamp((t - P[2]! - 500 - rnd(tile.x + tile.y) * 500) / 450)) : 0;
+        const fill = none.map((v, i) => v + (tile.fill[i]! - v) * pub);
+        ctx.fillStyle = rgb(fill);
+        ctx.beginPath();
+        ctx.roundRect(tile.x, tile.y, tile.w, tile.h, 6);
+        ctx.fill();
+        if (tile.border && pub > 0) {
+          ctx.strokeStyle = `rgb(158 58 31 / ${(0.3 * pub).toFixed(3)})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+      // Las denuncias.
+      const big = W > 520;
+      for (const d of dots) {
+        const tile = tiles.get(d.tile);
+        const c = counts[d.tile];
+        if (!tile || !c) continue;
+        const appear = ease(clamp((t - 100 - d.d * 1200) / 300));
+        if (appear <= 0) continue;
+        const move = inout(clamp((t - P[1]! - d.d * 600) / 700));
+        const hx = tile.x + d.hu * tile.w;
+        const hy = tile.y + d.hv * tile.h;
+        const px = tile.x + 4 + d.pu * (tile.w - 8);
+        const py = tile.y + 4 + d.pv * (tile.h - 8);
+        const x = hx + (px - hx) * move;
+        const y = hy + (py - hy) * move;
+        // Publicados: se funden en el color del distrito. Menos de 5: se apagan.
+        const gone = c[1] ? clamp((t - P[2]! - 300) / 500) : clamp((t - P[3]! - 500 - d.d * 300) / 500);
+        const a = appear * (1 - gone);
+        if (a <= 0.01) continue;
+        const r = (big ? 2.6 : 1.8) * (move > 0 ? 1 - 0.25 * move : 1);
+        ctx.fillStyle = `rgb(158 58 31 / ${a.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // La cifra y el rango (publicados) o "menos de 5" (los demás).
+      const fs = big ? 13 : 10;
+      for (const [id, [n, range]] of Object.entries(counts)) {
+        const tile = tiles.get(id);
+        if (!tile) continue;
+        const cx = tile.x + tile.w / 2;
+        const cy = tile.y + tile.h / 2;
+        if (range) {
+          const show = clamp((t - P[2]!) / 200);
+          if (show <= 0) continue;
+          const swap = t >= P[2]! + 900;
+          const pub = ease(clamp((t - P[2]! - 500 - rnd(tile.x + tile.y) * 500) / 450));
+          const dark = tile.ink.startsWith("rgb(255");
+          const ink = pub > 0.5 && dark ? "#fff" : "#2a1e17";
+          ctx.fillStyle = pub > 0.5 ? "rgb(0 0 0 / 0)" : "rgb(255 255 255 / 0.85)";
+          if (pub <= 0.5) {
+            ctx.beginPath();
+            ctx.roundRect(cx - tile.w * 0.42, cy - fs * 0.85, tile.w * 0.84, fs * 1.7, 4);
+            ctx.fill();
+          }
+          label(swap ? range : String(n), cx, cy + 0.5, fs, ink);
+        } else {
+          const u = clamp((t - P[3]!) / 250) * (1 - clamp((t - P[3]! - 1300) / 300));
+          if (u <= 0) continue;
+          ctx.globalAlpha = out * u;
+          ctx.strokeStyle = "#2a1e17";
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.roundRect(tile.x + 1, tile.y + 1, tile.w - 2, tile.h - 2, 6);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          label(`${n} < 5`, cx, cy + 0.5, fs, "#2a1e17");
+          ctx.globalAlpha = out;
+        }
+      }
+      ctx.globalAlpha = 1;
+    };
+
+    const ui = () => {
+      let step = -1;
+      for (let i = 0; i < P.length; i++) if (t < END && t >= P[i]!) step = i;
+      if (step === lastStep) return;
+      lastStep = step;
+      // Al terminar queda el último paso: es el mapa que se ve.
+      const cap = t >= END ? caps.length - 1 : Math.max(0, step);
+      caps.forEach((c, i) => c.classList.toggle("is-on", i === cap));
+      // Paso 1: sin direcciones (regla 0); 2: rangos (1); 3: menos de 5 (2).
+      rules.forEach((r, i) => r.classList.toggle("is-now", step >= 1 && i === step - 1));
+    };
+
+    const tick = (now: number) => {
+      t = Math.min(END, now - t0);
+      draw();
+      ui();
+      raf = t < END ? requestAnimationFrame(tick) : 0;
+    };
+    const play = () => {
+      cancelAnimationFrame(raf);
+      measure();
+      t0 = performance.now();
+      replay?.classList.add("is-on");
+      raf = requestAnimationFrame(tick);
+    };
+    replay?.addEventListener("click", play);
+    new ResizeObserver(() => {
+      if (!raf) return;
+      measure();
+    }).observe(map);
+    // Cerca de la vista, el mapa se arma vacío (sin puntos); al verse, empieza.
+    const near = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting) && !raf && t === 0) {
+          near.disconnect();
+          measure();
+          draw();
+        }
+      },
+      { rootMargin: "400px 0px" },
+    );
+    near.observe(map);
+    const seen = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          seen.disconnect();
+          play();
+        }
+      },
+      { threshold: 0.4 },
+    );
+    seen.observe(map);
   }
 </script>

@@ -483,9 +483,9 @@ export const es: Dict = {
       title: "Dónde pasa, distrito por distrito",
       lead: "Los casos se juntan por distrito, nunca por calle ni vivienda. El mapa es público y no necesita cuenta.",
       rules: [
+        "Sin direcciones ni coordenadas, y sin totales que permitan restar.",
         "Rangos, no cifras exactas: 5-9, 10-19, 20-49 o 50+.",
         "Nada donde haya menos de 5 casos de 3 víctimas: ese distrito se ve igual que uno sin casos.",
-        "Sin totales que permitan restar y sin direcciones ni coordenadas.",
         "Más casos puede significar que ahí se denuncia más, no que sea más peligroso.",
       ],
       cta: "Abrir el mapa",
@@ -493,6 +493,15 @@ export const es: Dict = {
       legend: { sin_datos: "Sin datos o pocos casos", bajo: "Bajo", medio: "Medio", alto: "Alto" },
       listToggle: "Ver los distritos en una lista",
       note: "Datos ficticios. Cada cuadro es un distrito en su posición aproximada.",
+      anim: {
+        steps: [
+          "Cada punto es una denuncia ficticia, en su calle.",
+          "Se juntan por distrito: la dirección no sale del sistema.",
+          "Se publica el rango, no la cifra: 27 casos se ven como 20-49.",
+          "Con menos de 5 casos, el distrito queda igual que uno sin datos.",
+        ],
+        replay: "Ver de nuevo",
+      },
     },
     how: {
       title: "Del audio de WhatsApp al mapa del distrito",

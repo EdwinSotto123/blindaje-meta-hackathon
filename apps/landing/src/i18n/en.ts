@@ -483,9 +483,9 @@ export const en: Dict = {
       title: "Where it happens, district by district",
       lead: "Cases are grouped by district, never by street or home. The map is public and needs no account.",
       rules: [
+        "No addresses or coordinates, and no totals that allow subtraction.",
         "Ranges, not exact counts: 5-9, 10-19, 20-49 or 50+.",
         "Nothing where there are fewer than 5 cases from 3 victims: that district looks the same as one with none.",
-        "No totals that allow subtraction, and no addresses or coordinates.",
         "More cases can mean more reporting there, not more danger.",
       ],
       cta: "Open the map",
@@ -493,6 +493,15 @@ export const en: Dict = {
       legend: { sin_datos: "No data or few cases", bajo: "Low", medio: "Medium", alto: "High" },
       listToggle: "See the districts as a list",
       note: "Fictitious data. Each square is a district in its approximate position.",
+      anim: {
+        steps: [
+          "Each dot is a fictitious report, on its street.",
+          "They are grouped by district: the address never leaves the system.",
+          "The range is published, not the number: 27 cases show as 20-49.",
+          "With fewer than 5 cases, the district looks like one with no data.",
+        ],
+        replay: "Play again",
+      },
     },
     how: {
       title: "From a WhatsApp voice note to the district map",
