@@ -96,7 +96,7 @@ caché (correr esos dos antes). Escribe `results/voz_huella.json` y `apps/landin
 - `pnpm demo:casos` toma de `demo/` los casos ficticios A, B y C (número, días, onda de cada audio,
   mensajes y transcripciones) y escribe `apps/landing/src/data/casos-demo.json`.
 - `pnpm demo:pitch` calcula el radar de voces con las huellas de la caché: el coseno de B1 con el caso A
-  (0.79), el caso C (0.50), la muestra de la víctima A (0.27) y las 28 voces de SLR73 (0.31 como máximo).
+  (0.79), el caso C (0.49), la muestra de la víctima A (0.27) y las 28 voces de SLR73 (0.31 como máximo).
 - `pnpm demo:pitch:fichas` pide a Muse Spark 1.3 la ficha de los casos A, B y C con el mismo prompt y
   esquema del sistema (con caché; la primera vez costó US$ 0.02). B y C dan la misma cuenta, 900 000 202.
 
