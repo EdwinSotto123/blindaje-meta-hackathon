@@ -32,6 +32,8 @@ apps/landing/src/data/flujo-vectores.json
 # pitch_datos.py y eval/src/pitch-fichas.ts
 apps/landing/src/data/casos-demo.json
 apps/landing/src/data/pitch.json
+# Puntos de los mapas del pitch, de eval/py/blindaje_eval/mapas_landing.py (Natural Earth)
+apps/landing/src/data/mapas.json
 services/ml/
 eval/py/
 infra/

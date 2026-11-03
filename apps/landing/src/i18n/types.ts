@@ -222,12 +222,37 @@ export interface Dict {
       railLabel: string;
       hint: string;
       scenes: { kicker: string; title: string; text: string; tags?: string[] }[];
+      /** Los audios del pitch: el rótulo del botón y lo que sigue en su nombre accesible. */
+      audio: {
+        group: string;
+        clean: string;
+        cleanName: string;
+        disguised: string;
+        disguisedName: string;
+        reverted: string;
+        revertedName: string;
+      };
       ctaMap: string;
       ctaPilot: string;
       source: string;
       /** Rótulos que se dibujan en el lienzo. */
       canvas: {
         reports: string;
+        latam: string;
+        peru: string;
+        reportsPeru: string;
+        fiscalTitle: string;
+        perDot: string;
+        todayLima: string;
+        /** País, canales de pago, longitud y latitud del rótulo. */
+        payments: [string, string, number, number][];
+        file: string;
+        fileText: string;
+        anyPolice: string;
+        oneReport: string;
+        ears: string;
+        eyes: string;
+        reads: string;
         otherNumber: string;
         caseLabel: string;
         sectors: [string, string, string];

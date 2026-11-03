@@ -3,8 +3,9 @@
  * El pitch: catorce escenas a pantalla entera que avanzan con el scroll, con datos reales del proyecto.
  *
  *  0. Blindaje        el logo se arma con píxeles (solo, al cargar)
- *  1. El problema     13,892 denuncias caen sobre Lima, cada una sola (Ministerio Público, ene-jul 2026;
- *                     reparto por distrito fiscal de Lima: Este 1,806, Sur 1,346, Norte 1,305, Centro 1,178)
+ *  1. El problema     de América Latina al Perú: 13,892 denuncias en siete meses (Ministerio Público,
+ *                     ene-jul 2026) y los distritos fiscales con más casos: Lima Este 1,806, La Libertad
+ *                     1,625, Lima Sur 1,346, Lima Norte 1,305 y Lima Centro 1,178 (mapas.json)
  *  2. Las víctimas    tres números distintos mandan audios, la foto de la bala y mensajes a tres víctimas
  *                     (casos ficticios A, B y C del demo: src/data/casos-demo.json)
  *  3. Escucha         la onda del audio, su espectrograma y su huella ECAPA de 192 números (voz-huella.json)
@@ -21,8 +22,10 @@
  * 11. Une             la red: casos e identificadores compartidos, y una persona que confirma
  * 12. Vigila          14 días en San Juan de Lurigancho: 5 casos de «Los X» encienden la alerta
  * 13. Protege         el distrito en el mapa y la alerta aprobada
+ * 14. Escala          de Lima a la región: qué cambia por país y el expediente para cualquier policía
  *
- * Los datos de texto los arma eval/src/pitch-texto.ts y el radar, eval/py/blindaje_eval/pitch_datos.py.
+ * Los datos de texto los arma eval/src/pitch-texto.ts; el radar, eval/py/blindaje_eval/pitch_datos.py; los
+ * mapas de puntos, eval/py/blindaje_eval/mapas_landing.py (Natural Earth, dominio público).
  * Con JavaScript y movimiento, la sección se fija y el scroll avanza las escenas (un lienzo dibuja todo;
  * el texto de cada escena es HTML). Sin movimiento, cada escena se ve quieta con su dibujo final. Sin
  * JavaScript, el texto de las escenas, una debajo de otra.
@@ -32,6 +35,7 @@ import type { Dict } from "../i18n";
 import { PORTAL_URL } from "../i18n/sources";
 import { DISTRICT_GRID, DISTRICTS } from "../../../../packages/shared/src/zones";
 import mostrador from "../assets/flujo/mostrador.jpg";
+import Icon from "./Icon.astro";
 
 interface Props {
   dict: Dict;
@@ -40,6 +44,14 @@ interface Props {
 const { dict: d } = Astro.props;
 const p = d.lp.pitch;
 const n = p.scenes.length;
+/** Los audios que se pueden escuchar en cada escena (los 7 s de public/voz, voz ficticia de MMS-TTS). */
+const audios: Record<number, { src: string; label: string; name: string }[]> = {
+  3: [{ src: "/voz/b1-limpia.m4a", label: p.audio.clean, name: p.audio.cleanName }],
+  4: [
+    { src: "/voz/b1-disfrazada.m4a", label: p.audio.disguised, name: p.audio.disguisedName },
+    { src: "/voz/b1-revertida.m4a", label: p.audio.reverted, name: p.audio.revertedName },
+  ],
+};
 const img = await getImage({ src: mostrador, widths: [720], format: "webp", quality: 80 });
 
 const config = JSON.stringify({
@@ -61,10 +73,6 @@ const config = JSON.stringify({
         <ol class="pt__scenes" role="list">
           {p.scenes.map((s, i) => (
             <li class:list={["pt__scene", i === 0 && "is-on"]} data-scene={i}>
-              <p class="pt__kicker">
-                {i > 0 && <span class="pt__n num">{String(i).padStart(2, "0")}</span>}
-                {s.kicker}
-              </p>
               {i === 0 ? (
                 <h1 id="pitch-title" class="pt__title pt__title--first">
                   {s.title}
@@ -81,6 +89,18 @@ const config = JSON.stringify({
                 </ul>
               )}
               {i === 1 && <p class="pt__source">{p.source}</p>}
+              {audios[i] && (
+                <div class="pt__audios" role="group" aria-label={p.audio.group}>
+                  {audios[i]!.map((a) => (
+                    <button type="button" class="pt__play" data-src={a.src} aria-pressed="false">
+                      <Icon name="play" class="icon pt__icon pt__icon--play" />
+                      <Icon name="pause" class="icon pt__icon pt__icon--pause" />
+                      {a.label}
+                      <span class="sr-only">, {a.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {i === 0 && (
                 <p class="pt__hint" aria-hidden="true">
                   <span class="pt__mouse" />
@@ -154,22 +174,6 @@ const config = JSON.stringify({
     max-width: 40rem;
   }
 
-  .pt__kicker {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    margin: 0;
-    color: var(--ocre);
-    font-size: var(--step-small);
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  .pt__n {
-    color: var(--claro-tenue);
-  }
-
   .pt__title {
     margin: 0;
     font-family: var(--display);
@@ -207,6 +211,63 @@ const config = JSON.stringify({
     color: var(--fondo);
     font-size: 0.8125rem;
     font-weight: 700;
+  }
+
+  .pt__audios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .pt__play {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px 0 12px;
+    border: 1.5px solid rgb(255 255 255 / 0.4);
+    border-radius: 999px;
+    background: none;
+    color: var(--fondo);
+    font: inherit;
+    font-size: var(--step-small);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .pt__play:hover {
+    border-color: var(--fondo);
+  }
+
+  .pt__play:focus-visible {
+    outline: 3px solid var(--ocre);
+    outline-offset: 2px;
+  }
+
+  .pt__play[aria-pressed="true"] {
+    border-color: var(--ocre);
+    background: var(--ocre);
+    color: var(--noche);
+  }
+
+  .pt__play :global(.icon) {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .pt__play :global(.pt__icon--pause),
+  .pt__play[aria-pressed="true"] :global(.pt__icon--play) {
+    display: none;
+  }
+
+  .pt__play[aria-pressed="true"] :global(.pt__icon--pause) {
+    display: block;
   }
 
   .pt__source {
@@ -508,7 +569,14 @@ const config = JSON.stringify({
     photo: string;
     labels: Labels;
   };
-  type Pieza = { tipo: "audio" | "texto" | "imagen"; texto?: string; onda?: number[] };
+  type Pieza = {
+    tipo: "audio" | "texto" | "imagen";
+    texto?: string;
+    onda?: number[];
+    dia?: number;
+    hora?: string;
+    segundos?: number;
+  };
   type Casos = { casos: { caso: string; contacto: string; piezas: Pieza[] }[] };
   type Marca = { a: number; b: number; kind: string };
   type CasoFicha = {
@@ -557,7 +625,16 @@ const config = JSON.stringify({
     pix: Record<string, string>;
     pares: { a: string; b: string; con_pareja: number; lineas: number[][] }[];
   };
-  type Data = { casos?: Casos; pitch?: PitchData; voz?: VozData; fotos?: FotosData };
+  type MapsData = {
+    latam: {
+      caja: [number, number, number, number];
+      paso: number;
+      paises: string[];
+      puntos: [number, number, number][];
+    };
+    peru: { caja: [number, number, number, number]; paso: number; puntos: [number, number][] };
+  };
+  type Data = { casos?: Casos; pitch?: PitchData; voz?: VozData; fotos?: FotosData; mapas?: MapsData };
 
   // ---------- Colores y utilidades ----------
   const COL = {
@@ -582,13 +659,6 @@ const config = JSON.stringify({
     [255, 241, 214],
   ];
   const SHIELD = "M11.5 0 23 4v8.5C23 20 18.1 25.4 11.5 28 4.9 25.4 0 20 0 12.5V4Z";
-  const AREA_WEIGHT: Record<string, number> = {
-    "Lima Este": 1806,
-    "Lima Sur": 1346,
-    "Lima Norte": 1305,
-    "Lima Centro": 1178,
-  };
-
   const clamp = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
   const ease = (x: number) => 1 - (1 - clamp(x)) ** 3;
   const inout = (x: number) => {
@@ -630,6 +700,26 @@ const config = JSON.stringify({
     const stage = root.querySelector<HTMLElement>("[data-stage]")!;
     const scenes = [...root.querySelectorAll<HTMLElement>("[data-scene]")];
     const dots = [...root.querySelectorAll<HTMLButtonElement>("[data-goto]")];
+    // Los audios: uno a la vez, se crean al tocar y se detienen al cambiar de escena.
+    let sound: { a: HTMLAudioElement; b: HTMLButtonElement } | null = null;
+    const stopSound = () => {
+      sound?.a.pause();
+    };
+    for (const b of root.querySelectorAll<HTMLButtonElement>("[data-src]")) {
+      b.addEventListener("click", () => {
+        if (sound?.b === b && !sound.a.paused) {
+          sound.a.pause();
+          return;
+        }
+        stopSound();
+        const a = new Audio(b.dataset.src);
+        a.addEventListener("play", () => b.setAttribute("aria-pressed", "true"));
+        a.addEventListener("pause", () => b.setAttribute("aria-pressed", "false"));
+        a.addEventListener("ended", () => b.setAttribute("aria-pressed", "false"));
+        sound = { a, b };
+        void a.play();
+      });
+    }
     const copy = root.querySelector<HTMLElement>(".pt__scenes")!;
     const cfg = JSON.parse(root.dataset.config ?? "{}") as Config;
     const L = cfg.labels;
@@ -763,28 +853,350 @@ const config = JSON.stringify({
       }
     };
 
-    // Las gotas de la escena 1: cada una en un distrito, según las denuncias de su distrito fiscal.
     const tiles = cfg.grid.tiles;
-    const drops = (() => {
-      const pool: number[] = [];
-      tiles.forEach(([, , , area], i) => {
-        const w = AREA_WEIGHT[area];
-        if (!w) return;
-        const per = tiles.filter((t) => t[3] === area).length;
-        const k = Math.round((w / per) * 0.06);
-        for (let j = 0; j < k; j++) pool.push(i);
-      });
-      return pool.map((t, i) => ({ t, u: 0.15 + rnd(i * 3) * 0.7, v: 0.15 + rnd(i * 7) * 0.7, d: rnd(i * 11) }));
-    })();
 
     // ---------- Las escenas ----------
 
+    // ---------- Mapas de puntos: América Latina y el Perú ----------
+    type View = { lon0: number; lon1: number; lat0: number; lat1: number };
+    const LATAM_V: View = { lon0: -118, lon1: -34, lat0: -56, lat1: 33 };
+    const PERU_V: View = { lon0: -83.5, lon1: -66.5, lat0: -19.5, lat1: 1 };
+    const lerpView = (a: View, b: View, t: number): View => ({
+      lon0: lerp(a.lon0, b.lon0, t),
+      lon1: lerp(a.lon1, b.lon1, t),
+      lat0: lerp(a.lat0, b.lat0, t),
+      lat1: lerp(a.lat1, b.lat1, t),
+    });
+    /** Proyección equirectangular con la longitud corregida por la latitud media; centrada en R. */
+    const project = (R: Rect, v: View) => {
+      const k = Math.cos((((v.lat0 + v.lat1) / 2) * Math.PI) / 180);
+      const sw = (v.lon1 - v.lon0) * k;
+      const sh = v.lat1 - v.lat0;
+      const s = Math.min(R.w / sw, R.h / sh);
+      const ox = R.x + (R.w - sw * s) / 2;
+      const oy = R.y + (R.h - sh * s) / 2;
+      return { s, k, X: (lon: number) => ox + (lon - v.lon0) * k * s, Y: (lat: number) => oy + (v.lat1 - lat) * s };
+    };
+    /** Distritos fiscales con más casos, enero a julio de 2026 (Exitosa con datos del Ministerio Público). */
+    const FISCAL = [
+      { name: "Lima Este", n: 1806, lon: -76.9, lat: -12.0 },
+      { name: "La Libertad", n: 1625, lon: -79.03, lat: -8.11 },
+      { name: "Lima Sur", n: 1346, lon: -76.95, lat: -12.2 },
+      { name: "Lima Norte", n: 1305, lon: -77.07, lat: -11.92 },
+      { name: "Lima Centro", n: 1178, lon: -77.04, lat: -12.05 },
+    ];
+    /** Capitales de la región (para el alcance) y Lima. */
+    const LIMA = { lon: -77.04, lat: -12.05 };
+    const CAPITALES: [string, number, number][] = [
+      ["EC", -78.47, -0.18],
+      ["CO", -74.07, 4.71],
+      ["BO", -68.15, -16.5],
+      ["CL", -70.67, -33.45],
+      ["PA", -79.52, 8.98],
+      ["CR", -84.09, 9.93],
+      ["VE", -66.9, 10.48],
+      ["BR", -46.63, -23.55],
+      ["PY", -57.58, -25.26],
+      ["AR", -58.38, -34.6],
+      ["UY", -56.16, -34.9],
+      ["SV", -89.19, 13.69],
+      ["HN", -87.19, 14.07],
+      ["GT", -90.51, 14.64],
+      ["DO", -69.93, 18.49],
+      ["MX", -99.13, 19.43],
+    ];
+    /** Las denuncias que caen sobre el Perú: cada punto, unas 100; casi la mitad, en los distritos fiscales de arriba. */
+    const RAIN = (() => {
+      const out: { lon: number; lat: number; d: number; peru: number }[] = [];
+      const total = 139;
+      FISCAL.forEach((f, i) => {
+        const k = Math.round(f.n / 100);
+        for (let j = 0; j < k; j++) {
+          const r = rnd(i * 97 + j * 13) * 0.55;
+          const a = rnd(i * 31 + j * 7) * Math.PI * 2;
+          out.push({
+            lon: f.lon + Math.cos(a) * r,
+            lat: f.lat + Math.sin(a) * r * 0.8,
+            d: rnd(i * 17 + j * 3),
+            peru: -1,
+          });
+        }
+      });
+      for (let j = out.length; j < total; j++)
+        out.push({ lon: 0, lat: 0, d: rnd(j * 5 + 1), peru: Math.floor(rnd(j * 11 + 3) * 1e6) });
+      return out;
+    })();
+
+    /** Los puntos de América Latina; el Perú en terracota y, si toca, otros países encendidos. */
+    const drawLatam = (
+      g: G,
+      M: MapsData,
+      P: ReturnType<typeof project>,
+      alpha: number,
+      lit?: (code: string) => number,
+    ) => {
+      const L0 = M.latam;
+      // El tamaño del punto no crece con el zoom: al acercarse, los puntos se separan.
+      const r = Math.min(3.2, Math.max(1.1, L0.paso * P.s * P.k * 0.3));
+      for (const [col, fila, k] of L0.puntos) {
+        const code = L0.paises[k] ?? "";
+        const x = P.X(L0.caja[0] + col * L0.paso);
+        const y = P.Y(L0.caja[3] - fila * L0.paso);
+        const on = code === "PE" ? 1 : (lit?.(code) ?? 0);
+        g.fillStyle =
+          code === "PE"
+            ? c(COL.terra, alpha)
+            : on > 0
+              ? c(COL.ocre, alpha * (0.25 + 0.75 * on))
+              : c(COL.cream, 0.2 * alpha);
+        g.beginPath();
+        g.arc(x, y, r, 0, Math.PI * 2);
+        g.fill();
+      }
+    };
+
+    /** 1. El problema: de América Latina al Perú, y las denuncias que caen sin conectarse. */
+    const sceneProblem = (g: G, R: Rect, u: number) => {
+      const M = D.mapas;
+      if (!M) return;
+      const small = R.w < 560;
+      const fs = small ? 10 : 12.5;
+      const head = Math.min(small ? 64 : 92, R.h * 0.16);
+      const box = { x: R.x, y: R.y + head, w: R.w, h: (R.h - head) * (small ? 0.6 : 1) };
+      const z = inout(seg(u, 0.18, 0.46));
+      const P = project(box, lerpView(LATAM_V, PERU_V, z));
+      const a0 = ease(seg(u, 0, 0.08));
+      // América Latina, que se va al acercarse al Perú.
+      const la = a0 * (1 - seg(u, 0.22, 0.36));
+      if (la > 0) drawLatam(g, M, P, la);
+      if (la > 0.3 && z < 0.2) {
+        g.globalAlpha = la * (1 - z * 5);
+        pill(g, L.peru, P.X(-75), P.Y(-9) - 2, COL.terra, fs, true);
+        txt(g, L.latam, P.X(-102), P.Y(-30), fs + 2, c(COL.dim), 700);
+        g.globalAlpha = 1;
+      }
+      // El Perú, punto por punto.
+      const pa = seg(u, 0.24, 0.4);
+      if (pa > 0) {
+        const PE = M.peru;
+        const r = Math.max(0.9, PE.paso * P.s * P.k * 0.3);
+        g.fillStyle = c(COL.cream, 0.17 * pa);
+        for (const [col, fila] of PE.puntos) {
+          g.beginPath();
+          g.arc(P.X(PE.caja[0] + col * PE.paso), P.Y(PE.caja[3] - fila * PE.paso), r, 0, Math.PI * 2);
+          g.fill();
+        }
+      }
+      // Las denuncias caen, cada una sola.
+      const PE = M.peru;
+      RAIN.forEach((d, i) => {
+        let lon = d.lon;
+        let lat = d.lat;
+        if (d.peru >= 0) {
+          const pt = PE.puntos[d.peru % PE.puntos.length]!;
+          lon = PE.caja[0] + pt[0] * PE.paso;
+          lat = PE.caja[3] - pt[1] * PE.paso;
+        }
+        const t0 = 0.5 + d.d * 0.3;
+        const f = seg(u, t0, t0 + 0.06);
+        if (f <= 0) return;
+        const tx = P.X(lon);
+        const ty = P.Y(lat);
+        if (f < 1) {
+          const y = lerp(box.y - 10, ty, f * f);
+          g.strokeStyle = c(COL.cream, 0.6);
+          g.lineWidth = 1.2;
+          g.beginPath();
+          g.moveTo(tx, y - 18);
+          g.lineTo(tx, y);
+          g.stroke();
+        } else {
+          g.fillStyle = c(COL.alert, i % 3 === 0 ? 0.95 : 0.8);
+          g.beginPath();
+          g.arc(tx, ty, small ? 1.8 : 2.4, 0, Math.PI * 2);
+          g.fill();
+        }
+      });
+      // Los distritos fiscales con más casos: marcas en el mapa y barras.
+      const fb = seg(u, 0.52, 0.8);
+      if (fb > 0) {
+        for (const pl of [
+          { name: "Lima", lon: LIMA.lon, lat: LIMA.lat },
+          { name: "La Libertad", lon: -79.03, lat: -8.11 },
+        ]) {
+          const x = P.X(pl.lon);
+          const y = P.Y(pl.lat);
+          g.strokeStyle = c(COL.ocre, 0.9 * fb);
+          g.lineWidth = 1.5;
+          g.beginPath();
+          g.arc(x, y, 6 + 10 * (1 - fb), 0, Math.PI * 2);
+          g.stroke();
+          g.globalAlpha = fb;
+          txt(g, pl.name, x - 12, y + 1, fs, c(COL.cream), 800, "right");
+          g.globalAlpha = 1;
+        }
+        const cw = small ? R.w : Math.min(300, R.w * 0.4);
+        const cx = small ? R.x : R.x + R.w - cw;
+        const cy = small ? box.y + box.h + 26 : box.y + box.h * 0.48;
+        const max = FISCAL[0]!.n;
+        g.globalAlpha = fb;
+        txt(g, L.fiscalTitle, cx, cy - 14, fs - 1, c(COL.dim), 700);
+        g.globalAlpha = 1;
+        FISCAL.forEach((f, i) => {
+          const a = ease(seg(u, 0.54 + i * 0.04, 0.62 + i * 0.04));
+          if (a <= 0) return;
+          const y = cy + 6 + i * (small ? 22 : 26);
+          const nameW = small ? 78 : 92;
+          g.globalAlpha = a;
+          txt(g, f.name, cx, y, fs - 1, c(COL.cream), 700);
+          g.fillStyle = c(COL.alert, 0.85);
+          g.fillRect(cx + nameW, y - 5, (cw - nameW - 50) * (f.n / max) * a, 10);
+          txt(
+            g,
+            f.n.toLocaleString("en-US"),
+            cx + nameW + (cw - nameW - 50) * (f.n / max) * a + 6,
+            y + 0.5,
+            fs - 1,
+            c(COL.cream),
+            700,
+          );
+          g.globalAlpha = 1;
+        });
+        const per = seg(u, 0.82, 0.9);
+        if (per > 0) {
+          g.globalAlpha = per;
+          g.fillStyle = c(COL.alert);
+          g.beginPath();
+          g.arc(cx + 4, cy + 6 + 5 * (small ? 22 : 26) + 6, 2.4, 0, Math.PI * 2);
+          g.fill();
+          txt(g, L.perDot, cx + 12, cy + 6 + 5 * (small ? 22 : 26) + 6.5, fs - 1.5, c(COL.dim));
+          g.globalAlpha = 1;
+        }
+      }
+      // El contador.
+      const n = Math.round(13892 * ease(seg(u, 0.05, 0.7)));
+      g.globalAlpha = a0;
+      txt(
+        g,
+        n.toLocaleString("en-US"),
+        R.x,
+        R.y + head * 0.36,
+        Math.min(54, head * 0.62),
+        c(COL.cream),
+        800,
+        "left",
+        display,
+      );
+      txt(g, L.reportsPeru, R.x, R.y + head * 0.8, Math.min(15, head * 0.2), c(COL.dim));
+      g.globalAlpha = 1;
+    };
+
+    /** 14. Escala: de Lima a la región, y el expediente que cualquier policía o fiscalía puede recibir. */
+    const sceneScale = (g: G, R: Rect, u: number) => {
+      const M = D.mapas;
+      if (!M) return;
+      const small = R.w < 560;
+      const fs = small ? 10 : 12.5;
+      const box = small ? { x: R.x, y: R.y, w: R.w, h: R.h * 0.72 } : { x: R.x, y: R.y, w: R.w * 0.72, h: R.h };
+      const P = project(box, LATAM_V);
+      const lit = new Map<string, number>();
+      CAPITALES.forEach(([code], i) => lit.set(code, ease(seg(u, 0.12 + i * 0.03, 0.2 + i * 0.03))));
+      drawLatam(g, M, P, ease(seg(u, 0, 0.08)), (code) => lit.get(code) ?? 0);
+      // Desde Lima, una línea a cada capital.
+      const x0 = P.X(LIMA.lon);
+      const y0 = P.Y(LIMA.lat);
+      CAPITALES.forEach(([, lon, lat], i) => {
+        const f = ease(seg(u, 0.08 + i * 0.03, 0.2 + i * 0.03));
+        if (f <= 0) return;
+        const x1 = P.X(lon);
+        const y1 = P.Y(lat);
+        const mx = (x0 + x1) / 2 - (y1 - y0) * 0.18;
+        const my = (y0 + y1) / 2 + (x1 - x0) * 0.18 - 20;
+        g.strokeStyle = c(COL.ocre, 0.65);
+        g.lineWidth = 1.3;
+        g.beginPath();
+        g.moveTo(x0, y0);
+        const n = 24;
+        for (let k = 1; k <= n * f; k++) {
+          const t = k / n;
+          g.lineTo(
+            (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * mx + t * t * x1,
+            (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * my + t * t * y1,
+          );
+        }
+        g.stroke();
+        if (f >= 1) {
+          g.fillStyle = c(COL.ocre);
+          g.beginPath();
+          g.arc(x1, y1, 2.6, 0, Math.PI * 2);
+          g.fill();
+        }
+      });
+      // Lima, hoy.
+      const pulse = seg(u, 0, 0.3);
+      g.strokeStyle = c(COL.terra, 1 - pulse);
+      g.lineWidth = 2;
+      g.beginPath();
+      g.arc(x0, y0, 4 + pulse * 26, 0, Math.PI * 2);
+      g.stroke();
+      g.fillStyle = c(COL.terra);
+      g.beginPath();
+      g.arc(x0, y0, 4.5, 0, Math.PI * 2);
+      g.fill();
+      g.globalAlpha = ease(seg(u, 0.02, 0.1));
+      pill(g, L.todayLima, x0 - (small ? 40 : 96), y0 + 22, COL.terra, fs - 1, true);
+      g.globalAlpha = 1;
+      // Lo que cambia por país: el canal de pago que usan las bandas.
+      L.payments.forEach(([country, apps, lon, lat], i) => {
+        const a = ease(seg(u, 0.55 + i * 0.05, 0.63 + i * 0.05));
+        if (a <= 0) return;
+        g.globalAlpha = a;
+        const x = P.X(Number(lon));
+        const y = P.Y(Number(lat));
+        pill(g, `${country}: ${apps}`, x, y, COL.ocre, fs - 1.5);
+        g.globalAlpha = 1;
+      });
+      // El expediente, para cualquier policía o fiscalía.
+      const ex = ease(seg(u, 0.72, 0.84));
+      if (ex > 0) {
+        const cw = small ? R.w : R.w * 0.26;
+        const cx = small ? R.x : R.x + R.w - cw;
+        const cy = small ? R.y + R.h * 0.76 : R.y + R.h * 0.34;
+        const ch = small ? 62 : 170;
+        g.globalAlpha = ex;
+        g.fillStyle = "#f4efe8";
+        g.beginPath();
+        g.roundRect(cx, cy, cw, ch, 12);
+        g.fill();
+        // Una hoja con su esquina doblada.
+        const ix = cx + 14;
+        const iy = cy + 14;
+        g.fillStyle = "#b4462a";
+        g.beginPath();
+        g.moveTo(ix, iy);
+        g.lineTo(ix + 20, iy);
+        g.lineTo(ix + 28, iy + 8);
+        g.lineTo(ix + 28, iy + 34);
+        g.lineTo(ix, iy + 34);
+        g.closePath();
+        g.fill();
+        txt(g, "PDF", ix + 14, iy + 23, 8.5, "#fff", 800, "center");
+        txt(g, L.file, ix + 38, iy + 10, fs + 1, "#2a1e17", 800);
+        if (small) txt(g, L.anyPolice, ix + 38, iy + 30, fs - 1, "#5a4a40", 700);
+        else {
+          wrap(g, L.fileText, ix, iy + 54, cw - 28, fs - 0.5, "#2a1e17", 400, 1.35, 3);
+          wrap(g, L.anyPolice, ix, iy + 108, cw - 28, fs, "#2f6b4a", 800, 1.3, 2);
+        }
+        g.globalAlpha = 1;
+      }
+    };
+
     /** 0. El logo: los píxeles llegan de todas partes y arman el escudo. */
     const sceneLogo = (g: G, R: Rect, _u: number, T: number) => {
-      const S = Math.min(R.h * 0.58, R.w * 0.62);
+      const S = Math.min(R.h * 0.5, R.w * 0.58);
       const sc = S / 28;
       const ox = R.x + R.w / 2 - 11.5 * sc;
-      const oy = R.y + R.h * 0.42 - 14 * sc;
+      const oy = R.y + R.h * 0.34 - 14 * sc;
       const path = new Path2D(SHIELD);
       const cs = Math.max(5, S / 22);
       const cells: { x: number; y: number; k: number }[] = [];
@@ -816,68 +1228,70 @@ const config = JSON.stringify({
         g.restore();
         txt(g, "blindaje", R.x + R.w / 2, oy + 28 * sc + S * 0.2, S * 0.26, c(COL.cream, done), 800, "center", display);
       }
+      // Escucha, mira y lee: un ícono por cada cosa que hace la IA, con el color de su señal.
+      const iconsY = oy + 28 * sc + S * 0.42;
+      const step = Math.min(R.w / 3.2, S * 0.62);
+      const items: [string, string, string][] = [
+        [L.ears, COL.ocre, "mic"],
+        [L.eyes, COL.img, "eye"],
+        [L.reads, KIND.frase!, "doc"],
+      ];
+      items.forEach(([label, col, kind], i) => {
+        const a = ease(clamp((T - 2100 - i * 220) / 500));
+        if (a <= 0) return;
+        const x = R.x + R.w / 2 + (i - 1) * step;
+        const y = iconsY + (1 - a) * 10;
+        const r = Math.max(14, S * 0.07);
+        g.globalAlpha = a;
+        g.beginPath();
+        g.arc(x, y, r, 0, Math.PI * 2);
+        g.fillStyle = "rgb(255 255 255 / 0.06)";
+        g.fill();
+        g.strokeStyle = c(col);
+        g.lineWidth = 1.6;
+        g.stroke();
+        glyphIcon(g, kind, x, y, r * 0.55, c(col));
+        txt(g, label, x, y + r + 14, Math.max(11, S * 0.045), c(COL.cream), 700, "center");
+        g.globalAlpha = 1;
+      });
+    };
+
+    /** Íconos de trazo simple para el logo: micrófono, ojo y documento. */
+    const glyphIcon = (g: G, kind: string, x: number, y: number, s: number, col: string) => {
+      g.strokeStyle = col;
+      g.lineWidth = Math.max(1.5, s * 0.18);
+      g.lineCap = "round";
+      g.lineJoin = "round";
+      g.beginPath();
+      if (kind === "mic") {
+        g.roundRect(x - s * 0.32, y - s * 0.95, s * 0.64, s * 1.15, s * 0.32);
+        g.moveTo(x - s * 0.7, y - s * 0.1);
+        g.quadraticCurveTo(x - s * 0.7, y + s * 0.6, x, y + s * 0.6);
+        g.quadraticCurveTo(x + s * 0.7, y + s * 0.6, x + s * 0.7, y - s * 0.1);
+        g.moveTo(x, y + s * 0.6);
+        g.lineTo(x, y + s * 0.95);
+      } else if (kind === "eye") {
+        g.moveTo(x - s, y);
+        g.quadraticCurveTo(x, y - s * 0.9, x + s, y);
+        g.quadraticCurveTo(x, y + s * 0.9, x - s, y);
+        g.moveTo(x + s * 0.32, y);
+        g.arc(x, y, s * 0.32, 0, Math.PI * 2);
+      } else {
+        g.moveTo(x - s * 0.6, y - s * 0.9);
+        g.lineTo(x + s * 0.25, y - s * 0.9);
+        g.lineTo(x + s * 0.6, y - s * 0.55);
+        g.lineTo(x + s * 0.6, y + s * 0.9);
+        g.lineTo(x - s * 0.6, y + s * 0.9);
+        g.closePath();
+        g.moveTo(x - s * 0.3, y - s * 0.15);
+        g.lineTo(x + s * 0.3, y - s * 0.15);
+        g.moveTo(x - s * 0.3, y + s * 0.25);
+        g.lineTo(x + s * 0.3, y + s * 0.25);
+      }
+      g.stroke();
     };
     let probeG: G | null = null;
     const probeCtx = () => (probeG ??= document.createElement("canvas").getContext("2d")!);
-
-    /** 1. El problema: las denuncias caen sobre Lima, cada una sola. */
-    const sceneProblem = (g: G, R: Rect, u: number) => {
-      const head = Math.min(90, R.h * 0.16);
-      const box = { x: R.x, y: R.y + head, w: R.w, h: R.h - head };
-      const gr = fitGrid(box, cfg.grid.cols, cfg.grid.rows, 1.25);
-      const gap = Math.max(2, gr.w * 0.07);
-      for (const [, col, row] of tiles) {
-        g.fillStyle = c("255 255 255", 0.07);
-        g.beginPath();
-        g.roundRect(gr.x + col * gr.w + gap / 2, gr.y + row * gr.h + gap / 2, gr.w - gap, gr.h - gap, 3);
-        g.fill();
-      }
-      for (const dr of drops) {
-        const tile = tiles[dr.t]!;
-        const tx = gr.x + (tile[1] + dr.u) * gr.w;
-        const ty = gr.y + (tile[2] + dr.v) * gr.h;
-        const f = seg(u, dr.d * 0.7, dr.d * 0.7 + 0.12);
-        if (f <= 0) continue;
-        const y = lerp(R.y - 20, ty, f * f);
-        if (f < 1) {
-          const gl = g.createLinearGradient(tx, y - 26, tx, y);
-          gl.addColorStop(0, c(COL.cream, 0));
-          gl.addColorStop(1, c(COL.cream, 0.7));
-          g.strokeStyle = gl;
-          g.lineWidth = 1.5;
-          g.beginPath();
-          g.moveTo(tx, y - 26);
-          g.lineTo(tx, y);
-          g.stroke();
-        } else {
-          const land = seg(u, dr.d * 0.7 + 0.12, dr.d * 0.7 + 0.2);
-          if (land < 1) {
-            g.strokeStyle = c(COL.alert, 0.7 * (1 - land));
-            g.lineWidth = 1;
-            g.beginPath();
-            g.arc(tx, ty, 2 + land * gr.w * 0.3, 0, Math.PI * 2);
-            g.stroke();
-          }
-          g.fillStyle = c(COL.alert, 0.95);
-          g.beginPath();
-          g.arc(tx, ty, Math.max(2, gr.w * 0.045), 0, Math.PI * 2);
-          g.fill();
-        }
-      }
-      const n = Math.round(13892 * ease(seg(u, 0.02, 0.85)));
-      txt(
-        g,
-        n.toLocaleString("en-US"),
-        R.x,
-        R.y + head * 0.36,
-        Math.min(54, head * 0.6),
-        c(COL.cream),
-        800,
-        "left",
-        display,
-      );
-      txt(g, L.reports, R.x, R.y + head * 0.8, Math.min(15, head * 0.2), c(COL.dim));
-    };
 
     /** Un ícono simple por víctima: bodega, mototaxi y puesto de mercado. */
     const victimIcon = (g: G, k: number, x: number, y: number, r: number) => {
@@ -925,133 +1339,146 @@ const config = JSON.stringify({
       }
     };
 
-    /** Una pieza de evidencia chica: audio (con su onda), mensaje o foto. */
-    const piece = (g: G, p: Pieza, x: number, y: number, s: number, a: number) => {
+    /**
+     * Una pieza de evidencia como la ve la víctima: el audio con su onda (se pinta mientras "suena") y su
+     * duración, el mensaje en dos líneas o la foto. Devuelve el alto que ocupa.
+     */
+    const piece = (g: G, p: Pieza, x: number, y: number, w: number, a: number, play: number, small: boolean) => {
+      const fs = small ? 9 : 11.5;
       g.save();
       g.globalAlpha = a;
+      let h = 0;
       if (p.tipo === "imagen") {
-        const w = 74 * s;
-        const h = 44 * s;
+        h = w * 0.5;
         g.beginPath();
-        g.roundRect(x - w / 2, y - h / 2, w, h, 5 * s);
+        g.roundRect(x, y, w, h, 8);
         g.fillStyle = "#fff";
         g.fill();
         if (photo.complete && photo.naturalWidth) {
           g.save();
+          g.beginPath();
+          g.roundRect(x + 3, y + 3, w - 6, h - 6, 6);
           g.clip();
-          g.drawImage(photo, x - w / 2 + 2, y - h / 2 + 2, w - 4, h - 4);
+          g.drawImage(photo, x + 3, y + 3, w - 6, h - 6);
           g.restore();
         }
-      } else {
-        const w = (p.tipo === "audio" ? 104 : 118) * s;
-        const h = 28 * s;
+      } else if (p.tipo === "audio") {
+        h = small ? 30 : 38;
         g.beginPath();
-        g.roundRect(x - w / 2, y - h / 2, w, h, 6 * s);
+        g.roundRect(x, y, w, h, 10);
         g.fillStyle = "#f4efe8";
         g.fill();
-        if (p.tipo === "audio") {
-          g.fillStyle = "#2a1e17";
-          g.beginPath();
-          g.arc(x - w / 2 + 13 * s, y, 8 * s, 0, Math.PI * 2);
-          g.fill();
-          const bars = p.onda ?? [];
-          const bw = (w - 34 * s) / Math.max(1, bars.length);
-          bars.forEach((v, i) => {
-            const bh = Math.max(2, v * h * 0.62);
-            g.fillStyle = "#8a7b70";
-            g.fillRect(x - w / 2 + 26 * s + i * bw, y - bh / 2, Math.max(1, bw * 0.6), bh);
-          });
-        } else {
-          const t = (p.texto ?? "").split(" ").slice(0, 3).join(" ") + "…";
-          txt(g, t, x - w / 2 + 7 * s, y + 0.5, 10 * s, "#2a1e17", 700);
-        }
+        const r = h * 0.32;
+        g.fillStyle = "#2a1e17";
+        g.beginPath();
+        g.arc(x + r + 7, y + h / 2, r, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#f4efe8";
+        g.beginPath();
+        g.moveTo(x + r + 4.5, y + h / 2 - r * 0.45);
+        g.lineTo(x + r + 4.5 + r * 0.8, y + h / 2);
+        g.lineTo(x + r + 4.5, y + h / 2 + r * 0.45);
+        g.fill();
+        const bars = p.onda ?? [];
+        const bx = x + r * 2 + 14;
+        const bwAll = w - (bx - x) - (small ? 30 : 38);
+        const bw = bwAll / Math.max(1, bars.length);
+        bars.forEach((v, i) => {
+          const bh = Math.max(2, v * h * 0.6);
+          g.fillStyle = i / bars.length < play ? "#b4462a" : "#8a7b70";
+          g.fillRect(bx + i * bw, y + h / 2 - bh / 2, Math.max(1, bw * 0.62), bh);
+        });
+        const sec = Math.round(p.segundos ?? 0);
+        txt(g, `0:${String(sec).padStart(2, "0")}`, x + w - 8, y + h / 2 + 0.5, fs - 1, "#5a4a40", 700, "right");
+      } else {
+        const lines = small ? 2 : 2;
+        h = lines * fs * 1.32 + 16;
+        g.beginPath();
+        g.roundRect(x, y, w, h, 10);
+        g.fillStyle = "#f4efe8";
+        g.fill();
+        wrap(g, p.texto ?? "", x + 9, y + 8 + fs * 0.66, w - 18, fs, "#2a1e17", 400, 1.32, lines);
+      }
+      if (p.hora && !small) {
+        const when = p.dia ? `${fill(L.daysAgo, { n: p.dia })}, ${p.hora}` : p.hora;
+        txt(g, when, x + w, y + h + 9, fs - 2.5, c(COL.dim), 400, "right");
       }
       g.restore();
+      return h + (small ? 8 : 18);
     };
 
-    const sy0 = (R: Rect) => R.y + R.h * 0.07;
-    /** 2. Las víctimas: tres números distintos les mandan audios, fotos y mensajes. */
+    /** 2. Las víctimas: tres números distintos les mandan audios, fotos y mensajes; cada una queda sola. */
     const sceneVictims = (g: G, R: Rect, u: number) => {
       const casos = D.casos?.casos ?? [];
-      const small = R.w < 520;
-      const s = small ? 0.78 : 1.3;
-      const xs = [0.17, 0.5, 0.83].map((f) => R.x + R.w * f);
-      const vy = R.y + R.h * 0.8;
-      // El camino de cada número a su víctima.
-      const tr = ease(seg(u, 0.06, 0.2));
-      if (tr > 0) {
-        xs.forEach((x) => {
-          g.setLineDash([3, 6]);
-          g.strokeStyle = c(COL.dim, 0.3 * tr);
-          g.lineWidth = 1;
-          g.beginPath();
-          g.moveTo(x, sy0(R) + 34);
-          g.lineTo(x, lerp(sy0(R) + 34, vy - 40, tr));
-          g.stroke();
-          g.setLineDash([]);
-        });
-      }
-      const sy = R.y + R.h * 0.07;
-      const all = casos.flatMap((cs, i) => cs.piezas.map((pz, j) => ({ i, j, pz })));
+      const small = R.w < 560;
+      const fs = small ? 9.5 : 12;
+      const gap = small ? 8 : 22;
+      const colW = (R.w - gap * 2) / 3;
+      const pw = colW - (small ? 4 : 16);
+      const sy = R.y + 10;
+      const vy = R.y + R.h - (small ? 48 : 62);
+      // El orden de llegada: de la más antigua a la más nueva, en los tres celulares.
+      const all = casos
+        .flatMap((cs, i) => cs.piezas.map((pz, j) => ({ i, j, pz })))
+        .sort((a, b) => (b.pz.dia ?? 0) - (a.pz.dia ?? 0) || (a.pz.hora ?? "").localeCompare(b.pz.hora ?? ""));
+      const slotT = new Map(all.map((x, k) => [`${x.i}-${x.j}`, 0.1 + k * (0.6 / all.length)]));
       casos.forEach((cs, i) => {
-        const x = xs[i]!;
-        const a0 = ease(seg(u, 0, 0.12));
-        // El número que manda (otro número cada vez).
+        const x = R.x + i * (colW + gap);
+        const cx = x + colW / 2;
+        const a0 = ease(seg(u, i * 0.03, 0.08 + i * 0.03));
+        // El número que manda: otro número para cada víctima.
         g.globalAlpha = a0;
-        pill(g, cs.contacto, x, sy, COL.dim, small ? 9.5 : 11.5);
-        txt(g, L.otherNumber, x, sy + (small ? 17 : 20), small ? 9 : 11, c(COL.dim), 400, "center");
+        pill(g, cs.contacto, cx, sy, COL.dim, small ? 8.5 : 11.5);
+        txt(g, L.otherNumber, cx, sy + (small ? 16 : 22), small ? 8.5 : 11, c(COL.dim), 400, "center");
         g.globalAlpha = 1;
+        // Las piezas, una debajo de otra, en el orden en que llegaron.
+        let y = sy + (small ? 30 : 42);
+        cs.piezas.forEach((pz, j) => {
+          const t0 = slotT.get(`${i}-${j}`) ?? 0.1;
+          const f = seg(u, t0, t0 + 0.08);
+          if (f <= 0) {
+            y +=
+              pz.tipo === "imagen"
+                ? pw * 0.5 + 18
+                : pz.tipo === "audio"
+                  ? small
+                    ? 38
+                    : 56
+                  : (small ? 9 : 11.5) * 2.64 + (small ? 24 : 34);
+            return;
+          }
+          const e = ease(f);
+          const play = pz.tipo === "audio" ? seg(u, t0 + 0.08, t0 + 0.3) : 0;
+          const dy = (1 - e) * -26;
+          y += piece(g, pz, x + (colW - pw) / 2, y + dy, pw, e, play, small);
+        });
         // La víctima.
-        const r = small ? 24 : 32;
-        const pulse = seg(u, 0.78, 0.95);
+        const r = small ? 18 : 28;
+        const iso = seg(u, 0.78, 0.92);
         g.beginPath();
-        g.arc(x, vy, r, 0, Math.PI * 2);
+        g.arc(cx, vy, r, 0, Math.PI * 2);
         g.fillStyle = c("255 255 255", 0.08 * a0);
         g.fill();
-        g.strokeStyle = c(COL.alert, 0.35 + 0.6 * pulse);
-        g.lineWidth = 1.5 + pulse;
+        g.strokeStyle = c(COL.alert, 0.4 + 0.6 * iso);
+        g.lineWidth = 1.5 + iso;
         g.stroke();
-        if (pulse > 0 && pulse < 1) {
+        if (iso > 0 && iso < 1) {
           g.beginPath();
-          g.arc(x, vy, r + pulse * 26, 0, Math.PI * 2);
-          g.strokeStyle = c(COL.alert, 0.7 * (1 - pulse));
+          g.arc(cx, vy, r + iso * 22, 0, Math.PI * 2);
+          g.strokeStyle = c(COL.alert, 0.7 * (1 - iso));
           g.stroke();
         }
         g.globalAlpha = a0;
-        victimIcon(g, i, x, vy, r);
-        txt(
-          g,
-          fill(L.caseLabel, { k: cs.caso }),
-          x,
-          vy + r + (small ? 14 : 18),
-          small ? 11 : 13,
-          c(COL.cream),
-          700,
-          "center",
-        );
-        txt(
-          g,
-          `${L.sectors[i]}, ${L.zones[i]}`,
-          x,
-          vy + r + (small ? 28 : 35),
-          small ? 9.5 : 11.5,
-          c(COL.dim),
-          400,
-          "center",
-        );
+        victimIcon(g, i, cx, vy, r);
+        txt(g, fill(L.caseLabel, { k: cs.caso }), cx, vy + r + (small ? 12 : 16), fs, c(COL.cream), 700, "center");
+        txt(g, `${L.sectors[i]}, ${L.zones[i]}`, cx, vy + r + (small ? 25 : 33), fs - 1.5, c(COL.dim), 400, "center");
         g.globalAlpha = 1;
-      });
-      all.forEach(({ i, j, pz }, k) => {
-        const start = 0.12 + k * (0.62 / all.length);
-        const f = seg(u, start, start + 0.16);
-        if (f <= 0) return;
-        const x0 = xs[i]!;
-        const y0 = sy + 30;
-        const slotY = vy - (small ? 50 : 76) - j * (small ? 38 : 56);
-        const e = inout(f);
-        const x = x0 + Math.sin(e * Math.PI) * (i === 1 ? 0 : i === 0 ? -20 : 20);
-        const y = lerp(y0, slotY, e);
-        piece(g, pz, x, y, s * (0.6 + 0.4 * e), Math.min(1, f * 3));
+        // Para cada una, un caso aislado.
+        if (iso > 0) {
+          g.globalAlpha = iso;
+          pill(g, L.oneReport, cx, vy - r - (small ? 12 : 16), COL.alert, small ? 8.5 : 11, true);
+          g.globalAlpha = 1;
+        }
       });
     };
 
@@ -2297,6 +2724,7 @@ const config = JSON.stringify({
       sceneNetwork,
       sceneVigia,
       sceneProtect,
+      sceneScale,
     ];
 
     // ---------- Dónde se dibuja cada escena ----------
@@ -2355,6 +2783,7 @@ const config = JSON.stringify({
       }
       const next = Math.min(N - 1, Math.floor(shown + 0.1));
       if (next !== active) {
+        stopSound();
         scenes[active]?.classList.remove("is-on");
         scenes[next]?.classList.add("is-on");
         dots[active]?.removeAttribute("aria-current");
@@ -2376,12 +2805,14 @@ const config = JSON.stringify({
     };
 
     const load = async () => {
-      const [casos, pitch, voz, fotos] = await Promise.all([
+      const [casos, pitch, voz, fotos, mapas] = await Promise.all([
         import("../data/casos-demo.json"),
         import("../data/pitch.json"),
         import("../data/voz-huella.json"),
         import("../data/fotos-demo.json"),
+        import("../data/mapas.json"),
       ]);
+      D.mapas = mapas.default as unknown as MapsData;
       D.casos = casos.default as unknown as Casos;
       D.pitch = pitch.default as unknown as PitchData;
       D.voz = voz.default as unknown as VozData;
