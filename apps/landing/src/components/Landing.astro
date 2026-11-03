@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import Header from "./Header.astro";
 import Pitch from "./Pitch.astro";
+import Upload from "./Upload.astro";
 import Voz from "./Voz.astro";
 import Fotos from "./Fotos.astro";
 import Where from "./Where.astro";
@@ -27,6 +28,7 @@ const dict = t(lang);
   <Header dict={dict} />
   <main id="contenido" tabindex="-1">
     <Pitch dict={dict} />
+    <Upload dict={dict} />
     <Voz dict={dict} />
     <Fotos dict={dict} />
     <Where dict={dict} />

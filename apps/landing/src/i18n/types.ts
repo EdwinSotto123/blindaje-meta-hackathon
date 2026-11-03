@@ -61,6 +61,7 @@ export interface Dict {
     map: string;
     product: string;
     how: string;
+    upload: string;
     intelligence: string;
     tech: string;
     results: string;
@@ -252,6 +253,7 @@ export interface Dict {
         vigia: { label: string; when: string; whenOne: string; today: string; out: string; alert: string };
         scale: { label: string; out: string };
       };
+      ctaUpload: string;
       ctaMap: string;
       ctaPilot: string;
       source: string;
@@ -375,6 +377,80 @@ export interface Dict {
       note: string;
       /** La animación del mapa: cuatro pasos (en orden con las reglas) y volver a verla. */
       anim: { steps: [string, string, string, string]; replay: string };
+    };
+    /** "Sube lo que te mandaron" (Upload.astro): la víctima sube su evidencia desde la landing. */
+    upload: {
+      title: string;
+      lead: string;
+      points: [string, string, string];
+      notice: string;
+      files: {
+        label: string;
+        drop: string;
+        choose: string;
+        hint: string;
+        /** Con {name}. */
+        remove: string;
+        /** Con {n}. */
+        count: string;
+        kinds: { audio: string; imagen: string; video: string; texto: string };
+      };
+      pasted: { label: string; hint: string };
+      more: string;
+      district: string;
+      districtNone: string;
+      sector: string;
+      sectorNone: string;
+      sectors: Record<
+        "bodega" | "mototaxi" | "transporte" | "mercado" | "restaurante" | "construccion" | "otro",
+        string
+      >;
+      narrative: string;
+      consent: { label: string; hint: string };
+      sample: { button: string; hint: string; loaded: string };
+      submit: string;
+      noscript: string;
+      errors: {
+        empty: string;
+        tooMany: string;
+        tooBig: string;
+        badType: string;
+        network: string;
+        rateLimited: string;
+        server: string;
+      };
+      progress: { start: string; uploading: string; submitting: string };
+      result: {
+        title: string;
+        code: string;
+        steps: [string, string, string];
+        processing: string;
+        slow: string;
+        ready: string;
+        failed: string;
+        ficha: {
+          amenaza: string;
+          monto: string;
+          plazo: string;
+          canal: string;
+          grupo: string;
+          frases: string;
+          contactos: string;
+          resumen: string;
+        };
+        transcript: string;
+        findings: string;
+        advice: string;
+        pdf: string;
+        pdfLoading: string;
+        pdfFail: string;
+        remove: string;
+        removeConfirm: string;
+        removing: string;
+        removed: string;
+        again: string;
+        sampleNote: string;
+      };
     };
     problem: { gapsTitle: string };
     benefits: {

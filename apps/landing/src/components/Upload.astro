@@ -1,0 +1,1356 @@
+---
+/**
+ * "Sube lo que te mandaron": la víctima sube audios, fotos, capturas, videos o el texto de los mensajes
+ * desde la landing, por el mismo camino que la app (services/api/src/routes/victim.ts):
+ *
+ *   POST /v1/auth/device/register  llave ECDSA P-256 creada en el navegador, platform "web"
+ *   POST /v1/cases            distrito y rubro opcionales, consentimiento (solo_denuncia o comunitario)
+ *   POST /v1/cases/:id/evidence  cada archivo, crudo, con su SHA-256 (la API lo cifra en R2)
+ *   POST /v1/cases/:id/submit    el relato opcional; corre el workflow con los modelos de Meta
+ *   GET  /v1/cases/:id/report    SU reporte (nunca vínculos ni datos de otros casos), hasta que esté listo
+ *
+ * Nunca pide nombre ni número. El token vive solo en la memoria de la pestaña. "Probar con un caso de
+ * ejemplo" carga los archivos ficticios del caso A del demo para probar sin datos reales.
+ */
+import { PUBLIC_API_URL } from "astro:env/client";
+import { getImage } from "astro:assets";
+import type { Dict } from "../i18n";
+import { DISTRICTS } from "../../../../packages/shared/src/zones";
+import casosDemo from "../data/casos-demo.json";
+import mostrador from "../assets/flujo/mostrador.jpg";
+import Icon from "./Icon.astro";
+
+interface Props {
+  dict: Dict;
+}
+
+const { dict: d } = Astro.props;
+const t = d.lp.upload;
+const apiUrl = PUBLIC_API_URL.replace(/\/+$/, "");
+const sampleImg = await getImage({ src: mostrador, width: 1000, format: "jpg", quality: 82 });
+const casoA = casosDemo.casos[0]!;
+const sampleText = (casoA.piezas.find((x) => x.tipo === "texto") as { texto?: string } | undefined)?.texto ?? "";
+const districts = DISTRICTS.map((x) => ({ id: x.id, name: x.name })).sort((a, b) => a.name.localeCompare(b.name, "es"));
+const sectors = Object.entries(t.sectors);
+const points: ["lock" | "file" | "link", string][] = [
+  ["lock", t.points[0]],
+  ["file", t.points[1]],
+  ["link", t.points[2]],
+];
+const config = JSON.stringify({
+  api: apiUrl,
+  t: {
+    files: t.files,
+    sample: t.sample,
+    errors: t.errors,
+    progress: t.progress,
+    result: t.result,
+  },
+  threats: d.lp.pitch.canvas.threats,
+  sample: { audio: "/casos/a1.m4a", photo: sampleImg.src, text: sampleText },
+});
+---
+
+<section class="section up" id="subir" aria-labelledby="subir-title">
+  <div class="wrap grid up__grid">
+    <div class="up__text">
+      <h2 id="subir-title" class="head">
+        {t.title}
+      </h2>
+      <p class="lead">{t.lead}</p>
+      <ul class="up__points" role="list">
+        {points.map(([icon, text]) => (
+          <li>
+            <Icon name={icon} class="icon" />
+            <span>{text}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="up__notice">
+        <Icon name="alert" class="icon" />
+        <span>{t.notice}</span>
+      </p>
+    </div>
+
+    <div class="up__sheet">
+      <form class="up__form" novalidate data-upload data-config={config}>
+        <div class="up__field">
+          <p class="up__label" id="up-files-label">
+            {t.files.label}
+          </p>
+          <div class="up__drop" data-drop>
+            <Icon name="upload" class="icon up__drop-icon" />
+            <p class="up__drop-title">{t.files.drop}</p>
+            <button type="button" class="btn up__choose" data-choose aria-describedby="up-files-hint">
+              {t.files.choose}
+            </button>
+            <input
+              class="up__input"
+              type="file"
+              multiple
+              hidden
+              accept="audio/*,image/*,video/*,.opus,.ogg,.oga,.m4a,.mp3,.aac,.amr,.wav,.txt,text/plain"
+              aria-labelledby="up-files-label"
+              data-files
+            />
+          </div>
+          <p class="up__hint" id="up-files-hint">
+            {t.files.hint}
+          </p>
+          <ul class="up__list" role="list" aria-labelledby="up-files-label" data-list></ul>
+          <p class="up__count" data-count hidden></p>
+          <p class="up__err" id="up-files-err" data-files-err hidden></p>
+        </div>
+
+        <div class="up__sample">
+          <button type="button" class="up__link" aria-describedby="up-sample-hint" data-sample>
+            {t.sample.button}
+          </button>
+          <p class="up__hint" id="up-sample-hint">
+            {t.sample.hint}
+          </p>
+        </div>
+
+        <div class="up__field">
+          <label class="up__label" for="up-pasted">
+            {t.pasted.label}
+          </label>
+          <textarea id="up-pasted" rows="4" maxlength="8000" aria-describedby="up-pasted-hint" data-pasted></textarea>
+          <p class="up__hint" id="up-pasted-hint">
+            {t.pasted.hint}
+          </p>
+        </div>
+
+        <details class="up__more">
+          <summary>{t.more}</summary>
+          <div class="up__more-grid">
+            <div class="up__field">
+              <label class="up__label" for="up-district">
+                {t.district}
+              </label>
+              <select id="up-district" data-district>
+                <option value="">{t.districtNone}</option>
+                {districts.map((x) => (
+                  <option value={x.id}>{x.name}</option>
+                ))}
+              </select>
+            </div>
+            <div class="up__field">
+              <label class="up__label" for="up-sector">
+                {t.sector}
+              </label>
+              <select id="up-sector" data-sector>
+                <option value="">{t.sectorNone}</option>
+                {sectors.map(([value, label]) => (
+                  <option value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div class="up__field up__field--full">
+              <label class="up__label" for="up-narrative">
+                {t.narrative}
+              </label>
+              <textarea id="up-narrative" rows="4" maxlength="8000" data-narrative></textarea>
+            </div>
+          </div>
+        </details>
+
+        <div class="up__consent">
+          <input id="up-consent" type="checkbox" aria-describedby="up-consent-hint" data-consent />
+          <label for="up-consent">{t.consent.label}</label>
+          <p class="up__hint" id="up-consent-hint">
+            {t.consent.hint}
+          </p>
+        </div>
+
+        <noscript>
+          <p class="up__noscript">{t.noscript}</p>
+        </noscript>
+
+        <div class="up__actions">
+          <button class="btn btn--mark" type="submit" data-submit>
+            <Icon name="upload" class="icon" />
+            <span data-submit-label>{t.submit}</span>
+          </button>
+          <div class="up__bar" aria-hidden="true" hidden data-bar>
+            <span></span>
+          </div>
+        </div>
+        <div class="up__status" role="status" aria-live="polite" data-status></div>
+      </form>
+
+      <div class="up__result" hidden tabindex="-1" aria-labelledby="up-result-title" data-result>
+        <h3 id="up-result-title" class="up__result-title">
+          {t.result.title}
+        </h3>
+        <p class="up__code" data-r-code></p>
+        <ol class="up__steps" role="list" data-r-steps>
+          {t.result.steps.map((s) => (
+            <li>{s}</li>
+          ))}
+        </ol>
+        <p class="up__msg" role="status" aria-live="polite" data-r-msg></p>
+        <p class="up__sample-note" hidden data-r-sample>
+          {t.result.sampleNote}
+        </p>
+        <div class="up__report" data-r-body></div>
+        <div class="up__result-actions">
+          <button type="button" class="btn btn--mark" hidden data-r-pdf>
+            <Icon name="file" class="icon" />
+            <span>{t.result.pdf}</span>
+          </button>
+          <button type="button" class="btn up__ghost" data-r-again>
+            {t.result.again}
+          </button>
+          <button type="button" class="up__link up__danger" data-r-delete>
+            {t.result.remove}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .up {
+    background: var(--paper-2);
+  }
+
+  .up__grid {
+    row-gap: 40px;
+    align-items: start;
+  }
+
+  .up__text {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+    max-width: 32em;
+  }
+
+  .up__points {
+    display: grid;
+    gap: 14px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .up__points li {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .up__points :global(.icon),
+  .up__notice :global(.icon) {
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+    fill: none;
+    stroke: var(--terracota);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .up__notice {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    margin: 4px 0 0;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--alerta-suave);
+    color: var(--tinta);
+    font-weight: 700;
+  }
+
+  .up__notice :global(.icon) {
+    stroke: var(--alerta);
+  }
+
+  .up__sheet {
+    padding: 24px 20px;
+    border-radius: var(--radius);
+    background: var(--papel);
+    color: var(--ink);
+    box-shadow: var(--sombra-2);
+  }
+
+  .up__form {
+    display: grid;
+    gap: 22px;
+  }
+
+  .up__field {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+  }
+
+  .up__label {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .up__hint {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--step-small);
+  }
+
+  .up__err {
+    margin: 0;
+    color: var(--alerta);
+    font-size: var(--step-small);
+    font-weight: 700;
+  }
+
+  .up__field textarea,
+  .up__field select {
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--tinta-3);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    font-size: var(--step-body);
+    line-height: 1.4;
+  }
+
+  .up__field textarea {
+    min-height: 112px;
+    resize: vertical;
+  }
+
+  .up__field select {
+    padding-right: 44px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%232a1e17' stroke-width='1.8'/%3E%3C/svg%3E");
+    background-position: calc(100% - 16px) 50%;
+    background-size: 12px 8px;
+    background-repeat: no-repeat;
+  }
+
+  .up__field textarea:hover,
+  .up__field select:hover {
+    border-color: var(--ink);
+  }
+
+  .up__form :focus-visible,
+  .up__result :focus-visible {
+    outline: 3px solid var(--terracota);
+    outline-offset: 2px;
+  }
+
+  /* El lugar para soltar los archivos: borde punteado; se enciende al arrastrar encima. */
+  .up__drop {
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+    padding: 24px 16px;
+    border: 2px dashed var(--linea-2);
+    border-radius: var(--radius);
+    background: var(--fondo);
+    text-align: center;
+    transition:
+      border-color 0.15s,
+      background-color 0.15s;
+  }
+
+  .up__drop.is-over {
+    border-color: var(--terracota);
+    background: var(--arcilla);
+  }
+
+  .up__drop.is-invalid {
+    border-color: var(--alerta);
+  }
+
+  .up__drop :global(.up__drop-icon) {
+    width: 30px;
+    height: 30px;
+    fill: none;
+    stroke: var(--terracota);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .up__drop-title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .up__choose {
+    border: 1.5px solid var(--ink);
+    background: var(--papel);
+    color: var(--ink);
+  }
+
+  .up__choose:hover {
+    background: var(--fondo-2);
+  }
+
+  .up__list {
+    display: grid;
+    gap: 8px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .up__list:empty {
+    display: none;
+  }
+
+  .up__list :global(.up__item) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 8px 8px 12px;
+    border: 1px solid var(--linea);
+    border-radius: var(--radius-sm);
+    background: var(--papel);
+  }
+
+  .up__list :global(.up__item.is-done) {
+    border-color: var(--verde-suave);
+    background: #f4f9f6;
+  }
+
+  .up__list :global(.up__kind) {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--fondo-2);
+    color: var(--ink);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .up__list :global(.up__kind[data-kind="audio"]) {
+    background: var(--ocre-suave);
+  }
+
+  .up__list :global(.up__kind[data-kind="imagen"]) {
+    background: #dde9f5;
+  }
+
+  .up__list :global(.up__kind[data-kind="texto"]) {
+    background: #fbe8f4;
+  }
+
+  .up__list :global(.up__name) {
+    overflow: hidden;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .up__list :global(.up__size) {
+    display: block;
+    color: var(--ink-2);
+    font-size: 0.8125rem;
+    font-weight: 400;
+  }
+
+  .up__list :global(.up__remove) {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .up__list :global(.up__remove:hover) {
+    background: var(--fondo-2);
+  }
+
+  .up__list :global(.up__remove .icon),
+  .up__list :global(.up__item-ok .icon) {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+
+  .up__list :global(.up__item-ok) {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    color: var(--verde);
+  }
+
+  .up__count {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--step-small);
+  }
+
+  .up__more summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+
+  .up__more summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .up__more summary::after {
+    content: "+";
+    font-size: var(--step-lead);
+    line-height: 1;
+  }
+
+  .up__more[open] summary::after {
+    content: "−";
+  }
+
+  .up__more-grid {
+    display: grid;
+    gap: 16px;
+    padding-top: 8px;
+  }
+
+  .up__consent {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 4px 12px;
+    align-items: start;
+    padding: 14px 16px;
+    border: 1px solid var(--linea);
+    border-radius: var(--radius-sm);
+  }
+
+  .up__consent input {
+    width: 22px;
+    height: 22px;
+    margin: 1px 0 0;
+    accent-color: var(--terracota);
+  }
+
+  .up__consent label {
+    font-weight: 700;
+    line-height: 1.35;
+    cursor: pointer;
+  }
+
+  .up__consent .up__hint {
+    grid-column: 2;
+  }
+
+  .up__sample {
+    display: grid;
+    gap: 2px;
+    justify-items: start;
+  }
+
+  .up__link {
+    min-height: 40px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--terracota-2);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    cursor: pointer;
+  }
+
+  .up__link:hover {
+    color: var(--ink);
+  }
+
+  .up__noscript {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .up__actions {
+    display: grid;
+    gap: 10px;
+  }
+
+  .up__actions .btn {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .up__actions :global(.icon),
+  .up__result-actions :global(.icon) {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .up__actions .btn[aria-disabled="true"] {
+    cursor: progress;
+  }
+
+  /* El avance de la subida: una barra terracota que crece con cada archivo. */
+  .up__bar {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: var(--linea);
+  }
+
+  .up__bar span {
+    display: block;
+    height: 100%;
+    background: var(--terracota);
+    transform: scaleX(var(--p, 0));
+    transform-origin: left;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .up__status:empty {
+    display: none;
+  }
+
+  .up__status {
+    padding: 10px 14px;
+    border-radius: var(--r-s);
+    background: var(--fondo-2);
+    color: var(--ink);
+  }
+
+  .up__status.is-error {
+    background: var(--alerta-suave);
+    color: var(--alerta);
+    font-weight: 700;
+  }
+
+  /* ---------- El resultado ---------- */
+  .up__result {
+    display: grid;
+    gap: 16px;
+  }
+
+  .up__result:focus {
+    outline: none;
+  }
+
+  .up__result-title {
+    margin: 0;
+    font-size: var(--step-head);
+    line-height: 1.15;
+  }
+
+  .up__code {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .up__steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: paso;
+  }
+
+  .up__steps li {
+    padding-top: 10px;
+    border-top: 4px solid var(--linea);
+    color: var(--ink-2);
+    font-size: var(--step-small);
+    font-weight: 700;
+  }
+
+  .up__steps li.is-done {
+    border-color: var(--verde);
+    color: var(--ink);
+  }
+
+  .up__steps li.is-now {
+    border-color: var(--ocre);
+    color: var(--ink);
+  }
+
+  .up__msg {
+    margin: 0;
+  }
+
+  .up__sample-note {
+    margin: 0;
+    padding: 6px 10px;
+    justify-self: start;
+    border-radius: var(--r-s);
+    background: var(--ocre-suave);
+    font-size: var(--step-small);
+    font-weight: 700;
+  }
+
+  .up__report {
+    display: grid;
+    gap: 18px;
+  }
+
+  .up__report:empty {
+    display: none;
+  }
+
+  .up__report :global(h4) {
+    margin: 0 0 6px;
+    font-size: var(--step-body);
+  }
+
+  .up__report :global(.up__ficha) {
+    display: grid;
+    grid-template-columns: minmax(7.5em, auto) 1fr;
+    gap: 8px 16px;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--fondo);
+  }
+
+  .up__report :global(.up__ficha dt) {
+    color: var(--ink-2);
+    font-size: var(--step-small);
+  }
+
+  .up__report :global(.up__ficha dd) {
+    margin: 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .up__report :global(.up__quote) {
+    margin: 0;
+    padding: 12px 14px;
+    border-left: 1px solid var(--linea-2);
+    background: var(--fondo);
+    font-style: italic;
+  }
+
+  .up__report :global(ul) {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding-left: 1.2em;
+  }
+
+  .up__result-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    align-items: center;
+  }
+
+  .up__result-actions .btn {
+    gap: 10px;
+  }
+
+  .up__ghost {
+    border: 1.5px solid var(--ink);
+    background: none;
+    color: var(--ink);
+  }
+
+  .up__danger {
+    color: var(--alerta);
+  }
+
+  /* En el celular, cada dato de la ficha debajo de su nombre. */
+  @media (max-width: 519px) {
+    .up__report :global(.up__ficha) {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2px;
+    }
+
+    .up__report :global(.up__ficha dd + dt) {
+      margin-top: 10px;
+    }
+  }
+
+  @media (min-width: 720px) {
+    .up__sheet {
+      padding: 32px 36px;
+    }
+
+    .up__more-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 20px;
+    }
+
+    .up__field--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* En la computadora, el texto a la izquierda (se queda a la vista) y la hoja del formulario a la derecha. */
+  @media (min-width: 1024px) {
+    .up__text {
+      position: sticky;
+      top: 140px;
+      grid-column: 1 / 6;
+    }
+
+    .up__sheet {
+      grid-column: 6 / 13;
+    }
+  }
+</style>
+
+<script>
+  type Kind = "audio" | "imagen" | "video" | "texto";
+  type Item = { file: File; kind: Kind; mime: string; key: string };
+  type Report = {
+    case_id: string;
+    code: string;
+    status: "borrador" | "procesando" | "listo" | "error";
+    hallazgos: string[];
+    ficha: {
+      amenaza: string | null;
+      monto_soles: number | null;
+      plazo: string | null;
+      canal_pago: string | null;
+      grupo_que_dice_ser: string | null;
+      frases_firma: string[];
+      identificadores: { tipo: string; valor: string }[];
+      resumen: string | null;
+    } | null;
+    evidencia: { label: string; tipo: Kind; transcripcion: { text: string }[] | null }[];
+    consejos: string[];
+  };
+  type Cfg = {
+    api: string;
+    t: {
+      files: { remove: string; count: string; kinds: Record<Kind, string> };
+      sample: { loaded: string };
+      errors: Record<"empty" | "tooMany" | "tooBig" | "badType" | "network" | "rateLimited" | "server", string>;
+      progress: { start: string; uploading: string; submitting: string };
+      result: {
+        code: string;
+        processing: string;
+        slow: string;
+        ready: string;
+        failed: string;
+        ficha: Record<"amenaza" | "monto" | "plazo" | "canal" | "grupo" | "frases" | "contactos" | "resumen", string>;
+        transcript: string;
+        findings: string;
+        advice: string;
+        pdf: string;
+        pdfLoading: string;
+        pdfFail: string;
+        remove: string;
+        removeConfirm: string;
+        removing: string;
+        removed: string;
+      };
+    };
+    threats: Record<string, string>;
+    sample: { audio: string; photo: string; text: string };
+  };
+
+  const MAX_FILES = 10;
+  const MAX_BYTES = 50 * 1024 * 1024;
+  const fill = (s: string, v: Record<string, string | number>) =>
+    s.replace(/\{(\w+)\}/g, (m, k: string) => (k in v ? String(v[k]) : m));
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const hex = (buf: ArrayBuffer) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const size = (n: number) =>
+    n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1048576).toFixed(1)} MB`;
+
+  /** El tipo de evidencia y el MIME, por el tipo que da el navegador o, si no lo da, por la extensión. */
+  const EXT: [RegExp, Kind, string][] = [
+    [/\.(opus|ogg|oga)$/i, "audio", "audio/ogg"],
+    [/\.m4a$/i, "audio", "audio/mp4"],
+    [/\.mp3$/i, "audio", "audio/mpeg"],
+    [/\.aac$/i, "audio", "audio/aac"],
+    [/\.amr$/i, "audio", "audio/amr"],
+    [/\.wav$/i, "audio", "audio/wav"],
+    [/\.jpe?g$/i, "imagen", "image/jpeg"],
+    [/\.png$/i, "imagen", "image/png"],
+    [/\.webp$/i, "imagen", "image/webp"],
+    [/\.hei[cf]$/i, "imagen", "image/heic"],
+    [/\.mp4$/i, "video", "video/mp4"],
+    [/\.3gp$/i, "video", "video/3gpp"],
+    [/\.mov$/i, "video", "video/quicktime"],
+    [/\.txt$/i, "texto", "text/plain"],
+  ];
+  const classify = (f: File): { kind: Kind; mime: string } | null => {
+    const ty = f.type.toLowerCase();
+    if (ty.startsWith("audio/")) return { kind: "audio", mime: ty };
+    if (ty.startsWith("image/")) return { kind: "imagen", mime: ty };
+    if (ty.startsWith("video/")) return { kind: "video", mime: ty };
+    if (ty === "text/plain") return { kind: "texto", mime: ty };
+    const hit = EXT.find(([re]) => re.test(f.name));
+    return hit ? { kind: hit[1], mime: hit[2] } : null;
+  };
+
+  /** Un error que ya sabe qué mensaje mostrar. */
+  class UpError extends Error {
+    constructor(public key: keyof Cfg["t"]["errors"]) {
+      super(key);
+    }
+  }
+
+  for (const form of document.querySelectorAll<HTMLFormElement>("[data-upload]")) {
+    const cfg = JSON.parse(form.dataset.config ?? "{}") as Cfg;
+    const T = cfg.t;
+    const sheet = form.parentElement!;
+    const $ = <E extends Element>(sel: string, root: ParentNode = sheet) => root.querySelector<E>(sel)!;
+    const input = $<HTMLInputElement>("[data-files]");
+    const drop = $<HTMLElement>("[data-drop]");
+    const list = $<HTMLUListElement>("[data-list]");
+    const count = $<HTMLElement>("[data-count]");
+    const filesErr = $<HTMLElement>("[data-files-err]");
+    const pasted = $<HTMLTextAreaElement>("[data-pasted]");
+    const narrative = $<HTMLTextAreaElement>("[data-narrative]");
+    const district = $<HTMLSelectElement>("[data-district]");
+    const sector = $<HTMLSelectElement>("[data-sector]");
+    const consent = $<HTMLInputElement>("[data-consent]");
+    const submit = $<HTMLButtonElement>("[data-submit]");
+    const bar = $<HTMLElement>("[data-bar]");
+    const status = $<HTMLElement>("[data-status]");
+    const result = $<HTMLElement>("[data-result]");
+    const rCode = $<HTMLElement>("[data-r-code]");
+    const rSteps = [...$<HTMLElement>("[data-r-steps]").children] as HTMLElement[];
+    const rMsg = $<HTMLElement>("[data-r-msg]");
+    const rSample = $<HTMLElement>("[data-r-sample]");
+    const rBody = $<HTMLElement>("[data-r-body]");
+    const rPdf = $<HTMLButtonElement>("[data-r-pdf]");
+    const rAgain = $<HTMLButtonElement>("[data-r-again]");
+    const rDelete = $<HTMLButtonElement>("[data-r-delete]");
+
+    let items: Item[] = [];
+    let isSample = false;
+    let busy = false;
+    // La sesión del navegador (solo en memoria) y el caso abierto; lo ya subido no se vuelve a subir.
+    let token = "";
+    let caseId = "";
+    let caseCode = "";
+    const sent = new Set<string>();
+    let pollRun = 0;
+
+    const say = (msg: string, error = false) => {
+      status.textContent = msg;
+      status.classList.toggle("is-error", error);
+    };
+    const showFilesError = (msg: string) => {
+      filesErr.textContent = msg;
+      filesErr.hidden = !msg;
+      drop.classList.toggle("is-invalid", Boolean(msg));
+    };
+
+    // ---------- Los archivos elegidos ----------
+    const render = () => {
+      list.replaceChildren(
+        ...items.map((it, i) => {
+          const li = document.createElement("li");
+          li.className = "up__item";
+          if (sent.has(it.key)) li.classList.add("is-done");
+          const kind = document.createElement("span");
+          kind.className = "up__kind";
+          kind.dataset.kind = it.kind;
+          kind.textContent = T.files.kinds[it.kind];
+          const name = document.createElement("span");
+          name.className = "up__name";
+          name.textContent = it.file.name;
+          const sz = document.createElement("span");
+          sz.className = "up__size";
+          sz.textContent = size(it.file.size);
+          name.append(sz);
+          li.append(kind, name);
+          if (sent.has(it.key)) {
+            const ok = document.createElement("span");
+            ok.className = "up__item-ok";
+            ok.innerHTML =
+              '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+            li.append(ok);
+          } else {
+            const rm = document.createElement("button");
+            rm.type = "button";
+            rm.className = "up__remove";
+            rm.setAttribute("aria-label", fill(T.files.remove, { name: it.file.name }));
+            rm.innerHTML =
+              '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>';
+            rm.addEventListener("click", () => {
+              items.splice(i, 1);
+              render();
+              (
+                list.querySelector<HTMLButtonElement>(".up__remove") ?? (input.previousElementSibling as HTMLElement)
+              )?.focus();
+            });
+            li.append(rm);
+          }
+          return li;
+        }),
+      );
+      count.hidden = items.length === 0;
+      count.textContent = fill(T.files.count, { n: items.length });
+    };
+    const add = (files: Iterable<File>) => {
+      let problem = "";
+      for (const f of files) {
+        if (items.length >= MAX_FILES) {
+          problem = T.errors.tooMany;
+          break;
+        }
+        const c = classify(f);
+        if (!c) {
+          problem = fill(T.errors.badType, { name: f.name });
+          continue;
+        }
+        if (f.size > MAX_BYTES) {
+          problem = fill(T.errors.tooBig, { name: f.name });
+          continue;
+        }
+        const key = `${f.name}:${f.size}:${f.lastModified}`;
+        if (items.some((x) => x.key === key)) continue;
+        items.push({ file: f, kind: c.kind, mime: c.mime, key });
+      }
+      showFilesError(problem);
+      render();
+    };
+
+    $<HTMLButtonElement>("[data-choose]").addEventListener("click", () => input.click());
+    input.addEventListener("change", () => {
+      if (input.files) add(input.files);
+      input.value = "";
+    });
+    for (const ev of ["dragenter", "dragover"])
+      drop.addEventListener(ev, (e) => {
+        e.preventDefault();
+        drop.classList.add("is-over");
+      });
+    for (const ev of ["dragleave", "drop"]) drop.addEventListener(ev, () => drop.classList.remove("is-over"));
+    drop.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (e.dataTransfer?.files.length) add(e.dataTransfer.files);
+    });
+
+    // ---------- El caso de ejemplo (ficticio) ----------
+    $<HTMLButtonElement>("[data-sample]").addEventListener("click", async () => {
+      try {
+        const [a, p] = await Promise.all([fetch(cfg.sample.audio), fetch(cfg.sample.photo)]);
+        if (!a.ok || !p.ok) throw new Error("sample");
+        const audio = new File([await a.blob()], "audio-caso-A.m4a", { type: "audio/mp4" });
+        const photo = new File([await p.blob()], "foto-caso-A.jpg", { type: "image/jpeg" });
+        items = items.filter((x) => !x.key.includes("caso-A"));
+        add([audio, photo]);
+        if (!pasted.value.trim()) pasted.value = cfg.sample.text;
+        isSample = true;
+        say(T.sample.loaded);
+      } catch {
+        say(T.errors.network, true);
+      }
+    });
+
+    // ---------- La API ----------
+    const call = async (path: string, init: RequestInit = {}) => {
+      let res: Response;
+      try {
+        res = await fetch(cfg.api + path, init);
+      } catch {
+        throw new UpError("network");
+      }
+      if (res.status === 429) throw new UpError("rateLimited");
+      if (res.status === 413) throw new UpError("tooBig");
+      if (!res.ok) throw new UpError("server");
+      return res;
+    };
+    const auth = () => ({ authorization: `Bearer ${token}` });
+
+    const register = async () => {
+      const keys = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
+      const jwk = await crypto.subtle.exportKey("jwk", keys.publicKey);
+      const res = await call("/v1/auth/device/register", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ public_key: { kty: "EC", crv: "P-256", x: jwk.x, y: jwk.y }, platform: "web" }),
+      });
+      token = ((await res.json()) as { access_token: string }).access_token;
+    };
+    const openCase = async () => {
+      const body: Record<string, string> = { consent_mode: consent.checked ? "comunitario" : "solo_denuncia" };
+      if (district.value) body.zona = district.value;
+      if (sector.value) body.sector = sector.value;
+      const res = await call("/v1/cases", {
+        method: "POST",
+        headers: { ...auth(), "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const cs = (await res.json()) as { id: string; code: string };
+      caseId = cs.id;
+      caseCode = cs.code;
+    };
+    const upload = async (bytes: ArrayBuffer, kind: Kind, mime: string, source: string, capturedAt?: number) => {
+      const headers: Record<string, string> = {
+        ...auth(),
+        "content-type": mime,
+        "x-evidence-type": kind,
+        "x-content-sha256": hex(await crypto.subtle.digest("SHA-256", bytes)),
+        "x-source": source,
+      };
+      if (capturedAt) headers["x-captured-at"] = new Date(capturedAt).toISOString();
+      await call(`/v1/cases/${caseId}/evidence`, { method: "POST", headers, body: bytes });
+    };
+
+    const progress = (done: number, total: number) => {
+      bar.hidden = false;
+      bar.style.setProperty("--p", String(total ? done / total : 0));
+    };
+    const setBusy = (on: boolean) => {
+      busy = on;
+      submit.setAttribute("aria-disabled", String(on));
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (busy) return;
+      const text = pasted.value.trim();
+      if (!items.length && !text) {
+        showFilesError(T.errors.empty);
+        $<HTMLButtonElement>("[data-choose]").focus();
+        return;
+      }
+      showFilesError("");
+      setBusy(true);
+      const steps = items.length + (text ? 1 : 0) + 1;
+      let done = 0;
+      try {
+        say(T.progress.start);
+        progress(0, steps);
+        if (!token) await register();
+        if (!caseId) await openCase();
+        for (const [i, it] of items.entries()) {
+          if (sent.has(it.key)) {
+            progress(++done, steps);
+            continue;
+          }
+          say(fill(T.progress.uploading, { n: i + 1, total: items.length, name: it.file.name }));
+          await upload(
+            await it.file.arrayBuffer(),
+            it.kind,
+            it.mime,
+            it.kind === "imagen" ? "galeria" : "compartido",
+            it.file.lastModified,
+          );
+          sent.add(it.key);
+          render();
+          progress(++done, steps);
+        }
+        if (text && !sent.has(`pegado:${text}`)) {
+          const bytes = new TextEncoder().encode(text);
+          await upload(bytes.buffer as ArrayBuffer, "texto", "text/plain; charset=utf-8", "pegado", Date.now());
+          sent.add(`pegado:${text}`);
+        }
+        progress(++done, steps);
+        say(T.progress.submitting);
+        const story = narrative.value.trim();
+        await call(`/v1/cases/${caseId}/submit`, {
+          method: "POST",
+          headers: { ...auth(), "content-type": "application/json" },
+          body: JSON.stringify(story ? { narrative: story } : {}),
+        });
+        progress(steps, steps);
+        showResult();
+      } catch (err) {
+        say(T.errors[err instanceof UpError ? err.key : "server"], true);
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    // ---------- El resultado: el reporte propio, cuando la IA termina ----------
+    const step = (n: number) =>
+      rSteps.forEach((li, i) => {
+        li.classList.toggle("is-done", i < n);
+        li.classList.toggle("is-now", i === n);
+      });
+    const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string, cls?: string) => {
+      const x = document.createElement(tag);
+      if (text !== undefined) x.textContent = text;
+      if (cls) x.className = cls;
+      return x;
+    };
+    const block = (title: string, ...children: Node[]) => {
+      const div = el("div");
+      div.append(el("h4", title), ...children);
+      return div;
+    };
+    const renderReport = (r: Report) => {
+      const R = T.result;
+      const parts: Node[] = [];
+      const f = r.ficha;
+      if (f) {
+        const dl = el("dl", undefined, "up__ficha");
+        const row = (k: string, v: string | null | undefined) => {
+          if (!v) return;
+          dl.append(el("dt", k), el("dd", v));
+        };
+        row(R.ficha.amenaza, f.amenaza ? (cfg.threats[f.amenaza] ?? f.amenaza.replace(/_/g, " ")) : null);
+        row(R.ficha.monto, f.monto_soles ? `S/ ${f.monto_soles.toLocaleString("en-US")}` : null);
+        row(R.ficha.plazo, f.plazo);
+        row(R.ficha.canal, f.canal_pago ? f.canal_pago.charAt(0).toUpperCase() + f.canal_pago.slice(1) : null);
+        row(R.ficha.grupo, f.grupo_que_dice_ser);
+        row(R.ficha.frases, f.frases_firma.length ? f.frases_firma.map((x) => `«${x}»`).join("  ") : null);
+        row(R.ficha.contactos, f.identificadores.map((x) => x.valor).join(", ") || null);
+        row(R.ficha.resumen, f.resumen);
+        if (dl.childElementCount) parts.push(dl);
+      }
+      // Solo audios y videos: el texto pegado ya lo escribió la persona.
+      for (const ev of r.evidencia
+        .filter((x) => (x.tipo === "audio" || x.tipo === "video") && x.transcripcion?.length)
+        .slice(0, 3)) {
+        const said = ev.transcripcion!.map((x) => x.text.trim()).join(" ");
+        parts.push(block(fill(R.transcript, { label: ev.label }), el("blockquote", `«${said}»`, "up__quote")));
+      }
+      if (r.hallazgos.length) {
+        const ul = el("ul");
+        ul.append(...r.hallazgos.map((x) => el("li", x)));
+        parts.push(block(R.findings, ul));
+      }
+      if (r.consejos.length) {
+        const ul = el("ul");
+        ul.append(...r.consejos.map((x) => el("li", x)));
+        parts.push(block(R.advice, ul));
+      }
+      rBody.replaceChildren(...parts);
+    };
+    const poll = async () => {
+      const run = ++pollRun;
+      const t0 = Date.now();
+      while (Date.now() - t0 < 5 * 60_000) {
+        await sleep(4000);
+        if (run !== pollRun) return;
+        let r: Report;
+        try {
+          r = (await (await call(`/v1/cases/${caseId}/report`, { headers: auth() })).json()) as Report;
+        } catch {
+          continue;
+        }
+        if (run !== pollRun) return;
+        if (r.status === "listo") {
+          step(3);
+          rMsg.textContent = T.result.ready;
+          renderReport(r);
+          rPdf.hidden = false;
+          return;
+        }
+        if (r.status === "error") {
+          step(1);
+          rMsg.textContent = fill(T.result.failed, { code: caseCode });
+          return;
+        }
+      }
+      if (run === pollRun) rMsg.textContent = fill(T.result.slow, { code: caseCode });
+    };
+    const showResult = () => {
+      form.hidden = true;
+      result.hidden = false;
+      rCode.textContent = fill(T.result.code, { code: caseCode });
+      rSample.hidden = !isSample;
+      rBody.replaceChildren();
+      rPdf.hidden = true;
+      rDelete.hidden = false;
+      rDelete.textContent = T.result.remove;
+      delete rDelete.dataset.armed;
+      step(1);
+      rMsg.textContent = T.result.processing;
+      result.focus();
+      void poll();
+    };
+
+    rPdf.addEventListener("click", async () => {
+      const label = rPdf.querySelector("span")!;
+      label.textContent = T.result.pdfLoading;
+      rPdf.setAttribute("aria-disabled", "true");
+      try {
+        const res = await call(`/v1/cases/${caseId}/report.pdf`, { headers: auth() });
+        const url = URL.createObjectURL(await res.blob());
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `denuncia-${caseCode}.pdf`;
+        document.body.append(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10_000);
+        label.textContent = T.result.pdf;
+      } catch {
+        label.textContent = T.result.pdfFail;
+      } finally {
+        rPdf.removeAttribute("aria-disabled");
+      }
+    });
+
+    const reset = () => {
+      pollRun++;
+      items = [];
+      sent.clear();
+      caseId = "";
+      caseCode = "";
+      isSample = false;
+      pasted.value = "";
+      narrative.value = "";
+      bar.hidden = true;
+      bar.style.setProperty("--p", "0");
+      say("");
+      render();
+      result.hidden = true;
+      form.hidden = false;
+      $<HTMLButtonElement>("[data-choose]").focus();
+    };
+    rAgain.addEventListener("click", reset);
+
+    // Borrar: el primer toque pide confirmar; el segundo borra el caso y todos sus archivos.
+    rDelete.addEventListener("click", async () => {
+      if (!rDelete.dataset.armed) {
+        rDelete.dataset.armed = "1";
+        rDelete.textContent = T.result.removeConfirm;
+        return;
+      }
+      if (rDelete.getAttribute("aria-disabled") === "true") return;
+      rDelete.setAttribute("aria-disabled", "true");
+      rMsg.textContent = T.result.removing;
+      try {
+        await call(`/v1/cases/${caseId}`, { method: "DELETE", headers: auth() });
+        pollRun++;
+        rBody.replaceChildren();
+        rPdf.hidden = true;
+        rDelete.hidden = true;
+        rSample.hidden = true;
+        step(0);
+        rMsg.textContent = T.result.removed;
+        caseId = "";
+      } catch (err) {
+        rMsg.textContent = T.errors[err instanceof UpError ? err.key : "server"];
+      } finally {
+        rDelete.removeAttribute("aria-disabled");
+      }
+    });
+  }
+</script>

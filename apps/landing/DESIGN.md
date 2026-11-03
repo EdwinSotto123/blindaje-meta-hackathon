@@ -129,6 +129,17 @@ sus textos lo dicen.
   `aria-valuetext`; lo que cambia se anuncia en una región `aria-live`. Sin movimiento, los controles
   vuelven a dibujar el dibujo quieto; sin JavaScript, no se muestran. En el celular, el dibujo usa el alto
   que deja libre el texto de cada escena.
+- **Sube lo que te mandaron (3/11, `#subir`, justo después del pitch):** fondo `--paper-2`; a la izquierda
+  el título, tres garantías con ícono (sin nombre ni número, cifrado con SHA-256, se compara solo si la
+  persona lo activa) y el aviso en rojo suave de que es un piloto y no reemplaza una denuncia (105 y 1818);
+  a la derecha, la hoja de papel del formulario: soltar o elegir archivos (audio, foto, video o el chat en
+  .txt, hasta 10 de 50 MB), "Probar con un caso de ejemplo" (los archivos ficticios del caso A), pegar
+  los mensajes, más detalles plegados (distrito, rubro, relato), el consentimiento comunitario apagado
+  por defecto y "Enviar mi evidencia" con una barra de avance. Usa la misma API que la app
+  (`/v1/auth/device/register`, `/v1/cases`, evidencia, envío) y, cuando la IA termina, muestra el
+  reporte propio: ficha, lo que dice cada audio, hallazgos, qué hacer, el PDF de la denuncia y "Borrar mi
+  caso". El token vive solo en la memoria de la pestaña. Enlazada desde la cabecera ("Subir evidencia")
+  y desde el final del pitch.
 - **Después del pitch:** Voz (los audios del caso B), Fotos (la misma colcha), dónde pasa (mapa),
   beneficios, recorrido del producto, Meta AI, resultados, límites, preguntas y "Solicita acceso".
 - **Cabecera:** crema con línea inferior; wordmark, seis enlaces, idioma y "Ver el mapa". La franja de
