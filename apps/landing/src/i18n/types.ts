@@ -384,6 +384,8 @@ export interface Dict {
       lead: string;
       points: [string, string, string];
       notice: string;
+      /** La franja de arriba del formulario. */
+      anon: { title: string; body: string };
       files: {
         label: string;
         drop: string;
@@ -393,19 +395,36 @@ export interface Dict {
         remove: string;
         /** Con {n}. */
         count: string;
+        /** Junto al tamaño, cuando se borró la ubicación de una foto. */
+        noLocation: string;
         kinds: { audio: string; imagen: string; video: string; texto: string };
       };
       pasted: { label: string; hint: string };
       more: string;
+      where: { legend: string; hint: string };
+      region: { label: string; choose: string; none: string };
       district: string;
       districtNone: string;
+      districtText: { label: string; hint: string };
       sector: string;
       sectorNone: string;
       sectors: Record<
         "bodega" | "mototaxi" | "transporte" | "mercado" | "restaurante" | "construccion" | "otro",
         string
       >;
+      contact: {
+        label: string;
+        options: Record<"whatsapp" | "llamada" | "sms" | "nota" | "persona" | "redes", string>;
+      };
+      since: {
+        label: string;
+        none: string;
+        options: Record<"hoy" | "semana" | "mes" | "antes", string>;
+      };
       narrative: string;
+      narrativeHint: string;
+      /** Lo que se suma al relato con las respuestas de arriba. Con {list} y {when}. */
+      story: { contact: string; since: string };
       consent: { label: string; hint: string };
       sample: { button: string; hint: string; loaded: string };
       submit: string;
@@ -415,6 +434,8 @@ export interface Dict {
         tooMany: string;
         tooBig: string;
         badType: string;
+        region: string;
+        address: string;
         network: string;
         rateLimited: string;
         server: string;
@@ -435,6 +456,8 @@ export interface Dict {
           canal: string;
           grupo: string;
           frases: string;
+          zona: string;
+          rubro: string;
           contactos: string;
           resumen: string;
         };

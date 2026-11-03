@@ -702,15 +702,19 @@ export const es: Dict = {
       },
     },
     upload: {
-      title: "Sube lo que te mandaron",
+      title: "Sube lo que te mandaron, de forma anónima",
       lead: "Audios, fotos, capturas de WhatsApp o el texto de los mensajes. La IA de Meta los escucha, los mira y los lee, y te devuelve tu caso ordenado para denunciar.",
       points: [
-        "No pedimos tu nombre ni tu número: tu caso queda con un código.",
+        "Solo te preguntamos la región y el distrito, nunca tu dirección. Si una foto JPG guarda dónde se tomó, borramos esa ubicación antes de subirla.",
         "Cada archivo se guarda cifrado y con su huella SHA-256, para que sirva como prueba.",
         "Tu caso se compara con otros solo si tú lo activas.",
       ],
       notice:
         "Blindaje está en piloto y no reemplaza una denuncia. Si estás en peligro, llama al 105; para denunciar, a la Línea 1818.",
+      anon: {
+        title: "Es anónimo",
+        body: "No pedimos tu nombre, DNI, teléfono ni correo, y no necesitas crear una cuenta. Tu caso queda solo con un código.",
+      },
       files: {
         label: "Audios, fotos y capturas",
         drop: "Arrastra tus archivos aquí",
@@ -718,6 +722,7 @@ export const es: Dict = {
         hint: "Notas de voz (.opus, .ogg, .m4a, .mp3), fotos y capturas, videos o el chat exportado de WhatsApp (.txt). Hasta 10 archivos de 50 MB cada uno.",
         remove: "Quitar {name}",
         count: "{n} de 10 archivos",
+        noLocation: "ubicación borrada",
         kinds: {
           audio: "Audio",
           imagen: "Foto",
@@ -729,9 +734,18 @@ export const es: Dict = {
         label: "Pega los mensajes (opcional)",
         hint: "Copia el chat de WhatsApp o el SMS y pégalo aquí, con los números tal como llegaron.",
       },
-      more: "Más detalles (opcional)",
+      more: "Cuéntanos más (opcional)",
+      where: {
+        legend: "¿Dónde pasó?",
+        hint: "Así la alerta llega a los vecinos de tu zona. Solo la región y el distrito, nunca tu dirección.",
+      },
+      region: { label: "Región", choose: "Elige tu región", none: "Prefiero no decirlo" },
       district: "Distrito",
       districtNone: "Prefiero no decirlo",
+      districtText: {
+        label: "Distrito o ciudad",
+        hint: "Solo el nombre, por ejemplo «El Porvenir». Sin calle ni número.",
+      },
       sector: "¿A qué te dedicas?",
       sectorNone: "Prefiero no decirlo",
       sectors: {
@@ -743,14 +757,37 @@ export const es: Dict = {
         construccion: "Construcción",
         otro: "Otro",
       },
+      contact: {
+        label: "¿Por dónde te contactaron?",
+        options: {
+          whatsapp: "WhatsApp",
+          llamada: "Llamada",
+          sms: "SMS",
+          nota: "Nota o carta",
+          persona: "En persona",
+          redes: "Redes sociales",
+        },
+      },
+      since: {
+        label: "¿Cuándo empezó?",
+        none: "No lo sé",
+        options: {
+          hoy: "Hoy",
+          semana: "Esta semana",
+          mes: "Este mes",
+          antes: "Hace más de un mes",
+        },
+      },
       narrative: "Cuéntanos qué pasó",
+      narrativeHint: "No hace falta tu nombre ni tu dirección.",
+      story: { contact: "Me contactaron por: {list}.", since: "Empezó: {when}." },
       consent: {
         label: "Comparar mi caso con otros para encontrar a la misma banda",
         hint: "Se compara la huella de la voz, los números y cuentas (cifrados) y la forma en que te contactaron. Si hay un parecido, una persona autorizada revisa los casos y nunca ve tu nombre ni tu número.",
       },
       sample: {
         button: "Probar con un caso de ejemplo",
-        hint: "Carga el audio, la foto y el mensaje ficticios del caso A del demo.",
+        hint: "Carga el audio, la foto y el mensaje ficticios del caso A del demo: una bodega de San Juan de Lurigancho.",
         loaded: "Caso de ejemplo cargado, con datos ficticios.",
       },
       submit: "Enviar mi evidencia",
@@ -760,6 +797,8 @@ export const es: Dict = {
         tooMany: "Puedes subir hasta 10 archivos.",
         tooBig: "{name} pesa más de 50 MB.",
         badType: "{name} no es un audio, una foto, un video ni un texto.",
+        region: "Elige tu región, o «Prefiero no decirlo».",
+        address: "Escribe solo el nombre del distrito o la ciudad, sin calle ni número.",
         network: "No se pudo enviar. Revisa tu conexión e intenta de nuevo; lo que ya subiste no se pierde.",
         rateLimited: "Hubo muchos envíos seguidos. Espera unos minutos e intenta de nuevo.",
         server: "El servidor no respondió. Intenta de nuevo en un rato.",
@@ -784,6 +823,8 @@ export const es: Dict = {
           canal: "Canal de pago",
           grupo: "Dice ser",
           frases: "Frases que repiten",
+          zona: "Dónde",
+          rubro: "Rubro",
           contactos: "Números y cuentas",
           resumen: "Resumen",
         },

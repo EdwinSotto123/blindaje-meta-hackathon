@@ -9,13 +9,15 @@
  *   POST /v1/cases/:id/submit    el relato opcional; corre el workflow con los modelos de Meta
  *   GET  /v1/cases/:id/report    SU reporte (nunca vínculos ni datos de otros casos), hasta que esté listo
  *
- * Nunca pide nombre ni número. El token vive solo en la memoria de la pestaña. "Probar con un caso de
- * ejemplo" carga los archivos ficticios del caso A del demo para probar sin datos reales.
+ * Es anónimo: nunca pide nombre, DNI, teléfono ni correo, ni una cuenta. El token vive solo en la
+ * memoria de la pestaña. Del lugar, solo la región y el distrito (nunca una dirección), y a las fotos
+ * JPG se les borra la ubicación GPS en el navegador antes de subirlas (stripJpegLocation).
+ * "Probar con un caso de ejemplo" carga los archivos ficticios del caso A del demo.
  */
 import { PUBLIC_API_URL } from "astro:env/client";
 import { getImage } from "astro:assets";
 import type { Dict } from "../i18n";
-import { DISTRICTS } from "../../../../packages/shared/src/zones";
+import { DISTRICTS, ZONE_AREAS } from "../../../../packages/shared/src/zones";
 import casosDemo from "../data/casos-demo.json";
 import mostrador from "../assets/flujo/mostrador.jpg";
 import Icon from "./Icon.astro";
@@ -24,16 +26,54 @@ interface Props {
   dict: Dict;
 }
 
+/** Las 26 regiones del Perú; Lima se separa en Lima Metropolitana y Lima Provincias. */
+const REGIONS: [string, string][] = [
+  ["amazonas", "Amazonas"],
+  ["ancash", "Áncash"],
+  ["apurimac", "Apurímac"],
+  ["arequipa", "Arequipa"],
+  ["ayacucho", "Ayacucho"],
+  ["cajamarca", "Cajamarca"],
+  ["callao", "Callao"],
+  ["cusco", "Cusco"],
+  ["huancavelica", "Huancavelica"],
+  ["huanuco", "Huánuco"],
+  ["ica", "Ica"],
+  ["junin", "Junín"],
+  ["la-libertad", "La Libertad"],
+  ["lambayeque", "Lambayeque"],
+  ["lima-metropolitana", "Lima Metropolitana"],
+  ["lima-provincias", "Lima Provincias"],
+  ["loreto", "Loreto"],
+  ["madre-de-dios", "Madre de Dios"],
+  ["moquegua", "Moquegua"],
+  ["pasco", "Pasco"],
+  ["piura", "Piura"],
+  ["puno", "Puno"],
+  ["san-martin", "San Martín"],
+  ["tacna", "Tacna"],
+  ["tumbes", "Tumbes"],
+  ["ucayali", "Ucayali"],
+];
+
 const { dict: d } = Astro.props;
 const t = d.lp.upload;
 const apiUrl = PUBLIC_API_URL.replace(/\/+$/, "");
 const sampleImg = await getImage({ src: mostrador, width: 1000, format: "jpg", quality: 82 });
 const casoA = casosDemo.casos[0]!;
 const sampleText = (casoA.piezas.find((x) => x.tipo === "texto") as { texto?: string } | undefined)?.texto ?? "";
-const districts = DISTRICTS.map((x) => ({ id: x.id, name: x.name })).sort((a, b) => a.name.localeCompare(b.name, "es"));
+const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, "es");
+// Los distritos de Lima Metropolitana, por área (Lima Norte, Este, Centro y Sur), y los del Callao.
+const limaAreas = ZONE_AREAS.filter((a) => a !== "Callao").map((area) => ({
+  area,
+  districts: DISTRICTS.filter((x) => x.area === area).sort(byName),
+}));
+const callao = DISTRICTS.filter((x) => x.area === "Callao").sort(byName);
 const sectors = Object.entries(t.sectors);
-const points: ["lock" | "file" | "link", string][] = [
-  ["lock", t.points[0]],
+const contacts = Object.entries(t.contact.options);
+const since = Object.entries(t.since.options);
+const points: ["pin" | "file" | "link", string][] = [
+  ["pin", t.points[0]],
   ["file", t.points[1]],
   ["link", t.points[2]],
 ];
@@ -45,8 +85,14 @@ const config = JSON.stringify({
     errors: t.errors,
     progress: t.progress,
     result: t.result,
+    story: t.story,
+    contact: t.contact.options,
+    since: t.since.options,
   },
   threats: d.lp.pitch.canvas.threats,
+  sectors: t.sectors,
+  regions: Object.fromEntries(REGIONS),
+  zones: Object.fromEntries(DISTRICTS.map((x) => [x.id, x.name])),
   sample: { audio: "/casos/a1.m4a", photo: sampleImg.src, text: sampleText },
 });
 ---
@@ -74,6 +120,12 @@ const config = JSON.stringify({
 
     <div class="up__sheet">
       <form class="up__form" novalidate data-upload data-config={config}>
+        <div class="up__anon">
+          <Icon name="lock" class="icon" />
+          <p class="up__anon-title">{t.anon.title}</p>
+          <p class="up__anon-body">{t.anon.body}</p>
+        </div>
+
         <div class="up__field">
           <p class="up__label" id="up-files-label">
             {t.files.label}
@@ -121,17 +173,94 @@ const config = JSON.stringify({
           </p>
         </div>
 
+        <fieldset class="up__where" aria-describedby="up-where-hint">
+          <legend class="up__label">{t.where.legend}</legend>
+          <p class="up__hint" id="up-where-hint">
+            {t.where.hint}
+          </p>
+          <div class="up__pair">
+            <div class="up__field">
+              <label class="up__sub" for="up-region">
+                {t.region.label}
+              </label>
+              <select id="up-region" required aria-describedby="up-region-err" data-region>
+                <option value="">{t.region.choose}</option>
+                {REGIONS.map(([value, name]) => (
+                  <option value={value}>{name}</option>
+                ))}
+                <option value="none">{t.region.none}</option>
+              </select>
+              <p class="up__err" id="up-region-err" data-region-err hidden></p>
+            </div>
+            <div class="up__field" data-where="lima-metropolitana" hidden>
+              <label class="up__sub" for="up-district-lima">
+                {t.district}
+              </label>
+              <select id="up-district-lima" data-district>
+                <option value="">{t.districtNone}</option>
+                {limaAreas.map((g) => (
+                  <optgroup label={g.area}>
+                    {g.districts.map((x) => (
+                      <option value={x.id}>{x.name}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+            <div class="up__field" data-where="callao" hidden>
+              <label class="up__sub" for="up-district-callao">
+                {t.district}
+              </label>
+              <select id="up-district-callao" data-district>
+                <option value="">{t.districtNone}</option>
+                {callao.map((x) => (
+                  <option value={x.id}>{x.name}</option>
+                ))}
+              </select>
+            </div>
+            <div class="up__field" data-where="other" hidden>
+              <label class="up__sub" for="up-district-text">
+                {t.districtText.label}
+              </label>
+              <input
+                id="up-district-text"
+                type="text"
+                maxlength="40"
+                autocomplete="off"
+                spellcheck="false"
+                aria-describedby="up-district-text-hint up-district-text-err"
+                data-district-text
+              />
+              <p class="up__hint" id="up-district-text-hint">
+                {t.districtText.hint}
+              </p>
+              <p class="up__err" id="up-district-text-err" data-district-err hidden></p>
+            </div>
+          </div>
+        </fieldset>
+
         <details class="up__more">
           <summary>{t.more}</summary>
           <div class="up__more-grid">
+            <fieldset class="up__field up__field--full up__group">
+              <legend class="up__label">{t.contact.label}</legend>
+              <div class="up__chips">
+                {contacts.map(([value, label]) => (
+                  <label class="up__chip">
+                    <input type="checkbox" value={value} data-contact />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
             <div class="up__field">
-              <label class="up__label" for="up-district">
-                {t.district}
+              <label class="up__label" for="up-since">
+                {t.since.label}
               </label>
-              <select id="up-district" data-district>
-                <option value="">{t.districtNone}</option>
-                {districts.map((x) => (
-                  <option value={x.id}>{x.name}</option>
+              <select id="up-since" data-since>
+                <option value="">{t.since.none}</option>
+                {since.map(([value, label]) => (
+                  <option value={value}>{label}</option>
                 ))}
               </select>
             </div>
@@ -150,7 +279,16 @@ const config = JSON.stringify({
               <label class="up__label" for="up-narrative">
                 {t.narrative}
               </label>
-              <textarea id="up-narrative" rows="4" maxlength="8000" data-narrative></textarea>
+              <textarea
+                id="up-narrative"
+                rows="4"
+                maxlength="8000"
+                aria-describedby="up-narrative-hint"
+                data-narrative
+              ></textarea>
+              <p class="up__hint" id="up-narrative-hint">
+                {t.narrativeHint}
+              </p>
             </div>
           </div>
         </details>
@@ -284,6 +422,108 @@ const config = JSON.stringify({
     gap: 22px;
   }
 
+  /* "Es anónimo": arriba de todo, en verde, antes de pedir nada. */
+  .up__anon {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 2px 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--verde-suave);
+    color: var(--tinta);
+  }
+
+  .up__anon :global(.icon) {
+    grid-row: span 2;
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+    fill: none;
+    stroke: var(--verde);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .up__anon-title,
+  .up__anon-body {
+    margin: 0;
+  }
+
+  .up__anon-title {
+    font-weight: 700;
+  }
+
+  .up__where,
+  .up__group {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .up__where {
+    display: grid;
+    gap: 10px;
+  }
+
+  .up__where legend,
+  .up__group legend {
+    padding: 0;
+    margin-bottom: 6px;
+  }
+
+  .up__where legend {
+    margin-bottom: 2px;
+  }
+
+  .up__pair {
+    display: grid;
+    gap: 14px;
+  }
+
+  .up__sub {
+    line-height: 1.3;
+  }
+
+  /* Cómo te contactaron: casillas con forma de pastilla; la marcada se tiñe de arcilla. */
+  .up__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .up__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 6px 14px 6px 12px;
+    border: 1.5px solid var(--linea-2);
+    border-radius: 999px;
+    background: #fff;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      background-color 0.15s;
+  }
+
+  .up__chip:hover {
+    border-color: var(--ink);
+  }
+
+  .up__chip:has(input:checked) {
+    border-color: var(--terracota);
+    background: var(--arcilla);
+  }
+
+  .up__chip input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--terracota);
+  }
+
   .up__field {
     display: grid;
     gap: 6px;
@@ -310,7 +550,8 @@ const config = JSON.stringify({
   }
 
   .up__field textarea,
-  .up__field select {
+  .up__field select,
+  .up__field input[type="text"] {
     width: 100%;
     min-height: 52px;
     padding: 12px 14px;
@@ -336,8 +577,13 @@ const config = JSON.stringify({
   }
 
   .up__field textarea:hover,
-  .up__field select:hover {
+  .up__field select:hover,
+  .up__field input[type="text"]:hover {
     border-color: var(--ink);
+  }
+
+  .up__field [aria-invalid="true"] {
+    border-color: var(--alerta);
   }
 
   .up__form :focus-visible,
@@ -799,7 +1045,8 @@ const config = JSON.stringify({
       padding: 32px 36px;
     }
 
-    .up__more-grid {
+    .up__more-grid,
+    .up__pair {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap: 20px;
     }
@@ -824,14 +1071,26 @@ const config = JSON.stringify({
 </style>
 
 <script>
+  import { stripJpegLocation } from "../../../../packages/shared/src/photo-location";
+
   type Kind = "audio" | "imagen" | "video" | "texto";
-  type Item = { file: File; kind: Kind; mime: string; key: string };
+  type Item = {
+    file: File;
+    kind: Kind;
+    mime: string;
+    key: string;
+    /** Las fotos JPG, ya sin la ubicación GPS: esto es lo que se sube. */
+    prep?: Promise<Uint8Array<ArrayBuffer>>;
+    noLocation?: boolean;
+  };
   type Report = {
     case_id: string;
     code: string;
     status: "borrador" | "procesando" | "listo" | "error";
     hallazgos: string[];
     ficha: {
+      sector: string | null;
+      zona: string | null;
       amenaza: string | null;
       monto_soles: number | null;
       plazo: string | null;
@@ -847,17 +1106,26 @@ const config = JSON.stringify({
   type Cfg = {
     api: string;
     t: {
-      files: { remove: string; count: string; kinds: Record<Kind, string> };
+      files: { remove: string; count: string; noLocation: string; kinds: Record<Kind, string> };
       sample: { loaded: string };
-      errors: Record<"empty" | "tooMany" | "tooBig" | "badType" | "network" | "rateLimited" | "server", string>;
+      errors: Record<
+        "empty" | "tooMany" | "tooBig" | "badType" | "region" | "address" | "network" | "rateLimited" | "server",
+        string
+      >;
       progress: { start: string; uploading: string; submitting: string };
+      story: { contact: string; since: string };
+      contact: Record<string, string>;
+      since: Record<string, string>;
       result: {
         code: string;
         processing: string;
         slow: string;
         ready: string;
         failed: string;
-        ficha: Record<"amenaza" | "monto" | "plazo" | "canal" | "grupo" | "frases" | "contactos" | "resumen", string>;
+        ficha: Record<
+          "amenaza" | "monto" | "plazo" | "canal" | "grupo" | "frases" | "zona" | "rubro" | "contactos" | "resumen",
+          string
+        >;
         transcript: string;
         findings: string;
         advice: string;
@@ -871,8 +1139,14 @@ const config = JSON.stringify({
       };
     };
     threats: Record<string, string>;
+    sectors: Record<string, string>;
+    regions: Record<string, string>;
+    zones: Record<string, string>;
     sample: { audio: string; photo: string; text: string };
   };
+
+  /** Lo que delata una dirección en vez de un distrito: calles, manzanas, lotes, números. */
+  const ADDRESS = /\d|\b(av|avenida|jr|jir[oó]n|calle|ca|psje|pasaje|mz|manzana|lt|lote|urb|n[°º])\b/i;
 
   const MAX_FILES = 10;
   const MAX_BYTES = 50 * 1024 * 1024;
@@ -929,7 +1203,13 @@ const config = JSON.stringify({
     const filesErr = $<HTMLElement>("[data-files-err]");
     const pasted = $<HTMLTextAreaElement>("[data-pasted]");
     const narrative = $<HTMLTextAreaElement>("[data-narrative]");
-    const district = $<HTMLSelectElement>("[data-district]");
+    const region = $<HTMLSelectElement>("[data-region]");
+    const regionErr = $<HTMLElement>("[data-region-err]");
+    const whereBoxes = [...sheet.querySelectorAll<HTMLElement>("[data-where]")];
+    const districtText = $<HTMLInputElement>("[data-district-text]");
+    const districtErr = $<HTMLElement>("[data-district-err]");
+    const contactBoxes = [...sheet.querySelectorAll<HTMLInputElement>("[data-contact]")];
+    const since = $<HTMLSelectElement>("[data-since]");
     const sector = $<HTMLSelectElement>("[data-sector]");
     const consent = $<HTMLInputElement>("[data-consent]");
     const submit = $<HTMLButtonElement>("[data-submit]");
@@ -964,6 +1244,41 @@ const config = JSON.stringify({
       filesErr.hidden = !msg;
       drop.classList.toggle("is-invalid", Boolean(msg));
     };
+    const showFieldError = (field: HTMLElement, box: HTMLElement, msg: string) => {
+      box.textContent = msg;
+      box.hidden = !msg;
+      if (msg) field.setAttribute("aria-invalid", "true");
+      else field.removeAttribute("aria-invalid");
+    };
+
+    // ---------- Dónde pasó: la región y, según la región, el distrito ----------
+    const districtBox = () => whereBoxes.find((b) => !b.hidden);
+    const showWhere = () => {
+      const r = region.value;
+      const which = r === "lima-metropolitana" || r === "callao" ? r : r && r !== "none" ? "other" : "";
+      for (const b of whereBoxes) b.hidden = b.dataset.where !== which;
+    };
+    region.addEventListener("change", () => {
+      showWhere();
+      if (region.value) showFieldError(region, regionErr, "");
+    });
+    districtText.addEventListener("input", () => showFieldError(districtText, districtErr, ""));
+    /**
+     * La zona del caso: el id del distrito en Lima y el Callao; fuera de Lima, "Distrito, Región" en
+     * texto (la API lo guarda tal cual). Solo la región si no dijo el distrito; nada si prefiere no decirlo.
+     */
+    const zone = () => {
+      const r = region.value;
+      if (!r || r === "none") return "";
+      const box = districtBox();
+      if (box?.dataset.where === "other") {
+        const place = districtText.value.replace(/\s+-\s+|\s+/g, " ").trim();
+        return place ? `${place}, ${cfg.regions[r]}` : cfg.regions[r]!;
+      }
+      const id = box?.querySelector<HTMLSelectElement>("[data-district]")?.value;
+      // "Callao" a secas es también un distrito: la región va con su nombre completo.
+      return id || (r === "callao" ? "Región Callao" : cfg.regions[r]!);
+    };
 
     // ---------- Los archivos elegidos ----------
     const render = () => {
@@ -981,7 +1296,7 @@ const config = JSON.stringify({
           name.textContent = it.file.name;
           const sz = document.createElement("span");
           sz.className = "up__size";
-          sz.textContent = size(it.file.size);
+          sz.textContent = it.noLocation ? `${size(it.file.size)}, ${T.files.noLocation}` : size(it.file.size);
           name.append(sz);
           li.append(kind, name);
           if (sent.has(it.key)) {
@@ -1030,7 +1345,21 @@ const config = JSON.stringify({
         }
         const key = `${f.name}:${f.size}:${f.lastModified}`;
         if (items.some((x) => x.key === key)) continue;
-        items.push({ file: f, kind: c.kind, mime: c.mime, key });
+        const it: Item = { file: f, kind: c.kind, mime: c.mime, key };
+        // Las fotos JPG del celular guardan dónde se tomaron: se borra antes de subir nada.
+        if (c.mime === "image/jpeg" || c.mime === "image/jpg") {
+          const prep = f.arrayBuffer().then((buf) => {
+            const out = stripJpegLocation(new Uint8Array(buf));
+            if (out.removed) {
+              it.noLocation = true;
+              if (items.includes(it)) render();
+            }
+            return out.bytes;
+          });
+          prep.catch(() => {}); // si falla, el error sale al subir
+          it.prep = prep;
+        }
+        items.push(it);
       }
       showFilesError(problem);
       render();
@@ -1062,6 +1391,13 @@ const config = JSON.stringify({
         items = items.filter((x) => !x.key.includes("caso-A"));
         add([audio, photo]);
         if (!pasted.value.trim()) pasted.value = cfg.sample.text;
+        // El caso A es una bodega de San Juan de Lurigancho.
+        if (!region.value) {
+          region.value = "lima-metropolitana";
+          region.dispatchEvent(new Event("change"));
+          $<HTMLSelectElement>("#up-district-lima").value = "san-juan-de-lurigancho";
+        }
+        if (!sector.value) sector.value = "bodega";
         isSample = true;
         say(T.sample.loaded);
       } catch {
@@ -1096,7 +1432,8 @@ const config = JSON.stringify({
     };
     const openCase = async () => {
       const body: Record<string, string> = { consent_mode: consent.checked ? "comunitario" : "solo_denuncia" };
-      if (district.value) body.zona = district.value;
+      const zona = zone();
+      if (zona) body.zona = zona;
       if (sector.value) body.sector = sector.value;
       const res = await call("/v1/cases", {
         method: "POST",
@@ -1107,7 +1444,13 @@ const config = JSON.stringify({
       caseId = cs.id;
       caseCode = cs.code;
     };
-    const upload = async (bytes: ArrayBuffer, kind: Kind, mime: string, source: string, capturedAt?: number) => {
+    const upload = async (
+      bytes: Uint8Array<ArrayBuffer>,
+      kind: Kind,
+      mime: string,
+      source: string,
+      capturedAt?: number,
+    ) => {
       const headers: Record<string, string> = {
         ...auth(),
         "content-type": mime,
@@ -1132,12 +1475,20 @@ const config = JSON.stringify({
       e.preventDefault();
       if (busy) return;
       const text = pasted.value.trim();
-      if (!items.length && !text) {
-        showFilesError(T.errors.empty);
-        $<HTMLButtonElement>("[data-choose]").focus();
+      // Todo lo que falta a la vez, y el foco en lo primero.
+      const invalid: HTMLElement[] = [];
+      const noFiles = !items.length && !text;
+      showFilesError(noFiles ? T.errors.empty : "");
+      if (noFiles) invalid.push($<HTMLButtonElement>("[data-choose]"));
+      showFieldError(region, regionErr, region.value ? "" : T.errors.region);
+      if (!region.value) invalid.push(region);
+      const looksLikeAddress = !districtText.closest("[hidden]") && ADDRESS.test(districtText.value);
+      showFieldError(districtText, districtErr, looksLikeAddress ? T.errors.address : "");
+      if (looksLikeAddress) invalid.push(districtText);
+      if (invalid.length) {
+        invalid[0]!.focus();
         return;
       }
-      showFilesError("");
       setBusy(true);
       const steps = items.length + (text ? 1 : 0) + 1;
       let done = 0;
@@ -1153,7 +1504,7 @@ const config = JSON.stringify({
           }
           say(fill(T.progress.uploading, { n: i + 1, total: items.length, name: it.file.name }));
           await upload(
-            await it.file.arrayBuffer(),
+            it.prep ? await it.prep : new Uint8Array(await it.file.arrayBuffer()),
             it.kind,
             it.mime,
             it.kind === "imagen" ? "galeria" : "compartido",
@@ -1164,13 +1515,22 @@ const config = JSON.stringify({
           progress(++done, steps);
         }
         if (text && !sent.has(`pegado:${text}`)) {
-          const bytes = new TextEncoder().encode(text);
-          await upload(bytes.buffer as ArrayBuffer, "texto", "text/plain; charset=utf-8", "pegado", Date.now());
+          await upload(new TextEncoder().encode(text), "texto", "text/plain; charset=utf-8", "pegado", Date.now());
           sent.add(`pegado:${text}`);
         }
         progress(++done, steps);
         say(T.progress.submitting);
-        const story = narrative.value.trim();
+        // El relato, con lo que marcó arriba (cómo la contactaron, cuándo empezó) delante.
+        const midSentence = (s: string) =>
+          /^(WhatsApp|[A-Z]{2,})/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1);
+        const channels = contactBoxes.filter((x) => x.checked).map((x) => midSentence(T.contact[x.value]!));
+        const story = [
+          channels.length ? fill(T.story.contact, { list: channels.join(", ") }) : "",
+          since.value ? fill(T.story.since, { when: T.since[since.value]!.toLowerCase() }) : "",
+          narrative.value.trim(),
+        ]
+          .filter(Boolean)
+          .join("\n\n");
         await call(`/v1/cases/${caseId}/submit`, {
           method: "POST",
           headers: { ...auth(), "content-type": "application/json" },
@@ -1219,6 +1579,8 @@ const config = JSON.stringify({
         row(R.ficha.grupo, f.grupo_que_dice_ser);
         row(R.ficha.frases, f.frases_firma.length ? f.frases_firma.map((x) => `«${x}»`).join("  ") : null);
         row(R.ficha.contactos, f.identificadores.map((x) => x.valor).join(", ") || null);
+        row(R.ficha.zona, f.zona ? (cfg.zones[f.zona] ?? f.zona) : null);
+        row(R.ficha.rubro, f.sector ? (cfg.sectors[f.sector] ?? f.sector) : null);
         row(R.ficha.resumen, f.resumen);
         if (dl.childElementCount) parts.push(dl);
       }
@@ -1316,6 +1678,9 @@ const config = JSON.stringify({
       isSample = false;
       pasted.value = "";
       narrative.value = "";
+      // Lo del caso se limpia; la región, el distrito y el rubro se quedan (suele ser la misma persona).
+      for (const x of contactBoxes) x.checked = false;
+      since.value = "";
       bar.hidden = true;
       bar.style.setProperty("--p", "0");
       say("");

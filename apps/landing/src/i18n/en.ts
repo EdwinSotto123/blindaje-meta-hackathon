@@ -702,15 +702,19 @@ export const en: Dict = {
       },
     },
     upload: {
-      title: "Upload what they sent you",
+      title: "Upload what they sent you, anonymously",
       lead: "Voice notes, photos, WhatsApp screenshots or the text of the messages. Meta’s AI listens to them, looks at them and reads them, and gives you back your case in order, ready to report.",
       points: [
-        "We never ask for your name or your number: your case gets a code.",
+        "We only ask for the region and the district, never your address. If a JPG photo stores where it was taken, we erase that location before uploading it.",
         "Every file is stored encrypted and with its SHA-256 fingerprint, so it holds up as evidence.",
         "Your case is compared with others only if you turn that on.",
       ],
       notice:
         "Blindaje is a pilot and does not replace a police report. If you are in danger, call 105; to report, call Línea 1818.",
+      anon: {
+        title: "It is anonymous",
+        body: "We do not ask for your name, ID number, phone or email, and you do not need an account. Your case only gets a code.",
+      },
       files: {
         label: "Voice notes, photos and screenshots",
         drop: "Drag your files here",
@@ -718,6 +722,7 @@ export const en: Dict = {
         hint: "Voice notes (.opus, .ogg, .m4a, .mp3), photos and screenshots, videos or the exported WhatsApp chat (.txt). Up to 10 files of 50 MB each.",
         remove: "Remove {name}",
         count: "{n} of 10 files",
+        noLocation: "location erased",
         kinds: {
           audio: "Audio",
           imagen: "Photo",
@@ -729,9 +734,18 @@ export const en: Dict = {
         label: "Paste the messages (optional)",
         hint: "Copy the WhatsApp chat or the SMS and paste it here, with the numbers as they arrived.",
       },
-      more: "More details (optional)",
+      more: "Tell us more (optional)",
+      where: {
+        legend: "Where did it happen?",
+        hint: "So the alert reaches the neighbors in your area. Only the region and the district, never your address.",
+      },
+      region: { label: "Region", choose: "Choose your region", none: "I’d rather not say" },
       district: "District",
       districtNone: "I’d rather not say",
+      districtText: {
+        label: "District or city",
+        hint: "Just the name, for example “El Porvenir”. No street or number.",
+      },
       sector: "What do you do for a living?",
       sectorNone: "I’d rather not say",
       sectors: {
@@ -743,14 +757,37 @@ export const en: Dict = {
         construccion: "Construction",
         otro: "Other",
       },
+      contact: {
+        label: "How did they contact you?",
+        options: {
+          whatsapp: "WhatsApp",
+          llamada: "Phone call",
+          sms: "SMS",
+          nota: "Note or letter",
+          persona: "In person",
+          redes: "Social media",
+        },
+      },
+      since: {
+        label: "When did it start?",
+        none: "I don’t know",
+        options: {
+          hoy: "Today",
+          semana: "This week",
+          mes: "This month",
+          antes: "More than a month ago",
+        },
+      },
       narrative: "Tell us what happened",
+      narrativeHint: "You don’t need to give your name or your address.",
+      story: { contact: "They contacted me by: {list}.", since: "It started: {when}." },
       consent: {
         label: "Compare my case with others to find the same gang",
         hint: "We compare the voice print, the numbers and accounts (encrypted) and the way they contacted you. If there is a match, an authorized person reviews the cases and never sees your name or your number.",
       },
       sample: {
         button: "Try a sample case",
-        hint: "Loads the fictitious voice note, photo and message of the demo’s case A.",
+        hint: "Loads the fictitious voice note, photo and message of the demo’s case A: a corner shop in San Juan de Lurigancho.",
         loaded: "Sample case loaded, with fictitious data.",
       },
       submit: "Send my evidence",
@@ -760,6 +797,8 @@ export const en: Dict = {
         tooMany: "You can upload up to 10 files.",
         tooBig: "{name} is larger than 50 MB.",
         badType: "{name} is not a voice note, a photo, a video or a text.",
+        region: "Choose your region, or “I’d rather not say”.",
+        address: "Write only the name of the district or the city, with no street or number.",
         network: "It could not be sent. Check your connection and try again; what you already uploaded is kept.",
         rateLimited: "Too many uploads in a row. Wait a few minutes and try again.",
         server: "The server did not respond. Try again in a while.",
@@ -784,6 +823,8 @@ export const en: Dict = {
           canal: "Payment channel",
           grupo: "Claims to be",
           frases: "Phrases they repeat",
+          zona: "Where",
+          rubro: "Line of work",
           contactos: "Numbers and accounts",
           resumen: "Summary",
         },
