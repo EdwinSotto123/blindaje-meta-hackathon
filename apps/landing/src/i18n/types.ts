@@ -373,21 +373,39 @@ export interface Dict {
     voice: {
       title: string;
       lead: string;
-      steps: { label: string; title: string; text: string }[];
-      listen: string;
-      /** Nombre accesible de cada audio: original, disfrazada y revertida. */
-      audioLabels: [string, string, string];
-      similarity: string;
-      /** Rótulo del tono medido (F0) de cada versión. */
-      pitch: string;
-      replay: string;
-      chart: {
-        caption: string;
-        rows: [string, string, string];
+      /** Nombre de la lista de pasos de la animación. */
+      stepsLabel: string;
+      /** Cinco pasos: la voz en píxeles, la huella, el disfraz, el barrido y lo que queda. */
+      steps: { title: string; text: string }[];
+      /** Rótulos que se dibujan en el lienzo (no los lee un lector de pantalla: el texto está en los pasos). */
+      canvas: {
+        spectrogram: string;
+        versions: [string, string, string];
+        shifted: string;
+        stored: string;
+        note: string;
+        product: string;
         similarity: string;
-        top1: string;
-        falseLinks: string;
         threshold: string;
+        sweep: string;
+        /** Leyenda de colores: positivo (suma) y negativo (resta). */
+        positive: string;
+        negative: string;
+      };
+      listen: string;
+      /** Rótulo visible de cada audio: limpia, disfrazada y revertida. */
+      versions: [string, string, string];
+      /** Lo que sigue al rótulo en el nombre accesible de cada audio (solo para lectores de pantalla). */
+      audioLabels: [string, string, string];
+      hover: string;
+      replay: string;
+      measured: {
+        title: string;
+        explain: string;
+        figures: [string, string, string];
+        top1: string;
+        similarity: string;
+        falseLinks: string;
       };
       note: string;
       source: string;

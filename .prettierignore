@@ -24,6 +24,8 @@ eval/demo/
 apps/landing/src/data/voz-demo.json
 # Datos de las fotos (parches, colores y parejas), generados por eval/py/blindaje_eval/fotos_huella.py
 apps/landing/src/data/fotos-demo.json
+# Datos de la voz en píxeles (espectrogramas, huellas y matrices), de eval/py/blindaje_eval/voz_huella.py
+apps/landing/src/data/voz-huella.json
 services/ml/
 eval/py/
 infra/

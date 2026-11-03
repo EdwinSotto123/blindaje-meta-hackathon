@@ -80,6 +80,18 @@ cambia de ángulo? Tiene dos pasos:
 - Comparar por parches y preguntarle a Muse Spark es un experimento: no corre en el pipeline. Con tres
   fotos, solo muestra la idea; no es una medida de precisión.
 
+**La voz en píxeles** (02/11, aparte de `pnpm eval`): los datos de la sección de voz de la landing.
+`pnpm demo:voz:huella` usa los audios y las huellas que ya dejaron `voz_landing` y `voz_distorsion` en la
+caché (correr esos dos antes). Escribe `results/voz_huella.json` y `apps/landing/src/data/voz-huella.json`:
+- El espectrograma de los primeros 7 s de la nota B1 (voz ficticia de MMS-TTS) limpia, disfrazada (+4
+  y WhatsApp) y revertida (−4). Es una transformada de Q constante de 80 Hz a 1,28 kHz, con dos filas
+  por semitono: en esa escala, cambiar el tono es mover la imagen.
+- La huella ECAPA guardada del caso A (A2), la de B1 limpia y la de la disfrazada movida de −8 a +8,
+  con su coseno con A2. Limpia 0.75, disfrazada 0.18; el barrido gana con −5 (0.49) y el disfraz exacto,
+  −4, da 0.48.
+- Las 28 voces de SLR73 en tres matrices de coseno (nota de prueba contra voz inscrita). Primer lugar:
+  100 % limpia, 7 % disfrazada y 68 % revertida, las mismas cifras que `voz_distorsion.json`.
+
 ## Estructura de `report.json` (schema 1.1)
 
 El README del repo y la landing leen solo `resumen`. Cambios que rompan la forma suben
