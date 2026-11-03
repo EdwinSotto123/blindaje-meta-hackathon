@@ -215,46 +215,56 @@ export interface Dict {
   notFound: { title: string; text: string; home: string };
   /** La landing de producto: portada, beneficios por actor, pasos, recorrido y Meta AI. */
   lp: {
-    hero: {
-      /** Titular de la portada. */
-      title: string;
-      lead: string;
-      /** Acciones: ver los casos (en la página) y el mapa público por distrito (y su versión corta, en la cabecera). */
-      ctaCases: string;
+    /** El texto corto del botón del mapa en la cabecera. */
+    hero: { ctaMapShort: string };
+    /** El pitch: diez escenas a pantalla entera que avanzan con el scroll (Pitch.astro). */
+    pitch: {
+      railLabel: string;
+      hint: string;
+      scenes: { kicker: string; title: string; text: string; tags?: string[] }[];
       ctaMap: string;
-      ctaMapShort: string;
-      /** Lo que hace la IA: escucha, mira y lee, con los modelos de cada cosa. */
-      aiLabel: string;
-      ai: { name: string; text: string; models: string[] }[];
-      /** Lima de noche: descripción del dibujo, sus rótulos y la nota de datos ficticios. */
-      cityLabel: string;
-      city: {
-        voice: string;
+      ctaPilot: string;
+      source: string;
+      /** Rótulos que se dibujan en el lienzo. */
+      canvas: {
+        reports: string;
+        otherNumber: string;
+        caseLabel: string;
+        sectors: [string, string, string];
+        zones: [string, string, string];
+        audio: string;
+        spectrogram: string;
+        print: string;
+        transcript: string;
+        voiceA: string;
+        voiceB: string;
+        disguised: string;
+        reverted: string;
+        similarity: string;
+        threshold: string;
+        semitones: string;
+        center: string;
+        caseA: string;
+        caseC: string;
+        victim: string;
+        slr: string;
+        bullet: string;
+        note: string;
+        sameRoom: string;
+        patches: string;
+        amount: string;
+        deadline: string;
         account: string;
-        script: string;
-        photo: string;
+        group: string;
+        weekly: string;
+        sameVoice: string;
+        sameAccount: string;
         network: string;
-        legend: [string, string, string];
+        confirmed: string;
+        alertTitle: string;
+        alert: string;
+        range: string;
       };
-      cityNote: string;
-    };
-    /** Los casos: lo que recibe cada víctima (tres celulares) y lo que Blindaje encuentra en común. */
-    cases: {
-      title: string;
-      lead: string;
-      phonesLabel: string;
-      caseLabel: string;
-      sectors: Record<string, string>;
-      unknown: string;
-      daysAgo: string;
-      photoAlt: string;
-      listen: string;
-      tags: { voice: string; otherVoice: string; account: string; spark: string; sam: string };
-      steps: [string, string];
-      verdict: string;
-      replay: string;
-      scaleTitle: string;
-      note: string;
     };
     /** Dónde pasa: el mapa esquemático de distritos y sus reglas públicas. */
     where: {

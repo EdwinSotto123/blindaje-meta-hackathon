@@ -1,14 +1,10 @@
-"""Los tres casos del demo para la sección "Los casos" de la landing: lo que recibe cada víctima.
+"""Los tres casos del demo para el pitch de la landing (Pitch.astro): lo que recibe cada víctima.
 
 Toma de eval/demo (todo ficticio: personas, negocios, números, cuentas y "Los X") los casos A, B y C:
-el primer audio de cada uno, sus mensajes y la foto del caso A. Para la landing deja:
-
-- apps/landing/public/casos/{a1,b1,c1}.m4a: los audios enteros (voces sintéticas de MMS-TTS), para
-  escucharlos en el chat.
-- apps/landing/src/assets/casos/foto-A.jpg: la foto del caso A (bala y nota en el mostrador), a 960 px.
-- apps/landing/src/data/casos-demo.json: por caso, el número desde el que escriben, cuántos días antes
-  llegó cada pieza, la duración y la forma de onda de cada audio (36 barras), el texto de los mensajes y
-  la transcripción de los audios (guiones-audio.json).
+el primer audio de cada uno, sus mensajes y si hay foto. Escribe apps/landing/src/data/casos-demo.json:
+por caso, el número desde el que escriben, cuántos días antes llegó cada pieza, la duración y la forma
+de onda de cada audio (36 barras), el texto de los mensajes y la transcripción de los audios
+(guiones-audio.json). La foto del caso A que se dibuja es el recorte del mostrador de assets/flujo.
 
 Uso (desde eval/):
   pnpm demo:casos
@@ -17,13 +13,11 @@ Uso (desde eval/):
 from __future__ import annotations
 
 import json
-import subprocess
 import tempfile
 from pathlib import Path
 
 import numpy as np
 import soundfile as sf
-from PIL import Image
 
 from .paths import DEMO_DIR, EVAL_DIR
 from .whatsapp import a_wav
@@ -37,26 +31,6 @@ def _onda(x: np.ndarray) -> list[float]:
     tramos = np.array_split(np.abs(x), BARRAS)
     picos = np.array([float(np.percentile(t, 98)) if t.size else 0.0 for t in tramos])
     return [round(float(v), 2) for v in picos / max(float(picos.max()), 1e-9)]
-
-
-def _m4a(ogg: Path, dst: Path) -> None:
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    cmd = [
-        "ffmpeg",
-        "-y",
-        "-loglevel",
-        "error",
-        "-i",
-        str(ogg),
-        "-ac",
-        "1",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "40k",
-        str(dst),
-    ]
-    subprocess.run(cmd, check=True)
 
 
 def main() -> None:
@@ -80,7 +54,6 @@ def main() -> None:
                     wav = Path(tmp) / f"{nombre}.wav"
                     a_wav(DEMO_DIR / e["archivo"], wav)
                     x, sr = sf.read(str(wav), dtype="float32", always_2d=False)
-                _m4a(DEMO_DIR / e["archivo"], LANDING / "public" / "casos" / f"{nombre.lower()}.m4a")
                 piezas.append(
                     {
                         "tipo": "audio",
@@ -95,12 +68,6 @@ def main() -> None:
             elif e["tipo"] == "texto":
                 piezas.append({"tipo": "texto", "dia": e["dia"], "hora": e["hora"], "texto": e["texto"]})
             elif e["tipo"] == "imagen":
-                dst = LANDING / "src" / "assets" / "casos" / "foto-A.jpg"
-                dst.parent.mkdir(parents=True, exist_ok=True)
-                img = Image.open(DEMO_DIR / e["archivo"]).convert("RGB")
-                img.resize((960, round(960 * img.height / img.width)), Image.Resampling.LANCZOS).save(
-                    dst, "JPEG", quality=82, optimize=True, progressive=True
-                )
                 piezas.append({"tipo": "imagen", "dia": e["dia"], "hora": e["hora"]})
         out.append(
             {

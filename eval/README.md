@@ -92,10 +92,15 @@ caché (correr esos dos antes). Escribe `results/voz_huella.json` y `apps/landin
 - Las 28 voces de SLR73 en tres matrices de coseno (nota de prueba contra voz inscrita). Primer lugar:
   100 % limpia, 7 % disfrazada y 68 % revertida, las mismas cifras que `voz_distorsion.json`.
 
-**Los casos de la landing** (03/11): `pnpm demo:casos` toma de `demo/` los casos ficticios A, B y C y
-deja lo que se ve en la sección "Tres denuncias que nadie conecta": los audios en
-`apps/landing/public/casos/` (m4a), la foto del caso A y `apps/landing/src/data/casos-demo.json` (número,
-días, onda de cada audio, mensajes y transcripciones).
+**El pitch de la landing** (03/11): tres comandos dejan los datos que dibuja el pitch.
+- `pnpm demo:casos` toma de `demo/` los casos ficticios A, B y C (número, días, onda de cada audio,
+  mensajes y transcripciones) y escribe `apps/landing/src/data/casos-demo.json`.
+- `pnpm demo:pitch` calcula el radar de voces con las huellas de la caché: el coseno de B1 con el caso A
+  (0.79), el caso C (0.50), la muestra de la víctima A (0.27) y las 28 voces de SLR73 (0.31 como máximo).
+- `pnpm demo:pitch:fichas` pide a Muse Spark 1.3 la ficha de los casos A, B y C con el mismo prompt y
+  esquema del sistema (con caché; la primera vez costó US$ 0.02). B y C dan la misma cuenta, 900 000 202.
+
+Los dos últimos escriben en `apps/landing/src/data/pitch.json`.
 
 **El índice de voces del recorrido** (02/11): `pnpm demo:flujo:vectores` escribe
 `apps/landing/src/data/flujo-vectores.json` con el índice de voces de la escena Compara: la huella ECAPA

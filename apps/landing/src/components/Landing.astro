@@ -1,8 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import Header from "./Header.astro";
-import Hero from "./Hero.astro";
-import Casos from "./Casos.astro";
+import Pitch from "./Pitch.astro";
 import Voz from "./Voz.astro";
 import Fotos from "./Fotos.astro";
 import Where from "./Where.astro";
@@ -28,8 +27,7 @@ const dict = t(lang);
 <Base dict={dict} path={lang === "es" ? "/" : "/en/"}>
   <Header dict={dict} />
   <main id="contenido" tabindex="-1">
-    <Hero dict={dict} />
-    <Casos dict={dict} />
+    <Pitch dict={dict} />
     <Voz dict={dict} />
     <Fotos dict={dict} />
     <How dict={dict} />

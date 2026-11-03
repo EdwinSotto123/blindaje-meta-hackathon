@@ -16,6 +16,8 @@
     "demo:fotos": "tsx src/fotos-colcha.ts",
     "demo:fotos:parches": "uv run --project py python -I -m blindaje_eval.fotos_huella",
     "demo:casos": "uv run --project py python -I -m blindaje_eval.casos_landing",
+    "demo:pitch": "uv run --project py python -I -m blindaje_eval.pitch_datos",
+    "demo:pitch:fichas": "tsx src/pitch-fichas.ts",
     "demo:flujo:vectores": "uv run --project py python -I -m blindaje_eval.flujo_vectores",
     "demo:voz:huella": "uv run --project py python -I -m blindaje_eval.voz_huella",
     "whatsapp": "uv run --project py python -I -m blindaje_eval.whatsapp"
