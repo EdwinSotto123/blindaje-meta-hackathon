@@ -1,0 +1,62 @@
+diff --git a/node_modules/expo-share-intent/android/src/main/java/expo/modules/shareintent/ExpoShareIntentModule.kt b/node_modules/expo-share-intent/android/src/main/java/expo/modules/shareintent/ExpoShareIntentModule.kt
+--- a/node_modules/expo-share-intent/android/src/main/java/expo/modules/shareintent/ExpoShareIntentModule.kt
++++ b/node_modules/expo-share-intent/android/src/main/java/expo/modules/shareintent/ExpoShareIntentModule.kt
+@@ -66,13 +66,25 @@ class ExpoShareIntentModule : Module() {
+                     "filePath" to instance?.getAbsolutePath(uri),
+                 )
+             }
+-            val queryResult: Cursor = resolver.query(uri, null, null, null, null)!!
+-            queryResult.moveToFirst()
+-            val fileName = queryResult.getString(queryResult.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+-            val fileSize = queryResult.getString(queryResult.getColumnIndex(OpenableColumns.SIZE))
+-            queryResult.close()
+-
+-            val mimeType = resolver.getType(uri)!!
++            // Parche Blindaje: un archivo ilegible (cursor vacío, sin permiso, tipo nulo) se informa
++            // como error y no cierra la app.
++            var fileName: String? = null
++            var fileSize: String? = null
++            val mimeType: String
++            try {
++                resolver.query(uri, null, null, null, null)?.use { c ->
++                    if (c.moveToFirst()) {
++                        val n = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
++                        if (n >= 0) fileName = c.getString(n)
++                        val z = c.getColumnIndex(OpenableColumns.SIZE)
++                        if (z >= 0) fileSize = c.getString(z)
++                    }
++                }
++                mimeType = resolver.getType(uri) ?: "application/octet-stream"
++            } catch (e: Exception) {
++                notifyError("cannot read shared file $uri: ${e.message}")
++                return mapOf("contentUri" to uri.toString(), "filePath" to null)
++            }
+ 
+             var mediaWidth: String? = null;
+             var mediaHeight: String? = null;
+@@ -81,7 +93,11 @@ class ExpoShareIntentModule : Module() {
+                 val options = BitmapFactory.Options().apply {
+                     inJustDecodeBounds = true
+                 }
+-                BitmapFactory.decodeStream(resolver.openInputStream(uri), null, options)
++                try {
++                    resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
++                } catch (e: Exception) {
++                    // sin medidas: el archivo igual se copia
++                }
+                 mediaHeight = options.outHeight.toString()
+                 mediaWidth = options.outWidth.toString()
+             }
+@@ -219,6 +235,12 @@ class ExpoShareIntentModule : Module() {
+      */
+     fun getAbsolutePath(uri: Uri): String? {
+         try {
++            // Parche Blindaje: todo content:// se copia a la caché de la app con el permiso que dio
++            // quien comparte. Las rutas de abajo apuntan a almacenamiento que la app no puede leer
++            // (un documento de Archivos o de Descargas se perdía sin aviso).
++            if ("content".equals(uri.scheme, ignoreCase = true)) {
++                return getDataColumn(uri, null, null)
++            }
+             // DocumentProvider
+             if (DocumentsContract.isDocumentUri(context, uri)) {
+                 // ExternalStorageProvider

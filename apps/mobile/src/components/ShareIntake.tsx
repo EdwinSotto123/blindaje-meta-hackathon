@@ -14,6 +14,9 @@ import { sessionStore } from "@/state/session";
  * dejó el sistema y no se muestra nada en el disfraz. Solo después de ingresar el PIN la
  * persona decide si lo guarda en sus notas (y entonces se sube).
  */
+/** Audios, fotos, videos y textos. Al compartir varios a la vez Android puede mandar cualquier tipo. */
+const ACEPTADOS = /^(audio|image|video|text)\//i;
+
 export function ShareIntake() {
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntentContext();
   const router = useRouter();
@@ -31,15 +34,24 @@ export function ShareIntake() {
           return;
         }
         const capturedAt = new Date().toISOString();
+        // Uno por uno: si un archivo no se puede leer, los demás igual se guardan.
         for (const f of files) {
-          await saveFile(f.path, {
-            tipo: evidenceTypeForMime(f.mimeType),
-            mime: f.mimeType || "application/octet-stream",
-            source: "compartido",
-            durationMs: f.duration ?? null,
-            capturedAt,
-            hold: true,
-          });
+          if (!ACEPTADOS.test(f.mimeType ?? "")) {
+            deleteFileQuietly(f.path);
+            continue;
+          }
+          try {
+            await saveFile(f.path, {
+              tipo: evidenceTypeForMime(f.mimeType),
+              mime: f.mimeType,
+              source: "compartido",
+              durationMs: f.duration ?? null,
+              capturedAt,
+              hold: true,
+            });
+          } catch {
+            deleteFileQuietly(f.path);
+          }
         }
         if (!files.length && shareIntent.text) {
           await saveBytes(utf8(shareIntent.text), {

@@ -91,6 +91,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-share-intent",
       {
         androidIntentFilters: ["text/*", "image/*", "audio/*", "video/*"],
+        // Varios audios o fotos de un mismo chat se comparten de una vez. "*/*" es lo que manda
+        // Android cuando la selección mezcla audios y fotos.
+        androidMultiIntentFilters: ["image/*", "audio/*", "video/*", "*/*"],
         disableIOS: true,
       },
     ],
