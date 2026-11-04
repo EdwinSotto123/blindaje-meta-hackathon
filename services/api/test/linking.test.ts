@@ -9,7 +9,8 @@ import {
   type Signals,
 } from "@blindaje/shared";
 import { setMetaFetchForTests } from "../src/agents/common";
-import { CALIBRATION_KV_KEY, findCandidates, indexCase } from "../src/linking";
+import { CALIBRATION_KV_KEY, findCandidates, indexCase, persistIndexSnapshot } from "../src/linking";
+import { decryptSealed } from "../src/lib/crypto";
 import {
   commonPhrases,
   finalScore,
@@ -411,5 +412,17 @@ describe("señales calibradas", () => {
       "Habla con el jefe",
     ]);
     expect(evidenceLabel("A", 1)).toBe("EV-A1");
+  });
+});
+
+describe("snapshot de los índices en R2", () => {
+  it("se guarda cifrado: el índice de voz lleva huellas de voz", async () => {
+    expect(await persistIndexSnapshot(env)).toBe(true);
+    const obj = await env.INDICES.get("faiss/latest.zip");
+    expect(obj?.customMetadata?.enc).toBe("aes-256-gcm");
+    const sealed = await obj!.arrayBuffer();
+    expect(new TextDecoder().decode(sealed)).not.toContain("zip-falso");
+    const plain = await decryptSealed(env.EVIDENCE_ENCRYPTION_KEY, sealed, "indices:faiss/latest.zip");
+    expect(new TextDecoder().decode(plain)).toBe("zip-falso");
   });
 });

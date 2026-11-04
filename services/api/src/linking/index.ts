@@ -12,6 +12,7 @@ import {
   type VinculadorOutput,
 } from "@blindaje/shared";
 import type { Env } from "../env";
+import { putEncrypted } from "../lib/crypto";
 import { newId, nowIso } from "../lib/ids";
 import { mapLimit } from "../lib/concurrency";
 import { isUniqueViolation, nextCounter, parseJsonColumn } from "../lib/db";
@@ -885,13 +886,25 @@ export async function rebuildIndices(env: Env): Promise<Record<MlIndexName, numb
   return sizes;
 }
 
-/** Guarda un snapshot de los índices en R2 `blindaje-indices` (mejor esfuerzo). */
+/**
+ * Guarda un snapshot de los índices en R2 `blindaje-indices` (mejor esfuerzo). Va cifrado como la
+ * evidencia: el índice de voz guarda huellas de voz, que son datos biométricos.
+ */
 export async function persistIndexSnapshot(env: Env): Promise<boolean> {
   const ml = tryGetMlClient(env);
   if (!ml) return false;
   try {
     const zip = await ml.indexSnapshot();
-    await env.INDICES.put(INDEX_SNAPSHOT_KEY, zip, { customMetadata: { saved_at: nowIso() } });
+    await putEncrypted(
+      env.INDICES,
+      INDEX_SNAPSHOT_KEY,
+      env.EVIDENCE_ENCRYPTION_KEY,
+      zip,
+      `indices:${INDEX_SNAPSHOT_KEY}`,
+      {
+        saved_at: nowIso(),
+      },
+    );
     return true;
   } catch (err) {
     log("warn", "index_snapshot_failed", errorFields(err));
