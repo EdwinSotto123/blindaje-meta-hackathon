@@ -784,7 +784,7 @@ export const es: Dict = {
       sample: {
         button: "Probar con un caso de ejemplo",
         hint: "Carga el audio, la foto y el mensaje ficticios del caso A del demo: una bodega de San Juan de Lurigancho. No se compara con casos reales.",
-        loaded: "Caso de ejemplo cargado, con datos ficticios.",
+        loaded: "Caso de ejemplo cargado.",
       },
       submit: "Enviar mi evidencia",
       noscript: "Para subir archivos necesitas JavaScript. También puedes denunciar en la Línea 1818.",
@@ -835,7 +835,7 @@ export const es: Dict = {
         removing: "Borrando tu caso y tus archivos…",
         removed: "Tu caso y tus archivos se borraron.",
         again: "Subir otro caso",
-        sampleNote: "Caso de ejemplo, con datos ficticios.",
+        sampleNote: "Caso de ejemplo.",
       },
     },
     problem: { gapsTitle: "Por qué no alcanza hoy" },

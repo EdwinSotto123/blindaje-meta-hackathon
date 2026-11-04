@@ -784,7 +784,7 @@ export const en: Dict = {
       sample: {
         button: "Try a sample case",
         hint: "Loads the fictitious voice note, photo and message of the demo’s case A: a corner shop in San Juan de Lurigancho. It is not compared with real cases.",
-        loaded: "Sample case loaded, with fictitious data.",
+        loaded: "Sample case loaded.",
       },
       submit: "Send my evidence",
       noscript: "You need JavaScript to upload files. You can also report to Línea 1818.",
@@ -835,7 +835,7 @@ export const en: Dict = {
         removing: "Deleting your case and your files…",
         removed: "Your case and your files were deleted.",
         again: "Upload another case",
-        sampleNote: "Sample case, with fictitious data.",
+        sampleNote: "Sample case.",
       },
     },
     problem: { gapsTitle: "Why today is not enough" },
