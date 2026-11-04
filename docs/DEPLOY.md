@@ -19,7 +19,7 @@ Pasos:
 1. Aplica las migraciones de D1 pendientes (`infra/migrations`).
 2. Despliega la API con `--containers-rollout=none`. El contenedor ML sigue con su imagen actual.
 3. Despliega la consola, compilada contra la API en vivo (`VITE_API_URL=self`).
-4. Despliega el portal, en modo de datos simulados.
+4. Despliega el portal contra la API en vivo, con `VITE_DEMO=1`: lee los casos sintéticos que el seed guarda en la base (`?demo=1`).
 5. Despliega la landing.
 6. Hace una prueba de humo: `/v1/health` y las cuatro páginas deben responder 200.
 
@@ -46,7 +46,7 @@ Desde la raíz del repo, con `wrangler login` hecho:
 pnpm --filter @blindaje/api exec wrangler d1 migrations apply blindaje --remote
 pnpm --filter @blindaje/api exec wrangler deploy --containers-rollout=none
 VITE_API_URL=self pnpm --filter @blindaje/console run deploy
-pnpm --filter @blindaje/portal run deploy:mock
+VITE_API_URL=https://blindaje-api.vigiaperu.workers.dev VITE_DEMO=1 pnpm --filter @blindaje/portal run deploy
 pnpm --filter @blindaje/landing run deploy   # Astro exige Node 22.23.4 o más nuevo
 ```
 

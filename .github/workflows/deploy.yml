@@ -46,8 +46,11 @@ jobs:
         run: pnpm --filter @blindaje/console run deploy
         env:
           VITE_API_URL: self
-      - name: Portal (datos simulados)
-        run: pnpm --filter @blindaje/portal run deploy:mock
+      - name: Portal (contra la API en vivo, con los casos sintéticos del demo)
+        run: pnpm --filter @blindaje/portal run deploy
+        env:
+          VITE_API_URL: https://blindaje-api.vigiaperu.workers.dev
+          VITE_DEMO: "1"
       - name: Landing
         run: pnpm --filter @blindaje/landing run deploy
 

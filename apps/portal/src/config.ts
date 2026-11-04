@@ -5,6 +5,9 @@ import { MIN_CASES_FOR_STATS, MIN_VICTIMS_FOR_STATS } from "@blindaje/shared";
  *
  *  - VITE_API_URL: base de la API real (por ejemplo https://blindaje-api.<cuenta>.workers.dev).
  *  - VITE_MOCK=1 (o `--mode mock`): modo simulado con datos ficticios, sin backend.
+ *  - VITE_DEMO=1: pide a la API su mundo del demo (`?demo=1`), los casos sintéticos guardados en la
+ *    base. La API solo lo sirve donde DEMO_MODE=true; cada respuesta lo dice en `demo` y el portal
+ *    muestra la marca de datos ficticios.
  *
  * Sin VITE_API_URL el portal arranca en modo simulado: nunca intenta adivinar una API.
  */
@@ -13,6 +16,8 @@ const env = import.meta.env;
 export const API_URL: string = (env.VITE_API_URL ?? "").trim().replace(/\/+$/, "");
 
 export const MOCK: boolean = env.VITE_MOCK === "1" || env.MODE === "mock" || API_URL === "";
+
+export const DEMO_WORLD: boolean = env.VITE_DEMO === "1";
 
 /** Mínimo de casos y de víctimas distintas para mostrar cifras: el mismo umbral de la API (packages/shared). */
 export const MIN_CASES = MIN_CASES_FOR_STATS;

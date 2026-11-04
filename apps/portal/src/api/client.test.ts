@@ -89,6 +89,21 @@ describe("HttpPortalApi", () => {
     expect(api.calls.every((c) => c.auth === null)).toBe(true);
   });
 
+  it("con demo, cada consulta pide los casos sintéticos de la base (demo=1)", async () => {
+    const api = fakeApi();
+    const p = new HttpPortalApi(BASE, api.fetchImpl, { demo: true });
+    await p.zones();
+    await p.risk({ zona: "ate", sector: "bodega" });
+    await p.alerts({ zona: "ate" });
+    await p.recommendations({ zona: "ate" });
+    expect(api.calls.map((c) => `${c.url.pathname}${c.url.search}`)).toEqual([
+      "/v1/public/zones?demo=1",
+      "/v1/public/risk?zona=ate&sector=bodega&demo=1",
+      "/v1/public/alerts?zona=ate&demo=1",
+      "/v1/public/recommendations?zona=ate&demo=1",
+    ]);
+  });
+
   it("acepta las listas envueltas o sueltas, y solo deja los avisos y consejos del distrito pedido", async () => {
     const otro = { ...publicAlerts("ate")[0]!, id: "alert-x", zona: "santa-anita" };
     const api = fakeApi({ "/v1/public/alerts": () => json(200, { alerts: [...publicAlerts("ate"), otro] }) });

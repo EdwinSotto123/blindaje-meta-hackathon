@@ -26,9 +26,12 @@ export function listOf(key: string, schema: Validator): Validator {
 export class HttpPortalApi implements PortalApi {
   readonly mode = "http" as const;
   readonly client: HttpClient;
+  /** Con `demo`, cada consulta lleva `demo=1`: los casos sintéticos de la base en vez de los reales. */
+  private readonly world: { demo?: string };
 
-  constructor(baseUrl: string, fetchImpl?: typeof fetch) {
+  constructor(baseUrl: string, fetchImpl?: typeof fetch, opts: { demo?: boolean } = {}) {
     this.client = new HttpClient(fetchImpl ? { baseUrl, fetch: fetchImpl } : { baseUrl });
+    this.world = opts.demo ? { demo: "1" } : {};
   }
 
   health(): Promise<HealthResponse> {
@@ -36,12 +39,14 @@ export class HttpPortalApi implements PortalApi {
   }
 
   async zones(): Promise<PublicZoneMap> {
-    return sanitizeZones(await this.client.json<unknown>("GET", "/v1/public/zones", { validate: S.PublicZoneMap }));
+    return sanitizeZones(
+      await this.client.json<unknown>("GET", "/v1/public/zones", { query: this.world, validate: S.PublicZoneMap }),
+    );
   }
 
   async risk(q: ZoneQuery): Promise<PublicRiskOverview> {
     const raw = await this.client.json<unknown>("GET", "/v1/public/risk", {
-      query: { zona: q.zona, sector: q.sector },
+      query: { zona: q.zona, sector: q.sector, ...this.world },
       validate: S.PublicRiskOverview,
     });
     return sanitizeRisk(raw);
@@ -49,7 +54,7 @@ export class HttpPortalApi implements PortalApi {
 
   async recommendations(q: ZoneQuery): Promise<BusinessRecommendationView[]> {
     const raw = await this.client.json<unknown>("GET", "/v1/public/recommendations", {
-      query: { zona: q.zona, sector: q.sector },
+      query: { zona: q.zona, sector: q.sector, ...this.world },
       validate: listOf("recommendations", S.BusinessRecommendationView),
     });
     return sanitizeRecommendations(unwrapList(raw, "recommendations"), q.zona);
@@ -57,7 +62,7 @@ export class HttpPortalApi implements PortalApi {
 
   async alerts(q: { zona: string }): Promise<VictimAlert[]> {
     const raw = await this.client.json<unknown>("GET", "/v1/public/alerts", {
-      query: { zona: q.zona },
+      query: { zona: q.zona, ...this.world },
       validate: listOf("alerts", S.VictimAlert),
     });
     return sanitizeAlerts(unwrapList(raw, "alerts"), q.zona);
