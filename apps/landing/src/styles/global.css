@@ -91,14 +91,14 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* La franja de ayuda queda fija arriba (44 px): las anclas no deben quedar debajo. */
-  scroll-padding-top: 64px;
+  /* Un respiro sobre el título al llegar por un ancla. */
+  scroll-padding-top: 20px;
 }
 
-/* En escritorio también queda fija la cabecera (64 px) debajo de la franja. */
+/* En escritorio la cabecera queda fija (65 px): las anclas no deben quedar debajo. */
 @media (min-width: 1100px) {
   html {
-    scroll-padding-top: 128px;
+    scroll-padding-top: 84px;
   }
 }
 

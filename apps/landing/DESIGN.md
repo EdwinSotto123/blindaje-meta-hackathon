@@ -78,7 +78,7 @@ del negro. Las tres superficies comparten las variables de `packages/ui/theme/ca
 - **Marcar un dato:** ocre-suave detrás de la palabra (clase `.marca` en la landing). Reemplaza al
   resaltador amarillo.
 - **Confirmado:** verde. **Error y 105:** alerta, con texto blanco.
-- **Campos de color de la landing:** la noche café en la franja de ayuda y el pie; la terracota en
+- **Campos de color de la landing:** la noche café en el pie; la terracota en
   "Solicita acceso", el único campo de color fuerte, con la hoja del formulario en papel.
 - **Mapa:** una sola tinta terracota de claro a oscuro (`--lvl-bajo/medio/alto`); "sin datos" es un gris
   cálido sin borde ni rango, igual para cero casos y para menos del umbral. La consola agrega
@@ -151,9 +151,9 @@ sus textos lo dicen.
   y desde el final del pitch.
 - **Después del pitch:** Voz (los audios del caso B), Fotos (la misma colcha), dónde pasa (mapa),
   beneficios, recorrido del producto, Meta AI, resultados, límites, preguntas y "Solicita acceso".
-- **Cabecera:** crema con línea inferior; wordmark, seis enlaces, idioma y "Ver el mapa". La franja de
-  arriba, fija y en la noche café, solo lleva "Salir rápido" (el 105 y la Línea 1818 salieron de ahí el
-  3/11: no venían al caso arriba de todo).
+- **Cabecera:** crema con línea inferior; wordmark, seis enlaces, idioma y "Ver el mapa". Sin franja
+  encima: el 3/11 salieron el 105, la Línea 1818 y "Salir rápido" (son de la app, no de la landing).
+  En escritorio la cabecera queda fija arriba.
 - **Secciones:** título a la izquierda y entrada a la derecha, alineados por la primera línea; filas
   separadas por líneas antes que tarjetas, y nunca una tarjeta dentro de otra.
 - **Beneficios:** filas alternadas; la de víctimas une la foto de la bodega con la app por fuera

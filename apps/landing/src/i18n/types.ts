@@ -45,12 +45,6 @@ export interface Dict {
   htmlLang: string;
   meta: { title: string; description: string; ogLocale: string };
   skip: string;
-  help: {
-    ariaLabel: string;
-    exit: string;
-    exitShort: string;
-    exitHint: string;
-  };
   nav: {
     ariaLabel: string;
     benefits: string;

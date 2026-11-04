@@ -11,12 +11,6 @@ export const es: Dict = {
     ogLocale: "es_PE",
   },
   skip: "Saltar al contenido",
-  help: {
-    ariaLabel: "Salida rápida",
-    exit: "Salir rápido",
-    exitShort: "Salir",
-    exitHint: "Abre una página neutra. Atajo: Esc dos veces.",
-  },
   nav: {
     ariaLabel: "Secciones",
     benefits: "Beneficios",
