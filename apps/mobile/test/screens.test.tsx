@@ -335,6 +335,14 @@ describe("Pantallas privadas (modo real)", () => {
     expect(screen.getByText("Resumen")).toBeTruthy();
   });
 
+  it("Notas privadas: con la denuncia lista, se vuelve a abrir sin armarla de nuevo", async () => {
+    await refreshReport();
+    expect(privateStore.get().report?.status).toBe("listo");
+    await render(<NotasPrivadas />);
+    await fireEvent.press(screen.getByText("Tu denuncia está lista"));
+    expect(mockRouter.push).toHaveBeenCalledWith("/privado/lista");
+  });
+
   it("Denuncia lista: sin consejos (API actual) no muestra la sección ni se rompe", async () => {
     const real = api.getReport.bind(api);
     // Sin el campo, el cliente lo lee como [].

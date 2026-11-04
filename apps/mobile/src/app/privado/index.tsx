@@ -116,6 +116,31 @@ export default function NotasPrivadas() {
         </Pressable>
       ) : null}
 
+      {!decoy && report?.status === "listo" ? (
+        <Pressable
+          onPress={() => router.push("/privado/lista")}
+          accessibilityRole="button"
+          testID="denuncia-lista"
+          style={{
+            borderWidth: 2,
+            borderColor: colors.tinta,
+            borderRadius: 12,
+            padding: 12,
+            flexDirection: "row",
+            gap: 10,
+            alignItems: "center",
+            backgroundColor: colors.blanco,
+          }}
+        >
+          <Icon name="file" />
+          <View style={{ flex: 1 }}>
+            <T variant="bodyBold">Tu denuncia está lista</T>
+            <T variant="small">Ábrela para ver el resumen y descargar el PDF para la comisaría.</T>
+          </View>
+          <Icon name="chevron" />
+        </Pressable>
+      ) : null}
+
       {conLlamadas && llamadas > 0 ? (
         <Pressable
           onPress={() => router.push("/privado/llamadas")}
