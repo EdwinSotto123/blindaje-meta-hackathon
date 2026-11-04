@@ -184,7 +184,8 @@ export default function DenunciaLista() {
                     {shortDate(c.fecha)}
                   </T>
                   <T variant="body" style={{ flex: 1 }}>
-                    {c.texto} <T variant="small">({c.evidencia.join(", ")})</T>
+                    {c.texto}
+                    {c.evidencia.length ? <T variant="small"> ({c.evidencia.join(", ")})</T> : null}
                   </T>
                 </View>
               ))}
