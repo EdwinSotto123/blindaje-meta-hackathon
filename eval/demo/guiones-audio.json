@@ -31,6 +31,26 @@
       "voz": "persona1",
       "canal": 2,
       "texto": "Hola, me están pidiendo cupo en mi negocio y quiero saber si a otros les pasa lo mismo. Me llamaron desde un número que no conozco."
+    },
+    "H1": {
+      "voz": "persona4",
+      "canal": 2,
+      "texto": "Casera, escucha bien. Desde esta semana tu puesto paga cupo. Son doscientos soles cada semana. Te mandamos el número para que yapees. Si no pagas, cerramos tu puesto."
+    },
+    "I1": {
+      "voz": "persona4",
+      "canal": 2,
+      "texto": "Ya te dijimos. Doscientos soles cada semana o tu puesto no abre más. Yapea al número que te mandamos. No hables con nadie."
+    },
+    "I2": {
+      "voz": "persona4",
+      "canal": 2,
+      "texto": "Mira bien tu puesto. Si el lunes no está el Yape, lo cerramos nosotros."
+    },
+    "J1": {
+      "voz": "persona1",
+      "canal": 1,
+      "texto": "Soy de Los X. Ya sabes que aquí todos pagan su colaboración. Son tres mil soles al Yape de siempre. Habla con el jefe y no llames a la policía."
     }
   }
 }

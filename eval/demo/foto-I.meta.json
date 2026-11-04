@@ -1,0 +1,10 @@
+{
+  "ficticio": true,
+  "modelo": "muse-image-1.0",
+  "prompt": "Fotografía realista tomada con un celular, de día, de un puesto ficticio de verduras en un mercado de Lima, Perú. Toldo azul, cajones de madera con verduras genéricas, una balanza, sin marcas ni logos. Sobre la balanza hay una hoja de cuaderno cuadriculado con una nota escrita a mano con plumón rojo que dice 'PAGA O CIERRAS. 200 X SEMANA'. Sin personas, sin rostros, sin armas, sin sangre, sin violencia. Estilo foto de evidencia, luz natural, encuadre horizontal.",
+  "generado": "2026-11-04T19:32:35.434Z",
+  "archivos": [
+    "foto-I.jpg"
+  ],
+  "nota": "Imagen sintética generada para el demo de Blindaje. No retrata un lugar ni un hecho real."
+}

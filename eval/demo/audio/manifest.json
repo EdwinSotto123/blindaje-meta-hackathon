@@ -7,7 +7,8 @@
     "voces": {
       "persona1": 1.0,
       "persona2": 0.86,
-      "persona3": 1.22
+      "persona3": 1.22,
+      "persona4": 0.6
     },
     "seed": 7
   },
@@ -65,10 +66,47 @@
       "duracion_s": 10.31,
       "sha256": "f412dffc61a725e31f36f77cb4d306dc7ccd6f94b023bee5b19b87464f1620fb",
       "texto": "Hola, me están pidiendo cupo en mi negocio y quiero saber si a otros les pasa lo mismo. Me llamaron desde un número que no conozco."
+    },
+    "H1": {
+      "archivo": "eval/demo/audio/H1.ogg",
+      "origen": "sintetico",
+      "voz": "persona4",
+      "canal": 2,
+      "duracion_s": 16.46,
+      "sha256": "9be37c649d74fad9f634e197572c3b21fa7e64af5482cc5bc675dd7d44a1875b",
+      "texto": "Casera, escucha bien. Desde esta semana tu puesto paga cupo. Son doscientos soles cada semana. Te mandamos el número para que yapees. Si no pagas, cerramos tu puesto."
+    },
+    "I1": {
+      "archivo": "eval/demo/audio/I1.ogg",
+      "origen": "sintetico",
+      "voz": "persona4",
+      "canal": 2,
+      "duracion_s": 13.41,
+      "sha256": "7efd35ecf312ad595ea0ffe48ecb890f4eb4e77d2f9fa0a6502d925bde17c0c6",
+      "texto": "Ya te dijimos. Doscientos soles cada semana o tu puesto no abre más. Yapea al número que te mandamos. No hables con nadie."
+    },
+    "I2": {
+      "archivo": "eval/demo/audio/I2.ogg",
+      "origen": "sintetico",
+      "voz": "persona4",
+      "canal": 2,
+      "duracion_s": 8.0,
+      "sha256": "582f3ad109afe63187f252065e8731943ac6e5bee0f336d4b5d27ba66a372d52",
+      "texto": "Mira bien tu puesto. Si el lunes no está el Yape, lo cerramos nosotros."
+    },
+    "J1": {
+      "archivo": "eval/demo/audio/J1.ogg",
+      "origen": "sintetico",
+      "voz": "persona1",
+      "canal": 1,
+      "duracion_s": 14.29,
+      "sha256": "5f0c111fdca03c8f9bf44ea55d99de4229e49a45cfc79c4536e042f886faa16d",
+      "texto": "Soy de Los X. Ya sabes que aquí todos pagan su colaboración. Son tres mil soles al Yape de siempre. Habla con el jefe y no llames a la policía.",
+      "marca_agua": "AudioSeal 16 bits (scripts/demo_caso_falso.py de services/ml)"
     }
   },
   "verificacion_voz": {
-    "backend": "ml",
+    "backend": "local",
     "modelo": "speechbrain/spkrec-ecapa-voxceleb",
     "coseno": {
       "A1~A2": 0.8957,
@@ -76,16 +114,46 @@
       "A1~C1": 0.384,
       "A1~victima-A": 0.336,
       "A1~infiltrado": 0.5695,
+      "A1~H1": 0.1858,
+      "A1~I1": 0.1791,
+      "A1~I2": 0.1467,
+      "A1~J1": 0.8808,
       "A2~B1": 0.7512,
       "A2~C1": 0.3662,
       "A2~victima-A": 0.3219,
       "A2~infiltrado": 0.5686,
+      "A2~H1": 0.1656,
+      "A2~I1": 0.1668,
+      "A2~I2": 0.1335,
+      "A2~J1": 0.7697,
       "B1~C1": 0.4945,
       "B1~victima-A": 0.2714,
       "B1~infiltrado": 0.7541,
+      "B1~H1": 0.2716,
+      "B1~I1": 0.2674,
+      "B1~I2": 0.256,
+      "B1~J1": 0.7132,
       "C1~victima-A": 0.1771,
       "C1~infiltrado": 0.5259,
-      "victima-A~infiltrado": 0.2644
+      "C1~H1": 0.5163,
+      "C1~I1": 0.5431,
+      "C1~I2": 0.4961,
+      "C1~J1": 0.3642,
+      "victima-A~infiltrado": 0.2644,
+      "victima-A~H1": 0.1046,
+      "victima-A~I1": 0.1236,
+      "victima-A~I2": 0.0592,
+      "victima-A~J1": 0.2636,
+      "infiltrado~H1": 0.277,
+      "infiltrado~I1": 0.3122,
+      "infiltrado~I2": 0.2928,
+      "infiltrado~J1": 0.4884,
+      "H1~I1": 0.8853,
+      "H1~I2": 0.8529,
+      "H1~J1": 0.141,
+      "I1~I2": 0.8874,
+      "I1~J1": 0.1563,
+      "I2~J1": 0.1311
     }
   }
 }

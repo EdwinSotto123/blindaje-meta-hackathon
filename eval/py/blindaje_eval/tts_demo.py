@@ -9,6 +9,9 @@
    - persona1 (quien extorsiona en A y B, y el infiltrado): la voz de MMS-TTS sin cambios.
    - persona2 (C1) y persona3 (muestra de la víctima A): la misma síntesis con otro tono y otro
      timbre (asetrate), para que sean voces distintas para la huella de voz.
+   - persona4 (H1, I1 e I2, la segunda banda): otra voz más grave del mismo modo.
+   - J1 (el caso falso) usa persona1: imita la voz de Los X. Después
+     services/ml/scripts/demo_caso_falso.py le pone la marca de agua de AudioSeal.
    Después pasan por la simulación de WhatsApp: A1, A2 y la muestra por el canal 1 (celular 1),
    B1, C1 y el infiltrado por el canal 2 (celular 2).
 3. Verificación con la huella de voz (backend local, mismo modelo que el contenedor): A1, A2 y B1
@@ -38,7 +41,7 @@ from .whatsapp import a_wav, simular
 TTS_MODEL = "facebook/mms-tts-spa"
 TTS_LICENSE = "CC-BY-NC-4.0"
 # Cambios de tono y timbre (factor de asetrate). 1.0 = voz original de MMS-TTS.
-VOCES = {"persona1": 1.0, "persona2": 0.86, "persona3": 1.22}
+VOCES = {"persona1": 1.0, "persona2": 0.86, "persona3": 1.22, "persona4": 0.6}
 SEED = 7
 OUT_DIR = DEMO_DIR / "audio"
 

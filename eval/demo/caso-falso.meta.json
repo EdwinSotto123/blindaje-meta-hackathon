@@ -1,0 +1,22 @@
+{
+  "ficticio": true,
+  "caso": "J",
+  "nota": "Caso falso del demo: toda su evidencia está hecha con IA y lleva la marca de agua de Meta. El paso de autenticidad debe confirmarlo y la persona revisora, descartarlo.",
+  "audio": {
+    "archivo": "eval/demo/audio/J1.ogg",
+    "origen": "MMS-TTS (facebook/mms-tts-spa), voz persona1",
+    "marca": "AudioSeal 16 bits",
+    "mensaje": 18993,
+    "detectado": true,
+    "score": 0.9613,
+    "sha256": "5f0c111fdca03c8f9bf44ea55d99de4229e49a45cfc79c4536e042f886faa16d"
+  },
+  "imagen": {
+    "archivo": "eval/demo/foto-J.jpg",
+    "origen": "Muse Image (muse-image-1.0), la foto alternativa del demo",
+    "marca": "Video Seal 1.0, 256 bits",
+    "detectado": true,
+    "score": 0.9972,
+    "sha256": "cdd6e9b9ad3e63ccfaa17ed4ed2a552c0fea797b187d488fe2f7171197e8bb97"
+  }
+}
