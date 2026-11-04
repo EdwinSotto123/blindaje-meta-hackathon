@@ -17,3 +17,9 @@ export const ALLOW_SCREENSHOTS: boolean = process.env.EXPO_PUBLIC_ALLOW_SCREENSH
 
 /** Llena el cuaderno con ventas ficticias la primera vez (solo para el demo). */
 export const DEMO_SEED: boolean = process.env.EXPO_PUBLIC_DEMO_SEED === "1";
+
+/**
+ * Solo para el APK del demo: registra el celular con esta invitación (DEMO-LIMA-ESTE, del seed de la
+ * API). Así sus casos quedan en el mundo demo de la base (is_demo) y nunca en las cifras reales.
+ */
+export const DEMO_INVITE: string = (process.env.EXPO_PUBLIC_DEMO_INVITE ?? "").trim();

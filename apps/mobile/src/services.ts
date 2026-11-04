@@ -6,7 +6,7 @@ import { type AuthState, type AuthStore, BlindajeApi, caseRequestFrom, type Devi
 import type { Fetcher, HttpResponse } from "@/api/http";
 import { ApiError } from "@/api/http";
 import { createMockServer } from "@/api/mock";
-import { API_URL, MOCK_API } from "@/config";
+import { API_URL, DEMO_INVITE, MOCK_API } from "@/config";
 import { getOrCreateDeviceKey, signRefresh } from "@/security/device";
 import { getFileKey } from "@/security/keys";
 import { deleteSecret, getJson, KEYS, setJson } from "@/security/secureStore";
@@ -63,6 +63,7 @@ export const api = new BlindajeApi({
   },
   device: async () => ({ publicKey: (await getOrCreateDeviceKey()).jwk, platform }),
   autoRegister: () => configStore.get().onboarded,
+  ...(DEMO_INVITE ? { inviteCode: DEMO_INVITE } : {}),
 });
 
 export const authStore = secureAuthStore;

@@ -66,6 +66,8 @@ type Opts = {
    * quedó en curso no debe crear una sesión nueva.
    */
   autoRegister?: () => boolean;
+  /** Solo el APK del demo: código de invitación al registrar (el celular queda en el mundo demo). */
+  inviteCode?: string;
   now?: () => number;
 };
 
@@ -237,13 +239,18 @@ export class BlindajeApi {
 
   /**
    * Registra este celular con su llave P-256 (la privada no sale del celular). Sin código de
-   * invitación: el API lo deja en la organización central y la víctima reporta directo.
+   * invitación: el API lo deja en la organización central y la víctima reporta directo. El APK del
+   * demo manda la invitación del demo (`inviteCode`).
    */
   async registerDevice(publicKey: DevicePublicJwk, platform: DevicePlatform): Promise<AuthState> {
     const res = await this.send("/auth/device/register", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ public_key: publicKey, platform }),
+      body: JSON.stringify({
+        public_key: publicKey,
+        platform,
+        ...(this.o.inviteCode ? { invite_code: this.o.inviteCode } : {}),
+      }),
     });
     if (!res.ok) await this.fail(res);
     const r = RegisterResponse.parse(await res.json());

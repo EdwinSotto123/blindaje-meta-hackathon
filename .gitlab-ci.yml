@@ -86,8 +86,9 @@ ml:
 # APK de Android a pedido (botón de play en el pipeline de main): release firmado con la llave de
 # depuración de la plantilla de Expo, compilado aquí y no en la máquina del equipo.
 #   cuaderno.apk       prevención de capturas activa: así se usaría de verdad.
-#   cuaderno-demo.apk  permite capturas y grabar pantalla (solo para el video y la landing) y llena
-#                      el cuaderno con ventas ficticias. Nunca para personas reales. Trae también x86_64
+#   cuaderno-demo.apk  permite capturas y grabar pantalla (solo para el video y la landing), llena
+#                      el cuaderno con ventas ficticias y se registra en el mundo demo de la base.
+#                      Nunca para personas reales. Trae también x86_64
 #                      para abrir en un emulador: con solo ARM, SoLoader busca lib/x86_64 y la app se cierra.
 apk:
   stage: apk

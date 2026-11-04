@@ -177,6 +177,26 @@ describe("Registro sin código (rediseño del 28/10)", () => {
     expect(auth).not.toHaveProperty("org");
   });
 
+  it("el APK del demo manda su invitación: el celular queda en el canal del demo", async () => {
+    const log: Parameters<typeof spy>[0] = [];
+    const server = createMockServer({ processMs: 0 });
+    let auth: AuthState | null = null;
+    const api = new BlindajeApi({
+      baseUrl: "https://mock.local",
+      fetcher: spy(log)(server.fetcher),
+      auth: { get: async () => auth, set: async (a) => void (auth = a), clear: async () => void (auth = null) },
+      sign: async () => "firma",
+      inviteCode: "DEMO-LIMA-ESTE",
+    });
+    const reg = await api.registerDevice(JWK, "android");
+    expect(log.find((r) => r.url.endsWith("/v1/auth/device/register"))!.body).toEqual({
+      public_key: JWK,
+      platform: "android",
+      invite_code: "DEMO-LIMA-ESTE",
+    });
+    expect(server.debug.devices.get(reg.device_id)?.org).toBe("org_demo");
+  });
+
   it("un código de un APK antiguo sigue funcionando y uno vencido da 400 bad_request", async () => {
     const server = createMockServer({ processMs: 0 });
     const ok = await server.fetcher("https://mock.local/v1/auth/device/register", {
