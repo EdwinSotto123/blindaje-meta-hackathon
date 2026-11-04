@@ -46,10 +46,6 @@ export interface Dict {
   meta: { title: string; description: string; ogLocale: string };
   skip: string;
   help: {
-    danger: string;
-    dangerCta: string;
-    report: string;
-    reportCta: string;
     ariaLabel: string;
     exit: string;
     exitShort: string;
@@ -425,7 +421,8 @@ export interface Dict {
       narrativeHint: string;
       /** Lo que se suma al relato con las respuestas de arriba. Con {list} y {when}. */
       story: { contact: string; since: string };
-      consent: { label: string; hint: string };
+      /** Junto al botón de enviar: todo caso real se compara con los demás (modo comunitario). */
+      consent: { lead: string; text: string };
       sample: { button: string; hint: string; loaded: string };
       submit: string;
       noscript: string;

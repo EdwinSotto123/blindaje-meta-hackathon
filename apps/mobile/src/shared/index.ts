@@ -19,3 +19,4 @@ export * from "./injection";
 export * from "./zones";
 export * from "./vectors";
 export * from "./monitor";
+export * from "./photo-location";

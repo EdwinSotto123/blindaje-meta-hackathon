@@ -26,19 +26,6 @@ const exitUrl = "https://www.google.com/";
 
 <div class="help on-field" role="region" aria-label={d.help.ariaLabel}>
   <div class="wrap help__in">
-    <p class="help__item">
-      <span class="help__lead">{d.help.danger}</span>
-      <a class="help__call" href="tel:105">
-        <Icon name="phone" />
-        {d.help.dangerCta}
-      </a>
-    </p>
-    <p class="help__item">
-      <span class="help__lead">{d.help.report}</span>
-      <a class="help__call" href="tel:1818">
-        {d.help.reportCta}
-      </a>
-    </p>
     <a class="help__exit" href={exitUrl} rel="noreferrer" aria-describedby="exit-hint" data-quick-exit>
       <Icon name="exit" />
       <span class="wide">{d.help.exit}</span>
@@ -107,7 +94,7 @@ const exitUrl = "https://www.google.com/";
 </header>
 
 <style>
-  /* La franja de ayuda, en la noche café; el único rojo de la página es la emergencia. */
+  /* La franja de arriba, en la noche café: solo "Salir rápido", siempre a mano. */
   .help {
     position: sticky;
     top: 0;
@@ -124,45 +111,6 @@ const exitUrl = "https://www.google.com/";
     gap: 0 20px;
   }
 
-  .help__item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .help__lead {
-    display: none;
-    color: var(--on-field-2);
-  }
-
-  .help__call,
-  .help__exit {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 44px;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
-  .help__call {
-    text-decoration-thickness: 1px;
-  }
-
-  .help__call[href="tel:105"] {
-    min-height: 36px;
-    margin-block: 4px;
-    padding: 0 12px;
-    border-radius: 8px;
-    background: var(--alarm);
-    color: #fff;
-    text-decoration: none;
-  }
-
-  .help__call[href="tel:105"]:hover {
-    background: var(--alarm-2);
-  }
-
   .help :global(.icon) {
     display: none;
     width: 16px;
@@ -174,8 +122,13 @@ const exitUrl = "https://www.google.com/";
     stroke-linejoin: round;
   }
 
-  /* Primera en el orden visual de la derecha; en móvil se ve "Salir", el nombre accesible sigue completo. */
+  /* A la derecha; en móvil se ve "Salir", el nombre accesible sigue completo. */
   .help__exit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    white-space: nowrap;
     min-height: 36px;
     margin-block: 4px;
     margin-left: auto;
@@ -400,12 +353,6 @@ const exitUrl = "https://www.google.com/";
     .top__pilot {
       padding: 0 20px;
       font-size: var(--step-body);
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .help__lead {
-      display: inline;
     }
   }
 

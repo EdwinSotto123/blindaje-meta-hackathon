@@ -4,7 +4,7 @@
  * desde la landing, por el mismo camino que la app (services/api/src/routes/victim.ts):
  *
  *   POST /v1/auth/device/register  llave ECDSA P-256 creada en el navegador, platform "web"
- *   POST /v1/cases            distrito y rubro opcionales, consentimiento (solo_denuncia o comunitario)
+ *   POST /v1/cases            distrito y rubro opcionales; comunitario (el caso de ejemplo, solo_denuncia)
  *   POST /v1/cases/:id/evidence  cada archivo, crudo, con su SHA-256 (la API lo cifra en R2)
  *   POST /v1/cases/:id/submit    el relato opcional; corre el workflow con los modelos de Meta
  *   GET  /v1/cases/:id/report    SU reporte (nunca vínculos ni datos de otros casos), hasta que esté listo
@@ -293,11 +293,11 @@ const config = JSON.stringify({
           </div>
         </details>
 
-        <div class="up__consent">
-          <input id="up-consent" type="checkbox" aria-describedby="up-consent-hint" data-consent />
-          <label for="up-consent">{t.consent.label}</label>
-          <p class="up__hint" id="up-consent-hint">
-            {t.consent.hint}
+        <div class="up__share">
+          <Icon name="link" class="icon" />
+          <p id="up-share">
+            <strong>{t.consent.lead}</strong>
+            {t.consent.text}
           </p>
         </div>
 
@@ -306,7 +306,7 @@ const config = JSON.stringify({
         </noscript>
 
         <div class="up__actions">
-          <button class="btn btn--mark" type="submit" data-submit>
+          <button class="btn btn--mark" type="submit" aria-describedby="up-share" data-submit>
             <Icon name="upload" class="icon" />
             <span data-submit-label>{t.submit}</span>
           </button>
@@ -382,7 +382,8 @@ const config = JSON.stringify({
   }
 
   .up__points :global(.icon),
-  .up__notice :global(.icon) {
+  .up__notice :global(.icon),
+  .up__share :global(.icon) {
     width: 22px;
     height: 22px;
     margin-top: 1px;
@@ -778,31 +779,29 @@ const config = JSON.stringify({
     padding-top: 8px;
   }
 
-  .up__consent {
+  /* Junto al botón: al enviar, el caso se compara con los demás (modo comunitario). */
+  .up__share {
     display: grid;
-    grid-template-columns: 24px 1fr;
-    gap: 4px 12px;
+    grid-template-columns: 22px 1fr;
+    gap: 12px;
     align-items: start;
     padding: 14px 16px;
     border: 1px solid var(--linea);
     border-radius: var(--radius-sm);
   }
 
-  .up__consent input {
-    width: 22px;
-    height: 22px;
-    margin: 1px 0 0;
-    accent-color: var(--terracota);
+  .up__share p {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--step-small);
+    line-height: 1.5;
   }
 
-  .up__consent label {
-    font-weight: 700;
-    line-height: 1.35;
-    cursor: pointer;
-  }
-
-  .up__consent .up__hint {
-    grid-column: 2;
+  .up__share strong {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--ink);
+    font-size: 1rem;
   }
 
   .up__sample {
@@ -1211,7 +1210,6 @@ const config = JSON.stringify({
     const contactBoxes = [...sheet.querySelectorAll<HTMLInputElement>("[data-contact]")];
     const since = $<HTMLSelectElement>("[data-since]");
     const sector = $<HTMLSelectElement>("[data-sector]");
-    const consent = $<HTMLInputElement>("[data-consent]");
     const submit = $<HTMLButtonElement>("[data-submit]");
     const bar = $<HTMLElement>("[data-bar]");
     const status = $<HTMLElement>("[data-status]");
@@ -1226,7 +1224,8 @@ const config = JSON.stringify({
     const rDelete = $<HTMLButtonElement>("[data-r-delete]");
 
     let items: Item[] = [];
-    let isSample = false;
+    // El caso de ejemplo (sus archivos ficticios) no se compara con casos reales ni cuenta en el mapa.
+    const isSample = () => items.some((x) => x.key.includes("caso-A"));
     let busy = false;
     // La sesión del navegador (solo en memoria) y el caso abierto; lo ya subido no se vuelve a subir.
     let token = "";
@@ -1398,7 +1397,6 @@ const config = JSON.stringify({
           $<HTMLSelectElement>("#up-district-lima").value = "san-juan-de-lurigancho";
         }
         if (!sector.value) sector.value = "bodega";
-        isSample = true;
         say(T.sample.loaded);
       } catch {
         say(T.errors.network, true);
@@ -1431,7 +1429,7 @@ const config = JSON.stringify({
       token = ((await res.json()) as { access_token: string }).access_token;
     };
     const openCase = async () => {
-      const body: Record<string, string> = { consent_mode: consent.checked ? "comunitario" : "solo_denuncia" };
+      const body: Record<string, string> = { consent_mode: isSample() ? "solo_denuncia" : "comunitario" };
       const zona = zone();
       if (zona) body.zona = zona;
       if (sector.value) body.sector = sector.value;
@@ -1635,7 +1633,7 @@ const config = JSON.stringify({
       form.hidden = true;
       result.hidden = false;
       rCode.textContent = fill(T.result.code, { code: caseCode });
-      rSample.hidden = !isSample;
+      rSample.hidden = !isSample();
       rBody.replaceChildren();
       rPdf.hidden = true;
       rDelete.hidden = false;
@@ -1675,7 +1673,6 @@ const config = JSON.stringify({
       sent.clear();
       caseId = "";
       caseCode = "";
-      isSample = false;
       pasted.value = "";
       narrative.value = "";
       // Lo del caso se limpia; la región, el distrito y el rubro se quedan (suele ser la misma persona).

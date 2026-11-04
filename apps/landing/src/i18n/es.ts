@@ -12,11 +12,7 @@ export const es: Dict = {
   },
   skip: "Saltar al contenido",
   help: {
-    ariaLabel: "Ayuda inmediata",
-    danger: "¿Estás en peligro ahora?",
-    dangerCta: "Llamar al 105",
-    report: "Para denunciar:",
-    reportCta: "Línea 1818",
+    ariaLabel: "Salida rápida",
     exit: "Salir rápido",
     exitShort: "Salir",
     exitHint: "Abre una página neutra. Atajo: Esc dos veces.",
@@ -707,7 +703,7 @@ export const es: Dict = {
       points: [
         "Solo te preguntamos la región y el distrito, nunca tu dirección. Si una foto JPG guarda dónde se tomó, borramos esa ubicación antes de subirla.",
         "Cada archivo se guarda cifrado y con su huella SHA-256, para que sirva como prueba.",
-        "Tu caso se compara con otros solo si tú lo activas.",
+        "Tu caso se compara con los de otras víctimas para encontrar a la misma banda.",
       ],
       notice:
         "Blindaje está en piloto y no reemplaza una denuncia. Si estás en peligro, llama al 105; para denunciar, a la Línea 1818.",
@@ -737,7 +733,7 @@ export const es: Dict = {
       more: "Cuéntanos más (opcional)",
       where: {
         legend: "¿Dónde pasó?",
-        hint: "Así la alerta llega a los vecinos de tu zona. Solo la región y el distrito, nunca tu dirección.",
+        hint: "Solo la región y el distrito, nunca tu dirección. Así tu caso cuenta en el mapa y en las alertas de tu distrito.",
       },
       region: { label: "Región", choose: "Elige tu región", none: "Prefiero no decirlo" },
       district: "Distrito",
@@ -782,12 +778,12 @@ export const es: Dict = {
       narrativeHint: "No hace falta tu nombre ni tu dirección.",
       story: { contact: "Me contactaron por: {list}.", since: "Empezó: {when}." },
       consent: {
-        label: "Comparar mi caso con otros para encontrar a la misma banda",
-        hint: "Se compara la huella de la voz, los números y cuentas (cifrados) y la forma en que te contactaron. Si hay un parecido, una persona autorizada revisa los casos y nunca ve tu nombre ni tu número.",
+        lead: "Al enviar, tu caso se compara con otros para encontrar a la misma banda.",
+        text: "Se compara la voz de los audios, los números y cuentas que usaron (cifrados) y cómo te contactaron. Si se parece a otro caso, una persona autorizada revisa los dos y puede escuchar partes de tus audios. Le llega solo un código, sin tu nombre ni tu número. Tu caso también cuenta en el mapa y en las alertas de tu distrito.",
       },
       sample: {
         button: "Probar con un caso de ejemplo",
-        hint: "Carga el audio, la foto y el mensaje ficticios del caso A del demo: una bodega de San Juan de Lurigancho.",
+        hint: "Carga el audio, la foto y el mensaje ficticios del caso A del demo: una bodega de San Juan de Lurigancho. No se compara con casos reales.",
         loaded: "Caso de ejemplo cargado, con datos ficticios.",
       },
       submit: "Enviar mi evidencia",

@@ -20,11 +20,7 @@ export const en: Dict = {
   },
   skip: "Skip to content",
   help: {
-    ariaLabel: "Immediate help in Peru",
-    danger: "In danger right now?",
-    dangerCta: "Call 105",
-    report: "To report extortion:",
-    reportCta: "Línea 1818",
+    ariaLabel: "Quick exit",
     exit: "Quick exit",
     exitShort: "Exit",
     exitHint: "Opens a neutral page. Shortcut: press Esc twice.",
@@ -707,7 +703,7 @@ export const en: Dict = {
       points: [
         "We only ask for the region and the district, never your address. If a JPG photo stores where it was taken, we erase that location before uploading it.",
         "Every file is stored encrypted and with its SHA-256 fingerprint, so it holds up as evidence.",
-        "Your case is compared with others only if you turn that on.",
+        "Your case is compared with other victims’ cases to find the same gang.",
       ],
       notice:
         "Blindaje is a pilot and does not replace a police report. If you are in danger, call 105; to report, call Línea 1818.",
@@ -737,7 +733,7 @@ export const en: Dict = {
       more: "Tell us more (optional)",
       where: {
         legend: "Where did it happen?",
-        hint: "So the alert reaches the neighbors in your area. Only the region and the district, never your address.",
+        hint: "Only the region and the district, never your address. That way your case counts on the map and in the alerts for your district.",
       },
       region: { label: "Region", choose: "Choose your region", none: "I’d rather not say" },
       district: "District",
@@ -782,12 +778,12 @@ export const en: Dict = {
       narrativeHint: "You don’t need to give your name or your address.",
       story: { contact: "They contacted me by: {list}.", since: "It started: {when}." },
       consent: {
-        label: "Compare my case with others to find the same gang",
-        hint: "We compare the voice print, the numbers and accounts (encrypted) and the way they contacted you. If there is a match, an authorized person reviews the cases and never sees your name or your number.",
+        lead: "When you send it, your case is compared with others to find the same gang.",
+        text: "We compare the voice in the audios, the numbers and accounts they used (encrypted) and how they contacted you. If it looks like another case, an authorized person reviews both and may listen to parts of your audios. They only get a code, never your name or your number. Your case also counts on the map and in the alerts for your district.",
       },
       sample: {
         button: "Try a sample case",
-        hint: "Loads the fictitious voice note, photo and message of the demo’s case A: a corner shop in San Juan de Lurigancho.",
+        hint: "Loads the fictitious voice note, photo and message of the demo’s case A: a corner shop in San Juan de Lurigancho. It is not compared with real cases.",
         loaded: "Sample case loaded, with fictitious data.",
       },
       submit: "Send my evidence",

@@ -140,8 +140,11 @@ sus textos lo dicen.
   "¿Dónde pasó?" (región obligatoria, con "Prefiero no decirlo"; en Lima Metropolitana y el Callao la
   lista de distritos, fuera de Lima el distrito o la ciudad en texto, que rechaza calles y números),
   "Cuéntanos más" plegado (cómo te contactaron en pastillas, cuándo empezó, rubro, relato; lo marcado
-  se suma al relato), el consentimiento comunitario apagado por defecto y "Enviar mi evidencia" con una
-  barra de avance. Usa la misma API que la app
+  se suma al relato), un aviso junto al botón (al enviar, el caso se compara con otros: modo
+  comunitario siempre, sin pregunta; dice qué se compara, que una persona autorizada puede escuchar
+  partes de los audios y que el caso cuenta en el mapa y las alertas; el caso de ejemplo va como "solo
+  mi denuncia" para no mezclar datos ficticios con los reales) y "Enviar mi evidencia" con una barra
+  de avance. Usa la misma API que la app
   (`/v1/auth/device/register`, `/v1/cases`, evidencia, envío) y, cuando la IA termina, muestra el
   reporte propio: ficha, lo que dice cada audio, hallazgos, qué hacer, el PDF de la denuncia y "Borrar mi
   caso". El token vive solo en la memoria de la pestaña. Enlazada desde la cabecera ("Subir evidencia")
@@ -149,7 +152,8 @@ sus textos lo dicen.
 - **Después del pitch:** Voz (los audios del caso B), Fotos (la misma colcha), dónde pasa (mapa),
   beneficios, recorrido del producto, Meta AI, resultados, límites, preguntas y "Solicita acceso".
 - **Cabecera:** crema con línea inferior; wordmark, seis enlaces, idioma y "Ver el mapa". La franja de
-  ayuda (105, Línea 1818, Salir rápido) queda fija arriba en la noche café.
+  arriba, fija y en la noche café, solo lleva "Salir rápido" (el 105 y la Línea 1818 salieron de ahí el
+  3/11: no venían al caso arriba de todo).
 - **Secciones:** título a la izquierda y entrada a la derecha, alineados por la primera línea; filas
   separadas por líneas antes que tarjetas, y nunca una tarjeta dentro de otra.
 - **Beneficios:** filas alternadas; la de víctimas une la foto de la bodega con la app por fuera
