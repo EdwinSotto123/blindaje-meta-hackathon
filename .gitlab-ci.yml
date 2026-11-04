@@ -88,8 +88,8 @@ ml:
 #   cuaderno.apk       prevención de capturas activa: así se usaría de verdad.
 #   cuaderno-demo.apk  permite capturas y grabar pantalla (solo para el video y la landing), llena
 #                      el cuaderno con ventas ficticias y se registra en el mundo demo de la base.
-#                      Nunca para personas reales. Trae también x86_64
-#                      para abrir en un emulador: con solo ARM, SoLoader busca lib/x86_64 y la app se cierra.
+#                      Nunca para personas reales. Trae también x86_64 para abrir en un emulador:
+#                      con solo ARM, SoLoader busca lib/x86_64 y la app se cierra.
 apk:
   stage: apk
   image: eclipse-temurin:21-jdk-noble
@@ -130,6 +130,9 @@ apk:
     # React Native.
     - (yes || true) | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null
   script:
+    # El APK del demo se registra con la invitación del demo: sus casos quedan en el mundo demo de la
+    # base (is_demo) y nunca en las cifras reales.
+    - if [ "$NOMBRE" = "cuaderno-demo" ]; then export EXPO_PUBLIC_DEMO_INVITE=DEMO-LIMA-ESTE; fi
     - cd apps/mobile
     - npm ci --cache .npm --prefer-offline
     - npx expo prebuild --platform android --no-install --clean
