@@ -1,7 +1,7 @@
-import { CENTRAL_ORG_ID, districtById, type FichaStored, type TipoAmenaza } from "@blindaje/shared";
+import { CENTRAL_ORG_ID, DEMO_ZONES, districtById, type FichaStored, type TipoAmenaza } from "@blindaje/shared";
 import type { Env } from "../env";
 import { newId, nowIso } from "../lib/ids";
-import { DEMO_AGGREGATE_PLATFORM, DEMO_ZONES } from "./data";
+import { DEMO_AGGREGATE_PLATFORM } from "./data";
 
 /** Casos agregados del demo en D1: se crean en cada seed y se borran en bloque. */
 

@@ -1,18 +1,24 @@
 ---
 /**
  * Dónde pasa: el mapa esquemático de los 50 distritos de Lima y el Callao, igual al del portal público
- * (la misma grilla de packages/shared/src/zones.ts y la misma escala de tinta por nivel). Con datos
- * ficticios: los mismos distritos y niveles que el modo simulado del portal. A la izquierda, las
- * reglas de lo público; al lado del mapa, la lista con nombre, nivel y rango, que es la lectura
- * principal (los cuadros claros tienen poco contraste con el papel y en el celular no llevan nombre).
+ * (la misma grilla de packages/shared/src/zones.ts y la misma escala de tinta por nivel). Los niveles y
+ * rangos no están escritos en la página: salen de la base, por GET /v1/public/zones?demo=1, lo mismo
+ * que lee el portal, con los casos sintéticos que el seed del demo guarda en D1. Se piden al compilar,
+ * así que la landing muestra la base del día en que se desplegó. A la izquierda, las reglas de lo
+ * público; al lado del mapa, la lista con nombre, nivel y rango, que es la lectura principal (los
+ * cuadros claros tienen poco contraste con el papel y en el celular no llevan nombre).
  *
- * Animación (con JavaScript y movimiento): un <canvas> encima del mapa muestra cómo se arma, con
- * denuncias ficticias. 1) cada punto en su calle, 2) se juntan por distrito, 3) se publica el rango y no
- * la cifra, 4) con menos de 5 casos el distrito queda vacío. Al terminar, el lienzo se apaga y queda el
- * mapa de siempre; cada regla de la izquierda se marca cuando se aplica.
+ * Animación (con JavaScript y movimiento): un <canvas> encima del mapa muestra cómo se arma con esos
+ * mismos casos sintéticos (DEMO_ZONES y los casos A a G de eval/demo/demo.json). 1) cada punto en su
+ * calle, 2) se juntan por distrito, 3) se publica el rango y no la cifra, 4) con menos de 5 casos o de
+ * 3 personas el distrito queda vacío. Al terminar, el lienzo se apaga y queda el mapa de siempre; cada
+ * regla de la izquierda se marca cuando se aplica.
  */
+import { PUBLIC_API_URL } from "astro:env/client";
 import type { Dict } from "../i18n";
+import { DEMO_ZONES } from "../../../../packages/shared/src/demo-zones";
 import { DISTRICT_GRID, DISTRICTS } from "../../../../packages/shared/src/zones";
+import story from "../../../../eval/demo/demo.json";
 import { PORTAL_URL } from "../i18n/sources";
 import Icon from "./Icon.astro";
 
@@ -24,49 +30,71 @@ const { dict: d } = Astro.props;
 const w = d.lp.where;
 
 type Level = "bajo" | "medio" | "alto";
-/** Datos ficticios, los del modo simulado del portal (apps/portal/src/mock/fixtures.ts). */
-const DEMO: Record<string, { nivel: Level; casos: string }> = {
-  "san-juan-de-lurigancho": { nivel: "alto", casos: "20-49" },
-  ate: { nivel: "alto", casos: "10-19" },
-  "san-martin-de-porres": { nivel: "medio", casos: "10-19" },
-  "la-victoria": { nivel: "medio", casos: "10-19" },
-  "santa-anita": { nivel: "medio", casos: "5-9" },
-  comas: { nivel: "bajo", casos: "5-9" },
-  "el-agustino": { nivel: "bajo", casos: "5-9" },
-  "villa-el-salvador": { nivel: "bajo", casos: "5-9" },
-  callao: { nivel: "bajo", casos: "5-9" },
+type Cell = { nivel: Level; casos: string };
+
+const zonesUrl = `${PUBLIC_API_URL.replace(/\/+$/, "")}/v1/public/zones?demo=1`;
+
+/** Los distritos que la API publica, con su nivel y su rango. Sin respuesta, el mapa queda sin datos. */
+async function publishedZones(): Promise<Record<string, Cell>> {
+  try {
+    const res = await fetch(zonesUrl, { signal: AbortSignal.timeout(15_000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const body = (await res.json()) as { celdas?: { distrito: string; nivel: string; casos: string | null }[] };
+    const out: Record<string, Cell> = {};
+    for (const c of body.celdas ?? []) {
+      if (c.casos && (c.nivel === "bajo" || c.nivel === "medio" || c.nivel === "alto")) {
+        out[c.distrito] = { nivel: c.nivel, casos: c.casos };
+      }
+    }
+    return out;
+  } catch (err) {
+    console.warn(`[mapa] ${zonesUrl} no respondió (${String(err)}): el mapa queda sin datos`);
+    return {};
+  }
+}
+const MAP = await publishedZones();
+
+/**
+ * Los casos sintéticos del periodo que el seed guarda en la base, por distrito: los agregados de
+ * DEMO_ZONES y los casos de la historia (cada uno de una persona distinta).
+ */
+const SYNTH = new Map<string, { casos: number; personas: number }>();
+for (const z of DEMO_ZONES) SYNTH.set(z.distrito, { casos: z.casos, personas: z.victimas });
+for (const c of story.casos) {
+  const s = SYNTH.get(c.zona) ?? { casos: 0, personas: 0 };
+  SYNTH.set(c.zona, { casos: s.casos + 1, personas: s.personas + 1 });
+}
+/** Límites de un rango publicado: "5-9" da [5, 9] y "50+" da [50, Infinity]. */
+const bounds = (r: string): [number, number] => {
+  const [lo, hi] = r.split(/[-+]/).map((x) => Number(x));
+  return [lo ?? 0, hi ? hi : Infinity];
 };
 /**
- * Cuántas denuncias ficticias tiene cada distrito en la animación: dentro del rango de DEMO para los
- * que se publican; los de menos de 5 no se publican y en el mapa quedan como uno sin casos.
+ * Cada distrito de la animación: [denuncias, rango publicado o null, personas]. Si la base cambió
+ * desde el seed (un caso salió del periodo), la cifra se ajusta al rango que la API publica.
  */
-const COUNTS: Record<string, number> = {
-  "san-juan-de-lurigancho": 27,
-  ate: 13,
-  "san-martin-de-porres": 12,
-  "la-victoria": 11,
-  callao: 8,
-  "santa-anita": 7,
-  comas: 6,
-  "villa-el-salvador": 6,
-  "el-agustino": 5,
-  rimac: 4,
-  "san-juan-de-miraflores": 4,
-  "los-olivos": 3,
-  "santiago-de-surco": 3,
-  brena: 3,
-  independencia: 2,
-  chorrillos: 2,
-  lurin: 2,
-  "san-miguel": 1,
-  carabayllo: 1,
-};
-const anim = JSON.stringify(
-  Object.fromEntries(Object.entries(COUNTS).map(([id, n]) => [id, [n, DEMO[id]?.casos ?? null]])),
+const COUNTS: Record<string, [number, string | null, number]> = {};
+for (const id of new Set([...SYNTH.keys(), ...Object.keys(MAP)])) {
+  const s = SYNTH.get(id);
+  const range = MAP[id]?.casos ?? null;
+  let n = s?.casos ?? 0;
+  if (range) {
+    const [lo, hi] = bounds(range);
+    n = Math.min(Math.max(n, lo), hi);
+  }
+  if (n > 0) COUNTS[id] = [n, range, s?.personas ?? n];
+}
+const anim = JSON.stringify(COUNTS);
+/** El ejemplo del paso 3: el distrito publicado con más casos. */
+const top = Object.values(COUNTS)
+  .filter((c) => c[1])
+  .sort((a, b) => b[0] - a[0])[0];
+const steps = w.anim.steps.map((s, i) =>
+  i === 2 ? (top ? `${s}: ${w.anim.example.replace("{n}", String(top[0])).replace("{rango}", top[1]!)}` : `${s}.`) : s,
 );
 const ORDER: Record<Level, number> = { alto: 0, medio: 1, bajo: 2 };
-const listed = DISTRICTS.filter((x) => DEMO[x.id]).sort(
-  (a, b) => ORDER[DEMO[a.id]!.nivel] - ORDER[DEMO[b.id]!.nivel] || a.name.localeCompare(b.name, "es"),
+const listed = DISTRICTS.filter((x) => MAP[x.id]).sort(
+  (a, b) => ORDER[MAP[a.id]!.nivel] - ORDER[MAP[b.id]!.nivel] || a.name.localeCompare(b.name, "es"),
 );
 const levelName = (n: Level | "sin_datos") => w.legend[n];
 ---
@@ -99,7 +127,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
         style={`--cols:${DISTRICT_GRID.cols};--rows:${DISTRICT_GRID.rows}`}
       >
         {DISTRICTS.map((x) => {
-          const z = DEMO[x.id];
+          const z = MAP[x.id];
           return (
             <span
               class="tile"
@@ -121,7 +149,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
       <div class="where__side">
         <div class="where__now" data-where-now>
           <div class="where__caps" aria-hidden="true">
-            {w.anim.steps.map((s, i) => (
+            {steps.map((s, i) => (
               <p class:list={["where__cap", i === 0 && "is-on"]} data-where-cap>
                 <span class="where__cap-n num">{i + 1}</span>
                 {s}
@@ -146,11 +174,11 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
           <ol class="where__list" role="list" data-where-list>
             {listed.map((x) => (
               <li data-id={x.id}>
-                <span class="swatch" data-nivel={DEMO[x.id]!.nivel} />
+                <span class="swatch" data-nivel={MAP[x.id]!.nivel} />
                 <span class="where__dname">{x.name}</span>
                 <span class="where__dval">
-                  {levelName(DEMO[x.id]!.nivel)}
-                  <span class="where__dnum">{DEMO[x.id]!.casos}</span>
+                  {levelName(MAP[x.id]!.nivel)}
+                  <span class="where__dnum">{MAP[x.id]!.casos}</span>
                 </span>
               </li>
             ))}
@@ -521,8 +549,9 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
   }
 
   /**
-   * Cómo se arma el mapa, con denuncias ficticias: cada punto en su calle (0), por distrito (1), el
-   * rango y no la cifra (2), menos de 5 no se publica (3). Al final el lienzo se apaga y queda el mapa.
+   * Cómo se arma el mapa, con los casos sintéticos de la base: cada punto en su calle (0), por distrito
+   * (1), el rango y no la cifra (2), menos de 5 casos o de 3 personas no se publica (3). Al final el
+   * lienzo se apaga y queda el mapa.
    */
   const canvas = document.querySelector<HTMLCanvasElement>("[data-where-canvas]");
   const ctx = canvas?.getContext("2d");
@@ -539,7 +568,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
       border: boolean;
     };
     type Dot = { tile: string; hu: number; hv: number; pu: number; pv: number; d: number };
-    const counts = JSON.parse(canvas.dataset.counts ?? "{}") as Record<string, [number, string | null]>;
+    const counts = JSON.parse(canvas.dataset.counts ?? "{}") as Record<string, [number, string | null, number]>;
     const rules = [...document.querySelectorAll<HTMLElement>("[data-where-rules] li")];
     const caps = [...document.querySelectorAll<HTMLElement>("[data-where-cap]")];
     const replay = document.querySelector<HTMLButtonElement>("[data-where-replay]");
@@ -667,7 +696,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
       }
       // La cifra y el rango (publicados) o "menos de 5" (los demás).
       const fs = big ? 13 : 10;
-      for (const [id, [n, range]] of Object.entries(counts)) {
+      for (const [id, [n, range, people]] of Object.entries(counts)) {
         const tile = tiles.get(id);
         if (!tile) continue;
         const cx = tile.x + tile.w / 2;
@@ -697,7 +726,7 @@ const levelName = (n: Level | "sin_datos") => w.legend[n];
           ctx.roundRect(tile.x + 1, tile.y + 1, tile.w - 2, tile.h - 2, 6);
           ctx.stroke();
           ctx.setLineDash([]);
-          label(`${n} < 5`, cx, cy + 0.5, fs, "#2a1e17");
+          label(n < 5 ? `${n} < 5` : `${people} < 3`, cx, cy + 0.5, fs, "#2a1e17");
           ctx.globalAlpha = out;
         }
       }

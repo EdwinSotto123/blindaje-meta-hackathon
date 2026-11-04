@@ -149,7 +149,7 @@ sus textos lo dicen.
   reporte propio: ficha, lo que dice cada audio, hallazgos, qué hacer, el PDF de la denuncia y "Borrar mi
   caso". El token vive solo en la memoria de la pestaña. Enlazada desde la cabecera ("Subir evidencia")
   y desde el final del pitch.
-- **Después del pitch:** Voz (los audios del caso B), Fotos (la misma colcha), dónde pasa (mapa),
+- **Después del pitch:** Voz (los audios del caso B), Fotos (la misma colcha), dónde pasa (mapa, leído de la API: `/v1/public/zones?demo=1` al compilar),
   beneficios, recorrido del producto, Meta AI, resultados, límites, preguntas y "Solicita acceso".
 - **Cabecera:** crema con línea inferior; wordmark, seis enlaces, idioma y "Ver el mapa". Sin franja
   encima: el 3/11 salieron el 105, la Línea 1818 y "Salir rápido" (son de la app, no de la landing).

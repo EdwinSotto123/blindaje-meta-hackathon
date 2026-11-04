@@ -365,8 +365,11 @@ export interface Dict {
       /** Rótulo del desplegable con la lista de distritos (la misma información del mapa). */
       listToggle: string;
       note: string;
-      /** La animación del mapa: cuatro pasos (en orden con las reglas) y volver a verla. */
-      anim: { steps: [string, string, string, string]; replay: string };
+      /**
+       * La animación del mapa: cuatro pasos (en orden con las reglas) y volver a verla. El paso 3 se
+       * completa con `example` y el distrito publicado con más casos ({n} y {rango}, de la base).
+       */
+      anim: { steps: [string, string, string, string]; example: string; replay: string };
     };
     /** "Sube lo que te mandaron" (Upload.astro): la víctima sube su evidencia desde la landing. */
     upload: {

@@ -15,3 +15,4 @@ export * from "./zones";
 export * from "./vectors";
 export * from "./monitor";
 export * from "./photo-location";
+export * from "./demo-zones";
