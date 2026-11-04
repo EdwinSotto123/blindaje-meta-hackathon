@@ -78,4 +78,10 @@ describe("Lo que está a salvo y lo que espera conexión", () => {
     expect(rows).toHaveLength(2);
     expect(rows[0]!.title).toBe("Audio de 0:42");
   });
+
+  it("con conexión, lo pendiente dice que está en cola y no que falta internet", () => {
+    const rows = buildRows(null, [q("pendiente")], { online: true });
+    expect(rows[0]!.subtitle).toBe("En cola para subir");
+    expect(rows[0]!.subtitle).not.toMatch(/conexión/);
+  });
 });

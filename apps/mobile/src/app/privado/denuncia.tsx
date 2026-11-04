@@ -37,6 +37,7 @@ export default function Denuncia() {
   const report = usePrivate((s) => s.report);
   const queueItems = usePrivate((s) => s.queue);
   const decoyItems = usePrivate((s) => s.decoy);
+  const online = usePrivate((s) => s.online);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,7 +48,10 @@ export default function Denuncia() {
     }, [decoy]),
   );
 
-  const rows = useMemo(() => (decoy ? [] : buildRows(report, queueItems)), [decoy, report, queueItems]);
+  const rows = useMemo(
+    () => (decoy ? [] : buildRows(report, queueItems, { online })),
+    [decoy, report, queueItems, online],
+  );
   const pendientes = rows.filter(
     (r) => r.state === "pendiente" || r.state === "error" || r.state === "subiendo",
   ).length;

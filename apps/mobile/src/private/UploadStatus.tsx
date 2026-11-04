@@ -24,6 +24,7 @@ export function UploadStatus({
 }) {
   const item = usePrivate((s) => s.queue.find((q) => q.id === queueId) ?? null);
   const report = usePrivate((s) => s.report);
+  const online = usePrivate((s) => s.online);
   // La fila de la cola se borra cuando el reporte ya incluye la evidencia: se recuerda su id.
   const [evidenceId, setEvidenceId] = useState<string | null>(item?.evidence_id ?? null);
   if (item?.evidence_id && item.evidence_id !== evidenceId) setEvidenceId(item.evidence_id);
@@ -42,7 +43,8 @@ export function UploadStatus({
   let label = "Guardando…";
   let icon: "clock" | "upload" | "lock" | "alert" = "clock";
   let color: string = colors.resaltador;
-  if (item?.status === "pendiente") label = "Guardado cifrado. Se subirá cuando haya conexión";
+  if (item?.status === "pendiente")
+    label = online ? "Guardado cifrado. Se sube en un momento" : "Guardado cifrado. Se subirá cuando haya conexión";
   if (item?.status === "subiendo") {
     label = "Subiendo, cifrado…";
     icon = "upload";

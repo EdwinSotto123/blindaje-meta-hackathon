@@ -48,7 +48,15 @@ export const STATE_LABEL: Record<RowState, string> = {
   error: "No se pudo subir. Toca para reintentar",
 };
 
-export function buildRows(report: VictimReport | null, queue: QueueItem[], now = new Date()): NoteRow[] {
+/** Con conexión, lo pendiente solo espera su turno en la cola: no se dice que falta internet. */
+const EN_COLA = "En cola para subir";
+
+export function buildRows(
+  report: VictimReport | null,
+  queue: QueueItem[],
+  { now = new Date(), online = false }: { now?: Date; online?: boolean } = {},
+): NoteRow[] {
+  const pendiente = online ? EN_COLA : STATE_LABEL.pendiente;
   const rows: NoteRow[] = [];
   const serverIds = new Set<string>();
   for (const e of report?.evidencia ?? []) {
@@ -92,8 +100,10 @@ export function buildRows(report: VictimReport | null, queue: QueueItem[], now =
       title: titleFor(q.tipo, q.duration_ms, q.source),
       subtitle:
         q.tipo === "texto" && q.preview && state === "pendiente"
-          ? `${quote(q.preview, 30)}, ${STATE_LABEL.pendiente.toLowerCase()}`
-          : STATE_LABEL[state],
+          ? `${quote(q.preview, 30)}, ${pendiente.toLowerCase()}`
+          : state === "pendiente"
+            ? pendiente
+            : STATE_LABEL[state],
       when: shortDateTime(at, now),
       state,
       evidenceId: q.evidence_id,

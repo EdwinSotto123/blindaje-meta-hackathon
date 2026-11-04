@@ -55,8 +55,8 @@ export default function NotasPrivadas() {
         queueId: null,
         sortAt: d.created_at,
       }));
-    return buildRows(report, queueItems);
-  }, [decoy, decoyItems, report, queueItems]);
+    return buildRows(report, queueItems, { online });
+  }, [decoy, decoyItems, report, queueItems, online]);
 
   const held = decoy ? [] : queueItems.filter((q) => q.status === "retenido");
   const safety = overallSafety(decoy ? [] : queueItems, online, (report?.evidencia.length ?? 0) > 0);
