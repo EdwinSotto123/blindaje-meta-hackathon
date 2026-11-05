@@ -17,7 +17,7 @@ November 4, 2026. Every case, voice, number, account and photo in this repositor
 | Business portal (district map) | https://blindaje-negocios.vigiaperu.workers.dev |
 | Review console (read-only login below) | https://blindaje-console.vigiaperu.workers.dev |
 | API health | https://blindaje-api.vigiaperu.workers.dev/v1/health |
-| Android app (demo build) | [GitHub releases](https://github.com/EdwinSotto123/blindaje/releases) |
+| Android app (demo build) | [Releases](../../releases) |
 
 **Try the console.** Log in as `jurado@demo.blindaje.test` with password `Jurado-Demo-2026`. It is a
 read-only account: it sees everything the Blindaje admin sees (link queue with the evidence behind each
@@ -32,6 +32,58 @@ any approval, edit or agent run. All data is fictitious.
 > Toda la documentación de detalle está en español: [`DEVLOG.md`](DEVLOG.md),
 > [`SECURITY.md`](SECURITY.md), [`PRIVACY.md`](PRIVACY.md), [`PLAN.md`](PLAN.md) y el
 > [documento de diseño](docs/blindaje-inteligencia-comunitaria.md).
+
+## New in the final version (November 4)
+
+The last days went into proving the whole system end to end, with no mocked screens. Everything a
+judge opens (the console, the business portal, the landing map and the demo APK) reads the live API
+and the demo world in D1 (`is_demo=1`). Only the data is fictitious.
+
+**The demo story: 10 cases, 2 bands and 1 fake.** The seed loads nine cases. The tenth (I) is uploaded
+from the app, live, in the demo video.
+
+| Case | Business and district | Evidence | What Blindaje concludes |
+|---|---|---|---|
+| A | Corner store, San Juan de Lurigancho | 2 voice notes, a message, a photo of a bullet with the note "LOS X. 48 HORAS" | Band 1 |
+| B | Mototaxi, Comas | A voice note with A's voice, from another number | Band 1: same voice as A |
+| C | Market stall, San Juan de Lurigancho | Another voice, a Yape account ending in 202 | Band 1: same account as B |
+| D, E, G | Corner store, restaurant, mototaxi | Messages from "Los X" that collect through account 202 | Band 1 |
+| F | Market stall, San Juan de Lurigancho | Claims to be "Los X", but collects through account 212 | Band 2: the name misleads, the account does not |
+| H | Market stall, Ate | A second voice and account 212 | Band 2 |
+| I | Market stall, San Juan de Lurigancho | Audio, photo, video and a message, shared from the phone | Band 2: same voice as H, same account as F and H |
+| J | Corner store, San Juan de Lurigancho | A clone of band 1's voice, a bullet photo, account 202 | Fake: the audio and the photo were made with AI and carry Meta's watermarks |
+
+- **View A, the person.** A market stall owner shares a voice note, a photo and a video from her
+  phone's Files app into the disguised notebook. They stay encrypted until she enters her PIN. Each
+  note then shows which model checked it and what it found, and she files her report: a dated
+  timeline that cites the evidence and a PDF to take to the police station.
+- **View B, the specialists.** The linking engine proposed 20 links and the Linker agent explained
+  each one with citations to the evidence. A reviewer confirmed 14 and discarded 6, all of them
+  J's. Two networks formed: R-001 (band 1, 6 cases) and R-003 (band 2, 3 cases); J joins none. The
+  Cartographer then profiles R-003 with facts and hypotheses, each with its evidence and confidence.
+- **How the fake was caught.** AudioSeal found its watermark in J's audio (score 0.96) and Video
+  Seal found its watermark in the photo (0.997), so both pieces read "AI-generated, confirmed".
+  Blindaje says "confirmed" only on a watermark or C2PA credentials; anything else a model notices is
+  reported as signs, never as proof. The cloned voice resembles A's at 0.88 cosine, so the voice
+  signal counts half whenever a compared recording has an AI watermark or strong signs of a
+  synthetic voice. Voice alone never links two cases anyway.
+- Monitoring counts 136 cases: the seed also loads 126 background cases that only feed the district
+  statistics. Only the 10 story cases are indexed and compared.
+
+**Also new since October 31:**
+
+- **App.** Sharing from the Files app, Downloads or several files at once no longer loses evidence
+  (a patched `expo-share-intent`). A filed report reopens from the private notes with its PDF. Every
+  note lists the steps that ran on it and the model behind each one. There is an x86_64 build for
+  emulators, and the demo build registers its cases in the demo world.
+- **Landing.** A 14-scene pitch driven by the scroll, built from real measurements; an anonymous
+  upload form (region and district, GPS stripped from photos); a district map built from the
+  database at deploy time.
+- **Security.** The vector index snapshot is encrypted before it is written to R2 (live with the
+  next API deploy).
+- **Engineering.** Turborepo, Prettier, ESLint, knip and ruff in CI; an OpenAPI 3.1 spec generated
+  from the zod contracts; 22 end-to-end tests with Playwright and axe; on-demand Android builds in
+  GitLab CI.
 
 ## The problem
 
@@ -100,6 +152,7 @@ rejected, web search is off and no agent ever names a person.
 | **SAM 3.1** (`sam-3.1`) | Meta Model API | Finds bullets, handwritten notes and license plates in photos and video frames from text prompts, and masks bystanders' faces. |
 | **Muse Image 1.0** (`muse-image-1.0`) | Meta Model API | Generated the fictitious photos used in the demo and the evaluation. |
 | **Muse Wonder 1.0** (`muse-wonder-1.0`) | Meta Model API | Optional: the Cartographer uses it for very large networks. |
+| **MMS-TTS** (`facebook/mms-tts-spa`) | Open weights, evaluation only | Synthesized the fictitious voice notes of the demo, including the cloned voice of the fake case (CC-BY-NC-4.0, never used in the product). |
 | **AudioSeal** | Open weights, ML container | Detects AI watermarks in audio. Used in reverse too: every audio copy the console plays carries a 16-bit tag of the account that opened it, so a leaked copy can be traced. |
 | **Video Seal** | Open weights, ML container | Detects AI watermarks in images and video, and marks every image delivery with a 256-bit message for leak tracing. |
 | **DINOv2** (small) | Open weights, ML container | Vectors for image crops, to find reused photos even when they are not identical. |
@@ -267,14 +320,19 @@ Evaluation and demo data:
 
 ```bash
 pnpm eval                          # voice, images, case record, identifiers, scenarios, API
-pnpm demo:reset && pnpm demo:seed  # fictitious cases A to G against the API (API_URL, DEMO_SECRET)
+pnpm demo:reset && pnpm demo:seed  # the fictitious story against the API (API_URL, DEMO_SECRET)
 ```
+
+The seed loads cases A to H and J; [`eval/demo/README.md`](eval/demo/README.md) explains each one
+and how case I is uploaded from the app.
 
 ## Deploy
 
-GitHub Actions deploys the four Workers when CI passes on `main`: D1 migrations first, then the API,
-console, portal and landing, and a smoke test at the end. Setup (Cloudflare token and GitHub
-environment), manual commands and rollback are in [`docs/DEPLOY.md`](docs/DEPLOY.md).
+The GitHub Actions workflows run the checks and deploy the four Workers when CI passes on `main`:
+D1 migrations first, then the API, console, portal and landing, and a smoke test at the end. GitLab CI
+(`.gitlab-ci.yml`) runs the same checks and builds the APKs on demand; it is the pipeline that ran
+during the hackathon. Setup (Cloudflare token and CI environment), manual commands and rollback are
+in [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 Worker secrets live in Cloudflare, never in the repository:
 
@@ -303,7 +361,20 @@ The repository starts on October 28, 2026; every commit is from the event. Day b
 - **Oct 29.** District map first. Warmer visual direction for the landing, portal and console. Vector
   engine on Chroma Cloud with an animated view for the admin. Speed work and a monitoring panel. Call
   log for unknown numbers and a home-screen widget in the app.
-- **Oct 30.** First build of the app's native module and the in-call bubble.
+- **Oct 30.** First build of the app's native module and the in-call bubble. Read-only judge
+  account, team passwords as secrets.
+- **Oct 31.** UX and copy pass on the console, portal and app. ML container live on Cloudflare
+  Containers. Repository audit: Turborepo, Prettier, ESLint, knip, OpenAPI 3.1, Playwright and axe,
+  a deploy workflow and GitLab CI.
+- **Nov 1.** Android builds on demand in CI, for phones (arm64) and emulators (x86_64).
+- **Nov 2.** Every note in the app shows what checked it. Landing sections drawn from real
+  measurements: the voice in pixels, photos compared patch by patch with DINOv2 and Muse Spark, and
+  the rules of the public map.
+- **Nov 3.** The landing becomes a 14-scene pitch. Anonymous upload form. The vector index snapshot
+  is encrypted in R2.
+- **Nov 4.** The demo runs on the live database: the portal and the landing map read the API and the
+  demo APK joins the demo world. Sharing fixes in the app. The 10-case story with two bands and an
+  AI-made fake, and the two-view demo video.
 
 ## Limitations
 
@@ -318,6 +389,22 @@ The repository starts on October 28, 2026; every commit is from the event. Day b
 - The Android build is signed with a debug key and is meant for the demo. There is no iOS build.
 - The accounts that can approve, edit or run agents have their passwords only as secrets; the public
   judge account is read-only, so it cannot show approving a link live (the video does).
+
+## What comes next
+
+- **A pilot, only after the legal review.** With a business guild in Lima Este and the police unit
+  that would receive the case files, once the review under Law 29733 is done.
+- **Voice calibrated on real voice notes.** Consented recordings sent through WhatsApp, to replace
+  the read-speech calibration.
+- **The soundtrack of videos.** Today videos are sampled into frames for SAM 3.1 and Muse Spark; their
+  audio is not transcribed or fingerprinted yet.
+- **Llama Prompt Guard 2 in production** as soon as the gated weights are granted.
+- **More work on the phone.** Build the case record offline when a Meta model fits a mid-range
+  Android phone; Muse Glimmer is about 17 GB even at 4 bits.
+- **A release-signed Android build, and iOS.**
+- **Other countries.** Extortion through phone calls and digital wallets is growing across Latin
+  America. Outside identifier normalization (Peruvian phones, Yape and Plin), the transcription
+  vocabulary and the Lima and Callao map, the pipeline is not tied to Peru.
 
 ## License
 
